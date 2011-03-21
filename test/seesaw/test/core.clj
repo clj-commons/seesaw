@@ -2,9 +2,19 @@
   (:use seesaw.core)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import (javax.swing JPanel JButton Box Box$Filler BoxLayout)
+  (:import (javax.swing Action
+                        JPanel JButton JTextField JTextArea Box Box$Filler BoxLayout
+                        JToggleButton JCheckBox JRadioButton
+                        JScrollPane
+                        JSplitPane)
            (javax.swing.border EmptyBorder LineBorder MatteBorder TitledBorder)
            (java.awt Insets Color Dimension)))
+
+(describe action
+  (it "sets the name and tooltip"
+    (let [a (action (fn [e]) :name "Test" :tip "This is a tip")]
+      (expect (= "Test" (.getValue a Action/NAME)))
+      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION))))))
 
 (describe empty-border
   (it "creates a 1 pixel border by default"
@@ -60,6 +70,10 @@
   (it "returns input if it's already a border"
     (let [b (line-border)]
       (expect (= b (to-border b)))))
+  (it "creates an empty border with specified thickness for a number"
+    (let [b (to-border 11)]
+      (expect (= EmptyBorder (class b)))
+      (expect (= (Insets. 11 11 11 11) (.getBorderInsets b)))))
   (it "returns a titled border using str if it doesn't know what to do"
     (let [b (to-border "Test")]
       (expect (= TitledBorder (class b)))
@@ -92,6 +106,8 @@
         (expect (= "TEST" (.. c getBorder getTitle))))))
 
 (describe to-widget
+  (it "returns nil if input is nil"
+      (= nil (to-widget nil)))
   (it "returns input if it's already a widget"
     (let [c (JPanel.)]
       (expect (= c (to-widget c)))))
@@ -99,7 +115,7 @@
     (let [c (to-widget "TEST")]
       (expect (= "TEST" (.getText c)))))
   (it "returns a button if input is an Action"
-    (let [a (make-action #(println "HI") :name "Test")
+    (let [a (action #(println "HI") :name "Test")
           c (to-widget a)]
       (expect (isa? (class c) javax.swing.JButton))
       (expect (= "Test" (.getText c)))))
@@ -152,4 +168,84 @@
           p (vertical-panel :items [a b c])]
       (expect (= BoxLayout/Y_AXIS (.. p getLayout getAxis)))
       (expect (= [a b c] (seq (.getComponents p)))))))
+
+(describe grid-panel
+  (it "should default to 1 column"
+    (let [g (grid-panel)
+          l (.getLayout g)]
+      (expect (= 0 (.getRows l)))
+      (expect (= 1 (.getColumns l)))))
+  (it "should set number of rows"
+    (let [g (grid-panel :rows 12)
+          l (.getLayout g)]
+      (expect (= 12 (.getRows l)))
+      (expect (= 0 (.getColumns l)))))
+  (it "should set the hgap and vgap"
+    (let [g (grid-panel :hgap 2 :vgap 3)
+          l (.getLayout g)]
+      (expect (= 2 (.getHgap l)))
+      (expect (= 3 (.getVgap l)))))
+  (it "should add the given items to the panel"
+    (let [[a b c] [(label :text "A") (label :text "B") (label :text "C")]
+          g (grid-panel :items [a b c])] 
+      (expect (= [a b c] (seq (.getComponents g)))))))
+
+(describe text
+  (it "should create a text field by default"
+    (let [t (text :text "HI")]
+      (expect (= JTextField (class t)))
+      (expect (= "HI" (.getText t)))))
+  (it "should create a text area when multi-line? is true"
+    (let [t (text :text "HI" :multi-line? true)]
+      (expect (= JTextArea (class t)))
+      (expect (= "HI" (.getText t)))))
+  (it "should honor the editable property"
+    (let [t (text :text "HI" :editable false :multi-line? true)]
+      (expect (false? (.isEditable t))))))
+
+(describe toggle
+  (it "should create a JToggleButton"
+    (let [t (toggle :text "HI")]
+      (expect (= JToggleButton (class t)))
+      (expect (= "HI" (.getText t))))
+      (expect (not (.isSelected t))))
+  (it "should honor the :selected property"
+    (let [t (toggle :text "HI" :selected true)]
+      (expect (.isSelected t)))))
+
+(describe checkbox
+  (it "should create a JCheckBox"
+    (let [t (checkbox :text "HI")]
+      (expect (= JCheckBox (class t)))
+      (expect (= "HI" (.getText t))))
+      (expect (not (.isSelected t))))
+  (it "should honor the :selected property"
+    (let [t (checkbox :text "HI" :selected true)]
+      (expect (.isSelected t)))))
+
+(describe radio
+  (it "should create a JRadioButton"
+    (let [t (radio :text "HI")]
+      (expect (= JRadioButton (class t)))
+      (expect (= "HI" (.getText t))))
+      (expect (not (.isSelected t))))
+  (it "should honor the :selected property"
+    (let [t (radio :text "HI" :selected true)]
+      (expect (.isSelected t)))))
+
+(describe scrollable
+  (it "should create a JScrollPane"
+    (let [l (label :text "Test")
+          s (scrollable l)]
+      (expect (= JScrollPane (class s)))
+      (expect (= l (.. s getViewport getView))))))
+
+(describe splitter
+  (it "should create a JSplitPane with with two panes"
+    (let [left (label :text "Left")
+          right (label :text "Right")
+          s (splitter :left-right left right)]
+      (expect (= javax.swing.JSplitPane (class s)))
+      (expect (= left (.getLeftComponent s)))
+      (expect (= right (.getRightComponent s))))))
 

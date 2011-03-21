@@ -1,13 +1,13 @@
 # seesaw
 
-FIXME: write description
+A Swing DSL in Clojure
 
 ## Usage
 
-FIXME: write
+TODO
 
 ## License
 
-Copyright (C) 2010 FIXME
+Copyright (C) 2011 Dave Ray
 
 Distributed under the Eclipse Public License, the same as Clojure.
