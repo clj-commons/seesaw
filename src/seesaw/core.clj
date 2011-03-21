@@ -269,5 +269,18 @@
 (defn left-right-split [& args] (apply splitter :left-right args))
 (defn top-bottom-split [& args] (apply splitter :top-bottom args))
 
+;*******************************************************************************
+; Frame
+(defn frame
+  [& {:keys [title width height content] 
+      :or {width 100 height 100}
+      :as opts}]
+  (let [f (JFrame.)]
+    (when title (.setTitle f title))
+    (when content (.setContentPane f content))
+    (doto f
+      (.setSize width height)
+      .pack)
+    ))
 
 

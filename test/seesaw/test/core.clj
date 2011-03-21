@@ -3,6 +3,7 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import (javax.swing Action
+                        JFrame
                         JPanel JButton JTextField JTextArea Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
@@ -248,4 +249,14 @@
       (expect (= javax.swing.JSplitPane (class s)))
       (expect (= left (.getLeftComponent s)))
       (expect (= right (.getRightComponent s))))))
+
+(describe frame
+  (it "should create a JFrame and set its title, width, and height"
+    (let [f (frame :title "Hello" :width 99 :height 88)]
+      (expect (= javax.swing.JFrame (class f)))
+      (expect (= "Hello" (.getTitle f)))))
+  (it "should create a JFrame and set its content pane"
+    (let [c (label :text "HI")
+          f (frame :content c)]
+      (expect (= c (.getContentPane f))))))
 
