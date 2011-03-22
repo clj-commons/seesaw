@@ -2,9 +2,10 @@
   (:use seesaw.core)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import (javax.swing Action
+  (:import (javax.swing SwingConstants
+                        Action
                         JFrame
-                        JPanel JButton JTextField JTextArea Box Box$Filler BoxLayout
+                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane)
@@ -191,6 +192,16 @@
           g (grid-panel :items [a b c])] 
       (expect (= [a b c] (seq (.getComponents g)))))))
 
+(describe label
+  (it "should create a label"
+    (expect (= JLabel (class (label)))))
+  (it "should create a label with text"
+    (expect (= "test label" (.getText (label :text "test label")))))
+  (it "should create a label with horizontal alignment"
+    (= SwingConstants/LEFT (.getHorizontalAlignment (label :halign :left))))
+  (it "should create a label with vertical alignment"
+    (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
+
 (describe text
   (it "should create a text field by default"
     (let [t (text :text "HI")]
@@ -252,11 +263,11 @@
 
 (describe frame
   (it "should create a JFrame and set its title, width, and height"
-    (let [f (frame :title "Hello" :width 99 :height 88)]
+    (let [f (frame :title "Hello" :width 99 :height 88 :visible false)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
-          f (frame :content c)]
+          f (frame :content c :visible false)]
       (expect (= c (.getContentPane f))))))
 

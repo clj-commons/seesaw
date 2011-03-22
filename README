@@ -1,10 +1,10 @@
 # seesaw
 
-A Swing DSL in Clojure
+A primordial Swing DSL in Clojure
 
 ## Usage
 
-TODO
+See tests and src/seesaw/examples.
 
 ## License
 

@@ -1,13 +1,13 @@
 (ns seesaw.core
   (:import (java.net URL MalformedURLException)
-           (javax.swing Icon Action AbstractAction ImageIcon
-            BoxLayout BorderFactory
-            JFrame 
-            JComponent Box JPanel JScrollPane JSplitPane
-            JLabel
-            JTextField JTextArea 
-            JButton JToggleButton JCheckBox JRadioButton)
-           (javax.swing.event ChangeListener)
+           (javax.swing 
+             SwingUtilities SwingConstants 
+             Icon Action AbstractAction ImageIcon
+             BoxLayout BorderFactory
+             JFrame JComponent Box JPanel JScrollPane JSplitPane
+             JLabel JTextField JTextArea 
+             JButton JToggleButton JCheckBox JRadioButton)
+           (javax.swing.event ChangeListener DocumentListener)
            (javax.swing.border Border)
            (java.awt Color Component BorderLayout GridLayout Dimension ItemSelectable)
            (java.awt.event MouseAdapter ActionListener)))
@@ -17,6 +17,9 @@
     (URL. (str s))
    (catch MalformedURLException e
     nil)))
+
+(defn invoke-later [f] (SwingUtilities/invokeLater f))
+(defn invoke-now [f] (SwingUtilities/invokeAndWait f))
 
 ;*******************************************************************************
 ; Icons
@@ -209,9 +212,30 @@
 ;*******************************************************************************
 ; Labels
 
+(def ^{:private true} h-alignment-table
+  { :left SwingConstants/LEFT 
+    :right SwingConstants/RIGHT
+    :leading SwingConstants/LEADING
+    :trailing SwingConstants/TRAILING
+    :center SwingConstants/CENTER })
+
+(def ^{:private true} v-alignment-table
+  { :top SwingConstants/TOP 
+    :center SwingConstants/CENTER 
+    :bottom SwingConstants/BOTTOM 
+   })
+
+(defn- apply-text-alignment 
+  [w {:keys [halign valign]}]
+  (let [hc (h-alignment-table halign)
+        vc (v-alignment-table valign)]
+    (when hc (.setHorizontalAlignment w hc))
+    (when vc (.setVerticalAlignment w vc))
+    w))
+
 (defn label 
   [& {:keys [text icon] :as opts}]
-  (let [w (apply-default-opts (JLabel.) opts)]
+  (let [w (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))]
     (when text (.setText w (str text)))
     (when icon (.setIcon w (make-icon icon)))
     w))
@@ -222,7 +246,7 @@
 
 (defn- toggle-button
   [w & {:keys [text icon selected] :or {selected false} :as opts}]
-  (let [w* (apply-default-opts w opts)]
+  (let [w* (-> w (apply-default-opts opts) (apply-text-alignment opts))]
     (when text (.setText w* (str text)))
     (when icon (.setIcon w* (make-icon icon)))
     (.setSelected w* selected)
@@ -235,16 +259,30 @@
 ;*******************************************************************************
 ; Text widgets
 
+(defn add-document-listener [w f]
+  (when f
+    (.. w 
+      getDocument
+      (addDocumentListener
+        (if (instance? DocumentListener f)
+          f
+          (proxy [DocumentListener] []
+            (insertUpdate [e] (f e))
+            (removeUpdate [e] (f e))
+            (changedUpdate []))))))
+  w)
+
 (defn apply-text-opts 
-  [w { :keys [on-change text editable] :or { editable true } :as opts }]
+  [w { :keys [on-changed text editable] :or { editable true } :as opts }]
   (let [w* (apply-default-opts w opts)]
     (.setEditable w editable)
     (when text (.setText w (str text)))
+    (add-document-listener w on-changed)
     w*))
   
 (defn text
   [& {:keys [text multi-line?] :as opts}]
-  (let [t (if multi-line? (JTextArea.) (JTextField.))
+  (let [t (if multi-line? (JTextArea.) (apply-text-alignment (JTextField.) opts))
         w (apply-text-opts t opts)]
     (when text (.setText w (str text)))
     w))
@@ -272,15 +310,16 @@
 ;*******************************************************************************
 ; Frame
 (defn frame
-  [& {:keys [title width height content] 
-      :or {width 100 height 100}
+  [& {:keys [title width height content visible pack] 
+      :or {width 100 height 100 visible true pack true}
       :as opts}]
   (let [f (JFrame.)]
     (when title (.setTitle f title))
     (when content (.setContentPane f content))
     (doto f
       (.setSize width height)
-      .pack)
-    ))
+      (.setVisible visible))
+    (when pack (.pack f))
+    f))
 
 

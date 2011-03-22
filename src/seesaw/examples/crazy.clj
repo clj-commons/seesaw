@@ -1,4 +1,4 @@
-(ns seesaw.demo
+(ns seesaw.examples.crazy
   (:use seesaw.core)
   (:import (javax.swing JFrame JLabel)
            (java.awt Color)))
@@ -6,12 +6,8 @@
 (def rss-url "http://ir.netflix.com/images/toolbar/rss_2.gif")
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
-(doseq [f (JFrame/getFrames)]
-  (.dispose f))
-
-(def f (JFrame. "HI"))
-(doto f
-  (.setContentPane 
+(defn crazy-app []
+  (frame :title "Hello Seesaw" :width 600 :height 400 :pack false :content
     (left-right-split 
       (border-panel 
         :hgap 12 :vgap 15
@@ -47,9 +43,9 @@
                               :editable false))])
         :east  (JLabel. "East")
         :west  (vertical-panel 
-                 :background Color/GREEN
-                 :border (line-border :color Color/YELLOW :thickness 5) 
-                 :items ["A" :fill-v rss-url "C" [:fill-v 45] "D"])
+                  :background Color/GREEN
+                  :border (line-border :color Color/YELLOW :thickness 5) 
+                  :items ["A" :fill-v rss-url "C" [:fill-v 45] "D"])
         :south (horizontal-panel 
                 :border [(line-border :top 5) (line-border :top 10 :color Color/RED)]
                 :items ["A" 
@@ -66,7 +62,9 @@
       :hgap 10 
       :vgap 10 
       :columns 3 
-      :items (map #(action (fn [e] (println "Clicked" %)) :name %) (range 0 12)))))
-  (.setSize 600 400)
-  (.setVisible true))
+      :items (map #(action (fn [e] (println "Clicked" %)) :name %) (range 0 12))))))
+
+;(doseq [f (JFrame/getFrames)]
+  ;(.dispose f))
+;(invoke-later crazy-app)
 
