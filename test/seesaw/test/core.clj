@@ -1,5 +1,6 @@
 (ns seesaw.test.core
-  (:use seesaw.core)
+  (:use seesaw.core
+        seesaw.font)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import (javax.swing SwingConstants
@@ -191,6 +192,12 @@
     (let [[a b c] [(label :text "A") (label :text "B") (label :text "C")]
           g (grid-panel :items [a b c])] 
       (expect (= [a b c] (seq (.getComponents g)))))))
+
+(describe "for an arbitrary widget"
+  (it "should support the :font property"
+    (let [f (font "ARIAL-BOLD-18")
+          l (label :font f)]
+      (expect (= f (.getFont l))))))
 
 (describe label
   (it "should create a label"

@@ -1,4 +1,5 @@
 (ns seesaw.core
+  (:use seesaw.font)
   (:import (java.net URL MalformedURLException)
            (javax.swing 
              SwingUtilities SwingConstants 
@@ -120,11 +121,12 @@
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
-  ([p {:keys [opaque background foreground border] :as opts}]
+  ([p {:keys [opaque background foreground border font] :as opts}]
     (when (or (true? opaque) (false? opaque)) (.setOpaque p opaque))
     (when background (.setBackground p background))
     (when foreground (.setForeground p foreground))
     (when border (.setBorder p (to-border border)))
+    (when font (.setFont p (to-font font)))
     (-> p
       (apply-mouse-handlers opts)
       (apply-action-handler opts)

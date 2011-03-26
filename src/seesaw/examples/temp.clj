@@ -1,5 +1,5 @@
 (ns seesaw.examples.temp
-  (:use seesaw.core))
+  (:use seesaw.core seesaw.font))
 
 ; See http://stuartsierra.com/2010/01/06/heating-up-clojure-swing 
 
@@ -33,9 +33,13 @@
       (grid-panel 
         :hgap 10 :vgap 10 :columns 2 :border 10
         :items 
-        [(label :text "Degrees Celsius" :halign :right) 
+        [(label :text "Degrees Celsius" 
+                :halign :right 
+                :font "ARIAL-BOLD-20"  )
          (listen-temp c f c-to-f)
-         (label :text "Degrees Fahrenheit" :halign :right)
+         (label :text "Degrees Fahrenheit" 
+                :halign :right 
+                :font {:style :italic :size 20 :name "Arial"})
          (listen-temp f c f-to-c)]))))
 
 (invoke-later temp-app)
