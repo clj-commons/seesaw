@@ -1,8 +1,9 @@
-(ns seesaw.test.core
+(ns seesaw.test.border
   (:use seesaw.border)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import (javax.swing.border EmptyBorder LineBorder MatteBorder TitledBorder)))
+  (:import [javax.swing.border EmptyBorder LineBorder MatteBorder TitledBorder]
+           [java.awt Insets Color]))
 
 (describe empty-border
   (it "creates a 1 pixel border by default"
@@ -28,13 +29,13 @@
       (expect (= LineBorder (class b)))
       (expect (= 1 (.getThickness b)))
       (expect (= Color/BLACK (.getLineColor b)))))
-  (it "creates a border with desired color and thickness"
-    (let [b (line-border :thickness 12 :color Color/YELLOW)]
+  (it "creates a border with desired color (using to-color) and thickness"
+    (let [b (line-border :thickness 12 :color "#FFFF00")]
       (expect (= LineBorder (class b)))
       (expect (= 12 (.getThickness b)))
       (expect (= Color/YELLOW (.getLineColor b)))))
-  (it "creates a matte border with specified sides"
-    (let [b (line-border :top 2 :left 3 :bottom 4 :right 5 :color Color/YELLOW)]
+  (it "creates a matte border with specified sides and color"
+    (let [b (line-border :top 2 :left 3 :bottom 4 :right 5 :color "#FFFF00")]
       (expect (= MatteBorder (class b)))
       (expect (= (Insets. 2 3 4 5) (.getBorderInsets b)))
       (expect (= Color/YELLOW (.getMatteColor b)))))

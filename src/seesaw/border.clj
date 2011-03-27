@@ -1,4 +1,5 @@
 (ns seesaw.border
+  (:use seesaw.color)
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]
            [java.awt Color]))
@@ -18,8 +19,8 @@
 (defn line-border 
   [& {:keys [color thickness top left bottom right] :or {thickness 1 color Color/BLACK}}]
   (if (or top left bottom right)
-    (BorderFactory/createMatteBorder (or top 0) (or left 0) (or bottom 0) (or right 0) color)
-    (BorderFactory/createLineBorder color thickness)))
+    (BorderFactory/createMatteBorder (or top 0) (or left 0) (or bottom 0) (or right 0) (to-color color))
+    (BorderFactory/createLineBorder (to-color color) thickness)))
 
 (defn compound-border
   ([b] (to-border b))

@@ -1,6 +1,7 @@
 (ns seesaw.core
   (:use seesaw.font)
   (:use seesaw.border)
+  (:use seesaw.color)
   (:import (java.net URL MalformedURLException)
            (javax.swing 
              SwingUtilities SwingConstants 
@@ -11,7 +12,7 @@
              JButton JToggleButton JCheckBox JRadioButton)
            (javax.swing.event ChangeListener DocumentListener)
            (javax.swing.border Border)
-           (java.awt Color Component BorderLayout GridLayout Dimension ItemSelectable)
+           (java.awt Component BorderLayout GridLayout Dimension ItemSelectable)
            (java.awt.event MouseAdapter ActionListener)))
 
 (defn- to-url [s]
@@ -91,8 +92,8 @@
   ([p] (apply-default-opts p {}))
   ([p {:keys [opaque background foreground border font] :as opts}]
     (when (or (true? opaque) (false? opaque)) (.setOpaque p opaque))
-    (when background (.setBackground p background))
-    (when foreground (.setForeground p foreground))
+    (when background (.setBackground p (to-color background)))
+    (when foreground (.setForeground p (to-color foreground)))
     (when border (.setBorder p (to-border border)))
     (when font (.setFont p (to-font font)))
     (-> p

@@ -27,11 +27,11 @@
     (it "sets opacity when provided"
       (let [c (apply-default-opts (JPanel.) {:opaque false})]
         (expect (= false (.isOpaque c))))))
-  (it "sets background when provided"
-      (let [c (apply-default-opts (JPanel.) {:background Color/BLACK})]
+  (it "sets background using to-color when provided"
+      (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
         (expect (= Color/BLACK (.getBackground c)))))
   (it "sets foreground when provided"
-      (let [c (apply-default-opts (JPanel.) {:foreground Color/GREEN})]
+      (let [c (apply-default-opts (JPanel.) {:foreground "#00FF00" })]
         (expect (= Color/GREEN (.getForeground c)))))
   (it "sets border when provided using to-border"
       (let [c (apply-default-opts (JPanel.) {:border "TEST"})]

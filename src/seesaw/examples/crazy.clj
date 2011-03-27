@@ -48,7 +48,7 @@
                   :border (line-border :color Color/YELLOW :thickness 5) 
                   :items ["A" :fill-v rss-url "C" [:fill-v 45] "D"])
         :south (horizontal-panel 
-                :border [(line-border :top 5) (line-border :top 10 :color Color/RED)]
+                :border [(line-border :top 5) (line-border :top 10 :color "#FF0000")]
                 :items ["A" 
                         :fill-h 
                         "B" 
