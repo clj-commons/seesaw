@@ -1,5 +1,6 @@
 (ns seesaw.examples.crazy
   (:use seesaw.core)
+  (:use seesaw.border)
   (:import (javax.swing JFrame JLabel)
            (java.awt Color)))
 

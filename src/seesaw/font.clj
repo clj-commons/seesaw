@@ -1,5 +1,5 @@
 (ns seesaw.font
-  (:import (java.awt Font)))
+  (:import [java.awt Font]))
 
 (def ^{:private true} style-table 
   { :bold Font/BOLD 
