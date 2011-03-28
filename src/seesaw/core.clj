@@ -1,4 +1,5 @@
 (ns seesaw.core
+  (:use seesaw.util)
   (:use seesaw.font)
   (:use seesaw.border)
   (:use seesaw.color)
@@ -9,17 +10,12 @@
              BoxLayout BorderFactory
              JFrame JComponent Box JPanel JScrollPane JSplitPane
              JLabel JTextField JTextArea 
-             JButton JToggleButton JCheckBox JRadioButton)
+             JButton JToggleButton JCheckBox JRadioButton
+             JOptionPane)
            (javax.swing.event ChangeListener DocumentListener)
            (javax.swing.border Border)
            (java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable)
            (java.awt.event MouseAdapter ActionListener)))
-
-(defn- to-url [s]
-  (try
-    (URL. (str s))
-   (catch MalformedURLException e
-    nil)))
 
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
@@ -109,6 +105,7 @@
       (instance? java.awt.Dimension v) (Box/createRigidArea v)
       (instance? java.awt.Component v) v
       (instance? javax.swing.Action v) (JButton. v)
+      (instance? java.util.EventObject) (try-cast java.awt.Component (.getSource v))
       (= v :fill-h) (Box/createHorizontalGlue)
       (= v :fill-v) (Box/createVerticalGlue)
       (= :fill-h (first vs)) (Box/createHorizontalStrut (second vs))
@@ -314,4 +311,10 @@
     (when pack (.pack f))
     f))
 
+;*******************************************************************************
+; Alert
+(defn alert
+  ([source message] 
+    (JOptionPane/showMessageDialog (to-widget source) (str message)))
+  ([message] (alert nil message)))
 

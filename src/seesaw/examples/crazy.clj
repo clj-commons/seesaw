@@ -31,7 +31,7 @@
                   :items [(label 
                             :border (line-border) 
                             :text "This label acts like a link" 
-                            :on-mouse-clicked (fn [e] (println "CLICK!"))
+                            :on-mouse-clicked (fn [e] (alert e "CLICK!"))
                             :on-mouse-entered (fn [e] (.. (.getSource e) (setForeground Color/BLUE) ))
                             :on-mouse-exited (fn [e] (.. (.getSource e) (setForeground Color/BLACK) )))
                           (text 
@@ -63,9 +63,12 @@
       :hgap 10 
       :vgap 10 
       :columns 3 
-      :items (map #(action (fn [e] (println "Clicked" %)) :name %) (range 0 12))))))
+      :items (map #(action 
+                     (fn [e] (alert (str "Clicked " %))) 
+                     :name %) 
+                  (range 0 12))))))
 
-;(doseq [f (JFrame/getFrames)]
-  ;(.dispose f))
-;(invoke-later crazy-app)
+(doseq [f (JFrame/getFrames)]
+  (.dispose f))
+(invoke-later crazy-app)
 
