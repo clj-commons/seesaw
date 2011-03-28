@@ -10,7 +10,7 @@
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane)
-           (java.awt Insets Color Dimension)))
+           (java.awt Insets Color Dimension FlowLayout)))
 
 (describe action
   (it "sets the name and tooltip"
@@ -86,6 +86,18 @@
       (expect (= 12 (.. c getPreferredSize getWidth)))
       (expect (= 34 (.. c getPreferredSize getHeight)))
       )))
+
+(describe flow-panel
+  (it "should create a FlowLayout of :items list"
+    (let [[a b c] [(JPanel.) (JPanel.) (JPanel.)]
+          p (flow-panel :items [a b c] :align :trailing :hgap 99 :vgap 12 :align-on-baseline true)
+          l (.getLayout p)]
+      (expect (= java.awt.FlowLayout (class l)))
+      (expect (= FlowLayout/TRAILING (.getAlignment l)))
+      (expect (= 99 (.getHgap l)))
+      (expect (= 12 (.getVgap l)))
+      (expect (= true (.getAlignOnBaseline l)))
+      (expect (= [a b c] (seq (.getComponents p)))))))
 
 (describe horizontal-panel
   (it "should create a horizontal box of :items list"

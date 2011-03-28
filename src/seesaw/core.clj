@@ -12,7 +12,7 @@
              JButton JToggleButton JCheckBox JRadioButton)
            (javax.swing.event ChangeListener DocumentListener)
            (javax.swing.border Border)
-           (java.awt Component BorderLayout GridLayout Dimension ItemSelectable)
+           (java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable)
            (java.awt.event MouseAdapter ActionListener)))
 
 (defn- to-url [s]
@@ -129,6 +129,7 @@
     (add-widget c w))
   c)
 
+
 ;*******************************************************************************
 ; Border Layout
 
@@ -153,6 +154,26 @@
       (border-layout-add east :east)
       (border-layout-add west :west)
       (border-layout-add center :center))))
+
+;*******************************************************************************
+; Flow
+
+(def ^{:private true} flow-align-table
+  { :left FlowLayout/LEFT 
+    :right FlowLayout/RIGHT
+    :leading FlowLayout/LEADING
+    :trailing FlowLayout/TRAILING
+    :center FlowLayout/CENTER })
+
+(defn flow-panel
+  [& {:keys [hgap vgap align items align-on-baseline] 
+      :or {hgap 5 vgap 5 align :center items [] align-on-baseline false} 
+      :as opts}]
+  (let [p (apply-default-opts (JPanel.) opts)
+        l (FlowLayout. (align flow-align-table) hgap vgap)]
+    (.setAlignOnBaseline l align-on-baseline)
+    (.setLayout p l)
+    (add-widgets p items)))
 
 ;*******************************************************************************
 ; Boxes
