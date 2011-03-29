@@ -151,6 +151,10 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text
+  (it "should create a text field given a string argument"
+    (let [t (text "HI")]
+      (expect (= JTextField (class t)))
+      (expect (= "HI" (.getText t)))))
   (it "should create a text field by default"
     (let [t (text :text "HI")]
       (expect (= JTextField (class t)))

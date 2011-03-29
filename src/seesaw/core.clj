@@ -99,11 +99,26 @@
       (apply-selection-changed-handler opts))))
 
 (defn to-widget [v]
+  "Try to convert the input argument to a widget based on the following rules:
+
+    nil -> nil
+    java.awt.Component -> return argument unchanged
+    java.awt.Dimension -> return Box/createRigidArea
+    java.swing.Action    -> return a button using the action
+    java.util.EventObject -> return the event source
+    :fill-h -> Box/createHorizontalGlue
+    :fill-v -> Box/createVerticalGlue
+    [:fill-h n] -> Box/createHorizontalStrut with width n
+    [:fill-v n] -> Box/createVerticalStrut with height n
+    [width :by height] -> create rigid area with given dimensions
+    A URL -> a label with the image located at the url
+    A non-url string -> a label with the given text
+  "
   (let [vs (when (coll? v) (seq v))]
     (cond
       (nil? v) nil
-      (instance? java.awt.Dimension v) (Box/createRigidArea v)
       (instance? java.awt.Component v) v
+      (instance? java.awt.Dimension v) (Box/createRigidArea v)
       (instance? javax.swing.Action v) (JButton. v)
       (instance? java.util.EventObject) (try-cast java.awt.Component (.getSource v))
       (= v :fill-h) (Box/createHorizontalGlue)
@@ -270,11 +285,20 @@
     w*))
   
 (defn text
-  [& {:keys [text multi-line?] :as opts}]
-  (let [t (if multi-line? (JTextArea.) (apply-text-alignment (JTextField.) opts))
-        w (apply-text-opts t opts)]
-    (when text (.setText w (str text)))
-    w))
+  "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
+
+    :text         Initial text content
+    :multi-line?  If true, a JTextArea is created (default false)
+    :on-changed   Event handler function called when the content is changed.
+    :editable     If false, the text is read-only (default true)
+  " 
+  [& args]
+  (if-not (next args)
+    (apply text :text args)
+    (let [{:keys [text multi-line?] :as opts} args]
+      (let [t (if multi-line? (JTextArea.) (apply-text-alignment (JTextField.) opts))
+            w (apply-text-opts t opts)]
+        w))))
 
 
 ;*******************************************************************************
@@ -299,12 +323,23 @@
 ;*******************************************************************************
 ; Frame
 (defn frame
+  "Create a JFrame. Options:
+
+    :title    the title of the window
+    :pack     true/false whether JFrame/pack should be called (default true)
+    :width    initial width if :pack is false
+    :height   initial height if :pack is true
+    :content  passed through (to-widget) and used as the frame's content-pane
+    :visible  whether frame should be initially visible (default true)
+
+  returns the new frame."
+
   [& {:keys [title width height content visible pack] 
       :or {width 100 height 100 visible true pack true}
       :as opts}]
   (let [f (JFrame.)]
-    (when title (.setTitle f title))
-    (when content (.setContentPane f content))
+    (when title (.setTitle f (str title)))
+    (when content (.setContentPane f (to-widget content)))
     (doto f
       (.setSize width height)
       (.setVisible visible))

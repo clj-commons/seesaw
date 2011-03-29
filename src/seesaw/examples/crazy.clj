@@ -1,10 +1,11 @@
 (ns seesaw.examples.crazy
+  (:require clojure.java.io)
   (:use seesaw.core)
   (:use seesaw.border)
   (:import (javax.swing JFrame JLabel)
            (java.awt Color)))
 
-(def rss-url "http://ir.netflix.com/images/toolbar/rss_2.gif")
+(def rss-url (clojure.java.io/resource "seesaw/examples/rss.gif"))
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn crazy-app []
@@ -14,7 +15,7 @@
         (border-panel 
           :hgap 12 :vgap 15
           :background Color/ORANGE
-          :border [10 "Hello there" (empty-border :thickness 15)]
+          :border [10 "This is a border layout" (empty-border :thickness 15)]
           :north (horizontal-panel 
                   :items [(action 
                             #(println "FOO" %) 
@@ -60,7 +61,7 @@
                             :text "Check me"
                             :on-selection-changed (fn [e] (println (.. (.getSource e) (isSelected)))))]))
       (grid-panel 
-        :border [10 "Here's a grid" 10]
+        :border [10 "Here's a grid layout with 3 columns" 10]
         :hgap 10 
         :vgap 10 
         :columns 3 
