@@ -3,6 +3,16 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe boolean?
+  (it "returns true for true"
+    (boolean? true))
+  (it "returns true for false"
+    (boolean? false))
+  (it "returns false for nil"
+    (not (boolean? nil)))
+  (it "returns false for non-boolean"
+    (not (boolean? "hi"))))
+
 (describe try-cast
   (it "returns its input if cast succeeds"
     (= "TEST" (try-cast java.lang.String "TEST")))

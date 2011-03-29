@@ -1,6 +1,11 @@
 (ns seesaw.util
   (:import [java.net URL MalformedURLException]))
 
+(defn boolean? [b]
+  "Return true if b is exactly true or false. Useful for handling optional
+   boolean properties where we want to do nothing if the property isn't 
+   provided."
+  (or (true? b) (false? b)))
 
 (defn try-cast [c x]
   "Just like clojure.core/cast, but returns nil on failure rather than throwing ClassCastException"

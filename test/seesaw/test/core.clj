@@ -167,6 +167,17 @@
     (let [t (text :text "HI" :editable false :multi-line? true)]
       (expect (false? (.isEditable t))))))
 
+(describe button
+  (it "should create a JButton"
+    (let [b (button :text "HI")]
+      (expect (= JButton (class b)))
+      (expect (= "HI" (.getText b)))))
+  (it "should create a button from an action"
+    (let [a (action println)
+          b (button :action a)]
+      (expect (= JButton (class b)))
+      (expect (= a (.getAction b))))))
+
 (describe toggle
   (it "should create a JToggleButton"
     (let [t (toggle :text "HI")]

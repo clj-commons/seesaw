@@ -87,7 +87,7 @@
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
   ([p {:keys [opaque background foreground border font] :as opts}]
-    (when (or (true? opaque) (false? opaque)) (.setOpaque p opaque))
+    (when (boolean? opaque) (.setOpaque p opaque))
     (when background (.setBackground p (to-color background)))
     (when foreground (.setForeground p (to-color foreground)))
     (when border (.setBorder p (to-border border)))
@@ -248,17 +248,19 @@
 ;*******************************************************************************
 ; Buttons
 
-(defn- toggle-button
-  [w & {:keys [text icon selected] :or {selected false} :as opts}]
+(defn- apply-button-defaults
+  [w & {:keys [text icon selected action] :or {selected false} :as opts}]
   (let [w* (-> w (apply-default-opts opts) (apply-text-alignment opts))]
     (when text (.setText w* (str text)))
     (when icon (.setIcon w* (make-icon icon)))
     (.setSelected w* selected)
+    (when action (.setAction w* action))
     w*))
 
-(defn toggle [& args] (apply toggle-button (JToggleButton.) args))
-(defn checkbox [& args] (apply toggle-button (JCheckBox.) args))
-(defn radio [& args] (apply toggle-button (JRadioButton.) args))
+(defn button [& args] (apply apply-button-defaults (JButton.) args))
+(defn toggle [& args] (apply apply-button-defaults (JToggleButton.) args))
+(defn checkbox [& args] (apply apply-button-defaults (JCheckBox.) args))
+(defn radio [& args] (apply apply-button-defaults (JRadioButton.) args))
 
 ;*******************************************************************************
 ; Text widgets
