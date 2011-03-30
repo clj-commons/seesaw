@@ -86,12 +86,13 @@
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
-  ([p {:keys [opaque background foreground border font] :as opts}]
+  ([p {:keys [opaque background foreground border font tip] :as opts}]
     (when (boolean? opaque) (.setOpaque p opaque))
     (when background (.setBackground p (to-color background)))
     (when foreground (.setForeground p (to-color foreground)))
     (when border (.setBorder p (to-border border)))
     (when font (.setFont p (to-font font)))
+    (when tip (.setToolTipText p (str tip)))
     (-> p
       (apply-mouse-handlers opts)
       (apply-action-handler opts)

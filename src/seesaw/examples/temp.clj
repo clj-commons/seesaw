@@ -26,7 +26,8 @@
   (add-document-listener source (fn [e] (update-temp source target f))))
 
 (defn temp-app []
-  (let [c (text) f (text)]
+  (let [c (text :tip "Enter Celsius temperature") 
+        f (text :tip "Enter Fahrenheit temperature")]
     (frame 
       :title "Temp Converter" 
       :content
