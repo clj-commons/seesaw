@@ -6,6 +6,7 @@
   (:import (javax.swing SwingConstants
                         Action
                         JFrame
+                        JToolBar
                         JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
@@ -225,6 +226,25 @@
       (expect (= javax.swing.JSplitPane (class s)))
       (expect (= left (.getLeftComponent s)))
       (expect (= right (.getRightComponent s))))))
+
+(describe toolbar
+  (it "should create a JToolBar with the given items"
+    (let [tb (toolbar :items ["a" "b" "c"])
+          items (.getComponents tb)]
+      (expect (= javax.swing.JToolBar (class tb)))
+      (expect (= ["a" "b" "c"] (map #(.getText %) items)))))
+  (it "should set the floatable property"
+    (let [tb (toolbar :floatable true)]
+      (expect (.isFloatable tb))))
+  (it "should set the floatable property to false"
+    (let [tb (toolbar :floatable false)]
+      (expect (not (.isFloatable tb)))))
+  (it "should set the orientation property"
+    (let [tb (toolbar :orientation :vertical)]
+      (expect (= SwingConstants/VERTICAL (.getOrientation tb)))))
+  (it "can create a separator with the :separator keyword"
+    (let [tb (toolbar :items [:separator])]
+      (expect (= javax.swing.JToolBar$Separator (class (.getComponent tb 0)))))))
 
 (describe frame
   (it "should create a JFrame and set its title, width, and height"

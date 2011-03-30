@@ -3,17 +3,15 @@
   (:use seesaw.font)
   (:use seesaw.border)
   (:use seesaw.color)
-  (:import (java.net URL MalformedURLException)
-           (javax.swing 
+  (:import [javax.swing 
              SwingUtilities SwingConstants 
              Icon Action AbstractAction ImageIcon
-             BoxLayout BorderFactory
-             JFrame JComponent Box JPanel JScrollPane JSplitPane
+             BoxLayout
+             JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar
              JLabel JTextField JTextArea 
              JButton JToggleButton JCheckBox JRadioButton
-             JOptionPane)
-           (javax.swing.event ChangeListener DocumentListener)
-           (javax.swing.border Border)
+             JOptionPane]
+           [javax.swing.event ChangeListener DocumentListener]
            (java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable)
            (java.awt.event MouseAdapter ActionListener)))
 
@@ -325,6 +323,26 @@
                (to-widget right)))
 (defn left-right-split [& args] (apply splitter :left-right args))
 (defn top-bottom-split [& args] (apply splitter :top-bottom args))
+
+
+;*******************************************************************************
+; Toolbars
+
+(def ^{:private true}
+  orientation-table {
+    :horizontal SwingConstants/HORIZONTAL
+    :vertical   SwingConstants/VERTICAL })
+
+(defn- make-toolbar-separators 
+  [items]
+  (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
+
+(defn toolbar
+  [& {:keys [items floatable orientation] :as opts}]
+  (cond-doto (JToolBar.)
+    orientation          (.setOrientation (orientation orientation-table))
+    (boolean? floatable) (.setFloatable floatable)
+    true                 (add-widgets (make-toolbar-separators items))))
 
 ;*******************************************************************************
 ; Frame

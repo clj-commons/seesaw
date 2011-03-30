@@ -10,7 +10,9 @@
 
 (defn crazy-app []
   (frame :title "Hello Seesaw" :width 600 :height 500 :pack false :content
-    (top-bottom-split 
+    (border-panel :vgap 5
+      :north (toolbar :floatable false :items [(button :text "This") :separator "is a toolbar"])
+      :center (top-bottom-split 
       (left-right-split 
         (border-panel 
           :hgap 12 :vgap 15
@@ -72,7 +74,7 @@
   (flow-panel
     :align :right
     :border "Here's a right-aligned flow layout"
-    :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030))))))
+    :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030)))))))
 
 (doseq [f (JFrame/getFrames)]
   (.dispose f))
