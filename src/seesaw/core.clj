@@ -87,13 +87,14 @@
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
   ([p {:keys [opaque background foreground border font tip] :as opts}]
-    (when (boolean? opaque) (.setOpaque p opaque))
-    (when background (.setBackground p (to-color background)))
-    (when foreground (.setForeground p (to-color foreground)))
-    (when border (.setBorder p (to-border border)))
-    (when font (.setFont p (to-font font)))
-    (when tip (.setToolTipText p (str tip)))
-    (-> p
+    (->
+      (cond-doto p
+        (boolean? opaque) (.setOpaque opaque)
+        background        (.setBackground (to-color background))
+        foreground        (.setForeground (to-color foreground))
+        border            (.setBorder (to-border border))
+        font              (.setFont (to-font font))
+        tip               (.setToolTipText (str tip)))
       (apply-mouse-handlers opts)
       (apply-action-handler opts)
       (apply-state-changed-handler opts)
@@ -234,29 +235,29 @@
   [w {:keys [halign valign]}]
   (let [hc (h-alignment-table halign)
         vc (v-alignment-table valign)]
-    (when hc (.setHorizontalAlignment w hc))
-    (when vc (.setVerticalAlignment w vc))
-    w))
+    (cond-doto w
+      hc (.setHorizontalAlignment hc)
+      vc (.setVerticalAlignment vc))))
 
 (defn label 
   [& {:keys [text icon] :as opts}]
-  (let [w (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))]
-    (when text (.setText w (str text)))
-    (when icon (.setIcon w (make-icon icon)))
-    w))
+  (cond-doto (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))
+    text (.setText (str text))
+    icon (.setIcon (make-icon icon))))
 
 
 ;*******************************************************************************
 ; Buttons
 
 (defn- apply-button-defaults
-  [w & {:keys [text icon selected action] :or {selected false} :as opts}]
-  (let [w* (-> w (apply-default-opts opts) (apply-text-alignment opts))]
-    (when text (.setText w* (str text)))
-    (when icon (.setIcon w* (make-icon icon)))
-    (.setSelected w* selected)
-    (when action (.setAction w* action))
-    w*))
+  [w & {:keys [text icon selected action] 
+        :or {selected false} 
+        :as opts}]
+  (cond-doto (-> w (apply-default-opts opts) (apply-text-alignment opts))
+    text     (.setText (str text))
+    icon     (.setIcon (make-icon icon))
+    action   (.setAction action)
+    (boolean? selected) (.setSelected selected)))
 
 (defn button [& args] (apply apply-button-defaults (JButton.) args))
 (defn toggle [& args] (apply apply-button-defaults (JToggleButton.) args))
@@ -266,7 +267,8 @@
 ;*******************************************************************************
 ; Text widgets
 
-(defn add-document-listener [w f]
+(defn add-document-listener 
+  [w f]
   (when f
     (.. w 
       getDocument
@@ -280,12 +282,13 @@
   w)
 
 (defn apply-text-opts 
-  [w { :keys [on-changed text editable] :or { editable true } :as opts }]
-  (let [w* (apply-default-opts w opts)]
-    (.setEditable w editable)
-    (when text (.setText w (str text)))
-    (add-document-listener w on-changed)
-    w*))
+  [w { :keys [on-changed text editable] 
+       :or { editable true } 
+       :as opts }]
+  (cond-doto (apply-default-opts w opts)  
+    (boolean? editable) (.setEditable editable)
+    text                (.setText (str text))
+    on-changed          (add-document-listener on-changed)))
   
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
@@ -340,14 +343,12 @@
   [& {:keys [title width height content visible pack] 
       :or {width 100 height 100 visible true pack true}
       :as opts}]
-  (let [f (JFrame.)]
-    (when title (.setTitle f (str title)))
-    (when content (.setContentPane f (to-widget content)))
-    (doto f
-      (.setSize width height)
-      (.setVisible visible))
-    (when pack (.pack f))
-    f))
+  (cond-doto (JFrame.)
+    title    (.setTitle (str title))
+    content  (.setContentPane (to-widget content))
+    true     (.setSize width height)
+    true     (.setVisible visible)
+    pack     (.pack )))
 
 ;*******************************************************************************
 ; Alert

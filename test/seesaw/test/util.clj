@@ -3,6 +3,15 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe cond-doto
+  (it "only executes forms with true conditions"
+    (= "firstsecondfifth" (str (cond-doto (StringBuilder.) 
+         true (.append "first") 
+         (> 2 1) (.append "second")
+         (< 2 1) (.append "third")
+         false (.append "fourth")
+         (= "HI" "HI") (.append "fifth"))))))
+
 (describe boolean?
   (it "returns true for true"
     (boolean? true))
