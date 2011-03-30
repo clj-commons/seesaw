@@ -11,7 +11,10 @@
 (defn crazy-app []
   (frame :title "Hello Seesaw" :width 600 :height 500 :pack false :content
     (border-panel :vgap 5
-      :north (toolbar :floatable false :items [(button :text "This") :separator "is a toolbar"])
+      :north (toolbar 
+               :floatable false 
+               :items [(button :text "This") :separator "is a toolbar" :separator
+                       (action #(.dispose (to-frame %)) :name "Close this frame")])
       :center (top-bottom-split 
       (left-right-split 
         (border-panel 

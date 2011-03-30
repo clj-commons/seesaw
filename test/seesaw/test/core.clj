@@ -3,15 +3,16 @@
         seesaw.font)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import (javax.swing SwingConstants
+  (:import [javax.swing SwingConstants
                         Action
                         JFrame
                         JToolBar
                         JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
-                        JSplitPane)
-           (java.awt Insets Color Dimension FlowLayout)))
+                        JSplitPane]
+           [java.awt Insets Color Dimension FlowLayout]
+           [java.awt.event ActionEvent]))
 
 (describe action
   (it "sets the name and tooltip"
@@ -44,6 +45,8 @@
   (it "returns input if it's already a widget"
     (let [c (JPanel.)]
       (expect (= c (to-widget c)))))
+  (it "does not create a new widget if create? param is false"
+    (expect (nil? (to-widget "HI" false))))
   (it "returns a label for text input"
     (let [c (to-widget "TEST")]
       (expect (= "TEST" (.getText c)))))
@@ -85,8 +88,11 @@
       (expect (= 12 (.. c getMaximumSize getWidth)))
       (expect (= 34 (.. c getMaximumSize getHeight)))
       (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight)))
-      )))
+      (expect (= 34 (.. c getPreferredSize getHeight)))))
+  (it "converts an event to its source"
+    (let [b (button)
+          e (ActionEvent. b 0 "hi")]
+      (expect (= b (to-widget e))))))
 
 (describe flow-panel
   (it "should create a FlowLayout of :items list"
@@ -255,4 +261,13 @@
     (let [c (label :text "HI")
           f (frame :content c :visible false)]
       (expect (= c (.getContentPane f))))))
+
+(describe to-frame
+  (it "should convert a widget to its parent frame"
+    (let [c (label :text "HI")
+          f (frame :content c :visible false)]
+      (expect (= f (to-frame c)))))
+  (it "should return nil for an un-parented widget"
+    (let [c (label :text "HI")]
+      (expect (nil? (to-frame c))))))
 

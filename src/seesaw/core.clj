@@ -98,7 +98,7 @@
       (apply-state-changed-handler opts)
       (apply-selection-changed-handler opts))))
 
-(defn to-widget [v]
+(defn to-widget 
   "Try to convert the input argument to a widget based on the following rules:
 
     nil -> nil
@@ -113,20 +113,25 @@
     [width :by height] -> create rigid area with given dimensions
     A URL -> a label with the image located at the url
     A non-url string -> a label with the given text
+
+   If create? is false, will return nil for all rules (see above) that
+   would create a new widget.
   "
-  (let [vs (when (coll? v) (seq v))]
-    (cond
-      (nil? v) nil
-      (instance? java.awt.Component v) v
-      (instance? java.awt.Dimension v) (Box/createRigidArea v)
-      (instance? javax.swing.Action v) (JButton. v)
-      (instance? java.util.EventObject) (try-cast java.awt.Component (.getSource v))
-      (= v :fill-h) (Box/createHorizontalGlue)
-      (= v :fill-v) (Box/createVerticalGlue)
-      (= :fill-h (first vs)) (Box/createHorizontalStrut (second vs))
-      (= :fill-v (first vs)) (Box/createVerticalStrut (second vs))
-      (= :by (second vs)) (Box/createRigidArea (Dimension. (nth vs 0) (nth vs 2)))
-      true (if-let [u (to-url v)] (JLabel. (make-icon u)) (JLabel. (str v))))))
+  ([v] (to-widget v true))
+  ([v create?]
+    (let [vs (when (coll? v) (seq v))]
+      (cond
+        (nil? v) nil
+        (instance? java.awt.Component v) v
+        (instance? java.util.EventObject v) (try-cast java.awt.Component (.getSource v))
+        (and create? (instance? java.awt.Dimension v)) (Box/createRigidArea v)
+        (and create? (instance? javax.swing.Action v)) (JButton. v)
+        (and create? (= v :fill-h)) (Box/createHorizontalGlue)
+        (and create? (= v :fill-v)) (Box/createVerticalGlue)
+        (and create? (= :fill-h (first vs))) (Box/createHorizontalStrut (second vs))
+        (and create? (= :fill-v (first vs))) (Box/createVerticalStrut (second vs))
+        (and create? (= :by (second vs))) (Box/createRigidArea (Dimension. (nth vs 0) (nth vs 2)))
+        create? (if-let [u (to-url v)] (JLabel. (make-icon u)) (JLabel. (str v)))))))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
@@ -367,6 +372,10 @@
     true     (.setSize width height)
     true     (.setVisible visible)
     pack     (.pack )))
+
+(defn to-frame 
+  [w]
+  (SwingUtilities/getRoot (to-widget w)))
 
 ;*******************************************************************************
 ; Alert
