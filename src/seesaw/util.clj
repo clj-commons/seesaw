@@ -11,7 +11,6 @@
   
   Here, only (.put \"a\" 1) is executed.
   "
-  {:added "1.0"}
   [x & forms]
     (let [gx (gensym)]
       `(let [~gx ~x]
