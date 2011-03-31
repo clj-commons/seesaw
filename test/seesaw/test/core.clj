@@ -152,6 +152,8 @@
     (expect (= JLabel (class (label)))))
   (it "should create a label with tooltip"
     (expect (= "HI" (.getToolTipText (label :tip "HI")))))
+  (it "should create a label with text when given a single argument"
+    (expect (= "test label" (.getText (label "test label")))))
   (it "should create a label with text"
     (expect (= "test label" (.getText (label :text "test label")))))
   (it "should create a label with horizontal alignment"
@@ -254,18 +256,18 @@
 
 (describe frame
   (it "should create a JFrame and set its title, width, and height"
-    (let [f (frame :title "Hello" :width 99 :height 88 :visible false)]
+    (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
-          f (frame :content c :visible false)]
+          f (frame :content c :visible? false)]
       (expect (= c (.getContentPane f))))))
 
 (describe to-frame
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
-          f (frame :content c :visible false)]
+          f (frame :content c :visible? false)]
       (expect (= f (to-frame c)))))
   (it "should return nil for an un-parented widget"
     (let [c (label :text "HI")]

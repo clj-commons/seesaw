@@ -43,5 +43,6 @@
                 :font {:style :italic :size 20 :name "Arial"})
          (listen-temp f c f-to-c)]))))
 
-(invoke-later temp-app)
+(defn -main [& args]
+  (invoke-later temp-app))
 

@@ -243,10 +243,13 @@
       vc (.setVerticalAlignment vc))))
 
 (defn label 
-  [& {:keys [text icon] :as opts}]
-  (cond-doto (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))
-    text (.setText (str text))
-    icon (.setIcon (make-icon icon))))
+  [& args]
+  (if (next args)
+    (let [{:keys [text icon] :as opts} args]
+      (cond-doto (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))
+        text (.setText (str text))
+        icon (.setIcon (make-icon icon))))
+    (apply label :text args)))
 
 
 ;*******************************************************************************
@@ -355,23 +358,23 @@
   "Create a JFrame. Options:
 
     :title    the title of the window
-    :pack     true/false whether JFrame/pack should be called (default true)
+    :pack?     true/false whether JFrame/pack should be called (default true)
     :width    initial width if :pack is false
     :height   initial height if :pack is true
     :content  passed through (to-widget) and used as the frame's content-pane
-    :visible  whether frame should be initially visible (default true)
+    :visible?  whether frame should be initially visible (default true)
 
   returns the new frame."
 
-  [& {:keys [title width height content visible pack] 
-      :or {width 100 height 100 visible true pack true}
+  [& {:keys [title width height content visible? pack?] 
+      :or {width 100 height 100 visible? true pack? true}
       :as opts}]
   (cond-doto (JFrame.)
     title    (.setTitle (str title))
     content  (.setContentPane (to-widget content))
     true     (.setSize width height)
-    true     (.setVisible visible)
-    pack     (.pack )))
+    true     (.setVisible visible?)
+    pack?     (.pack )))
 
 (defn to-frame 
   [w]

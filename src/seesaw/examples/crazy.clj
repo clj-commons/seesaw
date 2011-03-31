@@ -9,7 +9,7 @@
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn crazy-app []
-  (frame :title "Hello Seesaw" :width 600 :height 500 :pack false :content
+  (frame :title "Hello Seesaw" :width 600 :height 500 :pack? false :content
     (border-panel :vgap 5
       :north (toolbar 
                :floatable false 
@@ -79,7 +79,8 @@
     :border "Here's a right-aligned flow layout"
     :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030)))))))
 
-(doseq [f (JFrame/getFrames)]
-  (.dispose f))
-(invoke-later crazy-app)
+;(doseq [f (JFrame/getFrames)]
+  ;(.dispose f))
+(defn -main [& args]
+  (invoke-later crazy-app))
 

@@ -82,6 +82,24 @@ Event handler functions are single-argument functions that take an event object 
     (let [handler (fn [e] (alert (.. (.getSource e) (isSelected))))]
       (checkbox :text "Check me" :on-selection-changed handler))
 
+### Actions
+It's typical in Swing apps to use actions for menus, buttons, etc. An action needs an event handler function and some properties. Here's an example of creating an action and adding it to a toolbar:
+
+    (use 'seesaw.core)
+    (let [open-action (action (fn [e] (alert "I should open a new something."))
+                        :name "Open"
+                        :tip  "Open a new something something.")
+          exit-action (action (fn [e] (.dispose (to-frame e)))
+                        :name "Exit"
+                        :tip  "Close this window")]
+      (frame 
+        :title "Toolbar action test"
+        :content (border-panel
+                    :north (toolbar :items [open-action exit-action])
+                    :center "Insert content here")))
+
+`(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it.
+
 ### Color Coercion
 
 Colors can be specified in the following ways (using the `:foreground` property as an example):
