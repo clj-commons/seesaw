@@ -26,7 +26,7 @@
     (nil? p) nil 
     (instance? javax.swing.Icon p) p
     (instance? java.net.URL p) (ImageIcon. p)
-    true  (ImageIcon. (to-url p))))
+    :else  (ImageIcon. (to-url p))))
 
 (def ^{:private true} make-icon icon)
 
