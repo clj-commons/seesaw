@@ -98,6 +98,51 @@
       (apply-state-changed-handler opts)
       (apply-selection-changed-handler opts))))
 
+
+;*******************************************************************************
+; Widget coercion prototcol
+
+(defprotocol ToWidget (to-widget* [v create?]))
+
+;(defmacro def-widget-coercion [t b & forms]
+         ;`(extend-type ~t ToWidget (seesaw.core/to-widget* [~b ~'create?] ~@forms)))
+
+;(def-widget-coercion java.awt.Component c c)
+
+(extend-type java.awt.Component ToWidget 
+  (to-widget* [v create?] v))
+
+(extend-type java.util.EventObject ToWidget 
+  (to-widget* [v create?] (try-cast java.awt.Component (.getSource v))))
+
+(extend-type java.awt.Dimension ToWidget 
+  (to-widget* [v create?] (when create? (Box/createRigidArea v))))
+
+(extend-type javax.swing.Action ToWidget
+  (to-widget* [v create?] (when create? (JButton. v))))
+
+(extend-type clojure.lang.Keyword ToWidget
+  (to-widget* [v create?] 
+    (when create?
+      (condp = v
+        :fill-h (Box/createHorizontalGlue)
+        :fill-v (Box/createVerticalGlue)))))
+
+(extend-type clojure.lang.IPersistentVector ToWidget
+  (to-widget* [v create?]
+    (when create?
+      (cond
+        (= :fill-h (first v)) (Box/createHorizontalStrut (second v))
+        (= :fill-v (first v)) (Box/createVerticalStrut (second v))
+        (= :by (second v)) (Box/createRigidArea (Dimension. (nth v 0) (nth v 2)))))))
+
+(extend-type Object ToWidget 
+  (to-widget* [v create?] 
+    (when create?
+      (if-let [u (to-url v)] 
+        (JLabel. (make-icon u)) 
+        (JLabel. (str v))))))
+
 (defn to-widget 
   "Try to convert the input argument to a widget based on the following rules:
 
@@ -119,19 +164,7 @@
   "
   ([v] (to-widget v true))
   ([v create?]
-    (let [vs (when (coll? v) (seq v))]
-      (cond
-        (nil? v) nil
-        (instance? java.awt.Component v) v
-        (instance? java.util.EventObject v) (try-cast java.awt.Component (.getSource v))
-        (and create? (instance? java.awt.Dimension v)) (Box/createRigidArea v)
-        (and create? (instance? javax.swing.Action v)) (JButton. v)
-        (and create? (= v :fill-h)) (Box/createHorizontalGlue)
-        (and create? (= v :fill-v)) (Box/createVerticalGlue)
-        (and create? (= :fill-h (first vs))) (Box/createHorizontalStrut (second vs))
-        (and create? (= :fill-v (first vs))) (Box/createVerticalStrut (second vs))
-        (and create? (= :by (second vs))) (Box/createRigidArea (Dimension. (nth vs 0) (nth vs 2)))
-        create? (if-let [u (to-url v)] (JLabel. (make-icon u)) (JLabel. (str v)))))))
+    (when v (to-widget* v create?))))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
