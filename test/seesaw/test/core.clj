@@ -6,7 +6,7 @@
   (:import [javax.swing SwingConstants
                         Action
                         JFrame
-                        JToolBar
+                        JToolBar JTabbedPane
                         JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
@@ -253,6 +253,21 @@
   (it "can create a separator with the :separator keyword"
     (let [tb (toolbar :items [:separator])]
       (expect (= javax.swing.JToolBar$Separator (class (.getComponent tb 0)))))))
+
+(describe tabbed-panel
+  (it "should create a JTabbedPane with desired tab placement and layout"
+    (let [tp (tabbed-panel :placement :bottom :overflow :wrap)]
+      (expect (= JTabbedPane (class tp)))
+      (expect (= JTabbedPane/BOTTOM (.getTabPlacement tp)))
+      (expect (= JTabbedPane/WRAP_TAB_LAYOUT (.getTabLayoutPolicy tp)))))
+  (it "should add tabs from the tabs property"
+    (let [a (label "A tab")
+          b (label "B tab")
+          tp (tabbed-panel :tabs [{ :title "A" :content a :tip "tip A" } 
+                                  { :title "B" :content b :tip "tip B" }])]
+      (expect (= ["A" "B"]         [(.getTitleAt tp 0) (.getTitleAt tp 1)]))
+      (expect (= ["tip A" "tip B"] [(.getToolTipTextAt tp 0) (.getToolTipTextAt tp 1)]))
+      (expect (= [a b]             [(.getComponentAt tp 0) (.getComponentAt tp 1)])))))
 
 (describe frame
   (it "should create a JFrame and set its title, width, and height"

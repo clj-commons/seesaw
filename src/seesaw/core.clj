@@ -7,12 +7,12 @@
              SwingUtilities SwingConstants 
              Icon Action AbstractAction ImageIcon
              BoxLayout
-             JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar
+             JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
              JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
            [javax.swing.event ChangeListener DocumentListener]
-           [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable]
+           [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable Image]
            [java.awt.event MouseAdapter ActionListener]))
 
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
@@ -25,6 +25,7 @@
   (cond
     (nil? p) nil 
     (instance? javax.swing.Icon p) p
+    (instance? java.awt.Image p) (ImageIcon. p)
     (instance? java.net.URL p) (ImageIcon. p)
     :else  (ImageIcon. (to-url p))))
 
@@ -387,10 +388,51 @@
 
 (defn toolbar
   [& {:keys [items floatable orientation] :as opts}]
-  (cond-doto (JToolBar.)
+  (cond-doto (apply-default-opts (JToolBar.) opts)
     orientation          (.setOrientation (orientation orientation-table))
     (boolean? floatable) (.setFloatable floatable)
     true                 (add-widgets (make-toolbar-separators items))))
+
+;*******************************************************************************
+; Tabs
+
+(def ^{:private true} tab-placement-table {
+  :bottom JTabbedPane/BOTTOM
+  :top    JTabbedPane/TOP
+  :left   JTabbedPane/LEFT
+  :right  JTabbedPane/RIGHT })
+
+(def ^{:private true} tab-overflow-table {
+  :scroll JTabbedPane/SCROLL_TAB_LAYOUT
+  :wrap   JTabbedPane/WRAP_TAB_LAYOUT })
+
+(defn- add-to-tabbed-panel 
+  [tp tab-defs]
+  (doseq [{:keys [title content tip icon]} tab-defs]
+    (.addTab tp (str title) (make-icon icon) (to-widget content) (str tip)))
+  tp)
+
+(defn tabbed-panel
+  "Create a JTabbedPane. Supports the following properties:
+
+    :placement Tab placement, one of :bottom, :top, :left, :right.
+    :overflow  Tab overflow behavior, one of :wrap, :scroll.
+    :tabs      A list of tab descriptors. See below
+
+  A tab descriptor is a map with the following properties:
+
+    :title     Title of the tab
+    :tip       Tab's tooltip text
+    :icon      Tab's icon, passed through (icon)
+    :content   The content of the tab, passed through (to-widget) as usual.
+
+  Returns the new JTabbedPane.
+  "
+  [& {:keys [placement overflow tabs] :as opts}]
+  (cond-doto (apply-default-opts (JTabbedPane.) opts)
+    placement (.setTabPlacement (placement tab-placement-table))
+    overflow  (.setTabLayoutPolicy (overflow tab-overflow-table))
+    tabs      (add-to-tabbed-panel tabs)))
 
 ;*******************************************************************************
 ; Frame

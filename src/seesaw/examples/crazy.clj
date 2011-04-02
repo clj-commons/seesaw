@@ -9,7 +9,7 @@
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn crazy-app []
-  (frame :title "Hello Seesaw" :width 600 :height 500 :pack? false :content
+  (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false :content
     (border-panel :vgap 5
       :north (toolbar 
                :floatable false 
@@ -74,10 +74,19 @@
                       (fn [e] (alert (str "Clicked " %))) 
                       :name %) 
                     (range 0 12))))
-  (flow-panel
-    :align :right
-    :border "Here's a right-aligned flow layout"
-    :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030)))))))
+  (tabbed-panel 
+    :placement :bottom
+    :tabs [
+      { :title "flow-panel"
+        :tip   "Example of a flow-panel"
+        :content
+          (flow-panel
+            :align :right
+            :border "Here's a right-aligned flow layout"
+            :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030)))}
+      { :title "Another Tab"
+        :tip   "Here's another tab"
+        :content "Hello. I'm the content of this tab. Just a label." }])))))
 
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
