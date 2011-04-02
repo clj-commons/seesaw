@@ -12,8 +12,8 @@
              JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
            [javax.swing.event ChangeListener DocumentListener]
-           (java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable)
-           (java.awt.event MouseAdapter ActionListener)))
+           [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable]
+           [java.awt.event MouseAdapter ActionListener]))
 
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
@@ -38,6 +38,79 @@
     (.putValue Action/NAME (str name))
     (.putValue Action/SHORT_DESCRIPTION tip)
     (.putValue Action/SMALL_ICON (make-icon icon))))
+
+;*******************************************************************************
+; Widget coercion prototcol
+
+(defprotocol ToWidget (to-widget* [v create?]))
+
+; A couple macros to make definining the ToWidget protocol a little less
+; tedious. Mostly just for fun...
+
+(defmacro ^{:private true} def-widget-coercion [t b & forms]
+  `(extend-type 
+     ~t
+     ToWidget 
+     (~'to-widget* [~(first b) create?#] ~@forms)))
+
+(defmacro ^{:private true} def-widget-creational-coercion [t b & forms]
+  `(extend-type 
+     ~t
+     ToWidget 
+     (~'to-widget* [~(first b) create?#] (when create?# ~@forms))))
+
+; ... for example, a component coerces to itself.
+(def-widget-coercion java.awt.Component [c] c)
+
+(def-widget-coercion java.util.EventObject 
+  [v] 
+  (try-cast java.awt.Component (.getSource v)))
+
+(def-widget-creational-coercion java.awt.Dimension [v] (Box/createRigidArea v))
+
+(def-widget-creational-coercion javax.swing.Action [v] (JButton. v))
+
+(def-widget-creational-coercion clojure.lang.Keyword 
+  [v] 
+  (condp = v
+    :fill-h (Box/createHorizontalGlue)
+    :fill-v (Box/createVerticalGlue)))
+
+(def-widget-creational-coercion clojure.lang.IPersistentVector 
+  [[v0 v1 v2]]
+  (cond
+    (= :fill-h v0) (Box/createHorizontalStrut v1)
+    (= :fill-v v0) (Box/createVerticalStrut v1)
+    (= :by v1) (Box/createRigidArea (Dimension. v0 v2))))
+
+(def-widget-creational-coercion Object
+  [v]
+  (if-let [u (to-url v)] 
+    (JLabel. (make-icon u)) 
+    (JLabel. (str v))))
+
+(defn to-widget 
+  "Try to convert the input argument to a widget based on the following rules:
+
+    nil -> nil
+    java.awt.Component -> return argument unchanged
+    java.awt.Dimension -> return Box/createRigidArea
+    java.swing.Action    -> return a button using the action
+    java.util.EventObject -> return the event source
+    :fill-h -> Box/createHorizontalGlue
+    :fill-v -> Box/createVerticalGlue
+    [:fill-h n] -> Box/createHorizontalStrut with width n
+    [:fill-v n] -> Box/createVerticalStrut with height n
+    [width :by height] -> create rigid area with given dimensions
+    A URL -> a label with the image located at the url
+    A non-url string -> a label with the given text
+
+   If create? is false, will return nil for all rules (see above) that
+   would create a new widget.
+  "
+  ([v] (to-widget v true))
+  ([v create?]
+    (when v (to-widget* v create?))))
 
 ;*******************************************************************************
 ; Generic widget stuff
@@ -99,72 +172,6 @@
       (apply-selection-changed-handler opts))))
 
 
-;*******************************************************************************
-; Widget coercion prototcol
-
-(defprotocol ToWidget (to-widget* [v create?]))
-
-;(defmacro def-widget-coercion [t b & forms]
-         ;`(extend-type ~t ToWidget (seesaw.core/to-widget* [~b ~'create?] ~@forms)))
-
-;(def-widget-coercion java.awt.Component c c)
-
-(extend-type java.awt.Component ToWidget 
-  (to-widget* [v create?] v))
-
-(extend-type java.util.EventObject ToWidget 
-  (to-widget* [v create?] (try-cast java.awt.Component (.getSource v))))
-
-(extend-type java.awt.Dimension ToWidget 
-  (to-widget* [v create?] (when create? (Box/createRigidArea v))))
-
-(extend-type javax.swing.Action ToWidget
-  (to-widget* [v create?] (when create? (JButton. v))))
-
-(extend-type clojure.lang.Keyword ToWidget
-  (to-widget* [v create?] 
-    (when create?
-      (condp = v
-        :fill-h (Box/createHorizontalGlue)
-        :fill-v (Box/createVerticalGlue)))))
-
-(extend-type clojure.lang.IPersistentVector ToWidget
-  (to-widget* [v create?]
-    (when create?
-      (cond
-        (= :fill-h (first v)) (Box/createHorizontalStrut (second v))
-        (= :fill-v (first v)) (Box/createVerticalStrut (second v))
-        (= :by (second v)) (Box/createRigidArea (Dimension. (nth v 0) (nth v 2)))))))
-
-(extend-type Object ToWidget 
-  (to-widget* [v create?] 
-    (when create?
-      (if-let [u (to-url v)] 
-        (JLabel. (make-icon u)) 
-        (JLabel. (str v))))))
-
-(defn to-widget 
-  "Try to convert the input argument to a widget based on the following rules:
-
-    nil -> nil
-    java.awt.Component -> return argument unchanged
-    java.awt.Dimension -> return Box/createRigidArea
-    java.swing.Action    -> return a button using the action
-    java.util.EventObject -> return the event source
-    :fill-h -> Box/createHorizontalGlue
-    :fill-v -> Box/createVerticalGlue
-    [:fill-h n] -> Box/createHorizontalStrut with width n
-    [:fill-v n] -> Box/createVerticalStrut with height n
-    [width :by height] -> create rigid area with given dimensions
-    A URL -> a label with the image located at the url
-    A non-url string -> a label with the given text
-
-   If create? is false, will return nil for all rules (see above) that
-   would create a new widget.
-  "
-  ([v] (to-widget v true))
-  ([v create?]
-    (when v (to-widget* v create?))))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
