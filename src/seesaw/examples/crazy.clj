@@ -76,6 +76,9 @@
                     (range 0 12))))
   (tabbed-panel 
     :placement :bottom
+    :on-state-changed #(let [tp (to-widget %)
+                             tab (.getSelectedIndex tp)] 
+                        (.setTitleAt tp 0 (if (= tab 0) ":)" ":(")))
     :tabs [
       { :title "flow-panel"
         :tip   "Example of a flow-panel"
@@ -84,7 +87,9 @@
             :align :right
             :border "Here's a right-aligned flow layout"
             :items (map #(label :opaque true :background "#ccccff" :text %) (range 10000 10030)))}
-      { :title "Another Tab"
+      { :title (horizontal-panel 
+                 :opaque false 
+                 :items ["This tab has a button -> " (button :text "X")])
         :tip   "Here's another tab"
         :content "Hello. I'm the content of this tab. Just a label." }])))))
 
@@ -92,4 +97,4 @@
   ;(.dispose f))
 (defn -main [& args]
   (invoke-later crazy-app))
-
+;(-main)

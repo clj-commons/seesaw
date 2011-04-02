@@ -409,7 +409,11 @@
 (defn- add-to-tabbed-panel 
   [tp tab-defs]
   (doseq [{:keys [title content tip icon]} tab-defs]
-    (.addTab tp (str title) (make-icon icon) (to-widget content) (str tip)))
+    (let [title-cmp (try-cast Component title)
+          index     (.getTabCount tp)]
+      (cond-doto tp
+        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (to-widget content) (str tip))
+        title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
 (defn tabbed-panel
