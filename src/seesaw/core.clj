@@ -155,12 +155,22 @@
             (itemStateChanged [this e] (f e)))))))
   p)
 
+(def ^{:private true} id-property "seesaw-widget-id")
+
+(def widget-by-id (atom {}))
+
+(defn id-for 
+  "Returns the id of the given widget if the :id property was specified at
+   creation. See also (select)."
+  [w] (.getClientProperty w id-property))
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
-  ([p {:keys [opaque background foreground border font tip] :as opts}]
+  ([p {:keys [id opaque background foreground border font tip] :as opts}]
+    (when id (swap! widget-by-id assoc id [p]))
     (->
       (cond-doto p
+        id                (.putClientProperty id-property (str id))
         (boolean? opaque) (.setOpaque opaque)
         background        (.setBackground (to-color background))
         foreground        (.setForeground (to-color foreground))
@@ -472,4 +482,40 @@
   ([source message] 
     (JOptionPane/showMessageDialog (to-widget source) (str message)))
   ([message] (alert nil message)))
+
+
+;*******************************************************************************
+; Selectors
+(def ^{:private true} id-regex #"^#(.+)$")
+
+;(defn- select-all-roots []
+  ;(filter #(.isDisplayable %) (map #(.getContentPane %) (JFrame/getFrames))))
+
+;(defn- select-by-id 
+  ;[id root]
+  ;(do
+    ;(println "NAME: " id " " (id-for root) " " (count (.getComponents root)))
+    ;(if (= id (id-for root))
+      ;(do
+        ;(println "HERE! : " root)
+        ;[root])
+      ;(some true? (map #(select-by-id id %) (.getComponents root))))))
+
+(defn select
+  ([v]
+    (if-let [[_ id] (re-find id-regex v)]
+      (get @widget-by-id id))))
+
+(defn- to-seq [v]
+  (cond 
+    (nil? v) v
+    (seq? v)  v
+    (coll? v) (seq v)
+    :else (seq [v])))
+
+(defn behave
+  [w & args]
+  (let [ws (to-seq w)]
+    (doseq [v ws]
+      (apply-mouse-handlers v (apply hash-map args)))))
 

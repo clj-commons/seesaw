@@ -20,8 +20,18 @@
       (expect (= "Test" (.getValue a Action/NAME)))
       (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION))))))
 
+(describe id-for
+  (it "returns nil if a widget doesn't have an id"
+    (nil? (id-for (label))))
+  (it "returns the correct id if a widget has an id"
+    (= "id of the label" (id-for (label :id "id of the label")))))
 
 (describe apply-default-opts 
+  (testing "the :id option"
+    (it "does nothing when omitted"
+      (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
+    (it "sets the component's name if given"
+      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for))))
   (testing "setting opaque option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
@@ -287,4 +297,10 @@
   (it "should return nil for an un-parented widget"
     (let [c (label :text "HI")]
       (expect (nil? (to-frame c))))))
+
+(describe select
+  (it "should find a widget by #id and return a single element vector"
+    (let [c (label :id "hi")
+          f (frame :title "select by id #hi" :visible? false :content c)]
+      (expect (= [c] (select "#hi"))))))
 

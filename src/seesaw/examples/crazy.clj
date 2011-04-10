@@ -13,7 +13,7 @@
     (border-panel :vgap 5
       :north (toolbar 
                :floatable false 
-               :items [(button :text "This") :separator "is a toolbar" :separator
+               :items [(button :id "button" :text "This") :separator "is a toolbar" :separator
                        (action #(.dispose (to-frame %)) :name "Close this frame")])
       :center (top-bottom-split 
       (left-right-split 
@@ -91,7 +91,11 @@
                  :opaque false 
                  :items ["This tab has a button -> " (button :text "X")])
         :tip   "Here's another tab"
-        :content "Hello. I'm the content of this tab. Just a label." }])))))
+        :content "Hello. I'm the content of this tab. Just a label." }]))))
+
+  (-> (select "#button") (behave :on-mouse-clicked (fn [e] (alert "HI")))))
+
+
 
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
