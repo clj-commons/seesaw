@@ -21,6 +21,11 @@
                 (partition 2 forms))
          ~gx)))
 
+(defn camelize
+  "Convert input string to camelCase from hyphen-case"
+  [s]
+  (clojure.string/replace s #"-(.)" #(.toUpperCase (%1 1))))
+
 (defn boolean? [b]
   "Return true if b is exactly true or false. Useful for handling optional
    boolean properties where we want to do nothing if the property isn't 

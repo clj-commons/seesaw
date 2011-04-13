@@ -1,4 +1,5 @@
 (ns seesaw.event
+  (:use seesaw.util)
   (:import [javax.swing.event ChangeListener]
            [java.awt.event ItemListener MouseListener MouseMotionListener]))
 
@@ -17,26 +18,22 @@
 (defn- fire [hs ev-name e]
   (doseq [h (@hs ev-name)] (h e)))
 
-(defmethod reify-listener ChangeListener [c hs]
-  (reify ChangeListener
-    (stateChanged [this e] (fire hs :state-changed e))))
+(defmacro def-reify-listener
+  [klass events]
+  (let [c (gensym) 
+        hs (gensym)]
+    `(defmethod ~'reify-listener ~klass [~c ~hs]
+      (reify ~klass
+        ~@(map (fn [event]
+                (let [tx (gensym) 
+                      ex (gensym) 
+                      method (-> event name camelize symbol)]
+                 `(~method [~tx ~ex] (fire ~hs ~event ~ex)))) events)))))
+; ... makes something like this...
+; (defmethod reify-listener ChangeListener [c hs]
+;   (reify ChangeListener
+;     (stateChanged [this e] (fire hs :state-changed e))))
 
-(defmethod reify-listener ItemListener [c hs]
-  (reify ItemListener
-    (itemStateChanged [this e] (fire hs :item-state-changed e))))
-
-(defmethod reify-listener MouseListener [c hs]
-  (reify MouseListener
-    (mouseClicked  [this e] (fire hs :mouse-clicked e))
-    (mouseEntered  [this e] (fire hs :mouse-entered e))
-    (mouseExited   [this e] (fire hs :mouse-exited e))
-    (mousePressed  [this e] (fire hs :mouse-pressed e))
-    (mouseReleased [this e] (fire hs :mouse-released e))))
-
-(defmethod reify-listener MouseMotionListener [c hs]
-  (reify MouseMotionListener
-    (mouseMoved   [this e] (fire hs :mouse-moved e))
-    (mouseDragged [this e] (fire hs :mouse-dragged e))))
 
 (def ^{:private true} event-groups {
   :change {
@@ -65,10 +62,17 @@
   }
 })
 
-; (def-event-group MouseListener [:mouse-clicked ...] .addMouseListener)
-; --> reify-listener MouseListener ...
-;  add to group table
-;  ???
+;(defmacro def-reify-listeners
+  ;[]
+  ;(doseq [[_ event-group] event-groups]
+    ;(let [c (:class event-group) evs (:events event-group)]
+      ;`(def-reify-listener ~c ~evs))))
+;(def-reify-listeners)
+
+(def-reify-listener ChangeListener [:state-changed])
+(def-reify-listener ItemListener [:item-state-changed])
+(def-reify-listener MouseListener [:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released])
+(def-reify-listener MouseMotionListener [:mouse-moved :mouse-dragged])
 
 ; "reverse" the name mapping from event-groups above, e.g.
 ;   :mouse-entered -> :mouse struct

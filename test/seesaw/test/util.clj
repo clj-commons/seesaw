@@ -12,6 +12,10 @@
          false (.append "fourth")
          (= "HI" "HI") (.append "fifth"))))))
 
+(describe camelize
+  (it "turns dashes into camel humps"
+    (= "onMouseClicked" (camelize "on-mouse-clicked"))))
+
 (describe boolean?
   (it "returns true for true"
     (boolean? true))
