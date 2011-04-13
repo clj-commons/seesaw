@@ -3,6 +3,7 @@
   (:use seesaw.font)
   (:use seesaw.border)
   (:use seesaw.color)
+  (:use seesaw.event)
   (:import [javax.swing 
              SwingUtilities SwingConstants 
              Icon Action AbstractAction ImageIcon
@@ -139,9 +140,7 @@
   (if-let [f (:on-state-changed opts)]
     (if (instance? javax.swing.event.ChangeListener f)
       (.addChangeListener p f)
-      (.addChangeListener p
-        (reify javax.swing.event.ChangeListener
-          (stateChanged [this e] (f e))))))
+      (add-listener p :state-changed f)))
   p)
 
 (defn apply-selection-changed-handler
@@ -150,9 +149,7 @@
     (if (instance? java.awt.ItemSelectable p)
       (if (instance? java.awt.event.ItemListener f)
         (.addItemListener p f)
-        (.addItemListener p
-          (reify java.awt.event.ItemListener
-            (itemStateChanged [this e] (f e)))))))
+        (add-listener p :item-state-changed f))))
   p)
 
 (def ^{:private true} id-property "seesaw-widget-id")

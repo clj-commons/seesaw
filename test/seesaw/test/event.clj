@@ -91,6 +91,14 @@
       (expect (= 1 (-> panel .getMouseListeners count)))
       (expect (= f (-> (get-handlers panel :mouse) :mouse-clicked first)))))
 
+  (it "can remove a mouse-clicked listener"
+    (let [panel (JPanel.)
+          f     (fn [e] (println "handled"))
+          _     (add-listener panel :mouse-clicked f)
+          _     (remove-listener panel :mouse-clicked f)]
+      (expect (= 1 (-> panel .getMouseListeners count)))
+      (expect (= 0 (-> (get-handlers panel :mouse) :mouse-clicked count)))))
+
   (it "can install two mouse-clicked listeners"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))

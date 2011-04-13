@@ -39,28 +39,51 @@
     (mouseDragged [this e] (fire hs :mouse-dragged e))))
 
 (def ^{:private true} event-groups {
+  :change {
+    :name    :change
+    :class   ChangeListener
+    :events  [:state-changed]
+    :install #(.addChangeListener %1 %2)
+  }
+  :item {
+    :name    :item
+    :class   ItemListener
+    :events  [:item-state-changed]
+    :install #(.addItemListener %1 %2)
+  }
   :mouse { 
-    ; :events [:mouse-clicked :mouse-entered]
+    :name    :mouse
+    :class   MouseListener
+    :events  [:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released]
     :install #(.addMouseListener %1 %2)
-    :reify   (partial reify-listener MouseListener)
-  }})
+  }
+  :mouse-motion { 
+    :name    :mouse-motion
+    :class   MouseMotionListener
+    :events  [:mouse-moved :mouse-dragged]
+    :install #(.addMouseMotionListener %1 %2)
+  }
+})
 
 ; (def-event-group MouseListener [:mouse-clicked ...] .addMouseListener)
 ; --> reify-listener MouseListener ...
 ;  add to group table
 ;  ???
 
+; "reverse" the name mapping from event-groups above, e.g.
+;   :mouse-entered -> :mouse struct
+;   :mouse-clicked -> :mouse struct
+;   ...
 (def ^{:private true} event-group-table
-  { :mouse-clicked :mouse })
+  (apply hash-map (flatten (for [[k v] event-groups e (:events v)] [e v]))))
 
 (defn- install-group-handlers
-  [target event-group-name]
-  (let [event-group    (event-groups event-group-name)
-        group-handlers (atom {})
-        listener       ((:reify event-group) group-handlers)]
+  [target event-group]
+  (let [group-handlers (atom {})
+        listener       (reify-listener (:class event-group) group-handlers)]
     (doto target
       ((:install event-group) listener)
-      (.putClientProperty event-group-name group-handlers))
+      (.putClientProperty (:name event-group) group-handlers))
     group-handlers))
 
 (defn- get-handlers*
@@ -74,11 +97,11 @@
 
 (defn- get-or-install-handlers
   [target event-name]
-  (let [event-group-name (event-group-table event-name)
-        handlers         (get-handlers* target event-group-name)]
+  (let [event-group (event-group-table event-name)
+        handlers    (get-handlers* target (:name event-group))]
     (if handlers
       handlers
-      (install-group-handlers target event-group-name))))
+      (install-group-handlers target event-group))))
       
 (defn add-listener
   [target & more]
@@ -87,4 +110,10 @@
         (swap! handlers append-listener event-name event-fn))))
 
 ; TODO remove-listener
+
+(defn remove-listener
+  [target & more]
+  (doseq [[event-name event-fn] (partition 2 more)]
+    (let [handlers (get-or-install-handlers target event-name)]
+      (swap! handlers unappend-listener event-name event-fn))))
 
