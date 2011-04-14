@@ -1,4 +1,5 @@
 (ns seesaw.util
+  (:require clojure.string)
   (:import [java.net URL MalformedURLException]))
 
 (defmacro cond-doto
