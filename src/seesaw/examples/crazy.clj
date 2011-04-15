@@ -31,19 +31,17 @@
                           :fill-h
                           (toggle 
                             :text "And Me"
-                            :on-selection-changed (fn [e] (println (.. (.getSource e) (isSelected))))
+                            :on-selection-changed (fn [e] (println (.. (to-widget e) (isSelected))))
                             :icon redditor
                             :tip "Yum!")])
           :center (vertical-panel 
                     :items [(label 
                               :border (line-border) 
                               :text "This label acts like a link" 
-                              :on-mouse-clicked (fn [e] (alert e "CLICK!"))
-                              :on-mouse-entered (fn [e] (.. (.getSource e) (setForeground Color/BLUE) ))
-                              :on-mouse-exited (fn [e] (.. (.getSource e) (setForeground Color/BLACK) )))
+                              :id "link")
                             (text 
                               :text "HI"
-                              :on-action (fn [e] (println (.. (.getSource e) (getText)))))
+                              :on-action (fn [e] (println (.. (to-widget e) (getText)))))
                             (scrollable 
                               (text 
                                 :text (apply str (interpose "\n" (range 0 20))) 
@@ -64,7 +62,7 @@
                           "C"
                           (checkbox 
                             :text "Check me"
-                            :on-selection-changed (fn [e] (println (.. (.getSource e) (isSelected)))))]))
+                            :on-selection-changed (fn [e] (println (.. (to-widget e) (isSelected)))))]))
       (grid-panel 
         :border [10 "Here's a grid layout with 3 columns" 10]
         :hgap 10 
@@ -93,9 +91,14 @@
         :tip   "Here's another tab"
         :content "Hello. I'm the content of this tab. Just a label." }]))))
 
-  (-> (select "#button") (behave :on-mouse-clicked (fn [e] (alert "HI")))))
-
-
+  (-> (select "#button") 
+    (add-listener :action (fn [e] (alert "HI"))))
+  (-> (select "#link")
+    (add-listener
+      :mouse-clicked #(alert % "CLICK!")
+      :mouse-entered #(.. (to-widget %) (setForeground Color/BLUE))
+      :mouse-exited  #(.. (to-widget %) (setForeground Color/BLACK)))))
+ 
 
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))

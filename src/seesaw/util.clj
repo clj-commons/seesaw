@@ -22,6 +22,14 @@
                 (partition 2 forms))
          ~gx)))
 
+(defn to-seq [v]
+  "Stupid helper to turn possibly single values into seqs"
+  (cond 
+    (nil? v) v
+    (seq? v)  v
+    (coll? v) (seq v)
+    :else (seq [v])))
+
 (defn camelize
   "Convert input string to camelCase from hyphen-case"
   [s]

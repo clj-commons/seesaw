@@ -12,6 +12,14 @@
          false (.append "fourth")
          (= "HI" "HI") (.append "fifth"))))))
 
+(describe to-seq
+  (it "makes a non-seq into a single-element seq"
+    (= (seq ["hi"]) (to-seq "hi"))
+    (= (seq [:k]) (to-seq :k)))
+  (it "makes a collection into a seq"
+    (= (seq #{:a :b}) (to-seq #{:a :b}))))
+
+
 (describe camelize
   (it "turns dashes into camel humps"
     (= "onMouseClicked" (camelize "on-mouse-clicked"))))

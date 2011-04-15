@@ -2,7 +2,7 @@
   (:use seesaw.event)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import [javax.swing JPanel]
+  (:import [javax.swing JPanel JTextField JButton]
            [javax.swing.event ChangeListener]
            [java.awt.event ItemListener MouseListener MouseMotionListener]))
 
@@ -86,25 +86,66 @@
 (describe add-listener
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
-          f        (fn [e] (println "handled"))
-          handlers (add-listener panel :mouse-clicked f)]
-      (expect (= 1 (-> panel .getMouseListeners count)))
-      (expect (= f (-> (get-handlers panel :mouse) :mouse-clicked first)))))
+          f        (fn [e] (println "handled"))]
+      (do
+        (add-listener panel :mouse-clicked f)
+        (expect (= 1 (-> panel .getMouseListeners count)))
+        (expect (= f (-> (get-handlers panel :mouse) :mouse-clicked first))))))
 
   (it "can remove a mouse-clicked listener"
     (let [panel (JPanel.)
-          f     (fn [e] (println "handled"))
-          _     (add-listener panel :mouse-clicked f)
-          _     (remove-listener panel :mouse-clicked f)]
-      (expect (= 1 (-> panel .getMouseListeners count)))
-      (expect (= 0 (-> (get-handlers panel :mouse) :mouse-clicked count)))))
+          f     (fn [e] (println "handled"))]
+      (do
+        (add-listener panel :mouse-clicked f)
+        (remove-listener panel :mouse-clicked f)
+        (expect (= 1 (-> panel .getMouseListeners count)))
+        (expect (= 0 (-> (get-handlers panel :mouse) :mouse-clicked count))))))
 
   (it "can install two mouse-clicked listeners"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))
-          g        (fn [e] (println "again!"))
-          _        (add-listener panel :mouse-clicked f :mouse-clicked g)
-          handlers (get-handlers panel :mouse)]
-      (expect (= 1 (-> panel .getMouseListeners count)))
-      (expect (= [g f] (-> handlers :mouse-clicked))))))
+          g        (fn [e] (println "again!"))]
+      (do
+        (add-listener panel :mouse-clicked f :mouse-clicked g)
+        (expect (= 1 (-> panel .getMouseListeners count)))
+        (expect (= [g f] (-> panel (get-handlers :mouse) :mouse-clicked))))))
+
+  (it "can install a document listener"
+    (let [field        (JTextField.)
+          called   (atom false)
+          f        (fn [e] (reset! called true))]
+      (do
+        (add-listener field :insert-update f)
+        (.setText field "force a change")
+        (expect @called))))
+
+  (it "can register for a class of events"
+      (let [field    (JTextField.)
+            called   (atom 0)
+            f        (fn [e] (swap! called inc))]
+        (do
+          (add-listener field :document f)
+          (.setText field "force insert")
+          (.setText field ""))
+        (expect (= 2 @called))))
+
+  (it "can register for multiple events"
+    (let [field    (JTextField.)
+          called   (atom 0)
+          f        (fn [e] (swap! called inc))]
+      (do
+        (add-listener field #{:remove-update :insert-update} f)
+        (.setText field "force insert")
+        (.setText field ""))
+      (expect (= 2 @called))))
+  (it "can register handlers on multiple targets"
+    (let [button0  (JButton.)
+          button1  (JButton.)
+          called   (atom 0)
+          f        (fn [e] (swap! called inc))]
+      (do
+        (add-listener [button0 button1] :action f)
+        (.doClick button0)
+        (.doClick button1))
+      (expect (= 2 @called)))))
 

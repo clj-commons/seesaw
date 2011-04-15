@@ -1,6 +1,7 @@
 (ns seesaw.event
   (:use seesaw.util)
   (:import [javax.swing.event ChangeListener DocumentListener]
+           [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
                           KeyListener]
@@ -14,69 +15,74 @@
   :property-change {
     :name    :property-change
     :class   PropertyChangeListener
-    :events  [:property-change]
+    :events  #{:property-change}
     :install #(.addPropertyChangeListener %1 %2)
   }
   :key {
     :name    :key
     :class   KeyListener
-    :events  [:key-pressed :key-released :key-typed]
+    :events  #{:key-pressed :key-released :key-typed}
     :install #(.addKeyListener %1 %2)
   }
   :window {
     :name    :window
     :class   WindowListener
-    :events  [:window-activated :window-deactivated 
+    :events  #{:window-activated :window-deactivated 
               :window-closed :window-closing :window-opened
-              :window-deiconified :window-iconified]
+              :window-deiconified :window-iconified}
     :install #(.addWindowListener %1 %2)
   }
   :focus {
     :name    :focus
     :class   FocusListener
-    :events  [:focus-gained :focus-lost]
+    :events  #{:focus-gained :focus-lost}
     :install #(.addFocusListener %1 %2)
   }
   :document {
     :name    :document
     :class   DocumentListener
-    :events  [:changed-update :insert-update :remove-update]
-    :install #(.addDocumentListener %1 %2)
+    :events  #{:changed-update :insert-update :remove-update}
+    :install (fn [target listener] 
+               (.addDocumentListener 
+                 (if (instance? Document target) 
+                   target
+                   (.getDocument target))
+                 listener))
   }
   :action {
     :name    :action
     :class   ActionListener
-    :events  [:action-performed]
+    :events  #{:action-performed}
     :install #(.addActionListener %1 %2)
   }
   :change {
     :name    :change
     :class   ChangeListener
-    :events  [:state-changed]
+    :events  #{:state-changed}
     :install #(.addChangeListener %1 %2)
   }
   :item {
     :name    :item
     :class   ItemListener
-    :events  [:item-state-changed]
+    :events  #{:item-state-changed}
     :install #(.addItemListener %1 %2)
   }
   :mouse { 
     :name    :mouse
     :class   MouseListener
-    :events  [:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released]
+    :events  #{:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released}
     :install #(.addMouseListener %1 %2)
   }
   :mouse-motion { 
     :name    :mouse-motion
     :class   MouseMotionListener
-    :events  [:mouse-moved :mouse-dragged]
+    :events  #{:mouse-moved :mouse-dragged}
     :install #(.addMouseMotionListener %1 %2)
   }
   :mouse-wheel { 
     :name    :mouse-wheel
     :class   MouseWheelListener
-    :events  [:mouse-wheel-moved]
+    :events  #{:mouse-wheel-moved}
     :install #(.addMouseWheelListener %1 %2)
   }
 })
@@ -161,7 +167,19 @@
   [listeners k l]
   (update-in listeners [k] (partial remove #{l})))
 
-      
+(defn- resolve-event-aliases
+  [event-name]
+  (get-in event-groups [event-name :events] event-name))
+
+(defn- preprocess-event-specs
+  "take name/fn pairs in add-listener arg list and resolve aliases
+   and stuff"
+  [args]
+  (mapcat 
+    (fn [[a b]] (for [n (to-seq a)] [n b]))
+    (for [[en f] (partition 2 args)]
+      [(resolve-event-aliases en) f])))
+
 (defn add-listener
   "Install listeners for one or more events on the given target. For example:
 
@@ -171,18 +189,36 @@
       :key-pressed       (fn [e] ...)
       :mouse-wheel-moved (fn [e] ...))
 
+  one function can be registered for multiple events by using a set 
+  of event names instead of one:
+
+    (add-listener (text)
+      #{:remove-update insert-update} (fn [e] ...))
+
+  Note in this case that it's smart enough to add a document listener
+  to the JTextFields document.
+
+  Similarly, an event can be registered for all events in a particular swing
+  listener interface by just using the keyword-ized prefix of the interface
+  name. For example, to get all callbacks in the MouseListener interface:
+
+    (add-listener my-widget :mouse (fn [e] ...))
+
   Functions can be removed with (remove-listener).
   "
-  [target & more]
-    (doseq [[event-name event-fn] (partition 2 more)]
+  [targets & more]
+    (doseq [target (to-seq targets) 
+            [event-name event-fn] (preprocess-event-specs more)]
       (let [handlers (get-or-install-handlers target event-name)]
         (swap! handlers append-listener event-name event-fn))))
 
 (defn remove-listener
   "Remove one or more listener function from target which were
    previously added with (add-listener)"
-  [target & more]
-  (doseq [[event-name event-fn] (partition 2 more)]
+  [targets & more]
+  (doseq [target (to-seq targets)
+          [event-name event-fn] (preprocess-event-specs more)]
+    ; TODO no need to install handlers if they're not already there.
     (let [handlers (get-or-install-handlers target event-name)]
       (swap! handlers unappend-listener event-name event-fn))))
 

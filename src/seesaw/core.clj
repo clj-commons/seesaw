@@ -3,7 +3,7 @@
   (:use seesaw.font)
   (:use seesaw.border)
   (:use seesaw.color)
-  (:use seesaw.event)
+  (:require [seesaw.event :as sse])
   (:import [javax.swing 
              SwingUtilities SwingConstants 
              Icon Action AbstractAction ImageIcon
@@ -18,6 +18,9 @@
 
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
+
+; alias event/add-listener for convenience
+(def add-listener sse/add-listener)
 
 ;*******************************************************************************
 ; Icons
@@ -321,20 +324,6 @@
 ;*******************************************************************************
 ; Text widgets
 
-(defn add-document-listener 
-  [w f]
-  (when f
-    (.. w 
-      getDocument
-      (addDocumentListener
-        (if (instance? DocumentListener f)
-          f
-          (proxy [DocumentListener] []
-            (insertUpdate [e] (f e))
-            (removeUpdate [e] (f e))
-            (changedUpdate []))))))
-  w)
-
 (defn apply-text-opts 
   [w { :keys [on-changed text editable] 
        :or { editable true } 
@@ -342,7 +331,7 @@
   (cond-doto (apply-default-opts w opts)  
     (boolean? editable) (.setEditable editable)
     text                (.setText (str text))
-    on-changed          (add-document-listener on-changed)))
+    on-changed          (add-listener :document on-changed)))
   
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
@@ -502,17 +491,4 @@
   ([v]
     (if-let [[_ id] (re-find id-regex v)]
       (get @widget-by-id id))))
-
-(defn- to-seq [v]
-  (cond 
-    (nil? v) v
-    (seq? v)  v
-    (coll? v) (seq v)
-    :else (seq [v])))
-
-(defn behave
-  [w & args]
-  (let [ws (to-seq w)]
-    (doseq [v ws]
-      (apply-mouse-handlers v (apply hash-map args)))))
 
