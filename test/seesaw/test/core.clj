@@ -301,6 +301,8 @@
 (describe select
   (it "should find a widget by #id and return a single element vector"
     (let [c (label :id "hi")
-          f (frame :title "select by id #hi" :visible? false :content c)]
-      (expect (= [c] (select "#hi"))))))
+          p (flow-panel :id :panel :items [c])
+          f (frame :title "select by id" :visible? false :content p)]
+      (expect (= [c] (select :#hi)))
+      (expect (= [p] (select "#panel"))))))
 

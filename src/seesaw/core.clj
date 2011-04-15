@@ -167,7 +167,7 @@
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
   ([p {:keys [id opaque background foreground border font tip] :as opts}]
-    (when id (swap! widget-by-id assoc id [p]))
+    (when id (swap! widget-by-id assoc (name id) [p]))
     (->
       (cond-doto p
         id                (.putClientProperty id-property (str id))
@@ -477,18 +477,8 @@
 ;(defn- select-all-roots []
   ;(filter #(.isDisplayable %) (map #(.getContentPane %) (JFrame/getFrames))))
 
-;(defn- select-by-id 
-  ;[id root]
-  ;(do
-    ;(println "NAME: " id " " (id-for root) " " (count (.getComponents root)))
-    ;(if (= id (id-for root))
-      ;(do
-        ;(println "HERE! : " root)
-        ;[root])
-      ;(some true? (map #(select-by-id id %) (.getComponents root))))))
-
 (defn select
   ([v]
-    (if-let [[_ id] (re-find id-regex v)]
+    (if-let [[_ id] (re-find id-regex (name v))]
       (get @widget-by-id id))))
 

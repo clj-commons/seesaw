@@ -13,7 +13,7 @@
     (border-panel :vgap 5
       :north (toolbar 
                :floatable false 
-               :items [(button :id "button" :text "This") :separator "is a toolbar" :separator
+               :items [(button :id :button :text "This") :separator "is a toolbar" :separator
                        (action #(.dispose (to-frame %)) :name "Close this frame")])
       :center (top-bottom-split 
       (left-right-split 
@@ -38,7 +38,7 @@
                     :items [(label 
                               :border (line-border) 
                               :text "This label acts like a link" 
-                              :id "link")
+                              :id :link)
                             (text 
                               :text "HI"
                               :on-action (fn [e] (println (.. (to-widget e) (getText)))))
@@ -91,9 +91,9 @@
         :tip   "Here's another tab"
         :content "Hello. I'm the content of this tab. Just a label." }]))))
 
-  (-> (select "#button") 
+  (-> (select :#button) 
     (add-listener :action (fn [e] (alert "HI"))))
-  (-> (select "#link")
+  (-> (select :#link)
     (add-listener
       :mouse-clicked #(alert % "CLICK!")
       :mouse-entered #(.. (to-widget %) (setForeground Color/BLUE))
