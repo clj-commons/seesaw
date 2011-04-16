@@ -11,7 +11,7 @@
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane]
-           [java.awt Insets Color Dimension FlowLayout]
+           [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
 (describe action
@@ -115,6 +115,16 @@
       (expect (= 12 (.getVgap l)))
       (expect (= true (.getAlignOnBaseline l)))
       (expect (= [a b c] (seq (.getComponents p)))))))
+
+(describe border-panel
+  (it "should create a BorderLayout "
+    (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
+          p (border-panel :hgap 99 :vgap 12 :north n :south s :east e :west w :center c)
+          l (.getLayout p)]
+      (expect (= java.awt.BorderLayout (class l)))
+      (expect (= 99 (.getHgap l)))
+      (expect (= 12 (.getVgap l)))
+      (expect (= #{n s e w c} (apply hash-set (.getComponents p)))))))
 
 (describe horizontal-panel
   (it "should create a horizontal box of :items list"

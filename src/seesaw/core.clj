@@ -10,12 +10,12 @@
              BoxLayout
              JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
-             JButton JToggleButton JCheckBox JRadioButton
+             AbstractButton JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
            [javax.swing.event ChangeListener DocumentListener]
            [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable Image]
            [java.awt.event MouseAdapter ActionListener]))
-
+;(set! *warn-on-reflection* true)
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
 
@@ -162,21 +162,58 @@
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
    creation. See also (select)."
-  [w] (.getClientProperty w id-property))
+  [^javax.swing.JComponent w] (.getClientProperty w id-property))
+
+(def ^{:private true} h-alignment-table
+  { :left SwingConstants/LEFT 
+    :right SwingConstants/RIGHT
+    :leading SwingConstants/LEADING
+    :trailing SwingConstants/TRAILING
+    :center SwingConstants/CENTER })
+
+(def ^{:private true} v-alignment-table
+  { :top SwingConstants/TOP 
+    :center SwingConstants/CENTER 
+    :bottom SwingConstants/BOTTOM 
+   })
+
+(def ^{:private true}
+  orientation-table {
+    :horizontal SwingConstants/HORIZONTAL
+    :vertical   SwingConstants/VERTICAL })
+
+(def ^{:private true} options {
+  :id         #(.putClientProperty %1 id-property (str %2))
+  :opaque     #(.setOpaque %1 %2)
+  :background #(.setBackground %1 (to-color %2))
+  :foreground #(.setForeground %1 (to-color %2))
+  :border     #(.setBorder %1 (to-border %2))
+  :font       #(.setFont %1 (to-font %2))
+  :tip        #(.setToolTipText %1 (str %2))
+  :text       #(.setText %1 (str %2))
+  :icon       #(.setIcon %1 (make-icon %2))
+  :action     #(.setAction %1 %2)
+  :selected   #(.setSelected %1 %2)
+  :editable   #(.setEditable %1 %2)
+  :halign     #(.setHorizontalAlignment %1 (h-alignment-table %2))
+  :valign     #(.setVerticalAlignment %1 (v-alignment-table %2)) 
+  :orientation #(.setOrientation %1 (orientation-table %2))
+})
+
+(defn apply-opts
+  ([target opts] (apply-opts target opts options))
+  ([target opts opt-map]
+    (doseq [[k v] opts]
+      (when-let [f (get opt-map k)]
+        ((get opt-map k) target v)))
+    target))
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
-  ([p {:keys [id opaque background foreground border font tip] :as opts}]
+  ([^javax.swing.JComponent p {:keys [id] :as opts}]
     (when id (swap! widget-by-id assoc (name id) [p]))
     (->
-      (cond-doto p
-        id                (.putClientProperty id-property (str id))
-        (boolean? opaque) (.setOpaque opaque)
-        background        (.setBackground (to-color background))
-        foreground        (.setForeground (to-color foreground))
-        border            (.setBorder (to-border border))
-        font              (.setFont (to-font font))
-        tip               (.setToolTipText (str tip)))
+      (apply-opts p opts)
       (apply-mouse-handlers opts)
       (apply-action-handler opts)
       (apply-state-changed-handler opts)
@@ -201,7 +238,7 @@
 ;*******************************************************************************
 ; Border Layout
 
-(def ^{:private true}  border-dirs {
+(def ^{:private true}  border-layout-dirs {
   :north BorderLayout/NORTH
   :south BorderLayout/SOUTH
   :east BorderLayout/EAST
@@ -209,19 +246,20 @@
   :center BorderLayout/CENTER})
 
 (defn- border-layout-add [p w dir]
-  (when w (add-widget p w (dir border-dirs)))
+  (when w (add-widget p w (dir border-layout-dirs)))
   p)
 
+(def ^{:private true} border-layout-options 
+  (apply hash-map
+    (flatten 
+      (for [dir (keys border-layout-dirs)]
+        [dir  #(border-layout-add %1 %2 dir)]))))
+
 (defn border-panel
-  [& {:keys [north south east west center hgap vgap] :or {hgap 0 vgap 0} :as opts}]
-  (let [p (apply-default-opts (JPanel.) opts)]
+  [& {:keys [hgap vgap] :or {hgap 0 vgap 0} :as opts}]
+  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)]
     (.setLayout p (BorderLayout. hgap vgap))
-    (-> p
-      (border-layout-add north :north)
-      (border-layout-add south :south)
-      (border-layout-add east :east)
-      (border-layout-add west :west)
-      (border-layout-add center :center))))
+    (apply-opts p opts border-layout-options)))
 
 ;*******************************************************************************
 ; Flow
@@ -237,7 +275,7 @@
   [& {:keys [hgap vgap align items align-on-baseline] 
       :or {hgap 5 vgap 5 align :center items [] align-on-baseline false} 
       :as opts}]
-  (let [p (apply-default-opts (JPanel.) opts)
+  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
         l (FlowLayout. (align flow-align-table) hgap vgap)]
     (.setAlignOnBaseline l align-on-baseline)
     (.setLayout p l)
@@ -248,7 +286,7 @@
 
 (defn box-panel
   [dir & {:keys [items] :as opts }]
-  (let [p (apply-default-opts (JPanel.) opts)
+  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
         b (BoxLayout. p (dir { :horizontal BoxLayout/X_AXIS :vertical BoxLayout/Y_AXIS }))]
     (.setLayout p b)
     (add-widgets p items)))
@@ -263,7 +301,7 @@
   [& {:keys [hgap vgap rows columns items] 
       :or {hgap 0 vgap 0 items []}
       :as opts}]
-  (let [p (apply-default-opts (JPanel.) opts)
+  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
         columns* (or columns (if rows 0 1))
         layout (GridLayout. (or rows 0) columns* hgap vgap)]
     (.setLayout p layout)
@@ -272,34 +310,12 @@
 ;*******************************************************************************
 ; Labels
 
-(def ^{:private true} h-alignment-table
-  { :left SwingConstants/LEFT 
-    :right SwingConstants/RIGHT
-    :leading SwingConstants/LEADING
-    :trailing SwingConstants/TRAILING
-    :center SwingConstants/CENTER })
-
-(def ^{:private true} v-alignment-table
-  { :top SwingConstants/TOP 
-    :center SwingConstants/CENTER 
-    :bottom SwingConstants/BOTTOM 
-   })
-
-(defn- apply-text-alignment 
-  [w {:keys [halign valign]}]
-  (let [hc (h-alignment-table halign)
-        vc (v-alignment-table valign)]
-    (cond-doto w
-      hc (.setHorizontalAlignment hc)
-      vc (.setVerticalAlignment vc))))
-
 (defn label 
   [& args]
   (if (next args)
-    (let [{:keys [text icon] :as opts} args]
-      (cond-doto (-> (JLabel.) (apply-default-opts opts) (apply-text-alignment opts))
-        text (.setText (str text))
-        icon (.setIcon (make-icon icon))))
+    (let [{:as opts} args]
+      (-> (JLabel.) 
+        (apply-default-opts opts)))
     (apply label :text args)))
 
 
@@ -307,14 +323,8 @@
 ; Buttons
 
 (defn- apply-button-defaults
-  [w & {:keys [text icon selected action] 
-        :or {selected false} 
-        :as opts}]
-  (cond-doto (-> w (apply-default-opts opts) (apply-text-alignment opts))
-    text     (.setText (str text))
-    icon     (.setIcon (make-icon icon))
-    action   (.setAction action)
-    (boolean? selected) (.setSelected selected)))
+  [w & {:as opts}]
+  (-> w (apply-default-opts opts)))
 
 (defn button [& args] (apply apply-button-defaults (JButton.) args))
 (defn toggle [& args] (apply apply-button-defaults (JToggleButton.) args))
@@ -325,13 +335,9 @@
 ; Text widgets
 
 (defn apply-text-opts 
-  [w { :keys [on-changed text editable] 
-       :or { editable true } 
-       :as opts }]
+  [w { :keys [on-changed] :as opts }]
   (cond-doto (apply-default-opts w opts)  
-    (boolean? editable) (.setEditable editable)
-    text                (.setText (str text))
-    on-changed          (add-listener :document on-changed)))
+    on-changed (add-listener :document on-changed)))
   
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
@@ -342,12 +348,10 @@
     :editable     If false, the text is read-only (default true)
   " 
   [& args]
-  (if-not (next args)
-    (apply text :text args)
-    (let [{:keys [text multi-line?] :as opts} args]
-      (let [t (if multi-line? (JTextArea.) (apply-text-alignment (JTextField.) opts))
-            w (apply-text-opts t opts)]
-        w))))
+  (if (next args)
+    (let [{:keys [multi-line?] :as opts} args]
+      (apply-text-opts (if multi-line? (JTextArea.) (JTextField.)) opts))
+    (apply text :text args)))
 
 
 ;*******************************************************************************
@@ -366,6 +370,7 @@
                      :top-bottom JSplitPane/VERTICAL_SPLIT})
                (to-widget left)
                (to-widget right)))
+
 (defn left-right-split [& args] (apply splitter :left-right args))
 (defn top-bottom-split [& args] (apply splitter :top-bottom args))
 
@@ -373,21 +378,21 @@
 ;*******************************************************************************
 ; Toolbars
 
-(def ^{:private true}
-  orientation-table {
-    :horizontal SwingConstants/HORIZONTAL
-    :vertical   SwingConstants/VERTICAL })
 
-(defn- make-toolbar-separators 
+(defn- insert-toolbar-separators 
   [items]
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
+(def ^{:private true} toolbar-options {
+  :floatable #(.setFloatable %1 %2)
+})
+
 (defn toolbar
-  [& {:keys [items floatable orientation] :as opts}]
-  (cond-doto (apply-default-opts (JToolBar.) opts)
-    orientation          (.setOrientation (orientation orientation-table))
-    (boolean? floatable) (.setFloatable floatable)
-    true                 (add-widgets (make-toolbar-separators items))))
+  [& {:keys [items] :as opts}]
+  (-> (JToolBar.)
+    (apply-default-opts opts)
+    (apply-opts opts toolbar-options)
+    (add-widgets (insert-toolbar-separators items))))
 
 ;*******************************************************************************
 ; Tabs
@@ -412,6 +417,12 @@
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
+(def ^{:private true} tabbed-panel-options {
+  :placement #(.setTabPlacement %1 (tab-placement-table %2))
+  :overflow  #(.setTabLayoutPolicy %1 (tab-overflow-table %2))
+  :tabs      add-to-tabbed-panel
+})
+
 (defn tabbed-panel
   "Create a JTabbedPane. Supports the following properties:
 
@@ -429,10 +440,9 @@
   Returns the new JTabbedPane.
   "
   [& {:keys [placement overflow tabs] :as opts}]
-  (cond-doto (apply-default-opts (JTabbedPane.) opts)
-    placement (.setTabPlacement (placement tab-placement-table))
-    overflow  (.setTabLayoutPolicy (overflow tab-overflow-table))
-    tabs      (add-to-tabbed-panel tabs)))
+  (-> (JTabbedPane.)
+    (apply-default-opts opts)
+    (apply-opts opts tabbed-panel-options)))
 
 ;*******************************************************************************
 ; Frame
