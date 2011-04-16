@@ -30,8 +30,8 @@
                           "<html>Multi-<br><b>LINE</b></html>"
                           :fill-h
                           (toggle 
+                            :id :and-me
                             :text "And Me"
-                            :on-selection-changed (fn [e] (println (.. (to-widget e) (isSelected))))
                             :icon redditor
                             :tip "Yum!")])
           :center (vertical-panel 
@@ -41,7 +41,7 @@
                               :id :link)
                             (text 
                               :text "HI"
-                              :on-action (fn [e] (println (.. (to-widget e) (getText)))))
+                              :listen [:action (fn [e] (println (.. (to-widget e) (getText))))])
                             (scrollable 
                               (text 
                                 :text (apply str (interpose "\n" (range 0 20))) 
@@ -60,9 +60,8 @@
                           [:fill-h 20] 
                           rss-url 
                           "C"
-                          (checkbox 
-                            :text "Check me"
-                            :on-selection-changed (fn [e] (println (.. (to-widget e) (isSelected)))))]))
+                          (checkbox :id :check-me, :text "Check me")
+                          ]))
       (grid-panel 
         :border [10 "Here's a grid layout with 3 columns" 10]
         :hgap 10 
@@ -73,10 +72,8 @@
                       :name %) 
                     (range 0 12))))
   (tabbed-panel 
+    :id :tabs
     :placement :bottom
-    :on-state-changed #(let [tp (to-widget %)
-                             tab (.getSelectedIndex tp)] 
-                        (.setTitleAt tp 0 (if (= tab 0) ":)" ":(")))
     :tabs [
       { :title "flow-panel"
         :tip   "Example of a flow-panel"
@@ -91,17 +88,29 @@
         :tip   "Here's another tab"
         :content "Hello. I'm the content of this tab. Just a label." }]))))
 
-  (-> (select :#button) 
-    (add-listener :action (fn [e] (alert "HI"))))
-  (-> (select :#link)
-    (add-listener
-      :mouse-clicked #(alert % "CLICK!")
-      :mouse-entered #(.. (to-widget %) (setForeground Color/BLUE))
-      :mouse-exited  #(.. (to-widget %) (setForeground Color/BLACK)))))
+  (listen (select :#tabs) :state-changed
+        #(let [tp (to-widget %)
+               tab (.getSelectedIndex tp)] 
+          (.setTitleAt tp 0 (if (= tab 0) ":)" ":("))))
+
+  (listen (select :#button) :action (fn [e] (alert "HI")))
+
+  (listen (select :#link)
+    :mouse-clicked #(alert % "CLICK!")
+    :mouse-entered #(.. (to-widget %) (setForeground Color/BLUE))
+    :mouse-exited  #(.. (to-widget %) (setForeground Color/BLACK)))
+
+  (listen (select :#check-me) :item-state-changed 
+    (fn [e] 
+      (.setEnabled (first (select :#link)) (.. (to-widget e) (isSelected)))))
+
+  (listen (select :#and-me)  
+    :item-state-changed (fn [e] (println (.. (to-widget e) (isSelected))))))
+
  
 
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
 (defn -main [& args]
   (invoke-later crazy-app))
-(-main)
+;(-main)

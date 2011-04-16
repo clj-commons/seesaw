@@ -20,7 +20,7 @@
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
 
 ; alias event/add-listener for convenience
-(def add-listener sse/add-listener)
+(def listen sse/add-listener)
 
 ;*******************************************************************************
 ; Icons
@@ -120,40 +120,6 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
-(defn apply-mouse-handlers
-  [p opts]
-  (when (some #{:on-mouse-clicked :on-mouse-entered :on-mouse-exited} (keys opts))
-    (.addMouseListener p
-      (proxy [MouseAdapter] []
-        (mouseClicked [e] (if-let [f (:on-mouse-clicked opts)] (f e)))
-        (mouseEntered [e] (if-let [f (:on-mouse-entered opts)] (f e)))
-        (mouseExited [e] (if-let [f (:on-mouse-exited opts)] (f e))))))
-  p)
-
-(defn apply-action-handler
-  [p opts]
-  (if-let [f (:on-action opts)]
-    (if (instance? javax.swing.Action f)
-      (.addActionListener p f)
-      (.addActionListener p (action f))))
-  p)
-
-(defn apply-state-changed-handler
-  [p opts]
-  (if-let [f (:on-state-changed opts)]
-    (if (instance? javax.swing.event.ChangeListener f)
-      (.addChangeListener p f)
-      (add-listener p :state-changed f)))
-  p)
-
-(defn apply-selection-changed-handler
-  [p opts]
-  (if-let [f (:on-selection-changed opts)]
-    (if (instance? java.awt.ItemSelectable p)
-      (if (instance? java.awt.event.ItemListener f)
-        (.addItemListener p f)
-        (add-listener p :item-state-changed f))))
-  p)
 
 (def ^{:private true} id-property "seesaw-widget-id")
 
@@ -208,22 +174,16 @@
 })
 
 (defn apply-options
-  ([target opts] (apply-options target opts default-option-handlers))
-  ([target opts handler-map]
-    (doseq [[k v] opts]
-      (when-let [f (get handler-map k)]
-        (f target v)))
-    target))
+  [target opts handler-map]
+  (doseq [[k v] opts]
+    (when-let [f (get handler-map k)]
+      (f target v)))
+  target)
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
   ([^javax.swing.JComponent p {:as opts}]
-    (->
-      (apply-options p opts)
-      (apply-mouse-handlers opts)
-      (apply-action-handler opts)
-      (apply-state-changed-handler opts)
-      (apply-selection-changed-handler opts))))
+    (apply-options p opts default-option-handlers)))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
@@ -336,23 +296,27 @@
 ;*******************************************************************************
 ; Text widgets
 
-(defn apply-text-opts 
-  [w { :keys [on-changed] :as opts }]
-  (cond-doto (apply-default-opts w opts)  
-    on-changed (add-listener :document on-changed)))
-  
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
 
     :text         Initial text content
     :multi-line?  If true, a JTextArea is created (default false)
-    :on-changed   Event handler function called when the content is changed.
     :editable     If false, the text is read-only (default true)
+
+  To listen for document changes, use the :listen option:
+
+    (text :listen [:document #(... handler ...)])
+
+  or attach a listener later with (listen):
+    
+    (text :id :my-text ...)
+        ...
+    (listen (select :#my-text) :documen #(... handler ...))
   " 
   [& args]
   (if (next args)
     (let [{:keys [multi-line?] :as opts} args]
-      (apply-text-opts (if multi-line? (JTextArea.) (JTextField.)) opts))
+      (apply-default-opts (if multi-line? (JTextArea.) (JTextField.)) opts))
     (apply text :text args)))
 
 

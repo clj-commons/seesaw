@@ -23,8 +23,7 @@
       (.setText target ""))))
 
 (defn listen-temp [source target f] 
-  (add-listener source 
-    :document (fn [e] (update-temp source target f)))
+  (listen source :document (fn [e] (update-temp source target f)))
   source)
 
 (defn temp-app []

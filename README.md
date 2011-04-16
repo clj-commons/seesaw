@@ -49,8 +49,6 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
   <tr><td><code>:foreground</code></td><td>Foreground color by coercing into a Color (see below)</td></tr>
   <tr><td><code>:border</code></td><td>Set the border of the widget by coercing into a Border. See below.</td></tr>
   <tr><td><code>:font</code></td><td>Set the font of the widget by coercing into a Font. See below.</td></tr>
-  <tr><td><code>:on-action</code></td><td>Set the widget's default action handler by coercing into an action. See below.</td></tr>
-  <tr><td><code>:on-mouse-clicked</code>, <code>:on-mouse-entered</code>,<code>:on-mouse-exited</code> </td><td>Handle mouse events using the given event handler functions.</td></tr>
 </table>
 
 ### Containers
@@ -80,8 +78,18 @@ A `BorderLayout`:
 Event handler functions are single-argument functions that take an event object whose type depends on the event being fired, e.g. `MouseEvent`. For example, we can execute a function when a checkbox is checked:
 
     (let [handler (fn [e] (alert (.. (.getSource e) (isSelected))))]
-      (checkbox :text "Check me" :on-selection-changed handler))
+      (checkbox :text "Check me" 
+        :listen [:item-state-changed handler]))
 
+Event handlers are installed with the `(listen)` function. Its first argument is a widget, or seq of widgets, and then one or more event specs of the form event-name/function. For the most part, the name of the event is the name of a Swing event listener method. Here's an example that listens for some mouse events, assuming that `p` is bound to a widget:
+
+    (listen p
+      :mouse-clicked (fn [e] ... do something ...)
+      :mouse-entered (fn [e] ... do something ...)
+      :mouse-exited  (fn [e] ... do something ...))
+
+See `seesaw.events/add-listener` for more details.
+    
 ### Actions
 It's typical in Swing apps to use actions for menus, buttons, etc. An action needs an event handler function and some properties. Here's an example of creating an action and adding it to a toolbar:
 
