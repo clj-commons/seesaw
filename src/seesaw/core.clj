@@ -182,9 +182,16 @@
     :horizontal SwingConstants/HORIZONTAL
     :vertical   SwingConstants/VERTICAL })
 
-(def ^{:private true} options {
-  :id         #(.putClientProperty %1 id-property (str %2))
+(defn id-option-handler [w id]
+  (let [id-key (name id)]
+    (.putClientProperty w id-property id-key)
+    (swap! widget-by-id assoc id-key [w])))
+
+(def ^{:private true} default-option-handlers {
+  :id         id-option-handler
+  :listen     #(apply sse/add-listener %1 %2)
   :opaque     #(.setOpaque %1 %2)
+  :enabled    #(.setEnabled %1 %2)
   :background #(.setBackground %1 (to-color %2))
   :foreground #(.setForeground %1 (to-color %2))
   :border     #(.setBorder %1 (to-border %2))
@@ -200,26 +207,23 @@
   :orientation #(.setOrientation %1 (orientation-table %2))
 })
 
-(defn apply-opts
-  ([target opts] (apply-opts target opts options))
-  ([target opts opt-map]
+(defn apply-options
+  ([target opts] (apply-options target opts default-option-handlers))
+  ([target opts handler-map]
     (doseq [[k v] opts]
-      (when-let [f (get opt-map k)]
-        ((get opt-map k) target v)))
+      (when-let [f (get handler-map k)]
+        (f target v)))
     target))
 
 (defn apply-default-opts
   ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:keys [id] :as opts}]
-    (when id (swap! widget-by-id assoc (name id) [p]))
+  ([^javax.swing.JComponent p {:as opts}]
     (->
-      (apply-opts p opts)
+      (apply-options p opts)
       (apply-mouse-handlers opts)
       (apply-action-handler opts)
       (apply-state-changed-handler opts)
       (apply-selection-changed-handler opts))))
-
-
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
@@ -246,8 +250,7 @@
   :center BorderLayout/CENTER})
 
 (defn- border-layout-add [p w dir]
-  (when w (add-widget p w (dir border-layout-dirs)))
-  p)
+  (add-widget p w (dir border-layout-dirs)))
 
 (def ^{:private true} border-layout-options 
   (apply hash-map
@@ -259,17 +262,18 @@
   [& {:keys [hgap vgap] :or {hgap 0 vgap 0} :as opts}]
   (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)]
     (.setLayout p (BorderLayout. hgap vgap))
-    (apply-opts p opts border-layout-options)))
+    (apply-options p opts border-layout-options)))
 
 ;*******************************************************************************
 ; Flow
 
-(def ^{:private true} flow-align-table
-  { :left FlowLayout/LEFT 
-    :right FlowLayout/RIGHT
-    :leading FlowLayout/LEADING
-    :trailing FlowLayout/TRAILING
-    :center FlowLayout/CENTER })
+(def ^{:private true} flow-align-table {
+  :left FlowLayout/LEFT 
+  :right FlowLayout/RIGHT
+  :leading FlowLayout/LEADING
+  :trailing FlowLayout/TRAILING
+  :center FlowLayout/CENTER 
+})
 
 (defn flow-panel
   [& {:keys [hgap vgap align items align-on-baseline] 
@@ -313,9 +317,7 @@
 (defn label 
   [& args]
   (if (next args)
-    (let [{:as opts} args]
-      (-> (JLabel.) 
-        (apply-default-opts opts)))
+    (apply-default-opts (JLabel.) (apply hash-map args))
     (apply label :text args)))
 
 
@@ -323,13 +325,13 @@
 ; Buttons
 
 (defn- apply-button-defaults
-  [w & {:as opts}]
-  (-> w (apply-default-opts opts)))
+  [w & args]
+  (apply-default-opts w (apply hash-map args)))
 
-(defn button [& args] (apply apply-button-defaults (JButton.) args))
-(defn toggle [& args] (apply apply-button-defaults (JToggleButton.) args))
+(defn button   [& args] (apply apply-button-defaults (JButton.) args))
+(defn toggle   [& args] (apply apply-button-defaults (JToggleButton.) args))
 (defn checkbox [& args] (apply apply-button-defaults (JCheckBox.) args))
-(defn radio [& args] (apply apply-button-defaults (JRadioButton.) args))
+(defn radio    [& args] (apply apply-button-defaults (JRadioButton.) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -391,7 +393,7 @@
   [& {:keys [items] :as opts}]
   (-> (JToolBar.)
     (apply-default-opts opts)
-    (apply-opts opts toolbar-options)
+    (apply-options opts toolbar-options)
     (add-widgets (insert-toolbar-separators items))))
 
 ;*******************************************************************************
@@ -442,7 +444,7 @@
   [& {:keys [placement overflow tabs] :as opts}]
   (-> (JTabbedPane.)
     (apply-default-opts opts)
-    (apply-opts opts tabbed-panel-options)))
+    (apply-options opts tabbed-panel-options)))
 
 ;*******************************************************************************
 ; Frame

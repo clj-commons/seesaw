@@ -32,6 +32,13 @@
       (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
     (it "sets the component's name if given"
       (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for))))
+  (testing "setting enabled option"
+    (it "does nothing when omitted"
+      (let [c (apply-default-opts (JPanel.))]
+        (expect (= true (.isEnabled c)))))
+    (it "sets enabled when provided"
+      (let [c (apply-default-opts (JPanel.) {:enabled false})]
+        (expect (= false (.isEnabled c))))))
   (testing "setting opaque option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]

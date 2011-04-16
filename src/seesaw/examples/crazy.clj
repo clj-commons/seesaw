@@ -104,4 +104,4 @@
   ;(.dispose f))
 (defn -main [& args]
   (invoke-later crazy-app))
-;(-main)
+(-main)

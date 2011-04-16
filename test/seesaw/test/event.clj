@@ -84,6 +84,10 @@
 
 
 (describe add-listener
+  (it "returns the target (first) argument"
+    (let [panel (JPanel.)]
+      (expect (= panel (add-listener panel)))))
+
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]

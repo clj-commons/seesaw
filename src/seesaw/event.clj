@@ -210,7 +210,8 @@
     (doseq [target (to-seq targets) 
             [event-name event-fn] (preprocess-event-specs more)]
       (let [handlers (get-or-install-handlers target event-name)]
-        (swap! handlers append-listener event-name event-fn))))
+        (swap! handlers append-listener event-name event-fn)))
+    targets)
 
 (defn remove-listener
   "Remove one or more listener function from target which were
@@ -220,5 +221,6 @@
           [event-name event-fn] (preprocess-event-specs more)]
     ; TODO no need to install handlers if they're not already there.
     (let [handlers (get-or-install-handlers target event-name)]
-      (swap! handlers unappend-listener event-name event-fn))))
+      (swap! handlers unappend-listener event-name event-fn)))
+    targets)
 
