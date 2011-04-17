@@ -120,71 +120,6 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
-
-(def ^{:private true} id-property "seesaw-widget-id")
-
-(def widget-by-id (atom {}))
-
-(defn id-for 
-  "Returns the id of the given widget if the :id property was specified at
-   creation. See also (select)."
-  [^javax.swing.JComponent w] (.getClientProperty w id-property))
-
-(def ^{:private true} h-alignment-table
-  { :left SwingConstants/LEFT 
-    :right SwingConstants/RIGHT
-    :leading SwingConstants/LEADING
-    :trailing SwingConstants/TRAILING
-    :center SwingConstants/CENTER })
-
-(def ^{:private true} v-alignment-table
-  { :top SwingConstants/TOP 
-    :center SwingConstants/CENTER 
-    :bottom SwingConstants/BOTTOM 
-   })
-
-(def ^{:private true}
-  orientation-table {
-    :horizontal SwingConstants/HORIZONTAL
-    :vertical   SwingConstants/VERTICAL })
-
-(defn id-option-handler [w id]
-  (let [id-key (name id)]
-    (.putClientProperty w id-property id-key)
-    (swap! widget-by-id assoc id-key [w])))
-
-(def ^{:private true} default-option-handlers {
-  :id         id-option-handler
-  :listen     #(apply sse/add-listener %1 %2)
-  :opaque     #(.setOpaque %1 %2)
-  :enabled    #(.setEnabled %1 %2)
-  :background #(.setBackground %1 (to-color %2))
-  :foreground #(.setForeground %1 (to-color %2))
-  :border     #(.setBorder %1 (to-border %2))
-  :font       #(.setFont %1 (to-font %2))
-  :tip        #(.setToolTipText %1 (str %2))
-  :text       #(.setText %1 (str %2))
-  :icon       #(.setIcon %1 (make-icon %2))
-  :action     #(.setAction %1 %2)
-  :selected   #(.setSelected %1 %2)
-  :editable   #(.setEditable %1 %2)
-  :halign     #(.setHorizontalAlignment %1 (h-alignment-table %2))
-  :valign     #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table %2))
-})
-
-(defn apply-options
-  [target opts handler-map]
-  (doseq [[k v] opts]
-    (when-let [f (get handler-map k)]
-      (f target v)))
-  target)
-
-(defn apply-default-opts
-  ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:as opts}]
-    (apply-options p opts default-option-handlers)))
-
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
@@ -198,16 +133,83 @@
     (add-widget c w))
   c)
 
+(def ^{:private true} id-property "seesaw-widget-id")
+
+(def ^{:private true} widget-by-id (atom {}))
+
+(defn id-for 
+  "Returns the id of the given widget if the :id property was specified at
+   creation. See also (select)."
+  [^javax.swing.JComponent w] (.getClientProperty w id-property))
+
+(def ^{:private true} h-alignment-table {
+  :left     SwingConstants/LEFT 
+  :right    SwingConstants/RIGHT
+  :leading  SwingConstants/LEADING
+  :trailing SwingConstants/TRAILING
+  :center   SwingConstants/CENTER 
+})
+
+(def ^{:private true} v-alignment-table {
+  :top    SwingConstants/TOP 
+  :center SwingConstants/CENTER 
+  :bottom SwingConstants/BOTTOM 
+})
+
+(def ^{:private true} orientation-table {
+  :horizontal SwingConstants/HORIZONTAL
+  :vertical   SwingConstants/VERTICAL
+})
+
+(defn- id-option-handler [w id]
+  (let [id-key (name id)]
+    (.putClientProperty w id-property id-key)
+    (swap! widget-by-id assoc id-key [w])))
+
+(def ^{:private true} default-options {
+  :id          id-option-handler
+  :listen      #(apply sse/add-listener %1 %2)
+  :opaque      #(.setOpaque %1 %2)
+  :enabled     #(.setEnabled %1 %2)
+  :background  #(.setBackground %1 (to-color %2))
+  :foreground  #(.setForeground %1 (to-color %2))
+  :border      #(.setBorder %1 (to-border %2))
+  :font        #(.setFont %1 (to-font %2))
+  :tip         #(.setToolTipText %1 (str %2))
+  :text        #(.setText %1 (str %2))
+  :icon        #(.setIcon %1 (make-icon %2))
+  :action      #(.setAction %1 %2)
+  :selected    #(.setSelected %1 %2)
+  :editable    #(.setEditable %1 %2)
+  :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
+  :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
+  :orientation #(.setOrientation %1 (orientation-table %2))
+  :items       #(add-widgets %1 %2)
+})
+
+(defn apply-options
+  [target opts handler-map]
+  (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
+    (when-let [f (get handler-map k)]
+      (f target v)))
+  target)
+
+(defn apply-default-opts
+  ([p] (apply-default-opts p {}))
+  ([^javax.swing.JComponent p {:as opts}]
+    (apply-options p opts default-options)))
+
 
 ;*******************************************************************************
 ; Border Layout
 
 (def ^{:private true}  border-layout-dirs {
-  :north BorderLayout/NORTH
-  :south BorderLayout/SOUTH
-  :east BorderLayout/EAST
-  :west BorderLayout/WEST
-  :center BorderLayout/CENTER})
+  :north  BorderLayout/NORTH
+  :south  BorderLayout/SOUTH
+  :east   BorderLayout/EAST
+  :west   BorderLayout/WEST
+  :center BorderLayout/CENTER
+})
 
 (defn- border-layout-add [p w dir]
   (add-widget p w (dir border-layout-dirs)))
@@ -220,40 +222,42 @@
 
 (defn border-panel
   [& {:keys [hgap vgap] :or {hgap 0 vgap 0} :as opts}]
-  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)]
-    (.setLayout p (BorderLayout. hgap vgap))
-    (apply-options p opts border-layout-options)))
+  (let [^java.awt.Container p (JPanel. (BorderLayout. hgap vgap))]
+    (apply-options p opts (merge default-options border-layout-options))))
 
 ;*******************************************************************************
 ; Flow
 
 (def ^{:private true} flow-align-table {
-  :left FlowLayout/LEFT 
-  :right FlowLayout/RIGHT
-  :leading FlowLayout/LEADING
+  :left     FlowLayout/LEFT 
+  :right    FlowLayout/RIGHT
+  :leading  FlowLayout/LEADING
   :trailing FlowLayout/TRAILING
-  :center FlowLayout/CENTER 
+  :center   FlowLayout/CENTER 
 })
 
 (defn flow-panel
-  [& {:keys [hgap vgap align items align-on-baseline] 
-      :or {hgap 5 vgap 5 align :center items [] align-on-baseline false} 
+  [& {:keys [hgap vgap align align-on-baseline] 
+      :or {hgap 5 vgap 5 align :center align-on-baseline false} 
       :as opts}]
-  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
-        l (FlowLayout. (align flow-align-table) hgap vgap)]
+  (let [l (FlowLayout. (align flow-align-table) hgap vgap)]
     (.setAlignOnBaseline l align-on-baseline)
-    (.setLayout p l)
-    (add-widgets p items)))
+    (apply-options (JPanel. l) opts default-options)))
 
 ;*******************************************************************************
 ; Boxes
 
+(def ^{:private true} box-layout-dir-table {
+  :horizontal BoxLayout/X_AXIS 
+  :vertical BoxLayout/Y_AXIS 
+})
+
 (defn box-panel
-  [dir & {:keys [items] :as opts }]
-  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
-        b (BoxLayout. p (dir { :horizontal BoxLayout/X_AXIS :vertical BoxLayout/Y_AXIS }))]
-    (.setLayout p b)
-    (add-widgets p items)))
+  [dir & opts]
+  (let [panel  (JPanel.)
+        layout (BoxLayout. panel (dir box-layout-dir-table))]
+    (.setLayout panel layout)
+    (apply-options panel opts default-options)))
 
 (defn horizontal-panel [& opts] (apply box-panel :horizontal opts))
 (defn vertical-panel [& opts] (apply box-panel :vertical opts))
@@ -262,14 +266,13 @@
 ; Grid
 
 (defn grid-panel
-  [& {:keys [hgap vgap rows columns items] 
-      :or {hgap 0 vgap 0 items []}
+  [& {:keys [hgap vgap rows columns] 
+      :or {hgap 0 vgap 0}
       :as opts}]
-  (let [^java.awt.Container p (apply-default-opts (JPanel.) opts)
-        columns* (or columns (if rows 0 1))
-        layout (GridLayout. (or rows 0) columns* hgap vgap)]
-    (.setLayout p layout)
-    (add-widgets p items)))
+  (let [columns* (or columns (if rows 0 1))
+        layout   (GridLayout. (or rows 0) columns* hgap vgap)
+        panel    (JPanel. layout)]
+    (apply-options panel opts default-options)))
 
 ;*******************************************************************************
 ; Labels
@@ -277,7 +280,7 @@
 (defn label 
   [& args]
   (if (next args)
-    (apply-default-opts (JLabel.) (apply hash-map args))
+    (apply-options (JLabel.) args default-options)
     (apply label :text args)))
 
 
@@ -285,13 +288,13 @@
 ; Buttons
 
 (defn- apply-button-defaults
-  [w & args]
-  (apply-default-opts w (apply hash-map args)))
+  [button args]
+  (apply-options button args default-options))
 
-(defn button   [& args] (apply apply-button-defaults (JButton.) args))
-(defn toggle   [& args] (apply apply-button-defaults (JToggleButton.) args))
-(defn checkbox [& args] (apply apply-button-defaults (JCheckBox.) args))
-(defn radio    [& args] (apply apply-button-defaults (JRadioButton.) args))
+(defn button   [& args] (apply-button-defaults (JButton.) args))
+(defn toggle   [& args] (apply-button-defaults (JToggleButton.) args))
+(defn checkbox [& args] (apply-button-defaults (JCheckBox.) args))
+(defn radio    [& args] (apply-button-defaults (JRadioButton.) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -315,8 +318,9 @@
   " 
   [& args]
   (if (next args)
-    (let [{:keys [multi-line?] :as opts} args]
-      (apply-default-opts (if multi-line? (JTextArea.) (JTextField.)) opts))
+    (let [{:keys [multi-line?] :as opts} args
+          t (if multi-line? (JTextArea.) (JTextField.))]
+      (apply-options t opts default-options))
     (apply text :text args)))
 
 
@@ -346,19 +350,19 @@
 
 
 (defn- insert-toolbar-separators 
+  "Replace :separator with JToolBar$Separator instances"
   [items]
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
 (def ^{:private true} toolbar-options {
   :floatable #(.setFloatable %1 %2)
+  ; Override default :items handler
+  :items     #(add-widgets %1 (insert-toolbar-separators %2))
 })
 
 (defn toolbar
-  [& {:keys [items] :as opts}]
-  (-> (JToolBar.)
-    (apply-default-opts opts)
-    (apply-options opts toolbar-options)
-    (add-widgets (insert-toolbar-separators items))))
+  [& opts]
+  (apply-options (JToolBar.) opts (merge default-options toolbar-options)))
 
 ;*******************************************************************************
 ; Tabs
@@ -367,11 +371,13 @@
   :bottom JTabbedPane/BOTTOM
   :top    JTabbedPane/TOP
   :left   JTabbedPane/LEFT
-  :right  JTabbedPane/RIGHT })
+  :right  JTabbedPane/RIGHT 
+})
 
 (def ^{:private true} tab-overflow-table {
   :scroll JTabbedPane/SCROLL_TAB_LAYOUT
-  :wrap   JTabbedPane/WRAP_TAB_LAYOUT })
+  :wrap   JTabbedPane/WRAP_TAB_LAYOUT
+})
 
 (defn- add-to-tabbed-panel 
   [tp tab-defs]
@@ -405,10 +411,8 @@
 
   Returns the new JTabbedPane.
   "
-  [& {:keys [placement overflow tabs] :as opts}]
-  (-> (JTabbedPane.)
-    (apply-default-opts opts)
-    (apply-options opts tabbed-panel-options)))
+  [& opts]
+  (apply-options (JTabbedPane.) opts (merge default-options tabbed-panel-options)))
 
 ;*******************************************************************************
 ; Frame
@@ -432,9 +436,13 @@
     content  (.setContentPane (to-widget content))
     true     (.setSize width height)
     true     (.setVisible visible?)
-    pack?     (.pack )))
+    pack?    (.pack)))
 
 (defn to-frame 
+  "Get the frame or window that contains the given widget. Useful for APIs
+  like JDialog that want a JFrame, when all you have is a widget or event.
+  Note that w is run through (to-widget) first, so you can pass event object
+  directly to this."
   [w]
   (SwingUtilities/getRoot (to-widget w)))
 
@@ -449,9 +457,6 @@
 ;*******************************************************************************
 ; Selectors
 (def ^{:private true} id-regex #"^#(.+)$")
-
-;(defn- select-all-roots []
-  ;(filter #(.isDisplayable %) (map #(.getContentPane %) (JFrame/getFrames))))
 
 (defn select
   ([v]
