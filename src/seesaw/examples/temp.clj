@@ -18,9 +18,9 @@
 
 (defn update-temp [source target convert]
   (when (.isFocusOwner source)
-    (if-let [n (parse (.getText source))]
-      (.setText target (display (convert n)))
-      (.setText target ""))))
+    (if-let [n (parse (text source))]
+      (text target (display (convert n)))
+      (text target ""))))
 
 (defn listen-temp [source target f] 
   (listen source :document (fn [e] (update-temp source target f)))

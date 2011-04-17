@@ -26,7 +26,7 @@
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
-(describe apply-default-opts 
+(describe "Applying default options"
   (testing "the :id option"
     (it "does nothing when omitted"
       (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
@@ -37,7 +37,7 @@
       (let [c (apply-default-opts (JPanel.))]
         (expect (= true (.isEnabled c)))))
     (it "sets enabled when provided"
-      (let [c (apply-default-opts (JPanel.) {:enabled false})]
+      (let [c (apply-default-opts (JPanel.) {:enabled? false})]
         (expect (= false (.isEnabled c))))))
   (testing "setting opaque option"
     (it "does nothing when omitted"
@@ -65,42 +65,42 @@
   (it "does not create a new widget if create? param is false"
     (expect (nil? (to-widget "HI" false))))
   (it "returns a label for text input"
-    (let [c (to-widget "TEST")]
+    (let [c (to-widget "TEST" true)]
       (expect (= "TEST" (.getText c)))))
   (it "returns a button if input is an Action"
     (let [a (action #(println "HI") :name "Test")
-          c (to-widget a)]
+          c (to-widget a true)]
       (expect (isa? (class c) javax.swing.JButton))
       (expect (= "Test" (.getText c)))))
   (it "creates horizontal glue for :fill-h"
-    (let [c (to-widget :fill-h)]
+    (let [c (to-widget :fill-h true)]
       (expect (isa? (class c) javax.swing.Box$Filler ))
       (expect (= 32767 (.. c getMaximumSize getWidth)))))
   (it "creates vertical glue for :fill-v"
-    (let [c (to-widget :fill-v)]
+    (let [c (to-widget :fill-v true)]
       (expect (isa? (class c) javax.swing.Box$Filler))
       (expect (= 32767 (.. c getMaximumSize getHeight)))))
   (it "creates a vertical strut for [:fill-v N]"
-    (let [c (to-widget [:fill-v 99])]
+    (let [c (to-widget [:fill-v 99] true)]
       (expect (isa? (class c) javax.swing.Box$Filler))
       (expect (= 32767 (.. c getMaximumSize getWidth)))
       (expect (= 99 (.. c getMaximumSize getHeight)))
       (expect (= 99 (.. c getPreferredSize getHeight)))))
   (it "creates a horizontal strut for [:fill-h N]"
-    (let [c (to-widget [:fill-h 88])]
+    (let [c (to-widget [:fill-h 88] true)]
       (expect (isa? (class c) javax.swing.Box$Filler))
       (expect (= 32767 (.. c getMaximumSize getHeight)))
       (expect (= 88 (.. c getMaximumSize getWidth)))
       (expect (= 88 (.. c getPreferredSize getWidth)))))
   (it "creates a rigid area for a Dimension"
-    (let [c (to-widget (Dimension. 12 34))]
+    (let [c (to-widget (Dimension. 12 34) true)]
       (expect (isa? (class c) javax.swing.Box$Filler))
       (expect (= 12 (.. c getMaximumSize getWidth)))
       (expect (= 34 (.. c getMaximumSize getHeight)))
       (expect (= 12 (.. c getPreferredSize getWidth)))
       (expect (= 34 (.. c getPreferredSize getHeight)))))
   (it "creates a rigid area for a [N :by N]"
-    (let [c (to-widget [12 :by 34])]
+    (let [c (to-widget [12 :by 34] true)]
       (expect (isa? (class c) javax.swing.Box$Filler))
       (expect (= 12 (.. c getMaximumSize getWidth)))
       (expect (= 34 (.. c getMaximumSize getHeight)))
@@ -110,6 +110,25 @@
     (let [b (button)
           e (ActionEvent. b 0 "hi")]
       (expect (= b (to-widget e))))))
+
+(describe config
+  (it "configures the properties given to it on a single target"
+    (let [p (JPanel.)
+          result (config p :foreground Color/RED :background Color/BLUE :enabled? false)]
+      (expect (= p result))
+      (expect (= Color/RED (.getForeground p)))
+      (expect (= Color/BLUE (.getBackground p)))
+      (expect (not (.isEnabled p)))))
+  (it "configures the properties given to it on a multiple targets"
+    (let [targets [(JPanel.) (JPanel.)]
+          result (config targets :foreground Color/RED :background Color/BLUE :enabled? false)]
+      (expect (= targets result))
+      (expect (= Color/RED (.getForeground (first targets))))
+      (expect (= Color/BLUE (.getBackground (first targets))))
+      (expect (not (.isEnabled (first targets))))
+      (expect (= Color/RED (.getForeground (second targets))))
+      (expect (= Color/BLUE (.getBackground (second targets))))
+      (expect (not (.isEnabled (second targets)))))))
 
 (describe flow-panel
   (it "should create a FlowLayout of :items list"
@@ -189,6 +208,22 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text
+  (it "should return the text of a single text widget argument"
+    (= "HI" (text (text "HI"))))
+  (it "should return the text of a button argument"
+    (= "HI" (text (button :text "HI"))))
+  (it "should return the text of a seq of widget arguments"
+    (= ["HI" "BYE"] (text [(text "HI") (button :text "BYE")])))
+  (it "should set the text of a single text widget argument"
+    (= "BYE" (text (text (text "HI") "BYE"))))
+  (it "should set the text of a single button argument"
+    (= "BYE" (text (text (button "HI") "BYE"))))
+  (it "should set the text of a seq of widget arguments"
+    (let [[a b] [(text "HI") (text "BYE")]
+          result (text [a b] "YUM")]
+      (expect (= [a b] result))
+      (expect (= "YUM" (text a)))
+      (expect (= "YUM" (text b)))))
   (it "should create a text field given a string argument"
     (let [t (text "HI")]
       (expect (= JTextField (class t)))
@@ -202,7 +237,7 @@
       (expect (= JTextArea (class t)))
       (expect (= "HI" (.getText t)))))
   (it "should honor the editable property"
-    (let [t (text :text "HI" :editable false :multi-line? true)]
+    (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (false? (.isEditable t))))))
 
 (describe button
@@ -223,7 +258,7 @@
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
-    (let [t (toggle :text "HI" :selected true)]
+    (let [t (toggle :text "HI" :selected? true)]
       (expect (.isSelected t)))))
 
 (describe checkbox
@@ -233,7 +268,7 @@
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
-    (let [t (checkbox :text "HI" :selected true)]
+    (let [t (checkbox :text "HI" :selected? true)]
       (expect (.isSelected t)))))
 
 (describe radio
@@ -243,7 +278,7 @@
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
-    (let [t (radio :text "HI" :selected true)]
+    (let [t (radio :text "HI" :selected? true)]
       (expect (.isSelected t)))))
 
 (describe scrollable
@@ -268,11 +303,11 @@
           items (.getComponents tb)]
       (expect (= javax.swing.JToolBar (class tb)))
       (expect (= ["a" "b" "c"] (map #(.getText %) items)))))
-  (it "should set the floatable property"
-    (let [tb (toolbar :floatable true)]
+  (it "should set the floatable? property"
+    (let [tb (toolbar :floatable? true)]
       (expect (.isFloatable tb))))
   (it "should set the floatable property to false"
-    (let [tb (toolbar :floatable false)]
+    (let [tb (toolbar :floatable? false)]
       (expect (not (.isFloatable tb)))))
   (it "should set the orientation property"
     (let [tb (toolbar :orientation :vertical)]
@@ -316,10 +351,10 @@
       (expect (nil? (to-frame c))))))
 
 (describe select
-  (it "should find a widget by #id and return a single element vector"
+  (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
           f (frame :title "select by id" :visible? false :content p)]
-      (expect (= [c] (select :#hi)))
-      (expect (= [p] (select "#panel"))))))
+      (expect (= c (select :#hi)))
+      (expect (= p (select "#panel"))))))
 

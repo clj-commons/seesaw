@@ -4,7 +4,8 @@
   (:use seesaw.border)
   (:use seesaw.color)
   (:require [seesaw.event :as sse])
-  (:import [javax.swing 
+  (:import [java.util EventObject]
+           [javax.swing 
              SwingUtilities SwingConstants 
              Icon Action AbstractAction ImageIcon
              BoxLayout
@@ -12,6 +13,7 @@
              JLabel JTextField JTextArea 
              AbstractButton JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
+           [javax.swing.text JTextComponent]
            [javax.swing.event ChangeListener DocumentListener]
            [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable Image]
            [java.awt.event MouseAdapter ActionListener]))
@@ -111,9 +113,10 @@
     A non-url string -> a label with the given text
 
    If create? is false, will return nil for all rules (see above) that
-   would create a new widget.
+   would create a new widget. The default value for create? is false
+   to avoid inadvertently creating widgets all over the place.
   "
-  ([v] (to-widget v true))
+  ([v] (to-widget v false))
   ([v create?]
     (when v (to-widget* v create?))))
 
@@ -123,7 +126,7 @@
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
-   (let [w* (to-widget w)]
+   (let [w* (to-widget w true)]
     (.add c w* constraint)
     w*)))
 
@@ -164,13 +167,13 @@
 (defn- id-option-handler [w id]
   (let [id-key (name id)]
     (.putClientProperty w id-property id-key)
-    (swap! widget-by-id assoc id-key [w])))
+    (swap! widget-by-id assoc id-key w)))
 
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/add-listener %1 %2)
   :opaque      #(.setOpaque %1 %2)
-  :enabled     #(.setEnabled %1 %2)
+  :enabled?    #(.setEnabled %1 %2)
   :background  #(.setBackground %1 (to-color %2))
   :foreground  #(.setForeground %1 (to-color %2))
   :border      #(.setBorder %1 (to-border %2))
@@ -179,15 +182,14 @@
   :text        #(.setText %1 (str %2))
   :icon        #(.setIcon %1 (make-icon %2))
   :action      #(.setAction %1 %2)
-  :selected    #(.setSelected %1 %2)
-  :editable    #(.setEditable %1 %2)
+  :editable?   #(.setEditable %1 %2)
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
   :items       #(add-widgets %1 %2)
 })
 
-(defn apply-options
+(defn- apply-options
   [target opts handler-map]
   (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
     (when-let [f (get handler-map k)]
@@ -195,9 +197,39 @@
   target)
 
 (defn apply-default-opts
+  "only used in tests!"
   ([p] (apply-default-opts p {}))
   ([^javax.swing.JComponent p {:as opts}]
     (apply-options p opts default-options)))
+
+;*******************************************************************************
+; Widget configuration stuff
+
+(defprotocol ConfigureWidget (config* [target args]))
+
+(extend-type java.util.EventObject ConfigureWidget 
+  (config* [target args] (apply-options (to-widget target false) args default-options)))
+
+(extend-type javax.swing.JComponent ConfigureWidget 
+  (config* [target args] (apply-options target args default-options)))
+
+(defn config
+  "Applies properties in the argument list to one or more targets. For example:
+
+    (config button1 :enabled? false :text \"I' disabled\")
+
+  or:
+
+    (config [button1 button2] :enabled? false :text \"We're disabled\")
+ 
+  Targets may be actual widgets, or convertible to widgets with (to-widget).
+  For example, the target can be an event object.
+
+  Returns the input targets."
+  [targets & args]
+  (doseq [target (to-seq targets)]
+    (config* target args))
+  targets)
 
 
 ;*******************************************************************************
@@ -211,16 +243,26 @@
   :center BorderLayout/CENTER
 })
 
-(defn- border-layout-add [p w dir]
-  (add-widget p w (dir border-layout-dirs)))
-
 (def ^{:private true} border-layout-options 
   (apply hash-map
     (flatten 
-      (for [dir (keys border-layout-dirs)]
-        [dir  #(border-layout-add %1 %2 dir)]))))
+      (for [[dir-key dir-val] border-layout-dirs]
+        [dir-key  #(add-widget %1 %2 dir-val)]))))
 
 (defn border-panel
+  "Create a panel with a border layout. In addition to the usual options, 
+  supports:
+    
+    :north  widget for north position (passed through to-widget)
+    :south  widget for south position (passed through to-widget)
+    :east   widget for east position (passed through to-widget)
+    :west   widget for west position (passed through to-widget)
+    :center widget for center position (passed through to-widget)
+ 
+    :hgap   horizontal gap between widgets
+    :vgap   vertical gap between widgets
+   
+  "
   [& {:keys [hgap vgap] :or {hgap 0 vgap 0} :as opts}]
   (let [^java.awt.Container p (JPanel. (BorderLayout. hgap vgap))]
     (apply-options p opts (merge default-options border-layout-options))))
@@ -286,10 +328,12 @@
 
 ;*******************************************************************************
 ; Buttons
-
+(def ^{:private true} button-options {
+  :selected?   #(.setSelected %1 %2)
+})
 (defn- apply-button-defaults
   [button args]
-  (apply-options button args default-options))
+  (apply-options button args (merge default-options button-options)))
 
 (defn button   [& args] (apply-button-defaults (JButton.) args))
 (defn toggle   [& args] (apply-button-defaults (JToggleButton.) args))
@@ -300,11 +344,13 @@
 ; Text widgets
 
 (defn text
-  "Create a text field or area. Given a single argument, creates a JTextField using the argument as the initial text value. Otherwise, supports the following properties:
+  "Create a text field or area. Given a single argument, creates a JTextField 
+  using the argument as the initial text value. Otherwise, supports the 
+  following properties:
 
     :text         Initial text content
     :multi-line?  If true, a JTextArea is created (default false)
-    :editable     If false, the text is read-only (default true)
+    :editable?    If false, the text is read-only (default true)
 
   To listen for document changes, use the :listen option:
 
@@ -314,22 +360,35 @@
     
     (text :id :my-text ...)
         ...
-    (listen (select :#my-text) :documen #(... handler ...))
+    (listen (select :#my-text) :document #(... handler ...))
   " 
   [& args]
-  (if (next args)
-    (let [{:keys [multi-line?] :as opts} args
-          t (if multi-line? (JTextArea.) (JTextField.))]
-      (apply-options t opts default-options))
-    (apply text :text args)))
+  (let [n (count args)
+        one? (= n 1)
+        two? (= n 2)
+        [arg0 arg1] args
+        widget? (or (instance? JTextComponent arg0) (instance? AbstractButton arg0))
+        multi? (or (coll? arg0) (seq? arg0))]
+    ; TODO this is crying out for a multi-method or protocol
+    (cond
+      (and one? widget?)  (.getText arg0)
+      (and one? multi?)   (map #(.getText %) arg0)
+      one?                (text :text arg0)
+      (and two? widget?)  (doto arg0 (.setText arg1))
+      (and two? multi?)   (do (doseq [w arg0] (.setText w arg1)) arg0)
+
+      :else (let [{:keys [multi-line?] :as opts} args
+                  t (if multi-line? (JTextArea.) (JTextField.))]
+            (apply-options t opts default-options)))))
 
 
 ;*******************************************************************************
 ; Scrolling
 
 (defn scrollable 
-  [w]
-  (let [sp (JScrollPane. w)]
+  "Wrap target in a JScrollPane and return the scroll pane"
+  [target]
+  (let [sp (JScrollPane. target)]
     sp))
 
 ;*******************************************************************************
@@ -338,11 +397,16 @@
   [dir left right & opts]
   (JSplitPane. (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
                      :top-bottom JSplitPane/VERTICAL_SPLIT})
-               (to-widget left)
-               (to-widget right)))
+               (to-widget left true)
+               (to-widget right true)))
 
-(defn left-right-split [& args] (apply splitter :left-right args))
-(defn top-bottom-split [& args] (apply splitter :top-bottom args))
+(defn left-right-split 
+  "Create a left/right (horizontal) splitpane with the given widgets"
+  [left right & args] (apply splitter :left-right left right args))
+
+(defn top-bottom-split 
+  "Create a top/bottom (vertical) split pane with the given widgets"
+  [top bottom & args] (apply splitter :top-bottom top bottom args))
 
 
 ;*******************************************************************************
@@ -355,12 +419,19 @@
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
 (def ^{:private true} toolbar-options {
-  :floatable #(.setFloatable %1 %2)
+  :floatable? #(.setFloatable %1 %2)
   ; Override default :items handler
   :items     #(add-widgets %1 (insert-toolbar-separators %2))
 })
 
 (defn toolbar
+  "Create a JToolBar. The following properties are supported:
+ 
+    :floatable?  Whether the toolbar is floatable.
+    :orientation Toolbar orientation, :horizontal or :vertical
+    :items       Normal list of widgets to add to the toolbar. :separator
+                 creates a toolbar separator.
+  "
   [& opts]
   (apply-options (JToolBar.) opts (merge default-options toolbar-options)))
 
@@ -385,7 +456,7 @@
     (let [title-cmp (try-cast Component title)
           index     (.getTabCount tp)]
       (cond-doto tp
-        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (to-widget content) (str tip))
+        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (to-widget content true) (str tip))
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
@@ -433,7 +504,7 @@
       :as opts}]
   (cond-doto (JFrame.)
     title    (.setTitle (str title))
-    content  (.setContentPane (to-widget content))
+    content  (.setContentPane (to-widget content true))
     true     (.setSize width height)
     true     (.setVisible visible?)
     pack?    (.pack)))
@@ -459,7 +530,13 @@
 (def ^{:private true} id-regex #"^#(.+)$")
 
 (defn select
-  ([v]
-    (if-let [[_ id] (re-find id-regex (name v))]
+  "Select a widget using the given selector expression:
+
+    :#id    Look up widget by id. A single widget is returned
+
+   Someday more selectors will be supported :)
+  "
+  ([selector]
+    (if-let [[_ id] (re-find id-regex (name selector))]
       (get @widget-by-id id))))
 

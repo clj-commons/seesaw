@@ -44,12 +44,35 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
 
 <table>
   <tr><td>Property</td><td>Description</td></tr>
+  <tr><td><code>:id</code></td><td>A unique id for the widget for use with `(select)` (see below).</td></tr>
   <tr><td><code>:opaque</code></td><td>(boolean) Set whether the background of the widget is opaque.</td></tr>
   <tr><td><code>:background</code></td><td>Background color by coercing into a Color (see below)</td></tr>
   <tr><td><code>:foreground</code></td><td>Foreground color by coercing into a Color (see below)</td></tr>
   <tr><td><code>:border</code></td><td>Set the border of the widget by coercing into a Border. See below.</td></tr>
   <tr><td><code>:font</code></td><td>Set the font of the widget by coercing into a Font. See below.</td></tr>
+  <tr><td><code>:enabled?</code></td><td>Whether the widget is enabled or not.</td></tr>
+  <tr><td><code>:listen</code></td><td>List of event listeners with same format as args to `(listen)` function (see below).</td></tr>
 </table>
+
+... and several more. 
+
+Note that these properties can also be used with the `(config)` function which applies them to an existing widget or widgets:
+
+    (config (select :#my-widget) :enabled? false :text "I'm disabled.")
+
+### Selectors
+
+I hope to one day support general CSS-style selectors for finding and styling widgets in an app. For now, the `(select)` function supports locating a widget by `:id` as set at creation time:
+
+    (button :id :the-button :text "Push me")
+
+       ... later ...
+
+    (listen (select :#the-button) 
+      :action (fn [e] ... do something ...))
+
+
+At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparrently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
 
 ### Containers
 
@@ -70,7 +93,7 @@ A `GridLayout` with 2 columns and a titled border:
       :items ["Name" (text "Frank") 
               "Address" (text "123 Main St")])
 
-A `BorderLayout`:
+A `BorderLayout` with labels at each position:
     
     (border-panel :hgap 10 :vgap 10 :center "CENTER" :north "NORTH" :south "SOUTH" :east "EAST" :west "WEST")
 
@@ -87,6 +110,8 @@ Event handlers are installed with the `(listen)` function. Its first argument is
       :mouse-clicked (fn [e] ... do something ...)
       :mouse-entered (fn [e] ... do something ...)
       :mouse-exited  (fn [e] ... do something ...))
+
+Note that these same arguments to be given to the `:listen` property when the widget is constructed.
 
 See `seesaw.events/add-listener` for more details.
     

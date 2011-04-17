@@ -19,12 +19,12 @@
         status      (label "Ready")
         result-text (text :multi-line? true :editable? false :font "MONOSPACED-14")
         result-handler (fn [s]
-                         (.setText result-text s)
-                         (.setText status "Ready"))
+                         (text result-text s)
+                         (text status "Ready"))
         go-handler (fn [e] 
-                     (.setText status "Busy")
+                     (text status "Busy")
                      (do-request 
-                       (.getText url-text)
+                       (text url-text)
                        result-handler))]
     (frame 
       :title "Hot Potatoes!"
@@ -49,4 +49,4 @@
 
 (defn -main [& args]
   (invoke-later #(app true)))
-
+;(app false)

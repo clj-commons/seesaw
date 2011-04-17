@@ -12,7 +12,7 @@
   (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false :content
     (border-panel :vgap 5
       :north (toolbar 
-               :floatable false 
+               :floatable? false 
                :items [(button :id :button :text "This") :separator "is a toolbar" :separator
                        (action #(.dispose (to-frame %)) :name "Close this frame")])
       :center (top-bottom-split 
@@ -46,7 +46,7 @@
                               (text 
                                 :text (apply str (interpose "\n" (range 0 20))) 
                                 :multi-line? true 
-                                :editable false))])
+                                :editable? false))])
           :east  (JLabel. "East")
           :west  (vertical-panel 
                     :background Color/GREEN
@@ -97,20 +97,20 @@
 
   (listen (select :#link)
     :mouse-clicked #(alert % "CLICK!")
-    :mouse-entered #(.. (to-widget %) (setForeground Color/BLUE))
-    :mouse-exited  #(.. (to-widget %) (setForeground Color/BLACK)))
+    :mouse-entered #(config % :foreground Color/BLUE)
+    :mouse-exited  #(config % :foreground Color/BLACK))
 
   (listen (select :#check-me) :item-state-changed 
     (fn [e] 
-      (.setEnabled (first (select :#link)) (.. (to-widget e) (isSelected)))))
+      (config (select :#link) :enabled? (.. (to-widget e) (isSelected)))))
 
   (listen (select :#and-me)  
     :item-state-changed (fn [e] (println (.. (to-widget e) (isSelected))))))
 
  
 
-;(doseq [f (JFrame/getFrames)]
-  ;(.dispose f))
 (defn -main [& args]
   (invoke-later crazy-app))
+;(doseq [f (JFrame/getFrames)]
+  ;(.dispose f))
 ;(-main)
