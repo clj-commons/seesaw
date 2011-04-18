@@ -1,4 +1,4 @@
-(ns seesaw.examples.crazy
+(ns seesaw.examples.kitchensink
   (:require clojure.java.io)
   (:use seesaw.core)
   (:use seesaw.border)
@@ -8,7 +8,7 @@
 (def rss-url (clojure.java.io/resource "seesaw/examples/rss.gif"))
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
-(defn crazy-app []
+(defn app []
   (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false :content
     (border-panel :vgap 5
       :north (toolbar 
@@ -120,7 +120,7 @@
  
 
 (defn -main [& args]
-  (invoke-later crazy-app))
+  (invoke-later app))
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
 ;(-main)
