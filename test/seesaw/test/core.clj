@@ -45,23 +45,23 @@
   (testing "setting enabled option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
-        (expect (= true (.isEnabled c)))))
+        (expect (.isEnabled c))))
     (it "sets enabled when provided"
       (let [c (apply-default-opts (JPanel.) {:enabled? false})]
-        (expect (= false (.isEnabled c)))))
+        (expect (not (.isEnabled c)))))
     (it "sets enabled when provided a truthy value"
       (let [c (apply-default-opts (JPanel.) {:enabled? "something"})]
-        (expect (= true (.isEnabled c)))))
+        (expect (.isEnabled c))))
     (it "sets enabled when provided a falsey value"
       (let [c (apply-default-opts (JPanel.) {:enabled? nil})]
         (expect (= false (.isEnabled c))))))
   (testing "setting opaque? option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
-        (expect (= true (.isOpaque c)))))
+        (expect (.isOpaque c))))
     (it "sets opacity when provided"
       (let [c (apply-default-opts (JPanel.) {:opaque? false})]
-        (expect (= false (.isOpaque c))))))
+        (expect (not (.isOpaque c))))))
   (testing "the :model property"
     (it "sets the model when provided"
       (let [model  (javax.swing.DefaultButtonModel.)
@@ -160,7 +160,7 @@
       (expect (= FlowLayout/TRAILING (.getAlignment l)))
       (expect (= 99 (.getHgap l)))
       (expect (= 12 (.getVgap l)))
-      (expect (= true (.getAlignOnBaseline l)))
+      (expect (.getAlignOnBaseline l))
       (expect (= [a b c] (seq (.getComponents p)))))))
 
 (describe border-panel
@@ -259,7 +259,7 @@
       (expect (= "HI" (.getText t)))))
   (it "should honor the editable property"
     (let [t (text :text "HI" :editable? false :multi-line? true)]
-      (expect (false? (.isEditable t))))))
+      (expect (not (.isEditable t))))))
 
 (describe button
   (it "should create a JButton"

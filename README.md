@@ -2,6 +2,16 @@
 
 Seesaw's a *primordial* experiment to see what I can do to make Swing funner in Clojure. It's maybe inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
+## TODO
+
+* GridBagLayout
+* JTree
+* Cell renderers
+* Graphics
+* Structural manip
+* Selectors
+* Styling
+
 ## Usage
 See tests and src/seesaw/examples. Seriously, the tests are pretty descriptive of how things work.
 
