@@ -161,5 +161,41 @@
         (add-listener [button0 button1] :action f)
         (.doClick button0)
         (.doClick button1))
-      (expect (= 2 @called)))))
+      (expect (= 2 @called))))
+  (it "can register a ListSelectionListener on a JList with :selection key"
+    (let [jlist (javax.swing.JList.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getListSelectionListeners jlist))))
+        (add-listener jlist :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getListSelectionListeners jlist))))
+        (.. (first (.getListSelectionListeners jlist)) (valueChanged nil))
+        (expect @called))))
+  (it "can register a TreeSelectionListener on a JTree with :selection key"
+    (let [tree (javax.swing.JTree.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getTreeSelectionListeners tree))))
+        (add-listener tree :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getTreeSelectionListeners tree))))
+        (.. (first (.getTreeSelectionListeners tree)) (valueChanged nil))
+        (expect @called))))
+  (it "can register an ActionListener on a JComboBox with :selection key"
+    (let [cb (javax.swing.JComboBox.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getActionListeners cb))))
+        (add-listener cb :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getActionListeners cb))))
+        (.. (first (.getActionListeners cb)) (actionPerformed nil))
+        (expect @called))))
+  (it "can register an ItemListener on an ItemSelectable (like a checkbox) with :selection key"
+    (let [b (javax.swing.JToggleButton.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getItemListeners b))))
+        (add-listener b :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getItemListeners b))))
+        (.. (first (.getItemListeners b)) (itemStateChanged nil))
+        (expect @called)))))
 

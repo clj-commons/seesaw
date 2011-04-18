@@ -111,7 +111,7 @@ Event handlers are installed with the `(listen)` function. Its first argument is
       :mouse-entered (fn [e] ... do something ...)
       :mouse-exited  (fn [e] ... do something ...))
 
-Note that these same arguments to be given to the `:listen` property when the widget is constructed.
+Note that these same arguments can be given to the `:listen` property when the widget is constructed.
 
 See `seesaw.events/add-listener` for more details.
     

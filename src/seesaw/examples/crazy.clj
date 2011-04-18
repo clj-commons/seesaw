@@ -14,7 +14,8 @@
       :north (toolbar 
                :floatable? false 
                :items [(button :id :button :text "This") :separator "is a toolbar" :separator
-                       (action #(.dispose (to-frame %)) :name "Close this frame")])
+                       (action #(.dispose (to-frame %)) :name "Close this frame")
+                       (combobox :id :combo :model ["First" "Second" "Third"])])
       :center (top-bottom-split 
       (left-right-split 
         (border-panel 
@@ -86,7 +87,10 @@
                  :opaque false 
                  :items ["This tab has a button -> " (button :text "X")])
         :tip   "Here's another tab"
-        :content "Hello. I'm the content of this tab. Just a label." }]))))
+        :content "Hello. I'm the content of this tab. Just a label." }
+      { :title "JList Example"
+        :tip   "A tab with a JList example"
+        :content (scrollable (listbox :id :list :model (range 0 100))) }]))))
 
   (listen (select :#tabs) :state-changed
         #(let [tp (to-widget %)
@@ -100,17 +104,23 @@
     :mouse-entered #(config % :foreground Color/BLUE)
     :mouse-exited  #(config % :foreground Color/BLACK))
 
-  (listen (select :#check-me) :item-state-changed 
+  (listen (select :#check-me) :selection ; or :item-state-changed
     (fn [e] 
       (config (select :#link) :enabled? (.. (to-widget e) (isSelected)))))
 
-  (listen (select :#and-me)  
-    :item-state-changed (fn [e] (println (.. (to-widget e) (isSelected))))))
+  (listen (select :#combo)  :selection ; or :item-state-changed
+      (fn [e] (println (.. (to-widget e) (getSelectedItem)))))
+
+  (listen (select :#list)  :selection ; or :list-selection
+      (fn [e] (println (str (seq (.. (to-widget e) (getSelectedValues)))))))
+
+  (listen (select :#and-me)  :selection ; or :item-state-changed
+    (fn [e] (println (.. (to-widget e) (isSelected))))))
 
  
 
 (defn -main [& args]
   (invoke-later crazy-app))
-;(doseq [f (JFrame/getFrames)]
-  ;(.dispose f))
-;(-main)
+(doseq [f (JFrame/getFrames)]
+  (.dispose f))
+(-main)

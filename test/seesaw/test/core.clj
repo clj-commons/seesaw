@@ -56,6 +56,11 @@
     (it "sets opacity when provided"
       (let [c (apply-default-opts (JPanel.) {:opaque false})]
         (expect (= false (.isOpaque c))))))
+  (testing "the :model property"
+    (it "sets the model when provided"
+      (let [model  (javax.swing.DefaultButtonModel.)
+            widget (apply-default-opts (button :model model))]
+        (expect (= model (.getModel widget))))))
   (it "sets background using to-color when provided"
       (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
         (expect (= Color/BLACK (.getBackground c)))))
@@ -290,6 +295,30 @@
   (it "should honor the :selected property"
     (let [t (radio :text "HI" :selected? true)]
       (expect (.isSelected t)))))
+
+(describe listbox
+  (it "should create a JList"
+    (let [lb (listbox)]
+      (expect (= javax.swing.JList (class lb)))))
+  (it "should create a JList using a seq as its model"
+    (let [lb (listbox :model [1 2 3 4])
+          model (.getModel lb)]
+      (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model))))))))
+
+(describe combobox
+  (it "should create a JComboBox"
+    (let [lb (combobox)]
+      (expect (= javax.swing.JComboBox (class lb)))))
+  (testing "the :editable? property"
+    (it "should create a non-editable JComboBox when false"
+      (not (.isEditable (combobox :editable? false))))
+    (it "should create an editable JComboBox when true"
+      (.isEditable (combobox :editable? true))))
+  (it "should create a JComboBox using a seq as its model"
+    (let [lb (combobox :model [1 2 3 4])
+          model (.getModel lb)]
+      (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
+      (expect (= 1 (.getSelectedItem model))))))
 
 (describe scrollable
   (it "should create a JScrollPane"

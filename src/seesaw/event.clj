@@ -10,7 +10,8 @@
 
 (ns seesaw.event
   (:use seesaw.util)
-  (:import [javax.swing.event ChangeListener DocumentListener]
+  (:import [javax.swing.event ChangeListener DocumentListener 
+            ListSelectionListener TreeSelectionListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
@@ -95,6 +96,27 @@
     :events  #{:mouse-wheel-moved}
     :install #(.addMouseWheelListener %1 %2)
   }
+  :list-selection { 
+    :name    :list-selection
+    :class   ListSelectionListener
+    :events  #{:value-changed}
+    :named-events #{:list-selection} ; Suppress reversed map entry
+    :install #(.addListSelectionListener %1 %2)
+  }
+  :tree-selection { 
+    :name    :tree-selection
+    :class   TreeSelectionListener
+    :events  #{:value-changed}
+    :named-events #{:tree-selection} ; Suppress reversed map entry
+    :install #(.addTreeSelectionListener %1 %2)
+  }
+})
+
+; Kind of a hack. Re-route methods with renamed events (due to collisions like
+; valueChanged()) back to their real names.
+(def ^{:private true} event-method-table {
+  :list-selection :value-changed
+  :tree-selection :value-changed
 })
 
 (defmulti reify-listener (fn [& args] (first args)))
@@ -139,7 +161,10 @@
 ;   :mouse-clicked -> :mouse struct
 ;   ...
 (def ^{:private true} event-group-table
-  (apply hash-map (flatten (for [[k v] event-groups e (:events v)] [e v]))))
+  (->>
+    (for [[k v] event-groups e (or (:named-events v) (:events v))] [e v])
+    (flatten)
+    (apply hash-map)))
 
 (defn- install-group-handlers
   [target event-group]
@@ -178,17 +203,24 @@
   (update-in listeners [k] (partial remove #{l})))
 
 (defn- resolve-event-aliases
-  [event-name]
-  (get-in event-groups [event-name :events] event-name))
+  [target event-name]
+  (cond
+    (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
+    ; Re-route to right listener type for :selection on various widget types
+    (instance? javax.swing.JList target)       :list-selection
+    (instance? javax.swing.JTree target)       :tree-selection
+    (instance? javax.swing.JComboBox target)   :action-performed
+    (instance? java.awt.ItemSelectable target) :item-state-changed
+    :else event-name))
 
 (defn- preprocess-event-specs
   "take name/fn pairs in add-listener arg list and resolve aliases
    and stuff"
-  [args]
+  [target args]
   (mapcat 
     (fn [[a b]] (for [n (to-seq a)] [n b]))
     (for [[en f] (partition 2 args)]
-      [(resolve-event-aliases en) f])))
+      [(resolve-event-aliases target en) f])))
 
 (defn add-listener
   "Install listeners for one or more events on the given target. For example:
@@ -218,9 +250,10 @@
   "
   [targets & more]
     (doseq [target (to-seq targets) 
-            [event-name event-fn] (preprocess-event-specs more)]
-      (let [handlers (get-or-install-handlers target event-name)]
-        (swap! handlers append-listener event-name event-fn)))
+            [event-name event-fn] (preprocess-event-specs target more)]
+      (let [handlers (get-or-install-handlers target event-name)
+            final-method-name (get event-method-table event-name event-name)]
+        (swap! handlers append-listener final-method-name event-fn)))
     targets)
 
 (defn remove-listener
@@ -228,9 +261,10 @@
    previously added with (add-listener)"
   [targets & more]
   (doseq [target (to-seq targets)
-          [event-name event-fn] (preprocess-event-specs more)]
+          [event-name event-fn] (preprocess-event-specs target more)]
     ; TODO no need to install handlers if they're not already there.
-    (let [handlers (get-or-install-handlers target event-name)]
-      (swap! handlers unappend-listener event-name event-fn)))
+    (let [handlers (get-or-install-handlers target event-name)
+          final-method-name (get event-method-table event-name event-name)]
+      (swap! handlers unappend-listener final-method-name event-fn)))
     targets)
 

@@ -197,6 +197,7 @@
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
   :items       #(add-widgets %1 %2)
+  :model       #(.setModel %1 %2)
 })
 
 (defn- apply-options
@@ -391,6 +392,45 @@
                   t (if multi-line? (JTextArea.) (JTextField.))]
             (apply-options t opts default-options)))))
 
+;*******************************************************************************
+; Listbox
+
+(defn- to-list-model [xs]
+  (if (instance? javax.swing.ListModel xs)
+    xs
+    (let [model (javax.swing.DefaultListModel.)]
+      (doseq [x xs]
+        (.addElement model x))
+      model)))
+
+(def ^{:private true} listbox-options {
+  :model (fn [lb m] ((:model default-options) lb (to-list-model m)))
+})
+
+(defn listbox
+  [& args]
+  (apply-options (javax.swing.JList.) args (merge default-options listbox-options)))
+
+;*******************************************************************************
+; Combobox
+
+(defn- to-combobox-model [xs]
+  (if (instance? javax.swing.ComboBoxModel xs)
+    xs
+    (let [model (javax.swing.DefaultComboBoxModel.)]
+      (doseq [x xs]
+        (.addElement model x))
+      (when (seq xs)
+        (.setSelectedItem model (first xs)))
+      model)))
+
+(def ^{:private true} combobox-options {
+  :model (fn [lb m] ((:model default-options) lb (to-combobox-model m)))
+})
+
+(defn combobox
+  [& args]
+  (apply-options (javax.swing.JComboBox.) args (merge default-options combobox-options)))
 
 ;*******************************************************************************
 ; Scrolling
