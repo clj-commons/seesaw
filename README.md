@@ -133,6 +133,20 @@ It's typical in Swing apps to use actions for menus, buttons, etc. An action nee
 
 `(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it.
 
+### Selection Handling
+The `(selection)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget). It will always return a seq of values, or `nil` if there is no selection. For single-selection cases, just use `(first)`. Note that you can apply `(selection)` to event objects as well:
+
+    (listen (select :#my-list) :selection
+      (fn [e]
+       (println "Current selection of my-list is: " (selection e))))
+
+Giving an argument to the `(selection)` function will set the current selection:
+
+    (let [my-list (listbox :model ["jim" "bob" "al"])]
+      (selection my-list ["bob"]))
+
+Pass `nil` to clear the selection.
+
 ### Color Coercion
 
 Colors can be specified in the following ways (using the `:foreground` property as an example):

@@ -106,21 +106,22 @@
 
   (listen (select :#check-me) :selection ; or :item-state-changed
     (fn [e] 
-      (config (select :#link) :enabled? (.. (to-widget e) (isSelected)))))
+      (config (select :#link) :enabled? (first (selection e)))))
 
   (listen (select :#combo)  :selection ; or :item-state-changed
-      (fn [e] (println (.. (to-widget e) (getSelectedItem)))))
+      (fn [e] (println (selection e))))
 
   (listen (select :#list)  :selection ; or :list-selection
-      (fn [e] (println (str (seq (.. (to-widget e) (getSelectedValues)))))))
+      (fn [e] (println (selection e))))
 
   (listen (select :#and-me)  :selection ; or :item-state-changed
-    (fn [e] (println (.. (to-widget e) (isSelected))))))
+    (fn [e] (println (selection e)))))
 
  
 
 (defn -main [& args]
   (invoke-later crazy-app))
-(doseq [f (JFrame/getFrames)]
-  (.dispose f))
-(-main)
+;(doseq [f (JFrame/getFrames)]
+  ;(.dispose f))
+;(-main)
+

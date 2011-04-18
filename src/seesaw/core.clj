@@ -13,7 +13,8 @@
   (:use seesaw.font)
   (:use seesaw.border)
   (:use seesaw.color)
-  (:require [seesaw.event :as sse])
+  (:require [seesaw.event :as sse]
+            [seesaw.selection :as sss])
   (:import [java.util EventObject]
            [javax.swing 
              SwingUtilities SwingConstants 
@@ -27,12 +28,38 @@
            [javax.swing.event ChangeListener DocumentListener]
            [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable Image]
            [java.awt.event MouseAdapter ActionListener]))
+
+(declare to-widget)
+
 ;(set! *warn-on-reflection* true)
 (defn invoke-later [f] (SwingUtilities/invokeLater f))
 (defn invoke-now [f] (SwingUtilities/invokeAndWait f))
 
 ; alias event/add-listener for convenience
 (def listen sse/add-listener)
+
+; to-widget wrapper and stuff for (seesaw.selection/selection)
+(defn selection 
+  "Gets/sets the selection on a widget. target is passed through (to-widget)
+  so event objects can also be used.
+  
+  If called with a single widget argument returns a seq containing the current
+  selection, or nil if there is no selection. Use (first) for single-selection
+  widgets like checkboxes.
+
+  If called with an additional argument, sets the current selection. The
+  interpretation of the argument depends on the type of widget:
+
+    JCheckBox, JToggleButton, etc: truthy value sets checkmark, etc.
+    JList: argument is a list of values to select, or nil to clear selection
+    JComboBox: argument is the value to select
+
+  Returns the target.
+
+  See also seesaw.selection/selection.
+  "
+  [target & args]
+  (apply sss/selection (to-widget target) args))
 
 ;*******************************************************************************
 ; Icons
@@ -182,8 +209,8 @@
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/add-listener %1 %2)
-  :opaque      #(.setOpaque %1 %2)
-  :enabled?    #(.setEnabled %1 %2)
+  :opaque?     #(.setOpaque %1 (boolean %2))
+  :enabled?    #(.setEnabled %1 (boolean %2))
   :background  #(.setBackground %1 (to-color %2))
   :foreground  #(.setForeground %1 (to-color %2))
   :border      #(.setBorder %1 (to-border %2))
@@ -192,7 +219,7 @@
   :text        #(.setText %1 (str %2))
   :icon        #(.setIcon %1 (make-icon %2))
   :action      #(.setAction %1 %2)
-  :editable?   #(.setEditable %1 %2)
+  :editable?   #(.setEditable %1 (boolean %2))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
@@ -340,7 +367,7 @@
 ;*******************************************************************************
 ; Buttons
 (def ^{:private true} button-options {
-  :selected?   #(.setSelected %1 %2)
+  :selected?   #(.setSelected %1 (boolean %2))
 })
 (defn- apply-button-defaults
   [button args]
@@ -469,7 +496,7 @@
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
 (def ^{:private true} toolbar-options {
-  :floatable? #(.setFloatable %1 %2)
+  :floatable? #(.setFloatable %1 (boolean %2))
   ; Override default :items handler
   :items     #(add-widgets %1 (insert-toolbar-separators %2))
 })
@@ -556,7 +583,7 @@
     title    (.setTitle (str title))
     content  (.setContentPane (to-widget content true))
     true     (.setSize width height)
-    true     (.setVisible visible?)
+    true     (.setVisible (boolean visible?))
     pack?    (.pack)))
 
 (defn to-frame 
