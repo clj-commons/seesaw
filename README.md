@@ -21,6 +21,13 @@ Let's create a `JFrame`:
 
 This will create a `JFrame` with title "Hello" and a single label "Hi there". The `:content` property expects something that can be turned into a widget and uses it as the content pane of the frame. Any place where a widget is expected, one will be created depending on the argument...
 
+There are three examples at the moment:
+
+    $ lein deps
+    $ lein run -m seesaw.examples.kitchensink
+    $ lein run -m seesaw.examples.temp
+    $ lein run -m seesaw.examples.hotpotatoes
+
 ### Widget Coercion
 
 <table>
