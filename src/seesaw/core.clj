@@ -26,7 +26,8 @@
              JOptionPane]
            [javax.swing.text JTextComponent]
            [javax.swing.event ChangeListener DocumentListener]
-           [java.awt Component FlowLayout BorderLayout GridLayout Dimension ItemSelectable Image]
+           [java.awt Component FlowLayout BorderLayout GridLayout GridBagLayout GridBagConstraints
+                     Dimension ItemSelectable Image]
            [java.awt.event MouseAdapter ActionListener]))
 
 (declare to-widget)
@@ -354,6 +355,96 @@
     (apply-options panel opts default-options)))
 
 ;*******************************************************************************
+; Form aka GridBagLayout
+
+(def ^{:private true} gbc-fill 
+  (int-constant-map GridBagConstraints :none :both :horizontal :vertical))
+
+(def ^{:private true} gbc-grid-xy (int-constant-map GridBagConstraints :relative))
+
+(def ^{:private true} gbc-grid-wh
+  (int-constant-map GridBagConstraints :relative :remainder))
+
+(def ^{:private true} gbc-anchors 
+  (int-constant-map GridBagConstraints
+    :north :south :east :west 
+    :northwest :northeast :southwest :southeast :center
+    
+    :page-start :page-end :line-start :line-end 
+    :first-line-start :first-line-end :last-line-start :last-line-end
+  
+    :baseline :baseline-leading :baseline-trailing
+    :above-baseline :above-baseline-leading :above-baseline-trailing
+    :below-baseline :below-baseline-leading :below-baseline-trailing)) 
+
+(defn- gbc-grid-handler [gbc v]
+  (let [x (.gridx gbc)
+        y (.gridy gbc)]
+    (condp = v
+      :next (set! (. gbc gridx) (inc x))
+      :wrap    (do 
+                 (set! (. gbc gridx) 0)
+                 (set! (. gbc gridy) (inc y))))
+    gbc))
+
+(def ^{:private true} grid-bag-constraints-options {
+  :grid       gbc-grid-handler
+  :gridx      #(set! (. %1 gridx)      (get gbc-grid-xy %2 %2))
+  :gridy      #(set! (. %1 gridy)      (get gbc-grid-xy %2 %2))
+  :gridwidth  #(set! (. %1 gridwidget) (get gbc-grid-wh %2 %2))
+  :gridheight #(set! (. %1 gridheight) (get gbc-grid-wh %2 %2))
+  :fill       #(set! (. %1 fill)       (get gbc-fill %2 %2))
+  :ipadx      #(set! (. %1 ipadx)      %2)
+  :ipady      #(set! (. %1 ipady)      %2)
+  :insets     #(set! (. %1 insets)     %2)
+  :anchor     #(set! (. %1 anchor)     (gbc-anchors %2))
+  :weightx    #(set! (. %1 weightx)    %2)
+  :weighty    #(set! (. %1 weighty)    %2)
+})
+
+(defn realize-grid-bag-constraints
+  "Turn item specs into [widget constraint] pairs by successively applying
+  options to GridBagConstraints"
+  [items]
+  (second
+    (reduce
+      (fn [[gbcs result] [widget & opts]]
+        (apply-options gbcs opts grid-bag-constraints-options)
+        (vector (.clone gbcs) (conj result [widget gbcs]))) 
+      [(GridBagConstraints.) []]
+      items)))
+
+(defn- add-grid-bag-items
+  [panel items]
+  (doseq [[widget constraints] (realize-grid-bag-constraints items)]
+    (when widget
+      (add-widget panel widget constraints))))
+
+(def ^{:private true} form-panel-options {
+  :items add-grid-bag-items
+})
+
+(defn form-panel
+  "A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
+  want to be reminded of GridBagLayout. The :items property should be a list
+  of vectors of the form:
+
+      [widget & options]
+
+  where widget is something widgetable and options are key/value pairs
+  corresponding to GridBagConstraints fields. For example:
+
+    [[\"Name\"         :weightx 0]
+     [(text :id :name) :weightx 1 :fill :horizontal]]
+
+  This creates a label/field pair where the field expands."
+  [& opts]
+  (let [^java.awt.Container p (JPanel. (GridBagLayout.))]
+    (apply-options p opts (merge default-options form-panel-options))))
+
+(def grid-bag-panel form-panel)
+
+;*******************************************************************************
 ; Labels
 
 (defn label 
@@ -381,6 +472,8 @@
 
 ;*******************************************************************************
 ; Text widgets
+(def ^{:private true} text-options {
+  :columns #(.setColumns %1 %2) })
 
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField 
@@ -418,7 +511,7 @@
 
       :else (let [{:keys [multi-line?] :as opts} args
                   t (if multi-line? (JTextArea.) (JTextField.))]
-            (apply-options t opts default-options)))))
+            (apply-options t opts (merge default-options text-options))))))
 
 ;*******************************************************************************
 ; Listbox

@@ -40,6 +40,21 @@
     (coll? v) (seq v)
     :else (seq [v])))
 
+(defn- constantize-keyword [k]
+  (.. (name k) (toUpperCase) (replace "-" "_")))
+
+(defn int-constant-map
+  "Given a class and a list of keywordized constant names returns the integer
+  values of those fields in a map"
+  [klass & fields]
+  (reduce
+    (fn [m [k v]] (assoc m k v))
+    {}
+    (map 
+      #(vector %1 (.. klass (getDeclaredField (constantize-keyword %1)) (getInt nil)))
+      fields)))
+    
+  
 (defn camelize
   "Convert input string to camelCase from hyphen-case"
   [s]

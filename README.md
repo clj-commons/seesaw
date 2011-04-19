@@ -4,7 +4,7 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 
 ## TODO
 
-* GridBagLayout
+* GridBagLayout needs more work
 * JTree
 * Cell renderers
 * Graphics
@@ -24,6 +24,7 @@ This will create a `JFrame` with title "Hello" and a single label "Hi there". Th
 There are three examples at the moment:
 
     $ lein deps
+    $ lein run -m seesaw.examples.form
     $ lein run -m seesaw.examples.kitchensink
     $ lein run -m seesaw.examples.temp
     $ lein run -m seesaw.examples.hotpotatoes

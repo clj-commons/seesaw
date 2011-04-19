@@ -208,6 +208,28 @@
           g (grid-panel :items [a b c])] 
       (expect (= [a b c] (seq (.getComponents g)))))))
 
+(describe realize-grid-bag-constraints
+  (it "should return a vector of widget/constraint pairs"
+    (let [[[w0 c0] [w1 c1] & more] (realize-grid-bag-constraints [[:first :weightx 99 :weighty 555 :gridx :relative] [:second :weightx 100 :anchor :baseline]])]
+      (expect (nil? more))
+      (expect (= :first w0))
+      (expect (= 99 (.weightx c0)))
+      (expect (= 555 (.weighty c0)))
+      (expect (= :second w1))
+      (expect (= 100 (.weightx c1)))
+      (expect (= 555 (.weighty c1))))))
+
+(describe form-panel
+  (it "should create a JPanel with a GridBagLayout"
+    (= java.awt.GridBagLayout (class (.getLayout (form-panel)))))
+  (it "should add an item with grid bag constraints"
+    (let [p (form-panel :items [["hi" :weighty 999]])
+          w (first (.getComponents p))
+          gbcs (.getConstraints (.getLayout p) w)]
+      (expect (instance? JLabel w))
+      (expect (= java.awt.GridBagConstraints (class gbcs)))
+      (expect (= 999 (.weighty gbcs))))))
+
 (describe "for an arbitrary widget"
   (it "should support the :font property"
     (let [f (font "ARIAL-BOLD-18")
