@@ -445,6 +445,30 @@
 (def grid-bag-panel form-panel)
 
 ;*******************************************************************************
+; MigLayout
+(defn- apply-mig-constraints [widget constraints]
+  (let [layout (.getLayout widget)
+        [lc cc rc] constraints]
+    (cond-doto layout
+      lc (.setLayoutConstraints lc)
+      cc (.setColumnConstraints cc)
+      rc (.setRowConstraints cc))))
+
+(defn- add-mig-items [parent items]
+  (doseq [[widget constraint] items]
+    (add-widget parent widget constraint)))
+
+(def ^{:private true} mig-panel-options {
+  :constraints apply-mig-constraints
+  :items       add-mig-items
+})
+
+(defn mig-panel
+  [& opts]
+  (let [p (JPanel. (net.miginfocom.swing.MigLayout.))]
+    (apply-options p opts (merge default-options mig-panel-options))))
+
+;*******************************************************************************
 ; Labels
 
 (defn label 
