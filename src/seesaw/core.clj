@@ -153,9 +153,8 @@
    would create a new widget. The default value for create? is false
    to avoid inadvertently creating widgets all over the place.
   "
-  ([v] (to-widget v false))
-  ([v create?]
-    (when v (to-widget* v create?))))
+  ([v]         (to-widget v false))
+  ([v create?] (when v (to-widget* v create?))))
 
 ;*******************************************************************************
 ; Generic widget stuff
@@ -163,9 +162,9 @@
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
-   (let [w* (to-widget w true)]
-    (.add c w* constraint)
-    w*)))
+    (let [w* (to-widget w true)]
+      (.add c w* constraint)
+      w*)))
 
 (defn- add-widgets
   [c ws]
@@ -282,10 +281,10 @@
 })
 
 (def ^{:private true} border-layout-options 
-  (apply hash-map
-    (flatten 
-      (for [[dir-key dir-val] border-layout-dirs]
-        [dir-key  #(add-widget %1 %2 dir-val)]))))
+  (reduce 
+    (fn [m [k v]] (assoc m k #(add-widget %1 %2 v)))
+    {} 
+    border-layout-dirs))
 
 (defn border-panel
   "Create a panel with a border layout. In addition to the usual options, 
@@ -329,7 +328,7 @@
 
 (def ^{:private true} box-layout-dir-table {
   :horizontal BoxLayout/X_AXIS 
-  :vertical BoxLayout/Y_AXIS 
+  :vertical   BoxLayout/Y_AXIS 
 })
 
 (defn box-panel
@@ -340,7 +339,7 @@
     (apply-options panel opts default-options)))
 
 (defn horizontal-panel [& opts] (apply box-panel :horizontal opts))
-(defn vertical-panel [& opts] (apply box-panel :vertical opts))
+(defn vertical-panel   [& opts] (apply box-panel :vertical opts))
 
 ;*******************************************************************************
 ; Grid
@@ -366,9 +365,11 @@
 
 ;*******************************************************************************
 ; Buttons
+
 (def ^{:private true} button-options {
   :selected?   #(.setSelected %1 (boolean %2))
 })
+
 (defn- apply-button-defaults
   [button args]
   (apply-options button args (merge default-options button-options)))
@@ -564,6 +565,11 @@
 
 ;*******************************************************************************
 ; Frame
+(def ^{:private true} frame-options {
+  :title   #(.setTitle %1 (str %2))
+  :content #(.setContentPane %1 (to-widget %2 true))
+})
+
 (defn frame
   "Create a JFrame. Options:
 
@@ -576,12 +582,10 @@
 
   returns the new frame."
 
-  [& {:keys [title width height content visible? pack?] 
+  [& {:keys [width height visible? pack?] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
-  (cond-doto (JFrame.)
-    title    (.setTitle (str title))
-    content  (.setContentPane (to-widget content true))
+  (cond-doto (apply-options (JFrame.) opts frame-options)
     true     (.setSize width height)
     true     (.setVisible (boolean visible?))
     pack?    (.pack)))
