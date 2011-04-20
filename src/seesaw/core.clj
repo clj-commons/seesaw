@@ -452,7 +452,7 @@
     (cond-doto layout
       lc (.setLayoutConstraints lc)
       cc (.setColumnConstraints cc)
-      rc (.setRowConstraints cc))))
+      rc (.setRowConstraints rc))))
 
 (defn- add-mig-items [parent items]
   (doseq [[widget constraint] items]
@@ -464,6 +464,20 @@
 })
 
 (defn mig-panel
+  "Construct a panel with a MigLayout. Takes one special property:
+
+      :constraints [\"layout constraints\" \"column constraints\" \"row constraints\"]
+
+  These correspond to the three constructor arguments to MigLayout.
+  A vector of 0, 1, 2, or 3 constraints can be given.
+
+  The format of the :items property is a vector of [widget, constraint] pairs.
+  For example:
+
+    :items [[ \"Propeller\"        \"split, span, gaptop 10\"]]
+
+  See http://www.miglayout.com.
+  "
   [& opts]
   (let [p (JPanel. (net.miginfocom.swing.MigLayout.))]
     (apply-options p opts (merge default-options mig-panel-options))))
@@ -603,6 +617,12 @@
   "Create a top/bottom (vertical) split pane with the given widgets"
   [top bottom & args] (apply splitter :top-bottom top bottom args))
 
+;*******************************************************************************
+; Separator
+
+(defn separator
+  [& opts]
+  (apply-options (javax.swing.JSeparator.) opts default-options))
 
 ;*******************************************************************************
 ; Toolbars
