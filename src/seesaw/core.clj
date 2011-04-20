@@ -182,24 +182,14 @@
    creation. See also (select)."
   [^javax.swing.JComponent w] (.getClientProperty w id-property))
 
-(def ^{:private true} h-alignment-table {
-  :left     SwingConstants/LEFT 
-  :right    SwingConstants/RIGHT
-  :leading  SwingConstants/LEADING
-  :trailing SwingConstants/TRAILING
-  :center   SwingConstants/CENTER 
-})
+(def ^{:private true} h-alignment-table 
+  (constant-map SwingConstants :left :right :leading :trailing :center ))
 
-(def ^{:private true} v-alignment-table {
-  :top    SwingConstants/TOP 
-  :center SwingConstants/CENTER 
-  :bottom SwingConstants/BOTTOM 
-})
+(def ^{:private true} v-alignment-table
+  (constant-map SwingConstants :top :center :bottom))
 
-(def ^{:private true} orientation-table {
-  :horizontal SwingConstants/HORIZONTAL
-  :vertical   SwingConstants/VERTICAL
-})
+(def ^{:private true} orientation-table
+  (constant-map SwingConstants :horizontal :vertical))
 
 (defn- id-option-handler [w id]
   (let [id-key (name id)]
@@ -273,13 +263,8 @@
 ;*******************************************************************************
 ; Border Layout
 
-(def ^{:private true}  border-layout-dirs {
-  :north  BorderLayout/NORTH
-  :south  BorderLayout/SOUTH
-  :east   BorderLayout/EAST
-  :west   BorderLayout/WEST
-  :center BorderLayout/CENTER
-})
+(def ^{:private true}  border-layout-dirs 
+  (constant-map BorderLayout :north :south :east :west :center))
 
 (def ^{:private true} border-layout-options 
   (reduce 
@@ -308,13 +293,8 @@
 ;*******************************************************************************
 ; Flow
 
-(def ^{:private true} flow-align-table {
-  :left     FlowLayout/LEFT 
-  :right    FlowLayout/RIGHT
-  :leading  FlowLayout/LEADING
-  :trailing FlowLayout/TRAILING
-  :center   FlowLayout/CENTER 
-})
+(def ^{:private true} flow-align-table
+  (constant-map FlowLayout :left :right :leading :trailing :center))
 
 (defn flow-panel
   [& {:keys [hgap vgap align align-on-baseline] 
@@ -358,15 +338,15 @@
 ; Form aka GridBagLayout
 
 (def ^{:private true} gbc-fill 
-  (int-constant-map GridBagConstraints :none :both :horizontal :vertical))
+  (constant-map GridBagConstraints :none :both :horizontal :vertical))
 
-(def ^{:private true} gbc-grid-xy (int-constant-map GridBagConstraints :relative))
+(def ^{:private true} gbc-grid-xy (constant-map GridBagConstraints :relative))
 
 (def ^{:private true} gbc-grid-wh
-  (int-constant-map GridBagConstraints :relative :remainder))
+  (constant-map GridBagConstraints :relative :remainder))
 
 (def ^{:private true} gbc-anchors 
-  (int-constant-map GridBagConstraints
+  (constant-map GridBagConstraints
     :north :south :east :west 
     :northwest :northeast :southwest :southeast :center
     
@@ -653,12 +633,8 @@
 ;*******************************************************************************
 ; Tabs
 
-(def ^{:private true} tab-placement-table {
-  :bottom JTabbedPane/BOTTOM
-  :top    JTabbedPane/TOP
-  :left   JTabbedPane/LEFT
-  :right  JTabbedPane/RIGHT 
-})
+(def ^{:private true} tab-placement-table
+  (constant-map SwingConstants :bottom :top :left :right))
 
 (def ^{:private true} tab-overflow-table {
   :scroll JTabbedPane/SCROLL_TAB_LAYOUT

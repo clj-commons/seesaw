@@ -9,17 +9,12 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.font
+  (:use [seesaw util])
   (:import [java.awt Font]))
 
-(def ^{:private true} style-table 
-  { :bold Font/BOLD 
-    :plain Font/PLAIN
-    :italic Font/ITALIC })
+(def ^{:private true} style-table (constant-map Font :bold :plain :italic))
 
-(def ^{:private true} name-table
-  { :monospaced Font/MONOSPACED 
-    :serif Font/SERIF
-    :sans-serif Font/SANS_SERIF })
+(def ^{:private true} name-table (constant-map Font :monospaced :serif :sans-serif))
 
 (defn font
   [& args]

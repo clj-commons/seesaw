@@ -43,15 +43,22 @@
 (defn- constantize-keyword [k]
   (.. (name k) (toUpperCase) (replace "-" "_")))
 
-(defn int-constant-map
-  "Given a class and a list of keywordized constant names returns the integer
-  values of those fields in a map"
+(defn constant-map
+  "Given a class and a list of keywordized constant names returns the 
+   values of those fields in a map. The name mapping upper-cases and replaces
+   hyphens with underscore, e.g.
+ 
+    :above-baseline --> ABOVE_BASELINE
+
+   Note that the fields must be static and declared *in* the class, not a 
+   supertype.
+  "
   [klass & fields]
   (reduce
     (fn [m [k v]] (assoc m k v))
     {}
     (map 
-      #(vector %1 (.. klass (getDeclaredField (constantize-keyword %1)) (getInt nil)))
+      #(vector %1 (.. klass (getDeclaredField (constantize-keyword %1)) (get nil)))
       fields)))
     
   
