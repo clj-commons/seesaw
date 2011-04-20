@@ -36,7 +36,7 @@
       [ (text :columns 10) ""]]))
 
 (defn app []
-  (frame :title "MigLayout Example" :content (frame-content)))
+  (frame :title "MigLayout Example" :resizable? false :content (frame-content)))
 
 (defn -main [& args]
   (invoke-later app))

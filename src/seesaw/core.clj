@@ -171,7 +171,9 @@
   [c ws]
   (doseq [w ws]
     (add-widget c w))
-  c)
+  (doto c
+    .revalidate
+    .repaint))
 
 (def ^{:private true} id-property "seesaw-widget-id")
 
@@ -267,10 +269,13 @@
   (constant-map BorderLayout :north :south :east :west :center))
 
 (def ^{:private true} border-layout-options 
-  (reduce 
-    (fn [m [k v]] (assoc m k #(add-widget %1 %2 v)))
-    {} 
-    border-layout-dirs))
+  (merge
+    { :hgap #(.setHgap (.getLayout %1) %2)
+      :vgap #(.setVgap (.getLayout %1) %2) }
+    (reduce 
+      (fn [m [k v]] (assoc m k #(add-widget %1 %2 v)))
+      {} 
+      border-layout-dirs)))
 
 (defn border-panel
   "Create a panel with a border layout. In addition to the usual options, 
@@ -286,8 +291,8 @@
     :vgap   vertical gap between widgets
    
   "
-  [& {:keys [hgap vgap] :or {hgap 0 vgap 0} :as opts}]
-  (let [^java.awt.Container p (JPanel. (BorderLayout. hgap vgap))]
+  [& opts]
+  (let [p (JPanel. (BorderLayout.))]
     (apply-options p opts (merge default-options border-layout-options))))
 
 ;*******************************************************************************
@@ -296,13 +301,17 @@
 (def ^{:private true} flow-align-table
   (constant-map FlowLayout :left :right :leading :trailing :center))
 
+(def ^{:private true} flow-panel-options {
+  :hgap #(.setHgap (.getLayout %1) %2)
+  :vgap #(.setVgap (.getLayout %1) %2)
+  :align #(.setAlignment (.getLayout %1) (get flow-align-table %2 %2))
+  :align-on-baseline #(.setAlignOnBaseline (.getLayout %1) (boolean %2))
+})
+
 (defn flow-panel
-  [& {:keys [hgap vgap align align-on-baseline] 
-      :or {hgap 5 vgap 5 align :center align-on-baseline false} 
-      :as opts}]
-  (let [l (FlowLayout. (align flow-align-table) hgap vgap)]
-    (.setAlignOnBaseline l align-on-baseline)
-    (apply-options (JPanel. l) opts default-options)))
+  [& opts]
+  (let [p (JPanel. (FlowLayout.))]
+    (apply-options p opts (merge default-options flow-panel-options))))
 
 ;*******************************************************************************
 ; Boxes
@@ -680,6 +689,7 @@
 ; Frame
 (def ^{:private true} frame-options {
   :title   #(.setTitle %1 (str %2))
+  :resizable? #(.setResizable %1 (boolean %2))
   :content #(.setContentPane %1 (to-widget %2 true))
 })
 
@@ -692,6 +702,7 @@
     :height   initial height if :pack is true
     :content  passed through (to-widget) and used as the frame's content-pane
     :visible?  whether frame should be initially visible (default true)
+    :resizable? whether the frame can be resized (default true)
 
   returns the new frame."
 

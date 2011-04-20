@@ -417,6 +417,9 @@
     (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
+  (it "should create a JFrame and make is not resizable"
+    (let [f (frame :title "Hello" :resizable? false :visible? false)]
+      (expect (not (.isResizable f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
           f (frame :content c :visible? false)]
