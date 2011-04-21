@@ -194,7 +194,10 @@
   (constant-map SwingConstants :horizontal :vertical))
 
 (defn- id-option-handler [w id]
-  (let [id-key (name id)]
+  (let [id-key (name id)
+        existing-id (.getClientProperty w id-property)]
+    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+    ; TODO should we enforce unique ids?
     (.putClientProperty w id-property id-key)
     (swap! widget-by-id assoc id-key w)))
 

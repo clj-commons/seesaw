@@ -51,7 +51,11 @@
     (it "does nothing when omitted"
       (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
     (it "sets the component's name if given"
-      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for))))
+      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for)))
+    (it "throws IllegalStateException if the widget's id is already set"
+      (try 
+        (do (config (label :id :foo) :id :bar) false)
+        (catch IllegalStateException e true))))
   (testing "setting enabled option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
