@@ -11,6 +11,7 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 * Structural manip
 * Selectors
 * Styling
+* Some kind of ToModel protocol for auto-converting Clojure data-structures to Swing models.
 
 ## Usage
 See tests and src/seesaw/examples. Seriously, the tests are pretty descriptive of how things work.
@@ -21,13 +22,15 @@ Let's create a `JFrame`:
 
 This will create a `JFrame` with title "Hello" and a single label "Hi there". The `:content` property expects something that can be turned into a widget and uses it as the content pane of the frame. Any place where a widget is expected, one will be created depending on the argument...
 
-There are three examples at the moment:
+There are several examples at the moment:
 
     $ lein deps
-    $ lein run -m seesaw.examples.form
-    $ lein run -m seesaw.examples.kitchensink
-    $ lein run -m seesaw.examples.temp
-    $ lein run -m seesaw.examples.hotpotatoes
+    $ lein run -m seesaw.examples.mig           (MigLayout example)
+    $ lein run -m seesaw.examples.form          (GridBagLayout example)
+    $ lein run -m seesaw.examples.kitchensink   (an atrocity)
+    $ lein run -m seesaw.examples.temp          (Stuart Sierra's temperature example)
+    $ lein run -m seesaw.examples.hotpotatoes   (HTTP getter)
+    $ lein run -m seesaw.examples.to-widget     (ToWidget protocol example)
 
 ### Widget Coercion
 
@@ -56,6 +59,8 @@ Most of Seesaw's container functions (`flow-panel`, `grid-panel`, etc) take an `
                 (action choose :name "...")]))
 
 creates a panel with a "File" label, a text entry field initialized to the current working directory and a button that doesn't do much. Each component is separated by 5 pixel padding.
+
+New coercions can be added by extending the `ToWidget` protocol. See the `to-widget` example.
 
 ### Default Properties
 All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, etc) support a base set of properties:
