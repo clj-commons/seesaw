@@ -219,6 +219,8 @@
   :model       #(.setModel %1 %2)
 })
 
+(def ^{:private true} options-property "seesaw-creation-options")
+
 (defn apply-options
   [target opts handler-map]
   (check-args (or (map? opts) (even? (count opts))) 
@@ -226,8 +228,9 @@
   (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
     (if-let [f (get handler-map k)]
       (f target v)
-      (throw (IllegalArgumentException. (str "Unknown option" k)))))
-  target)
+      (throw (IllegalArgumentException. (str "Unknown option " k)))))
+  (cond-doto target
+    (instance? JComponent target) (.putClientProperty options-property handler-map)))
 
 (defn apply-default-opts
   "only used in tests!"
@@ -241,10 +244,12 @@
 (defprotocol ConfigureWidget (config* [target args]))
 
 (extend-type java.util.EventObject ConfigureWidget 
-  (config* [target args] (apply-options (to-widget target false) args default-options)))
+  (config* [target args] (config* (to-widget target false) args)))
 
 (extend-type javax.swing.JComponent ConfigureWidget 
-  (config* [target args] (apply-options target args default-options)))
+  (config* [target args] 
+    (let [options (or (.getClientProperty target options-property) default-options)]
+      (apply-options target args options))))
 
 (defn config
   "Applies properties in the argument list to one or more targets. For example:
@@ -337,15 +342,19 @@
 ;*******************************************************************************
 ; Grid
 
+(def ^{:private true} grid-panel-options {
+  :hgap #(.setHgap (.getLayout %1) %2)
+  :vgap #(.setVgap (.getLayout %1) %2)
+})
+
 (defn grid-panel
-  [& {:keys [hgap vgap rows columns] 
-      :or {hgap 0 vgap 0}
+  [& {:keys [rows columns] 
       :as opts}]
   (let [columns* (or columns (if rows 0 1))
-        layout   (GridLayout. (or rows 0) columns* hgap vgap)
+        layout   (GridLayout. (or rows 0) columns* 0 0)
         panel    (JPanel. layout)]
     (apply-options panel 
-      (dissoc opts :hgap :vgap :rows :columns) default-options)))
+      (dissoc opts :rows :columns) (merge default-options grid-panel-options))))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout

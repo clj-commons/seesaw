@@ -159,7 +159,10 @@
       (expect (not (.isEnabled (first targets))))
       (expect (= Color/RED (.getForeground (second targets))))
       (expect (= Color/BLUE (.getBackground (second targets))))
-      (expect (not (.isEnabled (second targets)))))))
+      (expect (not (.isEnabled (second targets))))))
+  (it "configures a target with type-specific properties"
+    (let [t (toggle :text "hi" :selected? false)]
+      (expect (.isSelected (config t :selected? true))))))
 
 (describe flow-panel
   (it "should create a FlowLayout of :items list"
