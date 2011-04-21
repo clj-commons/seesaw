@@ -219,11 +219,14 @@
   :model       #(.setModel %1 %2)
 })
 
-(defn- apply-options
+(defn apply-options
   [target opts handler-map]
+  (check-args (or (map? opts) (even? (count opts))) 
+              "opts must be a map or have an even number of entries")
   (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
-    (when-let [f (get handler-map k)]
-      (f target v)))
+    (if-let [f (get handler-map k)]
+      (f target v)
+      (throw (IllegalArgumentException. (str "Unknown option" k)))))
   target)
 
 (defn apply-default-opts
@@ -341,7 +344,8 @@
   (let [columns* (or columns (if rows 0 1))
         layout   (GridLayout. (or rows 0) columns* hgap vgap)
         panel    (JPanel. layout)]
-    (apply-options panel opts default-options)))
+    (apply-options panel 
+      (dissoc opts :hgap :vgap :rows :columns) default-options)))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout
@@ -538,7 +542,9 @@
 
       :else (let [{:keys [multi-line?] :as opts} args
                   t (if multi-line? (JTextArea.) (JTextField.))]
-            (apply-options t opts (merge default-options text-options))))))
+            (apply-options t 
+              (dissoc opts :multi-line?)
+              (merge default-options text-options))))))
 
 ;*******************************************************************************
 ; Listbox
@@ -688,9 +694,9 @@
 ;*******************************************************************************
 ; Frame
 (def ^{:private true} frame-options {
-  :title   #(.setTitle %1 (str %2))
+  :title      #(.setTitle %1 (str %2))
   :resizable? #(.setResizable %1 (boolean %2))
-  :content #(.setContentPane %1 (to-widget %2 true))
+  :content    #(.setContentPane %1 (to-widget %2 true))
 })
 
 (defn frame
@@ -709,7 +715,8 @@
   [& {:keys [width height visible? pack?] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
-  (cond-doto (apply-options (JFrame.) opts frame-options)
+  (cond-doto (apply-options (JFrame.) 
+               (dissoc opts :width :height :visible? :pack?) frame-options)
     true     (.setSize width height)
     true     (.setVisible (boolean visible?))
     pack?    (.pack)))

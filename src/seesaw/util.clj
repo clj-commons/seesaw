@@ -12,6 +12,12 @@
   (:require clojure.string)
   (:import [java.net URL MalformedURLException]))
 
+(defn check-args 
+  [condition message]
+  (if-not condition
+    (throw (IllegalArgumentException. message))
+    true))
+  
 (defmacro cond-doto
   "Spawn of (cond) and (doto). Works like (doto), but each form has a condition
    which controls whether it is executed. Returns x.

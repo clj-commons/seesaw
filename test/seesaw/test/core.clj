@@ -24,6 +24,16 @@
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
+(describe apply-options
+  (it "throws IllegalArgumentException if properties aren't event"
+    (try
+      (do (apply-options (JPanel.) [1 2 3] {}) false)
+      (catch IllegalArgumentException e true)))
+  (it "throws IllegalArgumentException for an unknown property"
+    (try
+      (do (apply-options (JPanel.) [:unknown "unknown"] {}) false)
+      (catch IllegalArgumentException e true))))
+
 (describe action
   (it "sets the name and tooltip"
     (let [a (action (fn [e]) :name "Test" :tip "This is a tip")]
@@ -260,7 +270,7 @@
   (it "should set the text of a single text widget argument"
     (= "BYE" (text (text (text "HI") "BYE"))))
   (it "should set the text of a single button argument"
-    (= "BYE" (text (text (button "HI") "BYE"))))
+    (= "BYE" (text (text (button :text "HI") "BYE"))))
   (it "should set the text of a seq of widget arguments"
     (let [[a b] [(text "HI") (text "BYE")]
           result (text [a b] "YUM")]

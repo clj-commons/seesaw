@@ -13,6 +13,14 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe check-args
+  (it "returns true if the condition is true"
+    (check-args true "yes!"))
+  (it "returns throws IllegalArgumentException if condition is false"
+    (try 
+      (do (check-args false "no!") false)
+      (catch IllegalArgumentException e true))))
+
 (describe cond-doto
   (it "only executes forms with true conditions"
     (= "firstsecondfifth" (str (cond-doto (StringBuilder.) 
