@@ -93,3 +93,34 @@
     (URL. (str s))
     (catch MalformedURLException e nil)))
 
+(def ^{:private true} options-property "seesaw-creation-options")
+
+; TODO custom metadata storage like this should be a protocol so apply-options
+; can be used on anybody.
+(defn- store-option-handlers
+  [target handler-map]
+  (cond-doto target
+    (instance? javax.swing.JComponent target) (.putClientProperty options-property handler-map)
+    (instance? javax.swing.Action target)     (.putValue options-property handler-map)))
+
+(defn- get-option-handlers
+  [target]
+  (cond
+    (instance? javax.swing.JComponent target) (.getClientProperty target options-property)
+    (instance? javax.swing.Action target)     (.getValue target options-property)))
+
+(defn apply-options
+  [target opts handler-map]
+  (check-args (or (map? opts) (even? (count opts))) 
+              "opts must be a map or have an even number of entries")
+  (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
+    (if-let [f (get handler-map k)]
+      (f target v)
+      (throw (IllegalArgumentException. (str "Unknown option " k)))))
+  (store-option-handlers target handler-map))
+
+(defn reapply-options
+  [target args default-options]
+  (let [options (or (get-option-handlers target) default-options)]
+    (apply-options target args options)))
+

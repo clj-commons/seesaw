@@ -24,22 +24,6 @@
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
-(describe apply-options
-  (it "throws IllegalArgumentException if properties aren't event"
-    (try
-      (do (apply-options (JPanel.) [1 2 3] {}) false)
-      (catch IllegalArgumentException e true)))
-  (it "throws IllegalArgumentException for an unknown property"
-    (try
-      (do (apply-options (JPanel.) [:unknown "unknown"] {}) false)
-      (catch IllegalArgumentException e true))))
-
-(describe action
-  (it "sets the name and tooltip"
-    (let [a (action (fn [e]) :name "Test" :tip "This is a tip")]
-      (expect (= "Test" (.getValue a Action/NAME)))
-      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION))))))
-
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
     (nil? (id-for (label))))
@@ -103,7 +87,7 @@
     (let [c (to-widget "TEST" true)]
       (expect (= "TEST" (.getText c)))))
   (it "returns a button if input is an Action"
-    (let [a (action #(println "HI") :name "Test")
+    (let [a (action :handler #(println "HI") :name "Test")
           c (to-widget a true)]
       (expect (isa? (class c) javax.swing.JButton))
       (expect (= "Test" (.getText c)))))
@@ -168,7 +152,11 @@
       (expect (not (.isEnabled (second targets))))))
   (it "configures a target with type-specific properties"
     (let [t (toggle :text "hi" :selected? false)]
-      (expect (.isSelected (config t :selected? true))))))
+      (expect (.isSelected (config t :selected? true)))))
+  (it "can configure an action"
+    (let [a (action :name "foo")]
+      (config a :name "bar")
+      (expect (= "bar" (.getValue a Action/NAME))))))
 
 (describe flow-panel
   (it "should create a FlowLayout of :items list"
@@ -308,7 +296,7 @@
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
   (it "should create a button from an action"
-    (let [a (action println)
+    (let [a (action :handler println)
           b (button :action a)]
       (expect (= JButton (class b)))
       (expect (= a (.getAction b))))))

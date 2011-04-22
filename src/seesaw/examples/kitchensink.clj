@@ -24,7 +24,7 @@
       :north (toolbar 
                :floatable? false 
                :items [(button :id :button :text "This") :separator "is a toolbar" :separator
-                       (action #(.dispose (to-frame %)) :name "Close this frame")
+                       (action :handler #(.dispose (to-frame %)) :name "Close this frame")
                        (combobox :id :combo :model ["First" "Second" "Third"])])
       :center (top-bottom-split 
       (left-right-split 
@@ -34,7 +34,7 @@
           :border [10 "This is a border layout" (empty-border :thickness 15)]
           :north (horizontal-panel 
                   :items [(action 
-                            #(println "FOO" %) 
+                            :handler #(println "FOO" %) 
                             :name "Click Me"
                             :icon rss-url
                             :tip "Yum!")
@@ -52,7 +52,7 @@
                               :id :link)
                             (text 
                               :text "HI"
-                              :listen [:action (fn [e] (println (.. (to-widget e) (getText))))])
+                              :listen [:action :handler (fn [e] (println (.. (to-widget e) (getText))))])
                             (scrollable 
                               (text 
                                 :text (apply str (interpose "\n" (range 0 20))) 
@@ -79,7 +79,7 @@
         :vgap 10 
         :columns 3 
         :items (map #(action 
-                      (fn [e] (alert (str "Clicked " %))) 
+                      :handler (fn [e] (alert (str "Clicked " %))) 
                       :name %) 
                     (range 0 12))))
   (tabbed-panel 
@@ -133,5 +133,5 @@
   (invoke-later app))
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
-;(-main)
+(-main)
 

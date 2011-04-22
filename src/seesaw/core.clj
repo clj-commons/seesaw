@@ -9,16 +9,15 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use seesaw.util)
-  (:use seesaw.font)
-  (:use seesaw.border)
-  (:use seesaw.color)
+  (:use [seesaw util font border color])
   (:require [seesaw.event :as sse]
-            [seesaw.selection :as sss])
+            [seesaw.selection :as sss]
+            [seesaw.icon :as ssi]
+            [seesaw.action :as ssa])
   (:import [java.util EventObject]
            [javax.swing 
              SwingUtilities SwingConstants 
-             Icon Action AbstractAction ImageIcon
+             Action
              BoxLayout
              JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
@@ -27,8 +26,7 @@
            [javax.swing.text JTextComponent]
            [javax.swing.event ChangeListener DocumentListener]
            [java.awt Component FlowLayout BorderLayout GridLayout GridBagLayout GridBagConstraints
-                     Dimension ItemSelectable Image]
-           [java.awt.event MouseAdapter ActionListener]))
+                     Dimension ItemSelectable Image]))
 
 (declare to-widget)
 
@@ -38,6 +36,9 @@
 
 ; alias event/add-listener for convenience
 (def listen sse/add-listener)
+
+; alias action/action for convenience
+(def action ssa/action)
 
 ; to-widget wrapper and stuff for (seesaw.selection/selection)
 (defn selection 
@@ -62,27 +63,8 @@
   [target & args]
   (apply sss/selection (to-widget target) args))
 
-;*******************************************************************************
-; Icons
-
-(defn icon [p]
-  (cond
-    (nil? p) nil 
-    (instance? javax.swing.Icon p) p
-    (instance? java.awt.Image p) (ImageIcon. p)
-    (instance? java.net.URL p) (ImageIcon. p)
-    :else  (ImageIcon. (to-url p))))
-
+(def icon ssi/icon)
 (def ^{:private true} make-icon icon)
-
-;*******************************************************************************
-; Actions
-
-(defn action [f & {:keys [name tip icon] :or { name "" }}]
-  (doto (proxy [AbstractAction] [] (actionPerformed [e] (f e)))
-    (.putValue Action/NAME (str name))
-    (.putValue Action/SHORT_DESCRIPTION tip)
-    (.putValue Action/SMALL_ICON (make-icon icon))))
 
 ;*******************************************************************************
 ; Widget coercion prototcol
@@ -224,19 +206,6 @@
   :model       #(.setModel %1 %2)
 })
 
-(def ^{:private true} options-property "seesaw-creation-options")
-
-(defn apply-options
-  [target opts handler-map]
-  (check-args (or (map? opts) (even? (count opts))) 
-              "opts must be a map or have an even number of entries")
-  (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
-    (if-let [f (get handler-map k)]
-      (f target v)
-      (throw (IllegalArgumentException. (str "Unknown option " k)))))
-  (cond-doto target
-    (instance? JComponent target) (.putClientProperty options-property handler-map)))
-
 (defn apply-default-opts
   "only used in tests!"
   ([p] (apply-default-opts p {}))
@@ -253,8 +222,11 @@
 
 (extend-type javax.swing.JComponent ConfigureWidget 
   (config* [target args] 
-    (let [options (or (.getClientProperty target options-property) default-options)]
-      (apply-options target args options))))
+    (reapply-options target args default-options)))
+
+(extend-type Action ConfigureWidget 
+  (config* [target args] 
+    (reapply-options target args default-options)))
 
 (defn config
   "Applies properties in the argument list to one or more targets. For example:

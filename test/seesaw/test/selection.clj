@@ -9,11 +9,16 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.selection
-  (:use seesaw.selection)
+  (:use [seesaw selection action])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
 (describe selection
+  (testing "when given an Action"
+      (it "returns nil when the action is not selected"
+        (nil? (selection (action) )))
+      (it "returns a single-element seq with true if the action is selected"
+        (= [true] (selection (action :selected? true)))))
   (testing "when given an AbstractButton (e.g. toggle or checkbox)"
     (it "returns nil when the button is not selected"
       (nil? (selection (javax.swing.JCheckBox. "something" false))))

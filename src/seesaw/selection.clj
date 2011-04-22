@@ -16,6 +16,12 @@
   (set-selection [target args]))
 
 (extend-protocol Selection
+  javax.swing.Action
+    (get-selection [target]      
+      (when-let [s (.getValue target javax.swing.Action/SELECTED_KEY)] [true]))
+    (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v))))
+
+(extend-protocol Selection
   javax.swing.AbstractButton
     (get-selection [target]      (seq (.getSelectedObjects target)))
     (set-selection [target [v]]  (doto target (.setSelected (boolean v)))))

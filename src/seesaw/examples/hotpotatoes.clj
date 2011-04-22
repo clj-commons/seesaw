@@ -24,7 +24,7 @@
       
 (defn app 
   [exit?]
-  (let [exit-action (action (fn [e] (if exit? (System/exit 0) (.dispose (to-frame e)))) :name "Exit")
+  (let [exit-action (action :handler (fn [e] (if exit? (System/exit 0) (.dispose (to-frame e)))) :name "Exit")
         url-text    (text "http://google.com")
         status      (label "Ready")
         result-text (text :multi-line? true :editable? false :font "MONOSPACED-14")
@@ -50,7 +50,7 @@
                 (horizontal-panel 
                   :border [5 "Configure Request"]
                   :items ["URL" url-text 
-                          (action go-handler :name "Go")])
+                          (action :handler go-handler :name "Go")])
               :center
                 (horizontal-panel 
                   :border [5 "Request Result"]
@@ -60,3 +60,4 @@
 (defn -main [& args]
   (invoke-later #(app true)))
 ;(app false)
+

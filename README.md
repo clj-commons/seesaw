@@ -4,6 +4,7 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 
 ## TODO
 
+* Menus
 * GridBagLayout needs more work
 * JTree
 * Cell renderers
@@ -56,7 +57,7 @@ Most of Seesaw's container functions (`flow-panel`, `grid-panel`, etc) take an `
       (flow-panel
         :items ["File"                                 [:fill-h 5] 
                 (text (System/getProperty "user.dir")) [:fill-h 5] 
-                (action choose :name "...")]))
+                (action :handler choose :name "...")]))
 
 creates a panel with a "File" label, a text entry field initialized to the current working directory and a button that doesn't do much. Each component is separated by 5 pixel padding.
 
@@ -106,7 +107,7 @@ A `FlowLayout` with some items:
     (flow-panel 
        :align :left
        :hgap 20
-       :items ["Label" (action alert "Button") "Another label"])
+       :items ["Label" (action :handler alert "Button") "Another label"])
 
 A `GridLayout` with 2 columns and a titled border:
 
@@ -139,13 +140,15 @@ Note that these same arguments can be given to the `:listen` property when the w
 See `seesaw.events/add-listener` for more details.
     
 ### Actions
-It's typical in Swing apps to use actions for menus, buttons, etc. An action needs an event handler function and some properties. Here's an example of creating an action and adding it to a toolbar:
+It's typical in Swing apps to use actions for menus, buttons, etc. An action needs a handler function and some properties. Here's an example of creating an action and adding it to a toolbar:
 
     (use 'seesaw.core)
-    (let [open-action (action (fn [e] (alert "I should open a new something."))
+    (let [open-action (action 
+                        :handler (fn [e] (alert "I should open a new something."))
                         :name "Open"
                         :tip  "Open a new something something.")
-          exit-action (action (fn [e] (.dispose (to-frame e)))
+          exit-action (action 
+                        :handler (fn [e] (.dispose (to-frame e)))
                         :name "Exit"
                         :tip  "Close this window")]
       (frame 
@@ -154,7 +157,13 @@ It's typical in Swing apps to use actions for menus, buttons, etc. An action nee
                     :north (toolbar :items [open-action exit-action])
                     :center "Insert content here")))
 
-`(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it.
+`(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it. See `seesaw/action.clj` for an accurate list of options.
+
+Like widgets, actions can be modified with the `(config)` function:
+
+    (def a (action :name "Fire Missiles" :enabled? false))
+
+    (config a :name "Fire Missiles!!!" :enabled? true :handler (fn [e] (println "FIRE")))
 
 ### Selection Handling
 The `(selection)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget). It will always return a seq of values, or `nil` if there is no selection. For single-selection cases, just use `(first)`. Note that you can apply `(selection)` to event objects as well:
