@@ -118,6 +118,7 @@
 (def-widget-creational-coercion clojure.lang.Keyword 
   [v] 
   (condp = v
+    :separator (javax.swing.JSeparator.)
     :fill-h (Box/createHorizontalGlue)
     :fill-v (Box/createVerticalGlue)))
 
@@ -142,6 +143,7 @@
     java.awt.Dimension -> return Box/createRigidArea
     java.swing.Action    -> return a button using the action
     java.util.EventObject -> return the event source
+    :separator -> create a horizontal JSeparator
     :fill-h -> Box/createHorizontalGlue
     :fill-v -> Box/createVerticalGlue
     [:fill-h n] -> Box/createHorizontalStrut with width n

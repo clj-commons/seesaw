@@ -107,6 +107,8 @@
           c (to-widget a true)]
       (expect (isa? (class c) javax.swing.JButton))
       (expect (= "Test" (.getText c)))))
+  (it "creates a separator for :separator"
+    (expect (= javax.swing.JSeparator (class (to-widget :separator true)))))
   (it "creates horizontal glue for :fill-h"
     (let [c (to-widget :fill-h true)]
       (expect (isa? (class c) javax.swing.Box$Filler ))
@@ -396,13 +398,23 @@
   (it "should set the orientation property"
     (let [tb (toolbar :orientation :vertical)]
       (expect (= SwingConstants/VERTICAL (.getOrientation tb)))))
-  (it "can create a separator with the :separator keyword"
+  (it "can create a toolbar separator with the :separator keyword"
     (let [tb (toolbar :items [:separator])]
       (expect (= javax.swing.JToolBar$Separator (class (.getComponent tb 0)))))))
 
 (describe separator
-  (it "should create a JSeparator"
-    (expect (= javax.swing.JSeparator (class (separator))))))
+  (it "should create a horizontal JSeparator by default"
+    (let [s (separator)]
+      (expect (= javax.swing.JSeparator (class s)))
+      (expect (= SwingConstants/HORIZONTAL (.getOrientation s)))))
+  (it "should create a horizontal JSeparator when :orientation is specified"
+    (let [s (separator :orientation :horizontal)]
+      (expect (= javax.swing.JSeparator (class s)))
+      (expect (= SwingConstants/HORIZONTAL (.getOrientation s)))))
+  (it "should create a vertical JSeparator when :orientation is specified"
+    (let [s (separator :orientation :vertical)]
+      (expect (= javax.swing.JSeparator (class s)))
+      (expect (= SwingConstants/VERTICAL (.getOrientation s))))))
 
 (describe mig-panel
   (it "should create a panel with a MigLayout"

@@ -17,14 +17,14 @@
   (mig-panel :constraints ["", "[right]"]
     :items [
       [ "General"          "split, span, gaptop 10"]
-      [ (separator)        "growx, wrap, gaptop 10"]
+      [ :separator         "growx, wrap, gaptop 10"]
       [ "Company"          "gap 10"]
       [ (text)             "span, growx"]
       [ "Contact"          "gap 10"]
       [ (text)             "span, growx, wrap"]
                            
       [ "Propeller"        "split, span, gaptop 10"]
-      [ (separator)        "growx, wrap, gaptop 10"]
+      [ :separator         "growx, wrap, gaptop 10"]
 
       [ "PTI/kW"           "gap 10"]
       [ (text :columns 10) ""]
