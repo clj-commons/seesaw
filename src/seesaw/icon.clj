@@ -21,4 +21,5 @@
     (instance? javax.swing.Icon p) p
     (instance? java.awt.Image p) (ImageIcon. p)
     (instance? java.net.URL p) (ImageIcon. p)
-    :else  (ImageIcon. (to-url p))))
+    :else  (when-let [url (to-url p)] (ImageIcon. url))))
+

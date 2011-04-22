@@ -179,10 +179,12 @@
 
 (defn- id-option-handler [w id]
   (let [id-key (name id)
-        existing-id (.getClientProperty w id-property)]
+        ; TODO need to figure out how to store JFrame ids. JFrame/getFrames
+        ; is pretty useless
+        existing-id (when (instance? JComponent w) (.getClientProperty w id-property))]
     (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
     ; TODO should we enforce unique ids?
-    (.putClientProperty w id-property id-key)
+    (when (instance? JComponent w ) (.putClientProperty w id-property id-key))
     (swap! widget-by-id assoc id-key w)))
 
 (def ^{:private true} default-options {
@@ -479,8 +481,9 @@
 })
 
 (defn- apply-button-defaults
-  [button args]
-  (apply-options button args (merge default-options button-options)))
+  ([button args] (apply-button-defaults button args {}))
+  ([button args custom-options]
+    (apply-options button args (merge default-options button-options custom-options))))
 
 (defn button   [& args] (apply-button-defaults (JButton.) args))
 (defn toggle   [& args] (apply-button-defaults (JToggleButton.) args))
@@ -606,6 +609,40 @@
   (apply-options (javax.swing.JSeparator.) opts default-options))
 
 ;*******************************************************************************
+; Menus
+
+(defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args))
+(defn checkbox-menu-item [& args] (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
+(defn radio-menu-item    [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
+
+(defn- to-menu-item
+  [item]
+  (if (instance? javax.swing.Action item) 
+    (javax.swing.JMenuItem. item)
+    (if-let [icon (make-icon item)]
+      (javax.swing.JMenuItem. icon)
+      (if (instance? String item)
+        (javax.swing.JMenuItem. item)
+        (to-widget item true)))))
+
+(def ^{:private true} menu-options {
+  ;:items #(add-widgets %1 (map to-menu-item %2))
+  :items #(doseq [item (map to-menu-item %2)] (.add %1 item))
+})
+
+(defn menu 
+  [& opts]
+  (apply-button-defaults (javax.swing.JMenu.) opts menu-options))
+
+;(def ^{:private true} menubar-options {
+  ;:items (fn [mb items] (doseq [i items] (.add mb i)))
+;})
+
+(defn menubar
+  [& opts]
+  (apply-options (javax.swing.JMenuBar.) opts default-options))
+
+;*******************************************************************************
 ; Toolbars
 
 
@@ -680,9 +717,11 @@
 ;*******************************************************************************
 ; Frame
 (def ^{:private true} frame-options {
+  :id         id-option-handler
   :title      #(.setTitle %1 (str %2))
   :resizable? #(.setResizable %1 (boolean %2))
   :content    #(.setContentPane %1 (to-widget %2 true))
+  :menubar    #(.setJMenuBar %1 %2)
 })
 
 (defn frame
@@ -713,6 +752,7 @@
   Note that w is run through (to-widget) first, so you can pass event object
   directly to this."
   [w]
+  (println w)
   (SwingUtilities/getRoot (to-widget w)))
 
 ;*******************************************************************************

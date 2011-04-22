@@ -4,7 +4,6 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 
 ## TODO
 
-* Menus
 * GridBagLayout needs more work
 * JTree
 * Cell renderers

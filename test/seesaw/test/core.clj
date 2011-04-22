@@ -371,6 +371,38 @@
       (expect (= left (.getLeftComponent s)))
       (expect (= right (.getRightComponent s))))))
 
+(describe menu-item
+  (it "should create a JMenuItem"
+      (expect (= javax.swing.JMenuItem (class (menu-item)))))
+  (it "should create a JMenuItem from an action"
+    (let [a (action)
+          mi (menu-item :action a)]
+      (expect (= a (.getAction mi))))))
+
+(describe menu
+  (it "should create a JMenu"
+    (expect (= javax.swing.JMenu (class (menu)))))
+  (it "should create a JMenu with the given items"
+    (let [a (action)
+          b :separator
+          c (menu-item)
+          d "Just a string"
+          m (menu :items [a b c d])
+          [ia ib ic id] (.getMenuComponents m)]
+      (expect (= a (.getAction ia)))
+      (expect (= javax.swing.JSeparator (class ib)))
+      (expect (= c ic))
+      (expect (= "Just a string" (.getText id))))))
+
+(describe menubar
+  (it "should create a JMenuBar"
+    (= javax.swing.JMenuBar (class (menubar))))
+  (it "should create a JMenuBar with the given items"
+    (let [a (menu)
+          b (menu)
+          mb (menubar :items [a b])]
+      (expect (= [a b] (vec (.getComponents mb)))))))
+
 (describe toolbar
   (it "should create a JToolBar with the given items"
     (let [tb (toolbar :items ["a" "b" "c"])
@@ -437,6 +469,10 @@
   (it "should create a JFrame and make is not resizable"
     (let [f (frame :title "Hello" :resizable? false :visible? false)]
       (expect (not (.isResizable f)))))
+  (it "should create a JFrame and set its menu bar"
+    (let [mb (menubar)
+          f (frame :menubar mb :visible? false)]
+      (expect (= mb (.getJMenuBar f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
           f (frame :content c :visible? false)]
