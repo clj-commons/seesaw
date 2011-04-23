@@ -130,7 +130,7 @@
  
 
 (defn -main [& args]
-  (invoke-later app))
+  (invoke-later (app)))
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
 ;(-main)

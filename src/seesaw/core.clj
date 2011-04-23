@@ -24,15 +24,22 @@
              AbstractButton JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
            [javax.swing.text JTextComponent]
-           [javax.swing.event ChangeListener DocumentListener]
-           [java.awt Component FlowLayout BorderLayout GridLayout GridBagLayout GridBagConstraints
-                     Dimension ItemSelectable Image]))
+           [java.awt Component FlowLayout BorderLayout GridLayout 
+              GridBagLayout GridBagConstraints
+              Dimension]))
 
 (declare to-widget)
 
 ;(set! *warn-on-reflection* true)
-(defn invoke-later [f] (SwingUtilities/invokeLater f))
-(defn invoke-now [f] (SwingUtilities/invokeAndWait f))
+(defn invoke-later* [f] (SwingUtilities/invokeLater f))
+
+(defn invoke-now* [f] 
+  (if (SwingUtilities/isEventDispatchThread)
+    (f)
+    (SwingUtilities/invokeAndWait f)))
+
+(defmacro invoke-later [& body] `(invoke-later* (fn [] ~@body)))
+(defmacro invoke-now   [& body] `(invoke-now*   (fn [] ~@body)))
 
 ; alias event/add-listener for convenience
 (def listen sse/add-listener)
@@ -515,6 +522,10 @@
     (text :id :my-text ...)
         ...
     (listen (select :#my-text) :document #(... handler ...))
+
+  Note that the event passed to the document listener does not contain have a
+  reference to the source text, so (to-widget e) won't give the
+  source widget.
   " 
   [& args]
   (let [n (count args)
@@ -525,6 +536,7 @@
         multi? (or (coll? arg0) (seq? arg0))]
     ; TODO this is crying out for a multi-method or protocol
     (cond
+      (and one? (nil? arg0)) (throw (IllegalArgumentException. "First arg must not be nil"))
       (and one? widget?)  (.getText arg0)
       (and one? multi?)   (map #(.getText %) arg0)
       one?                (text :text arg0)

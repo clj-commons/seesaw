@@ -60,6 +60,6 @@
           :south status))))
 
 (defn -main [& args]
-  (invoke-later #(app true)))
+  (invoke-later (app true)))
 ;(app false)
 

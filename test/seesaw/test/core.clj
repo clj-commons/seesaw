@@ -258,6 +258,10 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text
+  (it "should throw IllegalArgumentException if argument is nil"
+    (try
+      (do (text nil) false)
+      (catch IllegalArgumentException e true)))
   (it "should return the text of a single text widget argument"
     (= "HI" (text (text "HI"))))
   (it "should return the text of a button argument"
