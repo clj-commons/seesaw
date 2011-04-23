@@ -178,13 +178,15 @@
   (constant-map SwingConstants :horizontal :vertical))
 
 (defn- id-option-handler [w id]
-  (let [id-key (name id)
-        ; TODO need to figure out how to store JFrame ids. JFrame/getFrames
-        ; is pretty useless
-        existing-id (when (instance? JComponent w) (.getClientProperty w id-property))]
-    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
-    ; TODO should we enforce unique ids?
-    (when (instance? JComponent w ) (.putClientProperty w id-property id-key))
+  (let [id-key (name id)]
+    (cond
+      (instance? JComponent w)
+        (let [existing-id (.getClientProperty w id-property)]
+          (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+          ; TODO should we enforce unique ids?
+          (.putClientProperty w id-property id-key)))
+      ; TODO need to figure out how to store JFrame ids. JFrame/getFrames
+      ; is pretty useless
     (swap! widget-by-id assoc id-key w)))
 
 (def ^{:private true} default-options {
@@ -617,6 +619,7 @@
 
 (defn- to-menu-item
   [item]
+  ; TODO this sucks
   (if (instance? javax.swing.Action item) 
     (javax.swing.JMenuItem. item)
     (if-let [icon (make-icon item)]
@@ -746,14 +749,32 @@
     true     (.setVisible (boolean visible?))
     pack?    (.pack)))
 
+(defn- get-root
+  "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 
+  by following the invoker of the popup if it doesn't have a parent. This
+  allows (to-frame) to work correctly on action event objects fired from
+  menus.
+  
+  Returns top-level Window (e.g. a JFrame), or nil if not found."
+  [w]
+  (cond
+    (nil? w) w
+    (instance? java.awt.Window w) w
+    (instance? javax.swing.JPopupMenu w) 
+      (if-let [p (.getParent w)] 
+        (get-root p) 
+        (get-root (.getInvoker w)))
+    :else (get-root (.getParent w))))
+
 (defn to-frame 
   "Get the frame or window that contains the given widget. Useful for APIs
   like JDialog that want a JFrame, when all you have is a widget or event.
   Note that w is run through (to-widget) first, so you can pass event object
   directly to this."
   [w]
-  (println w)
-  (SwingUtilities/getRoot (to-widget w)))
+  (get-root (to-widget w)))
+  ;(SwingUtilities/getRoot (to-widget w)))
+
 
 ;*******************************************************************************
 ; Alert

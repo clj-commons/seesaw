@@ -24,7 +24,7 @@
       
 (defn app 
   [exit?]
-  (let [exit-action (action :handler (fn [e] (if exit? (System/exit 0) (.dispose (select :#frame)))) :name "Exit")
+  (let [exit-action (action :handler (fn [e] (if exit? (System/exit 0) (.dispose (to-frame e)))) :name "Exit")
         url-text    (text "http://google.com")
         status      (label "Ready")
         result-text (text :multi-line? true :editable? false :font "MONOSPACED-14")

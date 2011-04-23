@@ -4,10 +4,11 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 
 ## TODO
 
+* Popup menus
 * GridBagLayout needs more work
 * JTree
 * Cell renderers
-* Graphics
+* Graphics - canvas, paint callback, Graphics2D.copy() support.
 * Structural manip
 * Selectors
 * Styling
@@ -163,6 +164,17 @@ Like widgets, actions can be modified with the `(config)` function:
     (def a (action :name "Fire Missiles" :enabled? false))
 
     (config a :name "Fire Missiles!!!" :enabled? true :handler (fn [e] (println "FIRE")))
+
+### Menus
+Here's how you can make a menu bar full of menus:
+
+    (frame :title "MENUS!"
+      :menubar 
+        (menubar :items 
+          [(menu :text "File" :items [new-action open-action save-action exit-action])
+           (menu :text "Edit" :items [copy-action paste-action])))
+
+`(menubar)` has a list of `(menus)`, while each `(menu)` has text and a list of actions, or items. Note that in addition to using Actions as menu items, you can also use `(menu-item)`, `(checkbox-menu-item)`, and `(radio-menu-item)`, each of which has the exact same behavior (and options) as a button.
 
 ### Selection Handling
 The `(selection)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget). It will always return a seq of values, or `nil` if there is no selection. For single-selection cases, just use `(first)`. Note that you can apply `(selection)` to event objects as well:
