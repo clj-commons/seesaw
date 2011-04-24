@@ -257,6 +257,17 @@
     (config* target args))
   targets)
 
+;*******************************************************************************
+; ToDocument
+
+; TODO ToDocument protocol
+(defn to-document
+  [v]
+  (let [w (to-widget v)]
+    (cond
+      (instance? javax.swing.text.Document v)       v
+      (instance? javax.swing.event.DocumentEvent v) (.getDocument v)
+      (instance? JTextComponent w)                  (.getDocument w))))
 
 ;*******************************************************************************
 ; Border Layout
@@ -523,31 +534,45 @@
         ...
     (listen (select :#my-text) :document #(... handler ...))
 
-  Note that the event passed to the document listener does not contain have a
-  reference to the source text, so (to-widget e) won't give the
-  source widget.
+  Given a single widget or document (or event) argument, retrieves the
+  text of the argument. For example:
+
+      user=> (def t (text \"HI\"))
+      user=> (text t)
+      \"HI\"
+
+  Similarly, can set the text of a widget or document:
+  
+      user=> (def t (text \"HI\"))
+      user=> (text t \"BYE\")
+      user=> (text t)
+      \"BYE\"
+
   " 
   [& args]
-  (let [n (count args)
-        one? (= n 1)
-        two? (= n 2)
+  ; TODO this is crying out for a multi-method or protocol
+  (let [n           (count args)
+        one?        (= n 1)
+        two?        (= n 2)
         [arg0 arg1] args
-        widget? (or (instance? JTextComponent arg0) (instance? AbstractButton arg0))
-        multi? (or (coll? arg0) (seq? arg0))]
-    ; TODO this is crying out for a multi-method or protocol
+        as-doc      (to-document arg0)
+        as-widget   (to-widget arg0)
+        multi?      (or (coll? arg0) (seq? arg0))]
     (cond
       (and one? (nil? arg0)) (throw (IllegalArgumentException. "First arg must not be nil"))
-      (and one? widget?)  (.getText arg0)
-      (and one? multi?)   (map #(.getText %) arg0)
-      one?                (text :text arg0)
-      (and two? widget?)  (doto arg0 (.setText arg1))
-      (and two? multi?)   (do (doseq [w arg0] (.setText w arg1)) arg0)
+      (and one? as-doc)      (.getText as-doc 0 (.getLength as-doc))
+      (and one? as-widget)   (.getText as-widget)
+      (and one? multi?)      (map #(text %) arg0)
+      one?                   (text :text arg0)
+      (and two? as-doc)      (do (.replace as-doc 0 (.getLength as-doc) arg1 nil) as-doc)
+      (and two? as-widget)   (do (.setText as-widget arg1) as-widget)
+      (and two? multi?)      (do (doseq [w arg0] (text w arg1)) arg0)
 
       :else (let [{:keys [multi-line?] :as opts} args
                   t (if multi-line? (JTextArea.) (JTextField.))]
-            (apply-options t 
-              (dissoc opts :multi-line?)
-              (merge default-options text-options))))))
+              (apply-options t 
+                (dissoc opts :multi-line?)
+                (merge default-options text-options))))))
 
 ;*******************************************************************************
 ; Listbox

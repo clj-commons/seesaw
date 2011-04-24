@@ -132,6 +132,17 @@
           e (ActionEvent. b 0 "hi")]
       (expect (= b (to-widget e))))))
 
+(describe to-document
+  (it "returns nil if input is nil"
+    (nil? (to-document nil)))
+  (it "returns input if it's already a document"
+    (let [d (javax.swing.text.PlainDocument.)]
+      (expect (= d (to-document d)))))
+  (it "returns the document of text component"
+    (let [t (text)]
+      (expect (= (.getDocument t) (to-document t))))))
+
+
 (describe config
   (it "configures the properties given to it on a single target"
     (let [p (JPanel.)
@@ -264,8 +275,20 @@
       (catch IllegalArgumentException e true)))
   (it "should return the text of a single text widget argument"
     (= "HI" (text (text "HI"))))
+  (it "should return the text of a text Document argument"
+    (let [d (javax.swing.text.PlainDocument.)]
+      (.insertString d 0 "HI" nil)
+      (expect (= "HI" (text d)))))
+  (it "should set the text of a text Document"
+    (let [d (javax.swing.text.PlainDocument.)
+          _ (.insertString d 0 "HI" nil)
+          r (text d "BYE!")]
+      (expect (= d r))
+      (expect (= "BYE!" (text d)))))
   (it "should return the text of a button argument"
     (= "HI" (text (button :text "HI"))))
+  (it "should return the text of a label argument"
+    (= "HI" (text (label "HI"))))
   (it "should return the text of a seq of widget arguments"
     (= ["HI" "BYE"] (text [(text "HI") (button :text "BYE")])))
   (it "should set the text of a single text widget argument"
