@@ -4,15 +4,18 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 
 ## TODO
 
+* A non-trivial example app to see if this stuff holds up
 * Popup menus
 * GridBagLayout needs more work
 * JTree
-* Cell renderers
-* Graphics - canvas, paint callback, Graphics2D.copy() support.
-* Structural manip
-* Selectors
+* JTable
+* Cell renderers - in particular, a dead simple way to set icon, text, font, foreground for items in lists and trees.
+* Graphics - canvas, paint callback, Graphics2D.copy() support. I'd rather not wrap the entire Java2D API if there's already something out there (maybe processing?) that does that.
+* Structural manip - add/remove widgets to containers.
+* Selectors - select widgets by class, data, etc.
 * Styling
 * Some kind of ToModel protocol for auto-converting Clojure data-structures to Swing models.
+* Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
 
 ## Usage
 See tests and src/seesaw/examples. Seriously, the tests are pretty descriptive of how things work.
@@ -78,11 +81,13 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
   <tr><td><code>:listen</code></td><td>List of event listeners with same format as args to `(listen)` function (see below).</td></tr>
 </table>
 
-... and several more. 
+... and many more. See code and tests for details. 
 
 Note that these properties can also be used with the `(config)` function which applies them to an existing widget or widgets:
 
     (config (select :#my-widget) :enabled? false :text "I'm disabled.")
+
+`(config)` can be applied to a single widget, or list of widgets, or things that can be turned into widgets.
 
 ### Selectors
 
@@ -96,7 +101,7 @@ I hope to one day support general CSS-style selectors for finding and styling wi
       :action (fn [e] ... do something ...))
 
 
-At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparrently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
+At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
 
 ### Containers
 
@@ -120,6 +125,8 @@ A `GridLayout` with 2 columns and a titled border:
 A `BorderLayout` with labels at each position:
     
     (border-panel :hgap 10 :vgap 10 :center "CENTER" :north "NORTH" :south "SOUTH" :east "EAST" :west "WEST")
+
+There's also `(mig-panel)` which uses [MigLayout] (http://www.miglayout.com/), `(vertical-panel)`, `(horizontal-panel)`, `(border-panel)`, etc.
 
 ### Event Handlers
 Event handler functions are single-argument functions that take an event object whose type depends on the event being fired, e.g. `MouseEvent`. For example, we can execute a function when a checkbox is checked:
