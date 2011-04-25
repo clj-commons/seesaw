@@ -10,7 +10,8 @@
 
 (ns seesaw.test.core
   (:use seesaw.core
-        seesaw.font)
+        seesaw.font
+        seesaw.graphics)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import [javax.swing SwingConstants
@@ -487,6 +488,26 @@
       (expect (= ["A" "B"]         [(.getTitleAt tp 0) (.getTitleAt tp 1)]))
       (expect (= ["tip A" "tip B"] [(.getToolTipTextAt tp 0) (.getToolTipTextAt tp 1)]))
       (expect (= [a b]             [(.getComponentAt tp 0) (.getComponentAt tp 1)])))))
+
+(describe canvas
+  (it "should create a subclass of JPanel with no layout manager"
+    (let [c (canvas)]
+      (expect (instance? JPanel c))
+      (expect (nil? (.getLayout c)))))
+  (it "should call :before and :after functions given to the :paint property"
+    (let [called (atom 0)
+          before (fn [c g] (swap! called inc)) 
+          after (fn [c g] (swap! called inc)) 
+          c (canvas :paint { :before before :after after })]
+      (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
+      (expect (= 2 @called))))
+  (it "should call a single function given to the :paint property"
+    (let [called (atom 0)
+          paint (fn [c g] (swap! called inc)) 
+          c (canvas :paint paint)]
+      (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
+      (expect (= 1 @called)))))
+
 
 (describe frame
   (it "should create a JFrame and set its title, width, and height"

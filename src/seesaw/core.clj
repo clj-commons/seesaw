@@ -13,7 +13,8 @@
   (:require [seesaw.event :as sse]
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
-            [seesaw.action :as ssa])
+            [seesaw.action :as ssa]
+            [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
              SwingUtilities SwingConstants 
@@ -753,6 +754,55 @@
   "
   [& opts]
   (apply-options (JTabbedPane.) opts (merge default-options tabbed-panel-options)))
+
+;*******************************************************************************
+; Canvas
+
+(def ^{:private true} paint-property "seesaw-paint")
+
+(defn- canvas-paint-option-handler [c v]
+  (cond 
+    (nil? v) (canvas-paint-option-handler c {:before nil :after nil :super? true})
+    (fn? v)  (canvas-paint-option-handler c {:after v})
+    (map? v) (do (.putClientProperty c paint-property v) (.repaint c))
+    :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
+
+(def ^{:private true} canvas-options {
+  :paint canvas-paint-option-handler
+})
+
+(defn- create-paintable []
+  (proxy [javax.swing.JPanel] []
+    (paintComponent [g]
+      (let [{:keys [before after super?] :or {super? true}} (.getClientProperty this paint-property)]
+        (ssg/anti-alias g)
+        (when before (before this g))
+        (when super? (proxy-super paintComponent g))
+        (when after  (after this g))))))
+
+(defn canvas
+  [& opts]
+  "Creates a paintable canvas, i.e. a JPanel with paintComponent overridden. 
+  Painting is configured with the :paint property which can be:
+
+    nil - disables painting. The canvas' will be filled with its background
+      color
+
+    (fn [c g]) - a paint function that takes the canvas and a Graphics2D as 
+      arguments. Called after super.paintComponent.
+
+    {:before fn :after fn} - a map with :before and :after functions which
+      are called before and after super.paintComponent respectively.
+  
+  Note that (config) can be used to change the :paint property at any time.
+  
+  Here's an example:
+  
+    (canvas :paint #(.drawString %2 \"I'm a canvas\" 10 10))
+  "
+  (let [p (create-paintable)]
+    (.setLayout p nil)
+    (apply-options p opts (merge default-options canvas-options))))
 
 ;*******************************************************************************
 ; Frame
