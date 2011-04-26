@@ -76,3 +76,14 @@
       (do (apply-options (javax.swing.JPanel.) [:unknown "unknown"] {}) false)
       (catch IllegalArgumentException e true))))
 
+(describe to-dimension
+  (it "should return its input if its already a Dimension"
+    (let [d (java.awt.Dimension. 10 20)]
+      (expect (= d (to-dimension d)))))
+  (it "should return a new Dimension if input is [width :by height]"
+    (let [d (to-dimension [1 :by 2])]
+      (expect (= java.awt.Dimension (class d)))
+      (expect (= 1 (.getWidth d)))
+      (expect (= 2 (.getHeight d))))))
+
+

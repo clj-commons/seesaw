@@ -41,6 +41,26 @@
       (try 
         (do (config (label :id :foo) :id :bar) false)
         (catch IllegalStateException e true))))
+  (testing "the :preferred-size option"
+    (it "set the component's preferred size using to-dimension"
+      (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
+        (expect (= (Dimension. 10 20) (.getPreferredSize p))))))
+  (testing "the :minimum-size option"
+    (it "set the component's minimum size using to-dimension"
+      (let [p (apply-default-opts (JPanel.) {:minimum-size [10 :by 20]})]
+        (expect (= (Dimension. 10 20) (.getMinimumSize p))))))
+  (testing "the :maximum-size option"
+    (it "set the component's maximum size using to-dimension"
+      (let [p (apply-default-opts (JPanel.) {:maximum-size [10 :by 20]})]
+        (expect (= (Dimension. 10 20) (.getMaximumSize p))))))
+  (testing "the :size option"
+    (it "set the component's min, max, and preferred size using to-dimension"
+      (let [p (apply-default-opts (JPanel.) {:size [11 :by 21]})
+            d (Dimension. 11 21)]
+        (expect (= d (.getPreferredSize p)))
+        (expect (= d (.getMinimumSize p)))
+        (expect (= d (.getMaximumSize p))))))
+
   (testing "setting enabled option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]

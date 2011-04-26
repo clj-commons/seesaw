@@ -79,6 +79,10 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
   <tr><td><code>:font</code></td><td>Set the font of the widget by coercing into a Font. See below.</td></tr>
   <tr><td><code>:enabled?</code></td><td>Whether the widget is enabled or not.</td></tr>
   <tr><td><code>:listen</code></td><td>List of event listeners with same format as args to `(listen)` function (see below).</td></tr>
+  <tr><td><code>:minimum-size</code></td><td>Minimum size of component, set with a `java.awt.Dimension` or a vector of the form `[width :by height]`, for example `[50 :by 50]`. Note that in Swing, some containers don't honor minimum size.</td></tr>
+  <tr><td><code>:maximum-size</code></td><td>Same as `:minimum-size`, but maximum. Note that in Swing, some containers don't honor maximum size.</td></tr>
+  <tr><td><code>:preferred-size</code></td><td>Same as `:minimum-size`, but preferred size.</td></tr>
+  <tr><td><code>:size</code></td><td>Set `:minimum-size`, `:maximum-size`, and `:preferred-size` all at once.</td></tr>
 </table>
 
 ... and many more. See code and tests for details. 

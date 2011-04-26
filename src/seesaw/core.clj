@@ -216,6 +216,14 @@
   :orientation #(.setOrientation %1 (orientation-table %2))
   :items       #(add-widgets %1 %2)
   :model       #(.setModel %1 %2)
+  :preferred-size #(.setPreferredSize %1 (to-dimension %2))
+  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
+  :maximum-size   #(.setMaximumSize %1 (to-dimension %2))
+  :size           #(let [d (to-dimension %2)]
+                     (doto %1 
+                       (.setPreferredSize d)
+                       (.setMinimumSize d)
+                       (.setMaximumSize d)))
 })
 
 (defn apply-default-opts
@@ -812,6 +820,8 @@
   :resizable? #(.setResizable %1 (boolean %2))
   :content    #(.setContentPane %1 (to-widget %2 true))
   :menubar    #(.setJMenuBar %1 %2)
+  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
+  :size       #(.setSize %1 (to-dimension %2))
 })
 
 (defn frame
@@ -819,8 +829,10 @@
 
     :title    the title of the window
     :pack?     true/false whether JFrame/pack should be called (default true)
-    :width    initial width if :pack is false
-    :height   initial height if :pack is true
+    :width    initial width if :pack? is false
+    :height   initial height if :pack? is false
+    :size     initial size if :pack? is false, e.g. [640 :by 480]
+    :minimum-size minimum size of frame, e.g. [640 :by 480]
     :content  passed through (to-widget) and used as the frame's content-pane
     :visible?  whether frame should be initially visible (default true)
     :resizable? whether the frame can be resized (default true)

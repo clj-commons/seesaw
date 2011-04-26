@@ -47,8 +47,7 @@
 (describe unappend-listener
   (it "can remove a listener"
     (let [initial {:list-key [:a :b :c]}
-          result  (unappend-listener initial :list-key :b)
-          _       (println "RESULT: " (:list-key result))]
+          result  (unappend-listener initial :list-key :b)]
       (expect (= {:list-key [:a :c]} result)))))
 
 

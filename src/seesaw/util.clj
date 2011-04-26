@@ -124,3 +124,12 @@
   (let [options (or (get-option-handlers target) default-options)]
     (apply-options target args options)))
 
+(defn to-dimension
+  [v]
+  (cond
+    (instance? java.awt.Dimension v) v
+    (and (vector? v) (= 3 (count v)) (= :by (second v)))
+      (let [[w by h] v] (java.awt.Dimension. w h))
+    :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
+
+

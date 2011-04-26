@@ -76,5 +76,5 @@
 
 (defn -main [& args]
   (invoke-later (app)))
-(-main)
+;(-main)
 
