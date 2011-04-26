@@ -776,9 +776,9 @@
     (paintComponent [g]
       (let [{:keys [before after super?] :or {super? true}} (.getClientProperty this paint-property)]
         (ssg/anti-alias g)
-        (when before (before this g))
+        (when before (ssg/push g (before this g)))
         (when super? (proxy-super paintComponent g))
-        (when after  (after this g))))))
+        (when after  (ssg/push g (after this g)))))))
 
 (defn canvas
   [& opts]

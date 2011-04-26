@@ -21,3 +21,25 @@
   ([width height] (buffered-image width height BufferedImage/TYPE_INT_ARGB))
   ([width height t] (BufferedImage. width height t)))
 
+(defmacro push 
+  "Push a Graphics2D context (Graphics2d/create) and automatically dispose it.
+  
+  For example, in a paint handler:
+  
+    (fn [c g2d]
+      (.setColor g2d java.awt.Color/RED)
+      (.drawString g2d \"This string is RED\" 0 20)
+      (push g2d
+        (.setColor g2d java.awt.Color/BLUE)
+        (.drawString g2d \"This string is BLUE\" 0 40))
+      (.drawString g2d \"This string is RED again\" 0 60))
+  "
+  [g2d & forms]
+  `(let [~g2d (. ~g2d create)]
+     (try 
+       ~@forms
+       (finally
+         (. ~g2d dispose)))))
+
+  
+
