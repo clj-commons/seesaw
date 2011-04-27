@@ -888,13 +888,21 @@
 (def ^{:private true} id-regex #"^#(.+)$")
 
 (defn select
-  "Select a widget using the given selector expression:
+  "Select a widget using the given selector expression. Selectors are *always*
+   expressed as a vector.
 
-    :#id    Look up widget by id. A single widget is returned
+    [:#id]        Look up widget by id. A single widget is returned
+    [:*]   root   root and all the widgets under it
 
    Someday more selectors will be supported :)
   "
   ([selector]
-    (if-let [[_ id] (re-find id-regex (name selector))]
-      (get @widget-by-id id))))
+    (check-args (vector? selector) "selector must be vector")
+    (if-let [[_ id] (re-find id-regex (name (first selector)))]
+      (get @widget-by-id id)))
+  ([root selector]
+    (check-args (vector? selector) "selector must be vector")
+    (cond
+      (= (first selector) :*) (collect root)
+      :else (throw (IllegalArgumentException. (str "Unsupported selector " selector))))))
 

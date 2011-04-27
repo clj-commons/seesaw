@@ -89,7 +89,7 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
 
 Note that these properties can also be used with the `(config)` function which applies them to an existing widget or widgets:
 
-    (config (select :#my-widget) :enabled? false :text "I'm disabled.")
+    (config (select [:#my-widget]) :enabled? false :text "I'm disabled.")
 
 `(config)` can be applied to a single widget, or list of widgets, or things that can be turned into widgets.
 
@@ -101,9 +101,12 @@ I hope to one day support general CSS-style selectors for finding and styling wi
 
        ... later ...
 
-    (listen (select :#the-button) 
+    (listen (select [:#the-button]) 
       :action (fn [e] ... do something ...))
 
+The "all" selector is also supported which will match everything in a sub-tree including the root. For example to disable an entire sub-tree:
+
+    (config (select [:*] my-panel) :enabled? false)
 
 At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
 
@@ -190,7 +193,7 @@ Here's how you can make a menu bar full of menus:
 ### Selection Handling
 The `(selection)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget). It will always return a seq of values, or `nil` if there is no selection. For single-selection cases, just use `(first)`. Note that you can apply `(selection)` to event objects as well:
 
-    (listen (select :#my-list) :selection
+    (listen (select [:#my-list]) :selection
       (fn [e]
        (println "Current selection of my-list is: " (selection e))))
 

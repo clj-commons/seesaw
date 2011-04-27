@@ -132,4 +132,15 @@
       (let [[w by h] v] (java.awt.Dimension. w h))
     :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
 
+(defn collect
+  "Given a root widget or frame, returns a depth-fist seq of all the widgets
+  in the hierarchy. For example to disable everything:
+  
+    (config (collect (.getContentPane my-frame)) :enabled? false)
+  "
+  [root]
+  (tree-seq 
+    (constantly true) 
+    (fn [c] (seq (.getComponents c))) 
+    root))
 

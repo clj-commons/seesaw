@@ -560,6 +560,10 @@
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
           f (frame :title "select by id" :visible? false :content p)]
-      (expect (= c (select :#hi)))
-      (expect (= p (select "#panel"))))))
+      (expect (= c (select [:#hi])))
+      (expect (= p (select ["#panel"])))))
+  (it "should select all of the components in a tree with :*"
+    (let [a (label) b (text) c (label)
+          p (flow-panel :items [a b c])]
+      (expect (= [p a b c] (select p [:*]))))))
 

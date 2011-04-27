@@ -102,29 +102,29 @@
         :tip   "A tab with a JList example"
         :content (scrollable (listbox :id :list :model (range 0 100))) }]))))
 
-  (listen (select :#tabs) :state-changed
+  (listen (select [:#tabs]) :state-changed
         #(let [tp (to-widget %)
                tab (.getSelectedIndex tp)] 
           (.setTitleAt tp 0 (if (= tab 0) ":)" ":("))))
 
-  (listen (select :#button) :action (fn [e] (alert "HI")))
+  (listen (select [:#button]) :action (fn [e] (alert "HI")))
 
-  (listen (select :#link)
+  (listen (select [:#link])
     :mouse-clicked #(alert % "CLICK!")
     :mouse-entered #(config % :foreground Color/BLUE)
     :mouse-exited  #(config % :foreground Color/BLACK))
 
-  (listen (select :#check-me) :selection ; or :item-state-changed
+  (listen (select [:#check-me]) :selection ; or :item-state-changed
     (fn [e] 
-      (config (select :#link) :enabled? (first (selection e)))))
+      (config (select [:#link]) :enabled? (first (selection e)))))
 
-  (listen (select :#combo)  :selection ; or :item-state-changed
+  (listen (select [:#combo])  :selection ; or :item-state-changed
       (fn [e] (println (selection e))))
 
-  (listen (select :#list)  :selection ; or :list-selection
+  (listen (select [:#list])  :selection ; or :list-selection
       (fn [e] (println (selection e))))
 
-  (listen (select :#and-me)  :selection ; or :item-state-changed
+  (listen (select [:#and-me])  :selection ; or :item-state-changed
     (fn [e] (println (selection e)))))
 
  

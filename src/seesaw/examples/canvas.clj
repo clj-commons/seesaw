@@ -57,7 +57,7 @@
 ; properties on other widgets.
 (defn switch-paint-action [n paint]
   (action :name n 
-          :handler (fn [e] (config (select :#canvas) :paint paint))))
+          :handler (fn [e] (config (select [:#canvas]) :paint paint))))
 
 (defn app
   []
