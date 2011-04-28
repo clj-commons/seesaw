@@ -103,7 +103,10 @@
         :content (scrollable (listbox :id :list :model (range 0 100))) }
       { :title "JTable Example"
         :tip   "A tab with a JTable example"
-        :content (scrollable (table :id :table :show-grid? true :model (javax.swing.table.DefaultTableModel. 50 50))) }
+        :content 
+        (border-panel
+          :center (scrollable (table :id :table :show-grid? true :model (javax.swing.table.DefaultTableModel. 50 50)))
+          :south (label :id :table-sel :text "Table selection: ")) }
            ]))))
 
   (listen (select [:#tabs]) :state-changed
@@ -128,10 +131,14 @@
   (listen (select [:#list])  :selection ; or :list-selection
       (fn [e] (println (selection e))))
 
+  (listen (select [:#table])  :selection ; or :list-selection
+    (fn [e] 
+      (let [t (select [:#table]) 
+            lbl (select [:#table-sel])]
+        (text lbl (str "Table selection:" (selection t))))))
+
   (listen (select [:#and-me])  :selection ; or :item-state-changed
     (fn [e] (println (selection e)))))
-
- 
 
 (defn -main [& args]
   (invoke-later (app)))

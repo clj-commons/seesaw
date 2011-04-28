@@ -58,7 +58,7 @@
 
 (extend-protocol Selection
   javax.swing.JTable
-    (get-selection [target] (map #(.convertRowIndexToModel target %) (seq (.getSelectedRows target))))
+    (get-selection [target] (seq (map #(.convertRowIndexToModel target %) (seq (.getSelectedRows target)))))
     (set-selection [target args] 
       (if (seq args)
         (do 
