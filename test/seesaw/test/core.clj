@@ -405,7 +405,11 @@
 
 (describe table
   (it "should create a JTable"
-    (= javax.swing.JTable (class (table)))))
+    (= javax.swing.JTable (class (table))))
+  (it "should set the table's model from a TableModel"
+    (let [m (javax.swing.table.DefaultTableModel.)
+          t (table :model m)]
+      (= m (.getModel t)))))
 
 (describe scrollable
   (it "should create a JScrollPane"

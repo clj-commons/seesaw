@@ -170,6 +170,7 @@
         (expect (= 1 (count (.getListSelectionListeners jlist))))
         (.. (first (.getListSelectionListeners jlist)) (valueChanged nil))
         (expect @called))))
+
   (it "can register a ListSelectionListener on a JTable with :selection key"
       (let [jtable (javax.swing.JTable. 5 1)
             called (atom false)]
@@ -180,6 +181,7 @@
           (expect (= 2 (count (.. jtable getSelectionModel getListSelectionListeners))))
           (.. (first (.. jtable getSelectionModel getListSelectionListeners)) (valueChanged nil))
           (expect @called))))
+
   (it "can register a TreeSelectionListener on a JTree with :selection key"
     (let [tree (javax.swing.JTree.)
           called (atom false)]

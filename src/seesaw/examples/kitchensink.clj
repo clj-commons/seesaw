@@ -100,7 +100,11 @@
         :content "Hello. I'm the content of this tab. Just a label." }
       { :title "JList Example"
         :tip   "A tab with a JList example"
-        :content (scrollable (listbox :id :list :model (range 0 100))) }]))))
+        :content (scrollable (listbox :id :list :model (range 0 100))) }
+      { :title "JTable Example"
+        :tip   "A tab with a JTable example"
+        :content (scrollable (table :id :table :show-grid? true :model (javax.swing.table.DefaultTableModel. 50 50))) }
+           ]))))
 
   (listen (select [:#tabs]) :state-changed
         #(let [tp (to-widget %)

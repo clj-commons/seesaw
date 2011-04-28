@@ -605,9 +605,13 @@
 ;*******************************************************************************
 ; JTable
 
+(def ^{:private true} table-options {
+  :show-grid? #(.setShowGrid %1 (boolean %2))
+})
+
 (defn table
   [& args]
-  (apply-options (javax.swing.JTable.) args default-options))
+  (apply-options (javax.swing.JTable.) args (merge default-options table-options)))
 
 ;*******************************************************************************
 ; Combobox
