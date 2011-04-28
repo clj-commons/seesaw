@@ -59,11 +59,11 @@
 (extend-protocol Selection
   javax.swing.JTable
     (get-selection [target] (seq (map #(.convertRowIndexToModel target %) (.getSelectedRows target))))
-    (set-selection [target args] 
+    (set-selection [target [args]] 
       (if (seq args)
         (do 
           (.clearSelection target)
-          (doseq [i args] (.addRowSelectionInterval i i)))
+          (doseq [i args] (.addRowSelectionInterval target i i)))
         (.clearSelection target))))
 
 (defn selection
