@@ -603,6 +603,13 @@
   (apply-options (javax.swing.JList.) args (merge default-options listbox-options)))
 
 ;*******************************************************************************
+; JTable
+
+(defn table
+  [& args]
+  (apply-options (javax.swing.JTable.) args default-options))
+
+;*******************************************************************************
 ; Combobox
 
 (defn- to-combobox-model [xs]

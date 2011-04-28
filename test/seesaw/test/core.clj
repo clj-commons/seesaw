@@ -403,6 +403,10 @@
       (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
       (expect (= 1 (.getSelectedItem model))))))
 
+(describe table
+  (it "should create a JTable"
+    (= javax.swing.JTable (class (table)))))
+
 (describe scrollable
   (it "should create a JScrollPane"
     (let [l (label :text "Test")

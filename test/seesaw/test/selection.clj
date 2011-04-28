@@ -67,5 +67,24 @@
     (it "Selects the given *values* when argument is a non-empty seq"
       (let [jlist (javax.swing.JList. (to-array [1 "test" 3 4 5 6 7]))]
         (expect (= jlist (selection jlist ["test" 4 6])))
-        (expect (= ["test" 4 6] (selection jlist)))))))
+        (expect (= ["test" 4 6] (selection jlist))))))
+
+  (testing "when given a JTable"
+    (it "returns nil when no rows are selected"
+      (nil? (selection (javax.swing.JTable.))))
+    (it "returns a seq of selected model row indices when selection is non-empty"
+      (let [jtable (javax.swing.JTable. 5 3)]
+        (.setRowSelectionInterval jtable 1 3)
+        (= [1 2 3] (selection jtable)))))
+          
+  (testing "when given a JTable and an argument"
+    (it "Clears the row selection when the argument is nil"
+      (let [jtable (javax.swing.JTable 5 3)]
+        (.setRowSelectionInterval jtable 1 3)
+        (selection jtable nil)
+        (nil? (selection jtable))))
+    (it "selects the given rows when argument is a non-empty seq of row indices"
+      (let [jtable (javax.swing.JTable 10 2)]
+        (selection jtable [0 2 4 6 8 9])
+        (= [0 2 4 6 8 9] (selection jtable))))))
 

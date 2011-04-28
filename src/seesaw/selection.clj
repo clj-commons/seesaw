@@ -56,6 +56,16 @@
     (get-selection [target]      (seq (.getSelectedValues target)))
     (set-selection [target args] (apply jlist-set-selection target args)))
 
+(extend-protocol Selection
+  javax.swing.JTable
+    (get-selection [target] (map #(.convertRowIndexToModel target %) (seq (.getSelectedRows target))))
+    (set-selection [target args] 
+      (if (seq args)
+        (do 
+          (.clearSelection target)
+          (doseq [i args] (.addRowSelectionInterval i i)))
+        (.clearSelection target))))
+
 (defn selection
   ([target] (get-selection target))
   ([target & values] (set-selection target values)))
