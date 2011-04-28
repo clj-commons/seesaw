@@ -101,7 +101,12 @@
     :class   ListSelectionListener
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
-    :install #(.addListSelectionListener %1 %2)
+    :install (fn [target listener]
+                (.addListSelectionListener 
+                  (cond
+                    (instance? javax.swing.JTable target) (.getSelectionModel target)
+                    :else target)
+                  listener))
   }
   :tree-selection { 
     :name    :tree-selection
@@ -208,6 +213,7 @@
     (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
     ; Re-route to right listener type for :selection on various widget types
     (instance? javax.swing.JList target)       :list-selection
+    (instance? javax.swing.JTable target)      :list-selection
     (instance? javax.swing.JTree target)       :tree-selection
     (instance? javax.swing.JComboBox target)   :action-performed
     (instance? java.awt.ItemSelectable target) :item-state-changed
@@ -247,6 +253,10 @@
     (add-listener my-widget :mouse (fn [e] ...))
 
   Functions can be removed with (remove-listener).
+
+  When the target is a JTable and listener type is :selection, only
+  row selection events are reported. Also note that the source table is
+  *not* retrievable from the event object.
   "
   [targets & more]
     (doseq [target (to-seq targets) 
