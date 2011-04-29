@@ -2,7 +2,7 @@
   (:use [seesaw core font color]))
 
 (def even-font (font "ARIAL-ITALIC-18"))
-(def odd-font (font "ARIAL-18"))
+(def odd-font (font "ARIAL--18"))
 
 ; Define a render function. The first arg is the renderer (an instance of
 ; DefaultListCellRenderer). The second holds the state of the cell we're
@@ -19,11 +19,11 @@
 (defn app []
   (frame :title   "Cell Renderer Example"
          :content (scrollable 
-                    (listbox :model (range 5 25) 
+                    (listbox :model    (range 5 25) 
                              :renderer render-fn)))) 
 
 (defn -main [& args]
   (invoke-later (app)))
 
-(-main)
+;(-main)
 
