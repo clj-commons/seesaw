@@ -11,19 +11,34 @@
 (ns seesaw.test.cells
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
-        [seesaw cells font]))
+        [seesaw.core]
+        [seesaw.cells]
+        [seesaw.font]))
 
 (describe default-list-cell-renderer
-  (it "proxies a DefaultListCellRenderer which dispatches to functions in a map"
+  (it "proxies a DefaultListCellRenderer which dispatches to a function"
     (let [expected-font (font :name "ARIAL-BOLD-18")
           jlist (javax.swing.JList.)
-          r (default-list-cell-renderer :foreground (fn [info] java.awt.Color/YELLOW)
-                                        :text (fn [info] "hi")
-                                        :icon (fn [info] nil)
-                                        :font (fn [info] expected-font))
+          render-fn (fn [renderer info] 
+                      (config renderer :foreground java.awt.Color/YELLOW
+                                       :text "hi"
+                                       :icon nil
+                                       :font expected-font))
+          r (default-list-cell-renderer render-fn)
           c (.getListCellRendererComponent r jlist nil 0 false false)]
       (expect (= java.awt.Color/YELLOW (.getForeground c)))
       (expect (= "hi" (.getText c)))
       (expect (= nil (.getIcon c)))
       (expect (= expected-font (.getFont c))))))
+
+(describe to-cell-renderer
+  (it "throws an exception if it can't make a renderer for a component"
+    (try
+      (to-cell-renderer (javax.swing.JLabel.) nil) false
+      (catch IllegalArgumentException e true)))
+  (it "creates a list cell renderer for a Jlist"
+    (instance? javax.swing.ListCellRenderer (to-cell-renderer (javax.swing.JList.) (fn [r i]))))
+  (it "creates a list cell renderer for a JComboBox"
+    (instance? javax.swing.ListCellRenderer (to-cell-renderer (javax.swing.JComboBox.) (fn [r i])))))
+
 

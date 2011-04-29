@@ -11,26 +11,28 @@
 (ns seesaw.cells
   (:use [seesaw util]))
 
+(def ^{:private true} nil-fn (constantly nil))
+
 (defn default-list-cell-renderer 
-  [& args]
-  (let [opts (apply hash-map args)
-        text-fn (:text opts)
-        icon-fn (:icon opts)
-        font-fn (:font opts)
-        forground-fn (:foreground opts)]
+  [render-fn]
+  (if (instance? javax.swing.ListCellRenderer render-fn)
+    render-fn
     (proxy [javax.swing.DefaultListCellRenderer] []
       (getListCellRendererComponent [component value index selected? focus?]
-        (let [info { :this this 
-                     :component component 
-                     :value value 
-                     :index index 
-                     :selected? selected? 
-                     :focus? focus? }]
-          (proxy-super getListCellRendererComponent component value index selected? focus?)
-          (cond-doto this
-            forground-fn (.setForeground (forground-fn info))
-            text-fn (.setText (text-fn info))
-            icon-fn (.setIcon (icon-fn info))
-            font-fn (.setFont (font-fn info))))))))
+        (proxy-super getListCellRendererComponent component value index selected? focus?)
+        (render-fn this { :this      this 
+                          :component component 
+                          :value     value 
+                          :index     index 
+                          :selected? selected? 
+                          :focus?    focus? })
+        this))))
+
+(defn to-cell-renderer
+  [target arg]
+  (cond
+    (or (instance? javax.swing.JList target) 
+        (instance? javax.swing.JComboBox target)) (default-list-cell-renderer arg)
+    :else (throw (IllegalArgumentException. (str "Don't know how to make cell renderer for" (class arg))))))
       
 

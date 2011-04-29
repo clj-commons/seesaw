@@ -9,9 +9,10 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.selection
-  (:use [seesaw selection action])
   (:use [lazytest.describe :only (describe it testing)]
-        [lazytest.expect :only (expect)]))
+        [lazytest.expect :only (expect)]
+        [seesaw selection]
+        [seesaw action]))
 
 (describe selection
   (testing "when given an Action"

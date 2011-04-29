@@ -11,7 +11,8 @@
 (ns seesaw.test.core
   (:use seesaw.core
         seesaw.font
-        seesaw.graphics)
+        seesaw.graphics
+        seesaw.cells)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import [javax.swing SwingConstants
@@ -377,26 +378,35 @@
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
     (let [t (radio :text "HI" :selected? true)]
-      (expect (.isSelected t)))))
+      (.isSelected t))))
 
 (describe listbox
   (it "should create a JList"
-    (let [lb (listbox)]
-      (expect (= javax.swing.JList (class lb)))))
+    (= javax.swing.JList (class (listbox))))
   (it "should create a JList using a seq as its model"
     (let [lb (listbox :model [1 2 3 4])
           model (.getModel lb)]
-      (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model))))))))
+      (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model))))))
+  (it "should set the list's cell renderer, if given"
+    (let [render-fn (fn [renderer info] nil)
+          renderer (default-list-cell-renderer render-fn)
+          lb (listbox :renderer renderer)]
+      (= renderer (.getCellRenderer lb)))))
 
 (describe combobox
   (it "should create a JComboBox"
     (let [lb (combobox)]
-      (expect (= javax.swing.JComboBox (class lb)))))
+      (= javax.swing.JComboBox (class lb))))
   (testing "the :editable? property"
     (it "should create a non-editable JComboBox when false"
       (not (.isEditable (combobox :editable? false))))
     (it "should create an editable JComboBox when true"
       (.isEditable (combobox :editable? true))))
+  (it "should set the combobox's cell renderer, if given"
+      (let [render-fn (fn [renderer info] nil)
+            renderer (default-list-cell-renderer render-fn)
+            lb (combobox :renderer renderer)]
+        (= renderer (.getRenderer lb))))
   (it "should create a JComboBox using a seq as its model"
     (let [lb (combobox :model [1 2 3 4])
           model (.getModel lb)]

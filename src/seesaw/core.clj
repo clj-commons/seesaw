@@ -14,6 +14,7 @@
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
             [seesaw.action :as ssa]
+            [seesaw.cells :as cells]
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
@@ -595,7 +596,8 @@
       model)))
 
 (def ^{:private true} listbox-options {
-  :model (fn [lb m] ((:model default-options) lb (to-list-model m)))
+  :model    (fn [lb m] ((:model default-options) lb (to-list-model m)))
+  :renderer #(.setCellRenderer %1 (cells/to-cell-renderer %1 %2))
 })
 
 (defn listbox
@@ -627,7 +629,8 @@
       model)))
 
 (def ^{:private true} combobox-options {
-  :model (fn [lb m] ((:model default-options) lb (to-combobox-model m)))
+  :model    (fn [lb m] ((:model default-options) lb (to-combobox-model m)))
+  :renderer #(.setRenderer %1 (cells/to-cell-renderer %1 %2))
 })
 
 (defn combobox
