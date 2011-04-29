@@ -1,5 +1,5 @@
 (ns seesaw.examples.cell-renderers
-  (:use [seesaw core font color]))
+  (:use [seesaw core font]))
 
 (def even-font (font "ARIAL-ITALIC-18"))
 (def odd-font (font "ARIAL--18"))
@@ -13,8 +13,8 @@
   (let [v (:value info)]
     (apply config renderer 
       (if (even? v) 
-        [:text (str v " is even") :font even-font :foreground (color "#000000")]
-        [:text (str v " is odd")  :font odd-font  :foreground (color "#aaaaaa")]))))
+        [:text (str v " is even") :font even-font :foreground "#000033"]
+        [:text (str v " is odd")  :font odd-font  :foreground "#aaaaee"]))))
 
 (defn app []
   (frame :title   "Cell Renderer Example"
