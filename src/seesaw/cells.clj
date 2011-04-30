@@ -28,11 +28,29 @@
                           :focus?    focus? })
         this))))
 
+(defn default-tree-cell-renderer 
+  [render-fn]
+  (if (instance? javax.swing.tree.TreeCellRenderer render-fn)
+    render-fn
+    (proxy [javax.swing.tree.DefaultTreeCellRenderer] []
+      (getTreeCellRendererComponent [component value selected? expanded? leaf? row focus?]
+        (proxy-super getTreeCellRendererComponent component value selected? expanded? leaf? row focus?)
+        (render-fn this { :this      this 
+                          :component component 
+                          :value     value 
+                          :selected? selected? 
+                          :expaned?  expanded? 
+                          :leaf?     leaf?
+                          :row       row
+                          :focus?    focus? })
+        this))))
+
 (defn to-cell-renderer
   [target arg]
   (cond
     (or (instance? javax.swing.JList target) 
         (instance? javax.swing.JComboBox target)) (default-list-cell-renderer arg)
+    (instance? javax.swing.JTree target) (default-tree-cell-renderer arg)
     :else (throw (IllegalArgumentException. (str "Don't know how to make cell renderer for" (class arg))))))
       
 

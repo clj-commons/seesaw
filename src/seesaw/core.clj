@@ -619,6 +619,15 @@
 ; JTree
 
 (def ^{:private true} tree-options {
+  :renderer #(.setCellRenderer %1 (cells/to-cell-renderer %1 %2))
+  :expands-selected-paths? #(.setExpandsSelectedPaths %1 (boolean %2))
+  :large-model?            #(.setLargeModel %1 (boolean %2))
+  :root-visible?           #(.setRootVisible %1 (boolean %2))
+  :row-height              #(.setRowHeight %1 %2)
+  :scrolls-on-expand?      #(.setScrollsOnExpand %1 (boolean %2))
+  :shows-root-handles?     #(.setShowsRootHandles %1 (boolean %2))
+  :toggle-click-count      #(.setToggleClickCount %1 %2)
+  :visible-row-count       #(.setVisibleRowCount %1 %2)
 })
 
 (defn tree

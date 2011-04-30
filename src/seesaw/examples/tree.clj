@@ -11,14 +11,37 @@
 (ns seesaw.examples.tree
   (:use [seesaw core tree]))
 
+; Some tree-like data
 (def data '((1 2 (3)) (4) 5 (6 (7 8 9 10) 11)))
 
+; Make a tree model for the data using same functions as (clojure.core/tree-seq)
+(def model (simple-tree-model seq? seq data))
+
+; A custom renderer so that list nodes are displayed as lists.
+(defn render-fn [renderer info]
+  (let [v (:value info)]
+    (config renderer 
+      :text (if (seq? v) 
+              (format "List (%d items)" (count v)) 
+              v))))
+
+; The rest is boilerplate ...
 (defn app []
   (frame :title "JTree Example" :content
     (border-panel
-      :center (scrollable (tree :model (simple-tree-model seq? seq data))))))
+      :center (scrollable (tree :id :tree
+                                :model model
+                                :renderer render-fn))
+      :south (label :id :sel :text "Selection: ")))
+
+  ; Listen for selection changes and show them in the label
+  (listen (select [:#tree]) :selection 
+    (fn [e] 
+      (config (select [:#sel]) 
+        :text (str "Selection: " (.getLastSelectedPathComponent (to-widget e)))))))
 
 (defn -main [& args]
   (invoke-later (app)))
 
-(-main)
+;(-main)
+
