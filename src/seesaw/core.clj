@@ -616,6 +616,16 @@
   (apply-options (javax.swing.JTable.) args (merge default-options table-options)))
 
 ;*******************************************************************************
+; JTree
+
+(def ^{:private true} tree-options {
+})
+
+(defn tree
+  [& args]
+  (apply-options (javax.swing.JTree.) args (merge default-options tree-options)))
+
+;*******************************************************************************
 ; Combobox
 
 (defn- to-combobox-model [xs]

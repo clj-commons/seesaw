@@ -1,4 +1,4 @@
-;  Copyright (c) Dave Ray, 2011. All rights reserved.
+;  Copyright (c) Dave Ray, 2011. All ritest/seesaw/test/core.clj
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
@@ -419,6 +419,14 @@
   (it "should set the table's model from a TableModel"
     (let [m (javax.swing.table.DefaultTableModel.)
           t (table :model m)]
+      (= m (.getModel t)))))
+
+(describe tree
+  (it "should create a JTree"
+    (= javax.swing.JTree (class (tree))))
+  (it "should set the tree's model from a TreeModel"
+    (let [m (javax.swing.tree.DefaultTreeModel. nil)
+          t (tree :model m)]
       (= m (.getModel t)))))
 
 (describe scrollable
