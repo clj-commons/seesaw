@@ -84,11 +84,11 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
 
 ... and many more. See code and tests for details. 
 
-Note that these properties can also be used with the `(config)` function which applies them to an existing widget or widgets:
+Note that these properties can also be used with the `(config!)` function which applies them to an existing widget or widgets:
 
-    (config (select [:#my-widget]) :enabled? false :text "I'm disabled.")
+    (config! (select [:#my-widget]) :enabled? false :text "I'm disabled.")
 
-`(config)` can be applied to a single widget, or list of widgets, or things that can be turned into widgets.
+`(config!)` can be applied to a single widget, or list of widgets, or things that can be turned into widgets.
 
 ### Selectors
 
@@ -105,7 +105,7 @@ _I'm not totally happy with this and it will probably change. Selecting by id be
 
 The "all" selector is also supported which will match everything in a sub-tree including the root. For example to disable an entire sub-tree:
 
-    (config (select [:*] my-panel) :enabled? false)
+    (config! (select [:*] my-panel) :enabled? false)
 
 At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
 
@@ -172,11 +172,11 @@ It's typical in Swing apps to use actions for menus, buttons, etc. An action nee
 
 `(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it. See `seesaw/action.clj` for an accurate list of options.
 
-Like widgets, actions can be modified with the `(config)` function:
+Like widgets, actions can be modified with the `(config!)` function:
 
     (def a (action :name "Fire Missiles" :enabled? false))
 
-    (config a :name "Fire Missiles!!!" :enabled? true :handler (fn [e] (println "FIRE")))
+    (config! a :name "Fire Missiles!!!" :enabled? true :handler (fn [e] (println "FIRE")))
 
 ### Menus
 Here's how you can make a menu bar full of menus:

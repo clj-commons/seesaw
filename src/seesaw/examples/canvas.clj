@@ -53,11 +53,11 @@
       (.drawString "Hello. This is a canvas example" 20 20))))
 
 ; Create an action that swaps the paint handler for the canvas.
-; Note that we can use (config) to set the :paint handler just like
+; Note that we can use (config!) to set the :paint handler just like
 ; properties on other widgets.
 (defn switch-paint-action [n paint]
   (action :name n 
-          :handler (fn [e] (config (select [:#canvas]) :paint paint))))
+          :handler (fn [e] (config! (select [:#canvas]) :paint paint))))
 
 (defn app
   []

@@ -40,7 +40,7 @@
       (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for)))
     (it "throws IllegalStateException if the widget's id is already set"
       (try 
-        (do (config (label :id :foo) :id :bar) false)
+        (do (config! (label :id :foo) :id :bar) false)
         (catch IllegalStateException e true))))
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
@@ -165,17 +165,17 @@
       (expect (= (.getDocument t) (to-document t))))))
 
 
-(describe config
+(describe config!
   (it "configures the properties given to it on a single target"
     (let [p (JPanel.)
-          result (config p :foreground Color/RED :background Color/BLUE :enabled? false)]
+          result (config! p :foreground Color/RED :background Color/BLUE :enabled? false)]
       (expect (= p result))
       (expect (= Color/RED (.getForeground p)))
       (expect (= Color/BLUE (.getBackground p)))
       (expect (not (.isEnabled p)))))
   (it "configures the properties given to it on a multiple targets"
     (let [targets [(JPanel.) (JPanel.)]
-          result (config targets :foreground Color/RED :background Color/BLUE :enabled? false)]
+          result (config! targets :foreground Color/RED :background Color/BLUE :enabled? false)]
       (expect (= targets result))
       (expect (= Color/RED (.getForeground (first targets))))
       (expect (= Color/BLUE (.getBackground (first targets))))
@@ -185,10 +185,10 @@
       (expect (not (.isEnabled (second targets))))))
   (it "configures a target with type-specific properties"
     (let [t (toggle :text "hi" :selected? false)]
-      (expect (.isSelected (config t :selected? true)))))
+      (expect (.isSelected (config! t :selected? true)))))
   (it "can configure an action"
     (let [a (action :name "foo")]
-      (config a :name "bar")
+      (config! a :name "bar")
       (expect (= "bar" (.getValue a Action/NAME))))))
 
 (describe flow-panel

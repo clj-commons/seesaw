@@ -249,14 +249,14 @@
   (config* [target args] 
     (reapply-options target args default-options)))
 
-(defn config
+(defn config!
   "Applies properties in the argument list to one or more targets. For example:
 
-    (config button1 :enabled? false :text \"I' disabled\")
+    (config! button1 :enabled? false :text \"I' disabled\")
 
   or:
 
-    (config [button1 button2] :enabled? false :text \"We're disabled\")
+    (config! [button1 button2] :enabled? false :text \"We're disabled\")
  
   Targets may be actual widgets, or convertible to widgets with (to-widget).
   For example, the target can be an event object.
@@ -846,7 +846,7 @@
     {:before fn :after fn} - a map with :before and :after functions which
       are called before and after super.paintComponent respectively.
   
-  Note that (config) can be used to change the :paint property at any time.
+  Note that (config!) can be used to change the :paint property at any time.
   
   Here's an example:
   

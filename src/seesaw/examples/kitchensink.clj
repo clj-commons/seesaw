@@ -118,12 +118,12 @@
 
   (listen (select [:#link])
     :mouse-clicked #(alert % "CLICK!")
-    :mouse-entered #(config % :foreground Color/BLUE)
-    :mouse-exited  #(config % :foreground Color/BLACK))
+    :mouse-entered #(config! % :foreground Color/BLUE)
+    :mouse-exited  #(config! % :foreground Color/BLACK))
 
   (listen (select [:#check-me]) :selection ; or :item-state-changed
     (fn [e] 
-      (config (select [:#link]) :enabled? (first (selection e)))))
+      (config! (select [:#link]) :enabled? (first (selection e)))))
 
   (listen (select [:#combo])  :selection ; or :item-state-changed
       (fn [e] (println (selection e))))

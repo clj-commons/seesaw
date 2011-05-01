@@ -20,7 +20,7 @@
     (let [expected-font (font :name "ARIAL-BOLD-18")
           jlist (javax.swing.JList.)
           render-fn (fn [renderer info] 
-                      (config renderer :foreground java.awt.Color/YELLOW
+                      (config! renderer :foreground java.awt.Color/YELLOW
                                        :text "hi"
                                        :icon nil
                                        :font expected-font))
@@ -36,7 +36,7 @@
     (let [expected-font (font :name "ARIAL-BOLD-18")
           jtree (javax.swing.JTree.)
           render-fn (fn [renderer info] 
-                      (config renderer :foreground java.awt.Color/YELLOW
+                      (config! renderer :foreground java.awt.Color/YELLOW
                                        :text "hi"
                                        :icon nil
                                        :font expected-font))

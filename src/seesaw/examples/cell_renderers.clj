@@ -7,11 +7,11 @@
 ; Define a render function. The first arg is the renderer (an instance of
 ; DefaultListCellRenderer). The second holds the state of the cell we're
 ; rendering. We use :value to get the model value of the cell. Note
-; that renderer is just a JLabel, so we can call config on it and set
+; that renderer is just a JLabel, so we can call config! on it and set
 ; properties in the normal way.
 (defn render-fn [renderer info]
   (let [v (:value info)]
-    (apply config renderer 
+    (apply config! renderer 
       (if (even? v) 
         [:text (str v " is even") :font even-font :foreground "#000033"]
         [:text (str v " is odd")  :font odd-font  :foreground "#aaaaee"]))))

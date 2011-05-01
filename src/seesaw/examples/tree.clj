@@ -24,7 +24,7 @@
 ; A custom renderer so that XML elements are displayed nicely
 (defn render-fn [renderer info]
   (let [v (:value info)]
-    (config renderer 
+    (config! renderer 
       :text (if (map? v) 
               (format "<%s>" (name (:tag v)))
               v))))
@@ -42,7 +42,7 @@
   ; Listen for selection changes and show them in the label
   (listen (select [:#tree]) :selection 
     (fn [e] 
-      (config (select [:#sel]) 
+      (config! (select [:#sel]) 
         :text (str "Selection: " (-> e selection first last))))))
 
 (defn -main [& args]

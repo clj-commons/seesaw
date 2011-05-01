@@ -25,7 +25,7 @@
 ; Render thing with right names and system icons
 (defn render-file-item
   [renderer {:keys [value]}]
-  (config renderer :text (.getName value)
+  (config! renderer :text (.getName value)
                    :icon (.getIcon chooser value)))
 
 (defn app []
@@ -45,9 +45,9 @@
     (fn [e]
       (if-let [dir (-> (selection e) first last)]
         (let [files (.listFiles dir)]
-          (config (select [:#current-dir]) :text (.getAbsolutePath dir))
-          (config (select [:#status]) :text (format "Ready (%d items)" (count files)))
-          (config (select [:#list]) :model files))))))
+          (config! (select [:#current-dir]) :text (.getAbsolutePath dir))
+          (config! (select [:#status]) :text (format "Ready (%d items)" (count files)))
+          (config! (select [:#list]) :model files))))))
 
 (defn -main [& args]
   (invoke-later (app)))
