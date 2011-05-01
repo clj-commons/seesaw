@@ -101,6 +101,8 @@ I hope to one day support general CSS-style selectors for finding and styling wi
     (listen (select [:#the-button]) 
       :action (fn [e] ... do something ...))
 
+_I'm not totally happy with this and it will probably change. Selecting by id becomes ambiguous if there's more than one root frame in the app, especially if it's a second instance of the same frame type. I'll probably chnage this to take a root in addition to the selector unless I think of something better._
+
 The "all" selector is also supported which will match everything in a sub-tree including the root. For example to disable an entire sub-tree:
 
     (config (select [:*] my-panel) :enabled? false)
