@@ -38,10 +38,10 @@
   (listen (select [:#tree]) :selection 
     (fn [e] 
       (config (select [:#sel]) 
-        :text (str "Selection: " (.getLastSelectedPathComponent (to-widget e)))))))
+        :text (str "Selection: " (-> (to-widget e) selection first last))))))
 
 (defn -main [& args]
   (invoke-later (app)))
 
-;(-main)
+(-main)
 

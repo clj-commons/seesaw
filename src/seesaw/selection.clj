@@ -66,8 +66,16 @@
           (doseq [i args] (.addRowSelectionInterval target i i)))
         (.clearSelection target))))
 
+(extend-protocol Selection
+  javax.swing.JTree
+    (get-selection [target] (seq (map #(seq (.getPath %)) (.getSelectionPaths target))))
+    (set-selection [target [args]]
+      (if (seq args)
+        target
+        (.clearSelection target))))
+
 (defn selection
   ([target] (get-selection target))
-  ([target & values] (set-selection target values)))
+  ([target & values] (set-selection target values) target))
 
 

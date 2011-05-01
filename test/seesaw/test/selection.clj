@@ -11,8 +11,8 @@
 (ns seesaw.test.selection
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
-        [seesaw selection]
-        [seesaw action]))
+        seesaw.selection
+        seesaw.action))
 
 (describe selection
   (testing "when given an Action"
@@ -51,6 +51,25 @@
           (expect (= cb (selection cb 3)))
           (expect (= [3] (selection cb)))))))
 
+  (testing "when given a JTree"
+    (it "returns nil when the selection is empty"
+      (nil? (selection (javax.swing.JTree.))))
+    (it "returns the selection as a seq of paths when it isn't empty"
+      (let [jtree (javax.swing.JTree. (to-array [1 2 3 4 5]))]
+        (.setSelectionInterval jtree 1 3)
+        ; Note. This kind of sucks because the JTree constructor used above
+        ; creates a tree of JTree.DynamicUtilTreeNode rather than just ints.
+        ; If a real TreeModel was used, it could be more reasonable.
+        (expect (= [["root" 2] ["root" 3] ["root" 4]] 
+                  (map (fn [path] (map #(.getUserObject %) path)) (selection jtree)))))))
+
+  (testing "when given a JTree and an argument"
+    (it "Clears the selection when the argument is nil"
+      (let [jtree (javax.swing.JTree. (to-array [1 2 3 4 5]))]
+        (.setSelectionInterval jtree 1 3)
+        (expect (= jtree (selection jtree nil)))
+        (expect (nil? (selection jtree))))))
+
   (testing "when given a JList"
     (it "returns nil when the selection is empty"
       (nil? (selection (javax.swing.JList.))))
@@ -82,10 +101,10 @@
     (it "Clears the row selection when the argument is nil"
       (let [jtable (javax.swing.JTable. 5 3)]
         (.setRowSelectionInterval jtable 1 3)
-        (selection jtable nil)
-        (nil? (selection jtable))))
+        (expect (= jtable (selection jtable nil)))
+        (expect (nil? (selection jtable)))))
     (it "selects the given rows when argument is a non-empty seq of row indices"
       (let [jtable (javax.swing.JTable. 10 2)]
-        (selection jtable [0 2 4 6 8 9])
-        (= [0 2 4 6 8 9] (selection jtable))))))
+        (expect (= jtable (selection jtable [0 2 4 6 8 9])))
+        (expect (= [0 2 4 6 8 9] (selection jtable)))))))
 
