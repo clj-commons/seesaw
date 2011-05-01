@@ -51,15 +51,25 @@
 
 ; to-widget wrapper and stuff for (seesaw.selection/selection)
 (defn selection 
-  "Gets/sets the selection on a widget. target is passed through (to-widget)
+  "Gets the selection of a widget. target is passed through (to-widget)
   so event objects can also be used.
   
   If called with a single widget argument returns a seq containing the current
   selection, or nil if there is no selection. Use (first) for single-selection
   widgets like checkboxes.
 
-  If called with an additional argument, sets the current selection. The
-  interpretation of the argument depends on the type of widget:
+  Returns the target.
+
+  See also seesaw.selection/selection.
+  "
+  [target]
+  (sss/selection (to-widget target)))
+
+(defn selection!
+  "Sets the selection on a widget. target is passed through (to-widget)
+  so event objects can also be used.
+  
+  The interpretation of the argument depends on the type of widget:
 
     JCheckBox, JToggleButton, etc: truthy value sets checkmark, etc.
     JList: argument is a list of values to select, or nil to clear selection
@@ -67,10 +77,10 @@
 
   Returns the target.
 
-  See also seesaw.selection/selection.
+  See also seesaw.selection/selection!.
   "
-  [target & args]
-  (apply sss/selection (to-widget target) args))
+  [target args]
+  (sss/selection! (to-widget target) args))
 
 (def icon ssi/icon)
 (def ^{:private true} make-icon icon)
