@@ -7,10 +7,7 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 * A non-trivial example app to see if this stuff holds up
 * Popup menus
 * GridBagLayout needs more work
-* JTree
-* JTable
-* Cell renderers - in particular, a dead simple way to set icon, text, font, foreground for items in lists and trees.
-* Graphics - canvas, paint callback, Graphics2D.copy() support. I'd rather not wrap the entire Java2D API if there's already something out there (maybe processing?) that does that.
+* Graphics - I'd rather not wrap the entire Java2D API if there's already something out there (maybe processing?) that does that.
 * Structural manip - add/remove widgets to containers.
 * Selectors - select widgets by class, data, etc.
 * Styling
@@ -18,13 +15,13 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 * Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
 
 ## Usage
-See tests and src/seesaw/examples. Seriously, the tests are pretty descriptive of how things work.
+See tests and src/seesaw/examples. Seriously, there are a lot of tests and they're pretty descriptive of how things work.
 
 Let's create a `JFrame`:
 
     (frame :title "Hello" :content "Hi there")
 
-This will create a `JFrame` with title "Hello" and a single label "Hi there". The `:content` property expects something that can be turned into a widget and uses it as the content pane of the frame. Any place where a widget is expected, one will be created depending on the argument...
+This will create a `JFrame` with title "Hello" and a single label "Hi there". The `:content` property expects something that can be turned into a widget and uses it as the content pane of the frame. Any place where a widget is expected, one will be created depending on the argument (see Widget Coercion below) ...
 
 There are several examples at the moment:
 
