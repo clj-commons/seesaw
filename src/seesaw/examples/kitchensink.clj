@@ -135,7 +135,7 @@
     (fn [e] 
       (let [t (select [:#table]) 
             lbl (select [:#table-sel])]
-        (text lbl (str "Table selection:" (selection t))))))
+        (text! lbl (str "Table selection:" (selection t))))))
 
   (listen (select [:#and-me])  :selection ; or :item-state-changed
     (fn [e] (println (selection e)))))

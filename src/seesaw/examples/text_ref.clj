@@ -25,7 +25,7 @@
 (defn watch-value [output]
   (add-watch value nil 
     (fn [_ r old-state new-state] 
-      (text output new-state))))
+      (text! output new-state))))
 
 (defn app []
   (let [input  (text :text @value :columns 20)

@@ -290,6 +290,24 @@
   (it "should create a label with vertical alignment"
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
+(describe text!
+  (it "should set the text of a text Document"
+    (let [d (javax.swing.text.PlainDocument.)
+          _ (.insertString d 0 "HI" nil)
+          r (text! d "BYE!")]
+      (expect (= d r))
+      (expect (= "BYE!" (text d))))))
+  (it "should set the text of a single text widget argument"
+    (= "BYE" (text (text! (text "HI") "BYE"))))
+  (it "should set the text of a single button argument"
+    (= "BYE" (text (text! (button :text "HI") "BYE"))))
+  (it "should set the text of a seq of widget arguments"
+    (let [[a b] [(text "HI") (text "BYE")]
+          result (text! [a b] "YUM")]
+      (expect (= [a b] result))
+      (expect (= "YUM" (text a)))
+      (expect (= "YUM" (text b)))))
+
 (describe text
   (it "should throw IllegalArgumentException if argument is nil"
     (try
@@ -301,28 +319,12 @@
     (let [d (javax.swing.text.PlainDocument.)]
       (.insertString d 0 "HI" nil)
       (expect (= "HI" (text d)))))
-  (it "should set the text of a text Document"
-    (let [d (javax.swing.text.PlainDocument.)
-          _ (.insertString d 0 "HI" nil)
-          r (text d "BYE!")]
-      (expect (= d r))
-      (expect (= "BYE!" (text d)))))
   (it "should return the text of a button argument"
     (= "HI" (text (button :text "HI"))))
   (it "should return the text of a label argument"
     (= "HI" (text (label "HI"))))
   (it "should return the text of a seq of widget arguments"
     (= ["HI" "BYE"] (text [(text "HI") (button :text "BYE")])))
-  (it "should set the text of a single text widget argument"
-    (= "BYE" (text (text (text "HI") "BYE"))))
-  (it "should set the text of a single button argument"
-    (= "BYE" (text (text (button :text "HI") "BYE"))))
-  (it "should set the text of a seq of widget arguments"
-    (let [[a b] [(text "HI") (text "BYE")]
-          result (text [a b] "YUM")]
-      (expect (= [a b] result))
-      (expect (= "YUM" (text a)))
-      (expect (= "YUM" (text b)))))
   (it "should create a text field given a string argument"
     (let [t (text "HI")]
       (expect (= JTextField (class t)))

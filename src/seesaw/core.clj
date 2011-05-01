@@ -551,19 +551,10 @@
       user=> (text t)
       \"HI\"
 
-  Similarly, can set the text of a widget or document:
-  
-      user=> (def t (text \"HI\"))
-      user=> (text t \"BYE\")
-      user=> (text t)
-      \"BYE\"
-
   " 
   [& args]
   ; TODO this is crying out for a multi-method or protocol
-  (let [n           (count args)
-        one?        (= n 1)
-        two?        (= n 2)
+  (let [one?        (= (count args) 1)
         [arg0 arg1] args
         as-doc      (to-document arg0)
         as-widget   (to-widget arg0)
@@ -574,15 +565,35 @@
       (and one? as-widget)   (.getText as-widget)
       (and one? multi?)      (map #(text %) arg0)
       one?                   (text :text arg0)
-      (and two? as-doc)      (do (.replace as-doc 0 (.getLength as-doc) arg1 nil) as-doc)
-      (and two? as-widget)   (do (.setText as-widget arg1) as-widget)
-      (and two? multi?)      (do (doseq [w arg0] (text w arg1)) arg0)
 
       :else (let [{:keys [multi-line?] :as opts} args
                   t (if multi-line? (JTextArea.) (JTextField.))]
               (apply-options t 
                 (dissoc opts :multi-line?)
                 (merge default-options text-options))))))
+
+(defn text!
+  "Set the text of widget(s) or document(s). targets is an object that can be
+  turned into a widget or document, or a list of such things. value is the new
+  text value to be applied. Returns targets.
+
+  Example:
+
+      user=> (def t (text \"HI\"))
+      user=> (text! t \"BYE\")
+      user=> (text t)
+      \"BYE\"
+
+  "
+  [targets value]
+  (let [as-doc      (to-document targets)
+        as-widget   (to-widget targets)
+        multi?      (or (coll? targets) (seq? targets))]
+    (cond
+      (nil? targets) (throw (IllegalArgumentException. "First arg must not be nil"))
+      as-doc      (do (.replace as-doc 0 (.getLength as-doc) value nil) as-doc)
+      as-widget   (do (.setText as-widget value) as-widget)
+      multi?      (do (doseq [w targets] (text w value)) targets))))
 
 ;*******************************************************************************
 ; Listbox

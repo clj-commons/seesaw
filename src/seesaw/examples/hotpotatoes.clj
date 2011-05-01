@@ -20,7 +20,7 @@
     (let [result (if-let [url (to-url url-str)]
                   (slurp url)
                   ("Invalid URL"))]
-      (invoke-later #(f result)))))
+      (invoke-later (f result)))))
       
 (defn app 
   [exit?]
@@ -29,10 +29,10 @@
         status      (label "Ready")
         result-text (text :multi-line? true :editable? false :font "MONOSPACED-14")
         result-handler (fn [s]
-                         (text result-text s)
-                         (text status "Ready"))
+                         (text! result-text s)
+                         (text! status "Ready"))
         go-handler (fn [e] 
-                     (text status "Busy")
+                     (text! status "Busy")
                      (do-request 
                        (text url-text)
                        result-handler))]
