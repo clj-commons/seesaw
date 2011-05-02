@@ -470,6 +470,21 @@
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
+(describe popup
+  (it "should create a JPopupMenu"
+    (expect (= javax.swing.JPopupMenu (class (popup)))))
+  (it "should create a JPopupMenu with the given items"
+    (let [a (action)
+          b :separator
+          c (menu-item)
+          d "Just a string"
+          m (menu :items [a b c d])
+          [ia ib ic id] (.getMenuComponents m)]
+      (expect (= a (.getAction ia)))
+      (expect (= javax.swing.JSeparator (class ib)))
+      (expect (= c ic))
+      (expect (= "Just a string" (.getText id))))))
+
 (describe menubar
   (it "should create a JMenuBar"
     (= javax.swing.JMenuBar (class (menubar))))

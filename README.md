@@ -80,6 +80,7 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
   <tr><td><code>:maximum-size</code></td><td>Same as `:minimum-size`, but maximum. Note that in Swing, some containers don't honor maximum size.</td></tr>
   <tr><td><code>:preferred-size</code></td><td>Same as `:minimum-size`, but preferred size.</td></tr>
   <tr><td><code>:size</code></td><td>Set `:minimum-size`, `:maximum-size`, and `:preferred-size` all at once.</td></tr>
+  <tr><td><code>:popup</code></td><td>A JPopupMenu or function that generates the items of a popup menu to display. In this case, Seesaw ensures that the popup is shown on the correct mouse event for the platform. See `src/seesaw/examples/popup.clj`</td></tr>
 </table>
 
 ... and many more. See code and tests for details. 

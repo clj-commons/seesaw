@@ -31,6 +31,7 @@
               Dimension]))
 
 (declare to-widget)
+(declare popup-option-handler)
 
 ;(set! *warn-on-reflection* true)
 (defn invoke-later* [f] (SwingUtilities/invokeLater f))
@@ -237,6 +238,7 @@
                        (.setPreferredSize d)
                        (.setMinimumSize d)
                        (.setMaximumSize d)))
+  :popup      #(popup-option-handler %1 %2)
 })
 
 (defn apply-default-opts
@@ -739,6 +741,26 @@
   [& opts]
   (apply-button-defaults (javax.swing.JMenu.) opts menu-options))
 
+(defn popup 
+  [& opts]
+  (apply-button-defaults (javax.swing.JPopupMenu.) opts menu-options))
+
+
+(defn- make-popup [target arg event]
+  (cond
+    (instance? javax.swing.JPopupMenu arg) arg
+    (fn? arg)                              (popup :items (arg event))
+    :else (throw (IllegalArgumentException. (str "Don't know how to make popup with " arg)))))
+
+(defn- popup-option-handler
+  [target arg]
+  (listen target :mouse 
+    (fn [event]
+      (when (.isPopupTrigger event)
+        (let [p (make-popup target arg event)]
+          (.show p (to-widget event) (.x (.getPoint event)) (.y (.getPoint event))))))))
+
+  
 ;(def ^{:private true} menubar-options {
   ;:items (fn [mb items] (doseq [i items] (.add mb i)))
 ;})
