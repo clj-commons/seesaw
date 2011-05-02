@@ -19,17 +19,17 @@
   javax.swing.Action
     (get-selection [target]      
       (when-let [s (.getValue target javax.swing.Action/SELECTED_KEY)] [true]))
-    (set-selection [target v] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v))))
+    (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v))))
 
 (extend-protocol Selection
   javax.swing.AbstractButton
     (get-selection [target]      (seq (.getSelectedObjects target)))
-    (set-selection [target v]  (doto target (.setSelected (boolean v)))))
+    (set-selection [target [v]]  (doto target (.setSelected (boolean v)))))
 
 (extend-protocol Selection
   javax.swing.JComboBox
     (get-selection [target]     (seq (.getSelectedObjects target)))
-    (set-selection [target v] (doto target (.setSelectedItem v))))
+    (set-selection [target [v]] (doto target (.setSelectedItem v))))
 
 (defn- list-model-to-seq
   [model]
@@ -75,10 +75,20 @@
         (.clearSelection target))))
 
 (defn selection
-  ([target] (get-selection target)))
+  ([target] (selection target {}))
+  ([target opts] 
+    (let [s (get-selection target)]
+      (if (:multi? opts) 
+        s 
+        (first s)))))
 
 (defn selection!
-  ([target values] (set-selection target values) target))
+  ([target values] (selection! target {} values))
+  ([target opts values] 
+    (set-selection 
+      target 
+      (if (or (nil? values) (:multi? opts)) values [values]) )
+    target))
 
 
 

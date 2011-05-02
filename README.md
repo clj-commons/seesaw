@@ -190,18 +190,29 @@ Here's how you can make a menu bar full of menus:
 `(menubar)` has a list of `(menus)`, while each `(menu)` has text and a list of actions, or items. Note that in addition to using Actions as menu items, you can also use `(menu-item)`, `(checkbox-menu-item)`, and `(radio-menu-item)`, each of which has the exact same behavior (and options) as a button.
 
 ### Selection Handling
-The `(selection)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget). It will always return a seq of values, or `nil` if there is no selection. For single-selection cases, just use `(first)`. Note that you can apply `(selection)` to event objects as well:
+The `(selection)` and `(selection!)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget) to `(selection`). It will always return the selected value, or `nil` if there is no selection:
+
+    (if-let [s (selection my-widget)]
+      (println "Current selection is " s)
+      (println "No selection"))
+
+For multi-selection, `(selection)` takes an options map:
+
+    (doseq [s (selection {:multi? true} my-list)]
+      (println "Selected: " s))
+
+Note that you can apply `(selection)` to event objects as well:
 
     (listen (select [:#my-list]) :selection
       (fn [e]
        (println "Current selection of my-list is: " (selection e))))
 
-Giving an argument to the `(selection)` function will set the current selection:
+The `(selection!)` function will set the current selection:
 
     (let [my-list (listbox :model ["jim" "bob" "al"])]
-      (selection my-list ["bob"]))
+      (selection! my-list "bob"))
 
-Pass `nil` to clear the selection.
+Pass `nil` to clear the selection. Like with `(selection)`, use the `multi?` option to interpret the new selection value as a list of values to select.
 
 ### Color Coercion
 

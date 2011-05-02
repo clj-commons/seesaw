@@ -18,19 +18,21 @@
   (testing "when given an Action"
       (it "returns nil when the action is not selected"
         (nil? (selection (action) )))
+      (it "returns a single-element seq with true if the action is selected and multi? is given"
+        (= [true] (selection (action :selected? true) {:multi? true})))
       (it "returns a single-element seq with true if the action is selected"
-        (= [true] (selection (action :selected? true)))))
+        (= true (selection (action :selected? true)))))
   (testing "when given an AbstractButton (e.g. toggle or checkbox)"
     (it "returns nil when the button is not selected"
       (nil? (selection (javax.swing.JCheckBox. "something" false))))
-    (it "returns a single-element seq with the text of the button if it's selected"
-      (= ["something"] (selection (javax.swing.JCheckBox. "something" true)))))
+    (it "returns a single-element seq with the text of the button if it's selected and multi? is true"
+      (= ["something"] (selection (javax.swing.JCheckBox. "something" true) {:multi? true}))))
 
   (testing "when given a ComboBox"
     (it "returns nil when nothing is selected"
       (nil? (selection (javax.swing.JComboBox.))))
-    (it "returns a single-element seq with the selected valuej"
-      (= [1] (selection (javax.swing.JComboBox. (to-array [1 2 3 4]))))))
+    (it "returns a single-element seq with the selected value when multi? is true"
+      (= [1] (selection (javax.swing.JComboBox. (to-array [1 2 3 4])) {:multi? true}))))
 
   (testing "when given a JTree"
     (it "returns nil when the selection is empty"
@@ -42,7 +44,7 @@
         ; creates a tree of JTree.DynamicUtilTreeNode rather than just ints.
         ; If a real TreeModel was used, it could be more reasonable.
         (expect (= [["root" 2] ["root" 3] ["root" 4]] 
-                  (map (fn [path] (map #(.getUserObject %) path)) (selection jtree)))))))
+                  (map (fn [path] (map #(.getUserObject %) path)) (selection jtree {:multi? true})))))))
 
   (testing "when given a JList"
     (it "returns nil when the selection is empty"
@@ -50,7 +52,8 @@
     (it "returns the selection when it isn't empty"
       (let [jlist (javax.swing.JList. (to-array [1 2 3 4 5 6 7]))]
         (.setSelectionInterval jlist 1 3)
-        (expect (= [2 3 4] (selection jlist))))))
+        (expect (= 2 (selection jlist)))
+        (expect (= [2 3 4] (selection jlist {:multi? true}))))))
 
   (testing "when given a JTable"
     (it "returns nil when no rows are selected"
@@ -58,7 +61,8 @@
     (it "returns a seq of selected model row indices when selection is non-empty"
       (let [jtable (javax.swing.JTable. 5 3)]
         (.setRowSelectionInterval jtable 1 3)
-        (= [1 2 3] (selection jtable))))))
+        (= [1 2 3] (selection jtable {:multi? true}))
+        (= 1 (selection jtable))))))
           
 
 (describe selection!
@@ -79,7 +83,7 @@
       (let [cb (javax.swing.JComboBox. (to-array [1 2 3 4]))]
         (do
           (expect (= cb (selection! cb 3)))
-          (expect (= [3] (selection cb)))))))
+          (expect (= 3 (selection cb)))))))
 
   (testing "when given a JTree and an argument"
     (it "Clears the selection when the argument is nil"
@@ -96,8 +100,9 @@
         (expect (nil? (selection jlist)))))
     (it "Selects the given *values* when argument is a non-empty seq"
       (let [jlist (javax.swing.JList. (to-array [1 "test" 3 4 5 6 7]))]
-        (expect (= jlist (selection! jlist ["test" 4 6])))
-        (expect (= ["test" 4 6] (selection jlist))))))
+        (expect (= jlist (selection! jlist {:multi? true} ["test" 4 6])))
+        (expect (= ["test" 4 6] (selection jlist {:multi? true})))
+        (expect (= "test" (selection jlist))))))
 
   (testing "when given a JTable and an argument"
     (it "Clears the row selection when the argument is nil"
@@ -107,5 +112,7 @@
         (expect (nil? (selection jtable)))))
     (it "selects the given rows when argument is a non-empty seq of row indices"
       (let [jtable (javax.swing.JTable. 10 2)]
-        (expect (= jtable (selection! jtable [0 2 4 6 8 9])))
-        (expect (= [0 2 4 6 8 9] (selection jtable)))))))
+        (expect (= jtable (selection! jtable {:multi? true } [0 2 4 6 8 9])))
+        (expect (= [0 2 4 6 8 9] (selection jtable {:multi? true})))
+        (expect (= 0 (selection jtable)))))))
+

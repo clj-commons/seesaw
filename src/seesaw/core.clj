@@ -52,35 +52,37 @@
 ; to-widget wrapper and stuff for (seesaw.selection/selection)
 (defn selection 
   "Gets the selection of a widget. target is passed through (to-widget)
-  so event objects can also be used.
+  so event objects can also be used. The default behavior is to return
+  a *single* selection value, even if the widget supports multiple selection.
+  If there is no selection, returns nil.
+
+  options is an option map which supports the following flags:
+
+    multi? - If true the return value is a seq of selected values rather than
+      a single value.
   
-  If called with a single widget argument returns a seq containing the current
-  selection, or nil if there is no selection. Use (first) for single-selection
-  widgets like checkboxes.
-
-  Returns the target.
-
   See also seesaw.selection/selection.
   "
-  [target]
-  (sss/selection (to-widget target)))
+  ([target] (selection target {}))
+  ([target options] (sss/selection (to-widget target) options)))
 
 (defn selection!
   "Sets the selection on a widget. target is passed through (to-widget)
-  so event objects can also be used.
-  
-  The interpretation of the argument depends on the type of widget:
+  so event objects can also be used. The arguments are the same as
+  (selection). By default, new-selection is a single new selection value.
+  If new-selection is nil, the selection is cleared.
 
-    JCheckBox, JToggleButton, etc: truthy value sets checkmark, etc.
-    JList: argument is a list of values to select, or nil to clear selection
-    JComboBox: argument is the value to select
+  options is an option map which supports the following flags:
 
-  Returns the target.
+    multi? - if true new-expression is a list of values to selection,
+      the same as the list returned by (selection).
+
+  Always returns target.
 
   See also seesaw.selection/selection!.
   "
-  [target args]
-  (sss/selection! (to-widget target) args))
+  ([target new-selection] (selection! target {} new-selection))
+  ([target opts new-selection] (sss/selection! (to-widget target) opts new-selection)))
 
 (def icon ssi/icon)
 (def ^{:private true} make-icon icon)
