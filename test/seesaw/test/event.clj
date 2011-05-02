@@ -92,25 +92,21 @@
         :mouse-dragged #(.mouseDragged % nil)))))
 
 
-(describe add-listener
-  (it "returns the target (first) argument"
-    (let [panel (JPanel.)]
-      (expect (= panel (add-listener panel)))))
-
+(describe listen
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]
       (do
-        (add-listener panel :mouse-clicked f)
+        (listen panel :mouse-clicked f)
         (expect (= 1 (-> panel .getMouseListeners count)))
         (expect (= f (-> (get-handlers panel :mouse) :mouse-clicked first))))))
 
-  (it "can remove a mouse-clicked listener"
+  (it "returns a function that will remove the installed listener"
     (let [panel (JPanel.)
-          f     (fn [e] (println "handled"))]
+          f     (fn [e] (println "handled"))
+          remover (listen panel :mouse-clicked f)]
       (do
-        (add-listener panel :mouse-clicked f)
-        (remove-listener panel :mouse-clicked f)
+        (remover)
         (expect (= 1 (-> panel .getMouseListeners count)))
         (expect (= 0 (-> (get-handlers panel :mouse) :mouse-clicked count))))))
 
@@ -119,7 +115,7 @@
           f        (fn [e] (println "handled"))
           g        (fn [e] (println "again!"))]
       (do
-        (add-listener panel :mouse-clicked f :mouse-clicked g)
+        (listen panel :mouse-clicked f :mouse-clicked g)
         (expect (= 1 (-> panel .getMouseListeners count)))
         (expect (= [g f] (-> panel (get-handlers :mouse) :mouse-clicked))))))
 
@@ -128,7 +124,7 @@
           called   (atom false)
           f        (fn [e] (reset! called true))]
       (do
-        (add-listener field :insert-update f)
+        (listen field :insert-update f)
         (.setText field "force a change")
         (expect @called))))
 
@@ -137,7 +133,7 @@
             called   (atom 0)
             f        (fn [e] (swap! called inc))]
         (do
-          (add-listener field :document f)
+          (listen field :document f)
           (.setText field "force insert")
           (.setText field ""))
         (expect (= 2 @called))))
@@ -147,7 +143,7 @@
           called   (atom 0)
           f        (fn [e] (swap! called inc))]
       (do
-        (add-listener field #{:remove-update :insert-update} f)
+        (listen field #{:remove-update :insert-update} f)
         (.setText field "force insert")
         (.setText field ""))
       (expect (= 2 @called))))
@@ -157,7 +153,7 @@
           called   (atom 0)
           f        (fn [e] (swap! called inc))]
       (do
-        (add-listener [button0 button1] :action f)
+        (listen [button0 button1] :action f)
         (.doClick button0)
         (.doClick button1))
       (expect (= 2 @called))))
@@ -166,7 +162,7 @@
           called (atom false)]
       (do
         (expect (= 0 (count (.getListSelectionListeners jlist))))
-        (add-listener jlist :selection (fn [e] (reset! called true)))
+        (listen jlist :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getListSelectionListeners jlist))))
         (.. (first (.getListSelectionListeners jlist)) (valueChanged nil))
         (expect @called))))
@@ -177,7 +173,7 @@
         (do
           ; a mystery listener is added by JTable
           (expect (= 1 (count (.. jtable getSelectionModel getListSelectionListeners))))
-          (add-listener jtable :selection (fn [e] (reset! called true)))
+          (listen jtable :selection (fn [e] (reset! called true)))
           (expect (= 2 (count (.. jtable getSelectionModel getListSelectionListeners))))
           (.. (first (.. jtable getSelectionModel getListSelectionListeners)) (valueChanged nil))
           (expect @called))))
@@ -187,7 +183,7 @@
           called (atom false)]
       (do
         (expect (= 0 (count (.getTreeSelectionListeners tree))))
-        (add-listener tree :selection (fn [e] (reset! called true)))
+        (listen tree :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getTreeSelectionListeners tree))))
         (.. (first (.getTreeSelectionListeners tree)) (valueChanged nil))
         (expect @called))))
@@ -196,7 +192,7 @@
           called (atom false)]
       (do
         (expect (= 0 (count (.getActionListeners cb))))
-        (add-listener cb :selection (fn [e] (reset! called true)))
+        (listen cb :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getActionListeners cb))))
         (.. (first (.getActionListeners cb)) (actionPerformed nil))
         (expect @called))))
@@ -205,7 +201,7 @@
           called (atom false)]
       (do
         (expect (= 0 (count (.getItemListeners b))))
-        (add-listener b :selection (fn [e] (reset! called true)))
+        (listen b :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getItemListeners b))))
         (.. (first (.getItemListeners b)) (itemStateChanged nil))
         (expect @called)))))

@@ -19,7 +19,7 @@
            [java.beans PropertyChangeListener]))
 
 ; Declaratively set up all the Swing listener types available through the
-; add-listener function below. The yucky fuctions and macros below take care
+; listen function below. The yucky fuctions and macros below take care
 ; of reifying the interface and mapping to clojure handler functions.
 (def ^{:private true} event-groups {
 
@@ -220,7 +220,7 @@
     :else event-name))
 
 (defn- preprocess-event-specs
-  "take name/fn pairs in add-listener arg list and resolve aliases
+  "take name/fn pairs in listen arg list and resolve aliases
    and stuff"
   [target args]
   (mapcat 
@@ -228,10 +228,25 @@
     (for [[en f] (partition 2 args)]
       [(resolve-event-aliases target en) f])))
 
-(defn add-listener
-  "Install listeners for one or more events on the given target. For example:
+(defn- remove-listener
+  "Remove one or more listener function from target which were
+   previously added with (listen)"
+  [targets & more]
+  (doseq [target (to-seq targets)
+          [event-name event-fn] (preprocess-event-specs target more)]
+    ; TODO no need to install handlers if they're not already there.
+    (let [handlers (get-or-install-handlers target event-name)
+          final-method-name (get event-method-table event-name event-name)]
+      (swap! handlers unappend-listener final-method-name event-fn)))
+    targets)
 
-    (add-listener (button \"foo\")
+(defn listen
+  "
+  *note: use seesaw.core/listen rather than calling this directly*
+
+  Install listeners for one or more events on the given target. For example:
+
+    (listen (button \"foo\")
       :mouse-entered     (fn [e] ...)
       :focus-gained      (fn [e] ...)
       :key-pressed       (fn [e] ...)
@@ -240,7 +255,7 @@
   one function can be registered for multiple events by using a set 
   of event names instead of one:
 
-    (add-listener (text)
+    (listen (text)
       #{:remove-update insert-update} (fn [e] ...))
 
   Note in this case that it's smart enough to add a document listener
@@ -250,9 +265,10 @@
   listener interface by just using the keyword-ized prefix of the interface
   name. For example, to get all callbacks in the MouseListener interface:
 
-    (add-listener my-widget :mouse (fn [e] ...))
+    (listen my-widget :mouse (fn [e] ...))
 
-  Functions can be removed with (remove-listener).
+  Returns a function which, when called, removes all listeners registered
+  with this call.
 
   When the target is a JTable and listener type is :selection, only
   row selection events are reported. Also note that the source table is
@@ -264,17 +280,6 @@
       (let [handlers (get-or-install-handlers target event-name)
             final-method-name (get event-method-table event-name event-name)]
         (swap! handlers append-listener final-method-name event-fn)))
-    targets)
+    (fn [] (apply remove-listener targets more)))
 
-(defn remove-listener
-  "Remove one or more listener function from target which were
-   previously added with (add-listener)"
-  [targets & more]
-  (doseq [target (to-seq targets)
-          [event-name event-fn] (preprocess-event-specs target more)]
-    ; TODO no need to install handlers if they're not already there.
-    (let [handlers (get-or-install-handlers target event-name)
-          final-method-name (get event-method-table event-name event-name)]
-      (swap! handlers unappend-listener final-method-name event-fn)))
-    targets)
 

@@ -43,8 +43,8 @@
 (defmacro invoke-later [& body] `(invoke-later* (fn [] ~@body)))
 (defmacro invoke-now   [& body] `(invoke-now*   (fn [] ~@body)))
 
-; alias event/add-listener for convenience
-(def listen sse/add-listener)
+; alias event/listen for convenience
+(def listen sse/listen)
 
 ; alias action/action for convenience
 (def action ssa/action)
@@ -212,7 +212,7 @@
 
 (def ^{:private true} default-options {
   :id          id-option-handler
-  :listen      #(apply sse/add-listener %1 %2)
+  :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean %2))
   :enabled?    #(.setEnabled %1 (boolean %2))
   :background  #(.setBackground %1 (to-color %2))

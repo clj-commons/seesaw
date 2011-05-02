@@ -150,7 +150,9 @@ Event handlers are installed with the `(listen)` function. Its first argument is
 
 Note that these same arguments can be given to the `:listen` property when the widget is constructed.
 
-See `seesaw.events/add-listener` for more details.
+`(listen)` returns a function which, when called, will remove all listeners installed by the `(listen)` call. There is no "remove-listener" function.
+
+See `seesaw.events/listen` for more details.
     
 ### Actions
 It's typical in Swing apps to use actions for menus, buttons, etc. An action needs a handler function and some properties. Here's an example of creating an action and adding it to a toolbar:
