@@ -743,7 +743,7 @@
 
 (defn popup 
   [& opts]
-  (apply-button-defaults (javax.swing.JPopupMenu.) opts menu-options))
+  (apply-options (javax.swing.JPopupMenu.) opts (merge default-options menu-options)))
 
 
 (defn- make-popup [target arg event]

@@ -10,6 +10,7 @@
 
 (ns seesaw.examples.canvas
   (:use seesaw.core)
+  (:use seesaw.graphics)
   (:use seesaw.color))
 
 ; A very rudimentary example of (canvas).
@@ -26,6 +27,10 @@
   (let [w (.getWidth c)
         h (.getHeight c)]
     (doto g
+      (draw (polygon [[0 h] [(/ w 4) 0] [(/ w 2) (/ h 2)] [w (/ h 2)] [0 h]] )
+                     { :foreground java.awt.Color/BLACK
+                       :background (color 128 128 128 128)
+                       :stroke     (stroke :width 4) })
       (.setColor (color 224 224 0 128))
       (.fillRect 0 0 (/ w 2) (/ h 2))
       (.setColor (color 0 224 224 128))
@@ -38,19 +43,14 @@
       (.drawString "Hello. This is a canvas example" 20 20))))
 
 (defn paint2 [c g]
-  (let [w (.getWidth c)
-        h (.getHeight c)]
+  (let [w (.getWidth c)  w2 (/ w 2)
+        h (.getHeight c) h2 (/ h 2)]
     (doto g
-      (.setColor (color 224 224 0 128))
-      (.fillOval 0 0 (/ w 2) (/ h 2))
-      (.setColor (color 0 224 224 128))
-      (.fillOval 0 (/ h 2) (/ w 2) (/ h 2))
-      (.setColor (color 224 0 224 128))
-      (.fillOval (/ w 2) 0 (/ w 2) (/ h 2))
-      (.setColor (color 224 0 0 128))
-      (.fillOval (/ w 2) (/ h 2) (/ w 2) (/ h 2))
-      (.setColor (color 0 0 0))
-      (.drawString "Hello. This is a canvas example" 20 20))))
+      (draw (ellipse 0  0  w2 h2) (style :background (color 224 224 0 128)))
+      (draw (ellipse 0  h2 w2 h2) (style :background (color 0 224 224 128)))
+      (draw (ellipse w2 0  w2 h2) (style :background (color 224 0 224 128)))
+      (draw (ellipse w2 h2 w2 h2) (style :background (color 224 0 0 128)))
+      (draw (string 20 20  "Hello. This is a canvas example") (style :foreground (color 0 0 0))))))
 
 ; Create an action that swaps the paint handler for the canvas.
 ; Note that we can use (config!) to set the :paint handler just like
@@ -76,5 +76,5 @@
 
 (defn -main [& args]
   (invoke-later (app)))
-;(-main)
+(-main)
 
