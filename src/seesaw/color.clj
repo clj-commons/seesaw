@@ -24,6 +24,7 @@
 (defn to-color
   [c]
   (cond
+    (nil? c)            nil
     (instance? Color c) c
-    true (color c))) 
+    :else               (color c))) 
     

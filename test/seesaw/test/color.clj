@@ -33,5 +33,7 @@
       (expect (= (Color. 1 2 3 23) c)))))
 
 (describe to-color
+  (it "returns nil for nil input"
+    (nil? (to-color nil)))
   (it "returns its input if its a color"
       (expect (= Color/BLACK (to-color Color/BLACK)))))
