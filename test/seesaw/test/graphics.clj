@@ -96,9 +96,16 @@
       (expect (= java.awt.BasicStroke (class s)))
       (expect (= 1 (.getLineWidth s)))))
   (it "creates a stroke with the given properties"
-    (let [s (stroke :width 10)]
+    (let [s (stroke :width 10, :cap :butt, :join :bevel, :miter-limit 15.0,
+                    :dashes [10.0 5.0],
+                    :dash-phase 2.0)]
       (expect (= java.awt.BasicStroke (class s)))
-      (expect (= 10 (.getLineWidth s))))))
+      (expect (= 10 (.getLineWidth s)))
+      (expect (= java.awt.BasicStroke/CAP_BUTT (.getEndCap s)))
+      (expect (= 15.0 (.getMiterLimit s)))
+      (expect (= [10.0 5.0] (seq (.getDashArray s))))
+      (expect (= 2.0 (.getDashPhase s)))
+      (expect (= java.awt.BasicStroke/JOIN_BEVEL (.getLineJoin s))))))
 
 (describe to-stroke
   (it "returns nil for nil input"

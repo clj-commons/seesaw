@@ -156,13 +156,31 @@
   ([g2d sx sy] (.scale g2d sx sy) g2d)
   ([g2d s]     (.scale g2d s s) g2d))
 
+(def ^{:private true} stroke-caps {
+  :square java.awt.BasicStroke/CAP_SQUARE
+  :butt   java.awt.BasicStroke/CAP_BUTT
+  :round  java.awt.BasicStroke/CAP_ROUND
+})
+
+(def ^{:private true} stroke-joins {
+  :bevel java.awt.BasicStroke/JOIN_BEVEL
+  :miter java.awt.BasicStroke/JOIN_MITER
+  :round java.awt.BasicStroke/JOIN_ROUND
+})
+
 (defn stroke
   "Create a new stroke with the given properties:
 
     :width Width of the stroke
   "
-  [& {:keys [width] :or {width 1}}]
-  (java.awt.BasicStroke. width))
+  [& {:keys [width cap join miter-limit dashes dash-phase] 
+      :or {width 1 cap :square join :miter miter-limit 10.0 dashes nil dash-phase 0.0}}]
+  (java.awt.BasicStroke. width 
+                         (stroke-caps cap) 
+                         (stroke-joins join) 
+                         miter-limit 
+                         (when (seq dashes) (float-array dashes))
+                         dash-phase))
 
 (defn to-stroke [v]
   "Convert v to a stroke. As follows depending on v:
