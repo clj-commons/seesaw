@@ -29,6 +29,9 @@
     (instance? javax.swing.ImageIcon v) (.getImage v)
     :else (throw (IllegalArgumentException. (str "Don't know how to make image from " v)))))
 
+;*******************************************************************************
+; Graphics context state
+
 (defmacro push 
   "Push a Graphics2D context (Graphics2d/create) and automatically dispose it.
   
@@ -49,14 +52,11 @@
        (finally
          (. ~g2d dispose)))))
 
-; coords
-; 2 points
-; point + dimension
+;*******************************************************************************
+; Basic shapes
+
 (defn line [x1 y1 x2 y2] (java.awt.geom.Line2D$Double. x1 y1 x2 y2))
 
-; coords
-; 2 points
-; point + dimension
 (defn rect 
   "
   Create a rectangular shape with the given upper-left corner, width and 
@@ -136,6 +136,9 @@
 (defn image-shape [x y image]
   (ImageShape. x y (to-image image)))
 
+;*******************************************************************************
+; Coordinate transforms
+
 (defn rotate
   "Apply a rotation to the graphics context by degrees
   
@@ -155,6 +158,9 @@
   Returns g2d"
   ([g2d sx sy] (.scale g2d sx sy) g2d)
   ([g2d s]     (.scale g2d s s) g2d))
+
+;*******************************************************************************
+; Strokes
 
 (def ^{:private true} stroke-caps {
   :square java.awt.BasicStroke/CAP_SQUARE
@@ -197,6 +203,8 @@
 
 (def ^{:private true} default-stroke (stroke))
 
+;*******************************************************************************
+; Styles
 
 (defrecord Style [foreground background stroke font])
 
@@ -208,26 +216,43 @@
     (to-stroke stroke)
     (to-font font)))
 
+;*******************************************************************************
+; Shape drawing protocol
+
 (defprotocol Draw
-  (draw* [shape g2d])
-  (fill* [shape g2d]))
+  (draw* [shape g2d style]))
 
 (extend-type java.awt.Shape Draw
-  (draw* [shape g2d] (.draw g2d shape))
-  (fill* [shape g2d] (.fill g2d shape)))
+  (draw* [shape g2d style] 
+    (let [fg (to-color (:foreground style))
+          bg (to-color (:background style))
+          s  (or (:stroke style) default-stroke)]
+      (when bg
+        (do 
+          (.setColor g2d bg) 
+          (.fill g2d shape)))
+      (when fg
+        (do 
+          (.setStroke g2d s)
+          (.setColor g2d fg) 
+          (.draw g2d shape))))))
 
 (extend-type StringShape Draw
-  (draw* [shape g2d] (.drawString g2d (:value shape) (:x shape) (:y shape)))
-  (fill* [shape g2d] ))
+  (draw* [shape g2d style]
+    (let [fg (to-color (:foreground style))
+          f  (:font style)]
+      (when f (.setFont g2d f))
+      (.setColor g2d (or fg java.awt.Color/BLACK))
+      (.drawString g2d (:value shape) (:x shape) (:y shape)))))
 
 (extend-type ImageShape Draw
-  (draw* [shape g2d] (.drawImage g2d (:image shape) (:x shape) (:y shape) nil))
-  (fill* [shape g2d] ))
+  (draw* [shape g2d style] 
+    (.drawImage g2d (:image shape) (:x shape) (:y shape) nil)))
 
 (defn draw 
   "Draw a one or more shape/style pairs to the given graphics context.
 
-  shape should be an object that implements java.awt.Shape (see (rect), 
+  shape should be an object that implements Draw protocol (see (rect), 
   (ellipse), etc. 
   
   style is a style object created with (style). If the style's :foreground
@@ -237,21 +262,8 @@
   Returns g2d.
   "
   ([g2d shape style]
-    (let [fg (to-color (:foreground style))
-          bg (to-color (:background style))
-          s  (or (:stroke style) default-stroke)
-          f  (:font style)]
-      (when f (.setFont g2d f))
-      (when bg
-        (do 
-          (.setColor g2d bg) 
-          (fill* shape g2d)))
-      (when fg
-        (do 
-          (.setStroke g2d s)
-          (.setColor g2d fg) 
-          (draw* shape g2d)))
-      g2d))
+      (draw* shape g2d style)
+      g2d)
   ([g2d shape style & more]
    (let [ret (draw g2d shape style)]
      (if more

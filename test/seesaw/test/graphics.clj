@@ -114,3 +114,30 @@
     (let [s (stroke)]
       (expect (= s (to-stroke s))))))
 
+; make a stub shape to grab args...
+(defrecord TestShape [received-args]
+  Draw
+  (draw* 
+    [shape g2d style] 
+    ; Note that "this" is used instead of shape. Otherwise, on failure, lazytest
+    ; tries to print a cyclical structure when there's a failure.
+    (swap! received-args conj [g2d "this" style])))
+
+(describe draw
+  (it "should call Draw/draw* with graphics, shape and style"
+    (let [args (atom [])
+          ts (TestShape. args)
+          result (draw "graphics" ts "style")
+          final-args @args]
+      (expect (= "graphics" result))
+      (expect (= [["graphics" "this" "style"]] final-args))))
+
+  (it "should call Draw/draw* with graphics, and multiple shapes and styles"
+    (let [args (atom [])
+          ts (TestShape. args)
+          result (draw "graphics" ts "style" ts "style2")
+          final-args @args]
+      (expect (= "graphics" result))
+      (expect (= [["graphics" "this" "style"]["graphics" "this" "style2"]] final-args)))))
+  
+
