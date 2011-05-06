@@ -5,7 +5,6 @@ Seesaw's a *primordial* experiment to see what I can do to make Swing funner in 
 ## TODO
 
 * A non-trivial example app to see if this stuff holds up
-* Popup menus
 * GridBagLayout needs more work
 * Graphics - I'd rather not wrap the entire Java2D API if there's already something out there (maybe processing?) that does that.
 * Structural manip - add/remove widgets to containers.
@@ -32,6 +31,12 @@ There are several examples at the moment:
     $ lein run -m seesaw.examples.temp          (Stuart Sierra's temperature example)
     $ lein run -m seesaw.examples.hotpotatoes   (HTTP getter)
     $ lein run -m seesaw.examples.to-widget     (ToWidget protocol example)
+
+To run the tests:
+
+    $ java -cp "src:test:classes:lib/*:lib/dev/*" lazytest.watch src test 
+
+    Hopefully you see a nice wall of green.
 
 ### Widget Coercion
 
@@ -191,6 +196,12 @@ Here's how you can make a menu bar full of menus:
            (menu :text "Edit" :items [copy-action paste-action])))
 
 `(menubar)` has a list of `(menus)`, while each `(menu)` has text and a list of actions, or items. Note that in addition to using Actions as menu items, you can also use `(menu-item)`, `(checkbox-menu-item)`, and `(radio-menu-item)`, each of which has the exact same behavior (and options) as a button.
+
+Popup menus (context/right-click) can be easily added to a widget with the `:popup` property.  Just give it a single-argument function that returns a list of actions or menu items. The function will be called each time the menu needs to be displayed. For example,
+
+      (listbox :popup (fn [e] [action1 action2 ...]))
+
+Seesaw takes care of registering the mouse handler and showing the popup at the right time depending on the platform. See `src/seesaw/examples/popup.clj`.
 
 ### Selection Handling
 The `(selection)` and `(selection!)` function handles the details of selection management for listboxes, checkboxes, toggle buttons, combo boxes, etc. To get the current selection, just pass a widget (or something convertible to a widget) to `(selection`). It will always return the selected value, or `nil` if there is no selection:
