@@ -21,8 +21,9 @@
 ; so any changes made to the graphics context will be backed out when
 ; the function returns.
 ;
-; Note that this code is pretty lame because there are currently
-; no wrappers for any Java2D stuff. Way it goes.
+
+; This first handler uses raw Java2D calls to do painting. See (paint2) below
+; for an example of using Seesaw's simple shape support.
 (defn paint1 [c g]
   (let [w (.getWidth c)
         h (.getHeight c)]

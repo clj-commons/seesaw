@@ -1,6 +1,8 @@
 # Seesaw: a Clojure/Swing experiment
 
-Seesaw's a *primordial* experiment to see what I can do to make Swing funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
+_Seesaw's experimental and subject to radical change_
+
+Seesaw's an experiment to see what I can do to make Swing funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
 ## TODO
 
@@ -22,15 +24,10 @@ Let's create a `JFrame`:
 
 This will create a `JFrame` with title "Hello" and a single label "Hi there". The `:content` property expects something that can be turned into a widget and uses it as the content pane of the frame. Any place where a widget is expected, one will be created depending on the argument (see Widget Coercion below) ...
 
-There are several examples at the moment:
+There are several examples at the moment. They're all in the `src/seesaw/examples` and can be run with `lein` like this:
 
     $ lein deps
-    $ lein run -m seesaw.examples.mig           (MigLayout example)
-    $ lein run -m seesaw.examples.form          (GridBagLayout example)
-    $ lein run -m seesaw.examples.kitchensink   (an atrocity)
-    $ lein run -m seesaw.examples.temp          (Stuart Sierra's temperature example)
-    $ lein run -m seesaw.examples.hotpotatoes   (HTTP getter)
-    $ lein run -m seesaw.examples.to-widget     (ToWidget protocol example)
+    $ lein run -m seesaw.examples.<name-of-example>
 
 To run the tests:
 
@@ -114,6 +111,30 @@ The "all" selector is also supported which will match everything in a sub-tree i
     (config! (select [:*] my-panel) :enabled? false)
 
 At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
+
+_Of all the areas of Seesaw, I think this is the least stable. You may be best off just binding widgets to variables and passing them around_
+
+### Creating a Frame
+
+A typical Swing app will stick everything inside an instance of [JFrame] (http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html). Create a `JFrame` in Seesaw with the `(frame)` function: 
+
+    (frame :title "An example", :on-close :exit, :content "Some Content")
+
+`(frame)` takes an number of options (see the code and tests), but two very important options are `:on-close` and `:content`.
+
+`:on-close` sets the default behavior when the frame is closed by the user. Valid values are `:exit`, `:hide`, `:dispose`, and `:nothing`. Note that `:exit` will cause the entire JVM to exit when the frame is closed, which may be reasonable for a standalone app, but probably isn't for use in the REPL. The default value is `:hide`.
+
+`:content` sets the content of the frame which can be any widget (see Widget Coercion above), but is usually a panel of some sort.
+
+### A Note on Threading
+
+As noted [here] (http://download.oracle.com/javase/6/docs/api/javax/swing/package-summary.html#threading) Swing is single threaded nearly all UI operations should be executed on the Swing UI dispatch thread. To facilitate this, Seesaw includes the `(invoke-now)` and `(invoke-later)` macros. The former executes forms on the UI thread and waits for their completion, while the latter simply schedules the forms for execution sometime in the future.
+
+A typical use for `(invoke-later)` is to get things going in an app:
+
+    (defn -main [& args]
+      (invoke-later
+        (frame :title "Hello" :content (button :text "Push me"))))
 
 ### Containers
 
@@ -287,6 +308,10 @@ Use the `(top-bottom-split)` or `(left-right-split)` functions to make a splitte
 
     (top-bottom-split "Top" "Bottom")
     (left-right-split "Top" "Bottom")
+
+### Graphics
+
+Seesaw has some basic support for Java2D drawing, using the `(canvas)` function to create a paintable panel. See `src/seesaw/graphics.clj` and `src/seesaw/examples/canvas.clj`.
 
 ## License
 
