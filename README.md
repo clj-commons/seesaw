@@ -4,6 +4,39 @@ _Seesaw's experimental and subject to radical change_
 
 Seesaw's an experiment to see what I can do to make Swing funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
+## TL;DR
+
+Here's how you use Seesaw with [Leiningen] (https://github.com/technomancy/leiningen)
+
+Install `lein` as described and then:
+
+    $ lein new hello-seesaw
+    $ cd hello-seesaw
+
+Add Seesaw to `project.clj`
+
+    (defproject hello-seesaw "1.0.0-SNAPSHOT"
+      :description "FIXME: write"
+      :dependencies [[org.clojure/clojure "1.2.0"]
+                    [org.clojure/clojure-contrib "1.2.0"]
+                    [seesaw "1.0.0"]])
+
+Now edit the generated `src/hello_seesaw/core.clj` file:
+
+    (ns hello-seesaw.core
+      (:use seesaw.core))
+
+    (defn -main [& args]
+      (invoke-later 
+        (frame :title "Hello", 
+               :content "Hello, Seesaw",
+               :on-close :exit)))
+
+Now run it:
+
+    $ lein run -m hello-seesaw.core
+
+
 ## TODO
 
 * A non-trivial example app to see if this stuff holds up
