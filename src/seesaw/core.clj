@@ -896,19 +896,29 @@
 
 ;*******************************************************************************
 ; Frame
+
+(def ^{:private true} frame-on-close-map {
+  :hide    JFrame/HIDE_ON_CLOSE
+  :dispose JFrame/DISPOSE_ON_CLOSE
+  :exit    JFrame/EXIT_ON_CLOSE
+  :nothing JFrame/DO_NOTHING_ON_CLOSE
+})
+
 (def ^{:private true} frame-options {
-  :id         id-option-handler
-  :title      #(.setTitle %1 (str %2))
-  :resizable? #(.setResizable %1 (boolean %2))
-  :content    #(.setContentPane %1 (to-widget %2 true))
-  :menubar    #(.setJMenuBar %1 %2)
-  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
-  :size       #(.setSize %1 (to-dimension %2))
+  :id           id-option-handler
+  :title        #(.setTitle %1 (str %2))
+  :resizable?   #(.setResizable %1 (boolean %2))
+  :content      #(.setContentPane %1 (to-widget %2 true))
+  :menubar      #(.setJMenuBar %1 %2)
+  :minimum-size #(.setMinimumSize %1 (to-dimension %2))
+  :size         #(.setSize %1 (to-dimension %2))
+  :on-close     #(.setDefaultCloseOperation %1 (frame-on-close-map %2))
 })
 
 (defn frame
   "Create a JFrame. Options:
 
+    :id       id of the window, used by (select).
     :title    the title of the window
     :pack?     true/false whether JFrame/pack should be called (default true)
     :width    initial width if :pack? is false
@@ -918,9 +928,12 @@
     :content  passed through (to-widget) and used as the frame's content-pane
     :visible?  whether frame should be initially visible (default true)
     :resizable? whether the frame can be resized (default true)
+    :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
 
-  returns the new frame."
-
+  returns the new frame.
+ 
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
+  "
   [& {:keys [width height visible? pack?] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]

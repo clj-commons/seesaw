@@ -577,6 +577,9 @@
     (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
+  (it "should set the frame's default close operation"
+    (let [f (frame :visible? false :on-close :dispose)]
+      (= javax.swing.JFrame/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
   (it "should create a JFrame and make is not resizable"
     (let [f (frame :title "Hello" :resizable? false :visible? false)]
       (expect (not (.isResizable f)))))
