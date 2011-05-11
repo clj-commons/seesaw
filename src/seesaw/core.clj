@@ -11,6 +11,7 @@
 (ns seesaw.core
   (:use [seesaw util font border color])
   (:require [seesaw.event :as sse]
+            [seesaw.timer :as sst]
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
             [seesaw.action :as ssa]
@@ -43,6 +44,9 @@
 
 (defmacro invoke-later [& body] `(invoke-later* (fn [] ~@body)))
 (defmacro invoke-now   [& body] `(invoke-now*   (fn [] ~@body)))
+
+; alias timer/timer for convenience
+(def timer sst/timer)
 
 ; alias event/listen for convenience
 (def listen sse/listen)

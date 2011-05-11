@@ -150,7 +150,7 @@
   "Apply a translation to the graphics context
   
   Returns g2d"
-  [g2d dx dy] (.translate g2d dx dy) g2d)
+  [g2d dx dy] (.translate g2d (double dx) (double dy)) g2d)
 
 (defn scale
   "Apply a scale factor to the graphics context
