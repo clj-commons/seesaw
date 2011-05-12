@@ -28,7 +28,7 @@
   (config! renderer :text (.getName value)
                    :icon (.getIcon chooser value)))
 
-(defn app []
+(defn make-frame []
   ; Put all the widgets together
   (frame :title "File Explorer" :width 500 :height 500 :pack? false :content
     (border-panel :border 5 :hgap 5 :vgap 5
@@ -38,16 +38,18 @@
                 (scrollable (tree    :id :tree :model tree-model :renderer render-file-item))
                 (scrollable (listbox :id :list :renderer render-file-item)))
 
-      :south  (label :id :status :text "Ready")))
+      :south  (label :id :status :text "Ready"))))
 
-  ; Hook up a selection listener to the tree to update stuff
-  (listen (select [:#tree]) :selection
-    (fn [e]
-      (if-let [dir (-> (selection e) first last)]
-        (let [files (.listFiles dir)]
-          (config! (select [:#current-dir]) :text (.getAbsolutePath dir))
-          (config! (select [:#status]) :text (format "Ready (%d items)" (count files)))
-          (config! (select [:#list]) :model files))))))
+(defn app []
+  (let [f (make-frame)]
+    ; Hook up a selection listener to the tree to update stuff
+    (listen (select f [:#tree]) :selection
+      (fn [e]
+        (if-let [dir (last (selection e))]
+          (let [files (.listFiles dir)]
+            (config! (select f [:#current-dir]) :text (.getAbsolutePath dir))
+            (config! (select f [:#status]) :text (format "Ready (%d items)" (count files)))
+            (config! (select f [:#list]) :model files)))))))
 
 (defn -main [& args]
   (invoke-later (app)))

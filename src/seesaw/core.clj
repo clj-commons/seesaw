@@ -205,12 +205,11 @@
 
 (def ^{:private true} id-property "seesaw-widget-id")
 
-(def ^{:private true} widget-by-id (atom {}))
-
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
    creation. See also (select)."
-  [^javax.swing.JComponent w] (.getClientProperty w id-property))
+  [w] 
+  (when (instance? javax.swing.JComponent w) (.getClientProperty w id-property)))
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -229,9 +228,8 @@
           (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
           ; TODO should we enforce unique ids?
           (.putClientProperty w id-property id-key)))
-      ; TODO need to figure out how to store JFrame ids. JFrame/getFrames
-      ; is pretty useless
-    (swap! widget-by-id assoc id-key w)))
+      ; TODO need to figure out how to store JFrame ids. JFrame/getFrames is pretty useless
+  ))
 
 (def ^{:private true} default-options {
   :id          id-option-handler
@@ -578,7 +576,7 @@
     
     (text :id :my-text ...)
         ...
-    (listen (select :#my-text) :document #(... handler ...))
+    (listen (select [:#my-text]) :document #(... handler ...))
 
   Given a single widget or document (or event) argument, retrieves the
   text of the argument. For example:
@@ -1002,20 +1000,28 @@
 
 (defn select
   "Select a widget using the given selector expression. Selectors are *always*
-   expressed as a vector.
+   expressed as a vector. root is the root of the widget hierarchy to select
+   from, usually either a (frame) or other container.
 
-    [:#id]        Look up widget by id. A single widget is returned
-    [:*]   root   root and all the widgets under it
+    (select root [:#id])   Look up widget by id. A single widget is returned
+    (select root [:*])     root and all the widgets under it
+
+   For example, to find a widget by id from an event handler, use (to-frame) on
+   the event to get the root:
+
+    (fn [e]
+      (let [my-widget (select (to-frame e) [:#my-widget])]
+         ...))
 
    Someday more selectors will be supported :)
   "
-  ([selector]
-    (check-args (vector? selector) "selector must be vector")
-    (if-let [[_ id] (re-find id-regex (name (first selector)))]
-      (get @widget-by-id id)))
   ([root selector]
     (check-args (vector? selector) "selector must be vector")
-    (cond
-      (= (first selector) :*) (collect root)
-      :else (throw (IllegalArgumentException. (str "Unsupported selector " selector))))))
+    (if-let [[_ id] (re-find id-regex (name (first selector)))]
+      ; TODO do some memoization of this rather than always searching the
+      ; entire tree.
+      (some #(when (= id (id-for %)) %) (select (to-widget root) [:*]))
+      (cond
+        (= (first selector) :*) (collect (to-widget root))
+        :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
 

@@ -122,30 +122,30 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
 
 Note that these properties can also be used with the `(config!)` function which applies them to an existing widget or widgets:
 
-    (config! (select [:#my-widget]) :enabled? false :text "I'm disabled.")
+    (config! (select root [:#my-widget]) :enabled? false :text "I'm disabled.")
 
 `(config!)` can be applied to a single widget, or list of widgets, or things that can be turned into widgets.
 
 ### Selectors
 
-I hope to one day support general CSS-style selectors for finding and styling widgets in an app. For now, the `(select)` function supports locating a widget by `:id` as set at creation time:
+I hope to one day support general CSS-style selectors for finding and styling widgets in an app. The `(select)` function supports locating a widget by `:id` as set at creation time:
 
     (button :id :the-button :text "Push me")
 
        ... later ...
 
-    (listen (select [:#the-button]) 
+    (listen (select root [:#the-button]) 
       :action (fn [e] ... do something ...))
 
-_I'm not totally happy with this and it will probably change. Selecting by id becomes ambiguous if there's more than one root frame in the app, especially if it's a second instance of the same frame type. I'll probably chnage this to take a root in addition to the selector unless I think of something better._
+Note that the first argument to `(select)` is always the root of the widget hierarchy to search from and the second argument is always a vector containing the selector. I wish the root wasn't necessary, but not requiring it makes it very difficult to support multiple instances of the same frame in one app. Suggestions welcome.
 
 The "all" selector is also supported which will match everything in a sub-tree including the root. For example to disable an entire sub-tree:
 
-    (config! (select [:*] my-panel) :enabled? false)
+    (config! (select my-panel [:*]) :enabled? false)
 
 At the moment, I'm planning on following the selector conventions established by [Enlive] (https://github.com/cgrand/enlive). See also, the apparently defunct [Java CSS] (http://weblogs.java.net/blog/2008/07/17/introducing-java-css) project to get an idea where this may lead.
 
-_Of all the areas of Seesaw, I think this is the least stable. You may be best off just binding widgets to variables and passing them around_
+_Of all the areas of Seesaw, I think this is the least stable. You may be best off just binding widgets to variables and passing them around._
 
 ### Creating a Frame
 

@@ -18,7 +18,7 @@
 (def rss-url (clojure.java.io/resource "seesaw/examples/rss.gif"))
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
-(defn app []
+(defn make-frame []
   (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false :content
     (border-panel :vgap 5
       :north (toolbar 
@@ -107,38 +107,40 @@
         (border-panel
           :center (scrollable (table :id :table :show-grid? true :model (javax.swing.table.DefaultTableModel. 50 50)))
           :south (label :id :table-sel :text "Table selection: ")) }
-           ]))))
+           ])))))
 
-  (listen (select [:#tabs]) :state-changed
-        #(let [tp (to-widget %)
-               tab (.getSelectedIndex tp)] 
-          (.setTitleAt tp 0 (if (= tab 0) ":)" ":("))))
+(defn app []
+  (let [f (make-frame)]
+    (listen (select f [:#tabs]) :state-changed
+          #(let [tp (to-widget %)
+                tab (.getSelectedIndex tp)] 
+            (.setTitleAt tp 0 (if (= tab 0) ":)" ":("))))
 
-  (listen (select [:#button]) :action (fn [e] (alert "HI")))
+    (listen (select f [:#button]) :action (fn [e] (alert "HI")))
 
-  (listen (select [:#link])
-    :mouse-clicked #(alert % "CLICK!")
-    :mouse-entered #(config! % :foreground Color/BLUE)
-    :mouse-exited  #(config! % :foreground Color/BLACK))
+    (listen (select f [:#link])
+      :mouse-clicked #(alert % "CLICK!")
+      :mouse-entered #(config! % :foreground Color/BLUE)
+      :mouse-exited  #(config! % :foreground Color/BLACK))
 
-  (listen (select [:#check-me]) :selection ; or :item-state-changed
-    (fn [e] 
-      (config! (select [:#link]) :enabled? (first (selection e)))))
+    (listen (select f [:#check-me]) :selection ; or :item-state-changed
+      (fn [e] 
+        (config! (select f [:#link]) :enabled? (first (selection e)))))
 
-  (listen (select [:#combo])  :selection ; or :item-state-changed
-      (fn [e] (println (selection e))))
+    (listen (select f [:#combo])  :selection ; or :item-state-changed
+        (fn [e] (println (selection e))))
 
-  (listen (select [:#list])  :selection ; or :list-selection
-      (fn [e] (println (selection e))))
+    (listen (select f [:#list])  :selection ; or :list-selection
+        (fn [e] (println (selection e))))
 
-  (listen (select [:#table])  :selection ; or :list-selection
-    (fn [e] 
-      (let [t (select [:#table]) 
-            lbl (select [:#table-sel])]
-        (text! lbl (str "Table selection:" (selection t))))))
+    (listen (select f [:#table])  :selection ; or :list-selection
+      (fn [e] 
+        (let [t (select f [:#table]) 
+              lbl (select f [:#table-sel])]
+          (text! lbl (str "Table selection:" (selection t))))))
 
-  (listen (select [:#and-me])  :selection ; or :item-state-changed
-    (fn [e] (println (selection e)))))
+    (listen (select f [:#and-me])  :selection ; or :item-state-changed
+      (fn [e] (println (selection e))))))
 
 (defn -main [& args]
   (invoke-later (app)))

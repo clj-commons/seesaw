@@ -30,20 +30,22 @@
               v))))
 
 ; The rest is boilerplate ...
-(defn app []
+(defn make-frame []
   (frame :title "JTree Example" :width 400 :height 400 :pack? false :content
     (border-panel
       :north  (str "From: " source)
       :center (scrollable (tree :id :tree
                                 :model (load-model)
                                 :renderer render-fn))
-      :south  (label :id :sel :text "Selection: ")))
+      :south  (label :id :sel :text "Selection: "))))
 
-  ; Listen for selection changes and show them in the label
-  (listen (select [:#tree]) :selection 
-    (fn [e] 
-      (config! (select [:#sel]) 
-        :text (str "Selection: " (-> e selection first last))))))
+(defn app []
+  (let [f (make-frame)]
+    ; Listen for selection changes and show them in the label
+    (listen (select f [:#tree]) :selection 
+      (fn [e] 
+        (config! (select f [:#sel]) 
+          :text (str "Selection: " (-> e selection first last)))))))
 
 (defn -main [& args]
   (invoke-later (app)))

@@ -103,6 +103,9 @@
   (it "returns input if it's already a widget"
     (let [c (JPanel.)]
       (expect (= c (to-widget c)))))
+  (it "returns input if it's a JFrame"
+    (let [c (JFrame.)]
+      (expect (= c (to-widget c)))))
   (it "does not create a new widget if create? param is false"
     (expect (nil? (to-widget "HI" false))))
   (it "returns a label for text input"
@@ -602,12 +605,14 @@
       (expect (nil? (to-frame c))))))
 
 (describe select
+  (it "should throw an exception if selector is not a vector"
+    (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
   (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
           f (frame :title "select by id" :visible? false :content p)]
-      (expect (= c (select [:#hi])))
-      (expect (= p (select ["#panel"])))))
+      (expect (= c (select f [:#hi])))
+      (expect (= p (select f ["#panel"])))))
   (it "should select all of the components in a tree with :*"
     (let [a (label) b (text) c (label)
           p (flow-panel :items [a b c])]
