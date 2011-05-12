@@ -77,7 +77,7 @@
 (defn app
   []
   (let [cvs (canvas :id :canvas :background "#BBBBBB" :paint paint-clock)
-        t (timer (fn [e] (.repaint cvs)) :delay 1000)]
+        t (timer (fn [e] (repaint! cvs)) :delay 1000)]
     (frame 
       :title "Seesaw Canvas Clock" 
       :width 400 :height 400 :pack? false

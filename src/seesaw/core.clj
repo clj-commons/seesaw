@@ -170,6 +170,24 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
+(defn repaint!
+  "Request a repaint of a list of widget-able things.
+
+  Example:
+
+    ; Repaint just one widget
+    (repaint! my-widget)
+
+    ; Repaint all widgets in a hierarcy
+    (repaint! (select [:*] root))
+
+  Returns targets.
+  "
+  [targets]
+  (doseq [target (map to-widget (to-seq targets))]
+    (.repaint target))
+  targets)
+  
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
