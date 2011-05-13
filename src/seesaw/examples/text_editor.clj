@@ -1,29 +1,24 @@
 (ns seesaw.examples.text-editor
   (:use seesaw.core
         [clojure.java.io :only [file]])
-  (:import [javax.swing JFileChooser JEditorPane JScrollPane BorderFactory]
-           java.awt.Font))
+  (:import [javax.swing JFileChooser JEditorPane]))
 
 (def current-file (atom (file (System/getProperty "user.home") ".sescratch")))
 
 (when-not (.exists @current-file) (spit @current-file ""))
 
-(defn add-border [l]
-  (.setBorder l (BorderFactory/createEmptyBorder 1 1 1 1))
-  l)
-
-(def current-file-label (label :text @current-file))
+(def current-file-label (label :text @current-file :font "SANSSERIF-PLAIN-8"))
 
 (def editor (doto (JEditorPane.) (.setText (slurp @current-file))))
 
 (def status-label (label :text "Your text. It goes there."))
 
-(defn set-status [& strings] (.setText status-label (apply str strings)))
+(defn set-status [& strings] (text! status-label (apply str strings)))
 
 (def main-panel
      (mig-panel
       :constraints ["fill, ins 0"]
-      :items [[(JScrollPane. editor) "grow"]
+      :items [[(scrollable editor) "grow"]
               [status-label "dock south"]
               [(separator) "dock south"]
               [current-file-label "dock south"]]))
@@ -80,8 +75,7 @@
   (add-watch
    current-file
    nil
-   (fn [_ _ _ new] (.setText current-file-label (str new))))
-  (.setFont current-file-label (Font. "Sans Serif" Font/PLAIN 8))
+   (fn [_ _ _ new] (text! current-file-label (str new))))
   (invoke-now
    (frame
     :title "Seesaw Example Text Editor"
