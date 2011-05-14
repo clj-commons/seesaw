@@ -638,6 +638,27 @@
       multi?      (do (doseq [w targets] (text w value)) targets))))
 
 ;*******************************************************************************
+; JEditorPane
+
+(def ^{:private true} editor-pane-options {
+  :page         #(.setPage %1 (if (instance? java.net.URL %2) %2 (str %1)))
+  :content-type #(.setContentType %1 (str %2))
+  :editor-kit   #(.setEditorKit %1 %2)
+})
+
+(defn editor-pane
+  "Create a JEditorPane. Custom options:
+
+    :page         A URL (string or java.net.URL) with the contents of the editor
+    :content-type The content-type, for example \"text/html\" for some crappy
+                  HTML rendering.
+    :editor-kit   The EditorKit. See Javadoc.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html"
+  [& opts]
+  (apply-options (javax.swing.JEditorPane.) opts (merge default-options text-options)))
+
+;*******************************************************************************
 ; Listbox
 
 (defn- to-list-model [xs]

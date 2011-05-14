@@ -344,6 +344,10 @@
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
 
+(describe editor-pane
+  (it "should create a JEditorPane"
+    (= javax.swing.JEditorPane (class (editor-pane)))))
+
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]

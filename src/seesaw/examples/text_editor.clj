@@ -1,7 +1,7 @@
 (ns seesaw.examples.text-editor
   (:use seesaw.core
         [clojure.java.io :only [file]])
-  (:import [javax.swing JFileChooser JEditorPane]))
+  (:import [javax.swing JFileChooser]))
 
 (native!)
 
@@ -11,7 +11,7 @@
 
 (def current-file-label (label :text @current-file :font "SANSSERIF-PLAIN-8"))
 
-(def editor (doto (JEditorPane.) (.setText (slurp @current-file))))
+(def editor (editor-pane :text (slurp @current-file)))
 
 (def status-label (label :text "Your text. It goes there."))
 
@@ -37,16 +37,16 @@
     (if (.exists @current-file)
       (alert "File already exists.")
       (do (set-current-file selected)
-          (.setText editor "")
+          (text! editor "")
           (set-status "Created a new file.")))))
 
 (defn a-open [e]
   (let [selected (select-file)] (set-current-file selected))
-  (.setText editor (slurp @current-file))
+  (text! editor (slurp @current-file))
   (set-status "Opened " @current-file "."))
 
 (defn a-save [e]
-  (spit @current-file (.getText editor))
+  (spit @current-file (text editor))
   (set-status "Wrote " @current-file "."))
 
 (defn a-save-as [e]
@@ -86,3 +86,4 @@
     :minimum-size [640 :by 480]
     :menubar menus)))
 
+;(-main)
