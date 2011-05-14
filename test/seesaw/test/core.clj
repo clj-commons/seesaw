@@ -453,6 +453,10 @@
 (describe menu-item
   (it "should create a JMenuItem"
       (expect (= javax.swing.JMenuItem (class (menu-item)))))
+  (it "should create a menu item with an accelerator key"
+    (let [ks (seesaw.keystroke/keystroke "ctrl S")
+          mi (menu-item :key ks)]
+      (expect (= ks (.getAccelerator mi)))))
   (it "should create a JMenuItem from an action"
     (let [a (action)
           mi (menu-item :action a)]

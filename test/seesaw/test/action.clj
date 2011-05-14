@@ -34,6 +34,11 @@
       (.actionPerformed a nil)
       ; Just making sure no exception was thrown
       true))
+  (it "handles the :key option"
+    (let [a (action :key "menu T")
+          ks (.getValue a Action/ACCELERATOR_KEY)]
+      (expect (not (nil? ks)))
+      (expect (instance? javax.swing.KeyStroke ks))))
   (it "handles the :enabled? option"
     (not (.isEnabled (action :enabled? false))))
   (it "handles the :selected? option"

@@ -61,14 +61,14 @@
 (defn a-paste [e] (.paste editor))
 
 (def menus
-     (let [a-new (action :handler a-new :name "New" :tip "Create a new file.")
-           a-open (action :handler a-open :name "Open" :tip "Open a file")
-           a-save (action :handler a-save :name "Save" :tip "Save the current file.")
+     (let [a-new (action :handler a-new :name "New" :tip "Create a new file." :key "menu N")
+           a-open (action :handler a-open :name "Open" :tip "Open a file" :key "menu O")
+           a-save (action :handler a-save :name "Save" :tip "Save the current file." :key "menu S")
            a-exit (action :handler a-exit :name "Exit" :tip "Exit the editor.")
-           a-copy (action :handler a-copy :name "Copy" :tip "Copy selected text to the clipboard.")
-           a-paste (action :handler a-paste :name "Paste" :tip "Paste text from the clipboard.")
-           a-cut (action :handler a-cut :name "Cut" :tip "Cut text to the clipboard.")
-           a-save-as (action :handler a-save-as :name "Save As" :tip "Save the current file.")]
+           a-copy (action :handler a-copy :name "Copy" :tip "Copy selected text to the clipboard." :key "menu C")
+           a-paste (action :handler a-paste :name "Paste" :tip "Paste text from the clipboard." :key "menu V")
+           a-cut (action :handler a-cut :name "Cut" :tip "Cut text to the clipboard." :key "menu X")
+           a-save-as (action :handler a-save-as :name "Save As" :tip "Save the current file." :key "menu shift S")]
        (menubar
         :items [(menu :text "File" :items [a-new a-open a-save a-save-as a-exit])
                 (menu :text "Edit" :items [a-copy a-cut a-paste])])))

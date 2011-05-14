@@ -223,7 +223,8 @@ It's typical in Swing apps to use actions for menus, buttons, etc. An action nee
     (use 'seesaw.core)
     (let [open-action (action 
                         :handler (fn [e] (alert "I should open a new something."))
-                        :name "Open"
+                        :name "Open ..."
+                        :key  "menu O"
                         :tip  "Open a new something something.")
           exit-action (action 
                         :handler (fn [e] (.dispose (to-frame e)))
@@ -236,6 +237,8 @@ It's typical in Swing apps to use actions for menus, buttons, etc. An action nee
                     :center "Insert content here")))
 
 `(action)` also supports an `:icon` property which can be a `javax.swing.Icon`, a `java.net.URL` or something that looks like a file or URL after `(str)` has been applied to it. See `seesaw/action.clj` for an accurate list of options.
+
+The `:key` property takes an argument which is passed to `seesaw.keystroke/keystroke`. This sets the accelerator key for the action.
 
 Like widgets, actions can be modified with the `(config!)` function:
 

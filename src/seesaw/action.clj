@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.action
-  (:use [seesaw util icon])
+  (:use [seesaw util icon keystroke])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
@@ -25,6 +25,7 @@
   :tip       #(.putValue %1 Action/SHORT_DESCRIPTION (str %2))
   :icon      #(.putValue %1 Action/SMALL_ICON (icon %2))
   :handler   #(.putValue %1 action-handler-property %2)
+  :key       #(.putValue %1 Action/ACCELERATOR_KEY (keystroke %2))
 })
 
 (defn action [& opts]
@@ -32,3 +33,4 @@
             (actionPerformed [e] 
               (if-let [f (.getValue this action-handler-property)] (f e))))]
     (apply-options a opts action-options)))
+

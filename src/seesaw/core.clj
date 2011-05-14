@@ -745,7 +745,11 @@
 ;*******************************************************************************
 ; Menus
 
-(defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args))
+(def ^{:private true} menu-item-options {
+  :key #(.setAccelerator %1 (seesaw.keystroke/keystroke %2))
+})
+
+(defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
 (defn checkbox-menu-item [& args] (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
 (defn radio-menu-item    [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
 
