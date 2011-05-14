@@ -19,7 +19,8 @@
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn make-frame []
-  (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false :content
+  (frame :title "Hello Seesaw" :width 600 :height 600 :pack? false 
+    :content
     (border-panel :vgap 5
       :north (toolbar 
                :floatable? false 
@@ -143,6 +144,7 @@
       (fn [e] (println (selection e))))))
 
 (defn -main [& args]
+  (native!)
   (invoke-later (app)))
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))

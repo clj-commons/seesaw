@@ -19,7 +19,7 @@
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
-             SwingUtilities SwingConstants 
+             SwingUtilities SwingConstants UIManager
              Action
              BoxLayout
              JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
@@ -44,6 +44,14 @@
 
 (defmacro invoke-later [& body] `(invoke-later* (fn [] ~@body)))
 (defmacro invoke-now   [& body] `(invoke-now*   (fn [] ~@body)))
+
+(defn native!
+  "Set native look and feel and other options to try to make things look right.
+  This function must be called very early, like before any other Seesaw or Swing
+  calls!"
+  []
+  (System/setProperty "apple.laf.useScreenMenuBar" "true")
+  (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName)))
 
 ; alias timer/timer for convenience
 (def timer sst/timer)

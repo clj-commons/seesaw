@@ -68,6 +68,9 @@ To run the tests:
 
     Hopefully you see a nice wall of green.
 
+### Native Look and Feel
+Call the `(native!)` function early in your program (like before any other Swing or Seesaw function is called) to get a more "native" behavior. This includes correct menu bar placement in OSX, etc.
+
 ### Widget Coercion
 
 <table>
@@ -248,6 +251,8 @@ Here's how you can make a menu bar full of menus:
         (menubar :items 
           [(menu :text "File" :items [new-action open-action save-action exit-action])
            (menu :text "Edit" :items [copy-action paste-action])))
+
+_Note that calling the `(native!)` function at startup will ensure that the menu bar goes in the right spot on OSX._
 
 `(menubar)` has a list of `(menus)`, while each `(menu)` has text and a list of actions, or items. Note that in addition to using Actions as menu items, you can also use `(menu-item)`, `(checkbox-menu-item)`, and `(radio-menu-item)`, each of which has the exact same behavior (and options) as a button.
 

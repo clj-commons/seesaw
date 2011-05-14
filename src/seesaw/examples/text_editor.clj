@@ -3,6 +3,8 @@
         [clojure.java.io :only [file]])
   (:import [javax.swing JFileChooser JEditorPane]))
 
+(native!)
+
 (def current-file (atom (file (System/getProperty "user.home") ".sescratch")))
 
 (when-not (.exists @current-file) (spit @current-file ""))
@@ -83,3 +85,4 @@
     :on-close :exit
     :minimum-size [640 :by 480]
     :menubar menus)))
+
