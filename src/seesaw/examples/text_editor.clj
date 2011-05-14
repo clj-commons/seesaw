@@ -1,7 +1,7 @@
 (ns seesaw.examples.text-editor
   (:use seesaw.core
-        [clojure.java.io :only [file]])
-  (:import [javax.swing JFileChooser]))
+        seesaw.chooser
+        [clojure.java.io :only [file]]))
 
 (native!)
 
@@ -27,13 +27,10 @@
 
 (defn set-current-file [f] (swap! current-file (constantly f)))
 
-(defn select-file []
-  (let [chooser (JFileChooser.)]
-    (.showDialog chooser main-panel "Select")
-    (.getSelectedFile chooser)))
+(defn select-file [type] (choose-file main-panel :type type))
 
 (defn a-new [e]
-  (let [selected (select-file)] 
+  (let [selected (select-file :save)] 
     (if (.exists @current-file)
       (alert "File already exists.")
       (do (set-current-file selected)
@@ -41,7 +38,7 @@
           (set-status "Created a new file.")))))
 
 (defn a-open [e]
-  (let [selected (select-file)] (set-current-file selected))
+  (let [selected (select-file :open)] (set-current-file selected))
   (text! editor (slurp @current-file))
   (set-status "Opened " @current-file "."))
 
@@ -50,7 +47,7 @@
   (set-status "Wrote " @current-file "."))
 
 (defn a-save-as [e]
-  (when-let [selected (select-file)]
+  (when-let [selected (select-file :save)]
     (set-current-file selected)
     (spit @current-file)
     (set-status "Wrote " @current-file ".")))
@@ -87,3 +84,4 @@
     :menubar menus)))
 
 ;(-main)
+
