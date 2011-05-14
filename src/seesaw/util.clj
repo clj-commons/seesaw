@@ -132,6 +132,17 @@
       (let [[w by h] v] (java.awt.Dimension. w h))
     :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
 
+(defn children [c]
+  (seq 
+    ; TODO PROTOCOL!
+    (cond
+      (instance? javax.swing.JFrame c) (if-let [mb (.getJMenuBar c)] 
+                                         (cons mb (.getComponents c)) 
+                                         (.getComponents c))
+      (instance? javax.swing.JMenuBar c) (.getSubElements c)
+      (instance? javax.swing.JMenu c)    (.getSubElements c)
+      :else    (.getComponents c))))
+
 (defn collect
   "Given a root widget or frame, returns a depth-fist seq of all the widgets
   in the hierarchy. For example to disable everything:
@@ -141,6 +152,6 @@
   [root]
   (tree-seq 
     (constantly true) 
-    (fn [c] (seq (.getComponents c))) 
+    children
     root))
 

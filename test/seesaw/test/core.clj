@@ -621,6 +621,11 @@
           f (frame :title "select by id" :visible? false :content p)]
       (expect (= c (select f [:#hi])))
       (expect (= p (select f ["#panel"])))))
+  (it "should find menu items by id in a frame's menubar"
+    (let [m (menu-item :id :my-menu)
+          f (frame :title "select menu item" :visible? false 
+                   :menubar (menubar :items [(menu :text "File" :items [(menu :text "Nested" :items [m])])]))]
+      (expect (= m (select f [:#my-menu]))))) 
   (it "should select all of the components in a tree with :*"
     (let [a (label) b (text) c (label)
           p (flow-panel :items [a b c])]

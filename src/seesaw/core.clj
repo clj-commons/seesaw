@@ -62,6 +62,8 @@
 ; alias action/action for convenience
 (def action ssa/action)
 
+;(def choose-file seesaw.chooser/choose-file)
+
 ; to-widget wrapper and stuff for (seesaw.selection/selection)
 (defn selection 
   "Gets the selection of a widget. target is passed through (to-widget)
