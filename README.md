@@ -19,7 +19,9 @@ Add Seesaw to `project.clj`
       :description "FIXME: write"
       :dependencies [[org.clojure/clojure "1.2.0"]
                     [org.clojure/clojure-contrib "1.2.0"]
-                    [seesaw "1.0.0"]])
+                    [seesaw "1.0.1"]])
+
+_Replace the Seesaw version with whatever the latest version tag is in case I forget to update this._
 
 Now edit the generated `src/hello_seesaw/core.clj` file:
 
