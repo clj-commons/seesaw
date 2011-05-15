@@ -61,6 +61,24 @@
         (expect (= d (.getPreferredSize p)))
         (expect (= d (.getMinimumSize p)))
         (expect (= d (.getMaximumSize p))))))
+  (testing "the :location option"
+    (it "sets the component's location with a two-element vector"
+      (let [p (apply-default-opts (JPanel.) {:location [23 45]})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a java.awt.Point"
+      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)])))))
+  (testing "the :bounds option"
+    (it "sets the component's bounds with a [x y width height] vector"
+      (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
+            b (.getBounds p)]
+        (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a java.awt.Rectangle"
+      (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
+            b (.getBounds p)]
+        (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)])))))
 
   (testing "setting enabled option"
     (it "does nothing when omitted"

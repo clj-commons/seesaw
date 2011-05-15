@@ -115,11 +115,13 @@ All of Seesaw's widget creation functions (`label`, `text`, `horizontal-panel`, 
   <tr><td><code>:border</code></td><td>Set the border of the widget by coercing into a Border. See below.</td></tr>
   <tr><td><code>:font</code></td><td>Set the font of the widget by coercing into a Font. See below.</td></tr>
   <tr><td><code>:enabled?</code></td><td>Whether the widget is enabled or not.</td></tr>
-  <tr><td><code>:listen</code></td><td>List of event listeners with same format as args to `(listen)` function (see below).</td></tr>
   <tr><td><code>:minimum-size</code></td><td>Minimum size of component, set with a `java.awt.Dimension` or a vector of the form `[width :by height]`, for example `[50 :by 50]`. Note that in Swing, some containers don't honor minimum size.</td></tr>
   <tr><td><code>:maximum-size</code></td><td>Same as `:minimum-size`, but maximum. Note that in Swing, some containers don't honor maximum size.</td></tr>
   <tr><td><code>:preferred-size</code></td><td>Same as `:minimum-size`, but preferred size.</td></tr>
   <tr><td><code>:size</code></td><td>Set `:minimum-size`, `:maximum-size`, and `:preferred-size` all at once.</td></tr>
+  <tr><td><code>:location</code></td><td>Set the location of the widget with a `[x y]` vector or a `java.awt.Point`. _Note this is only useful when there is no layout on the container._</td></tr>
+  <tr><td><code>:bounds</code></td><td>Set the bounds (location and size) of the widget with a `[x y width height]` vector or a `java.awt.Rectangle`. _Note this is only useful when there is no layout on the container._</td></tr>
+  <tr><td><code>:listen</code></td><td>List of event listeners with same format as args to `(listen)` function (see below).</td></tr>
   <tr><td><code>:popup</code></td><td>A JPopupMenu or function that generates the items of a popup menu to display. In this case, Seesaw ensures that the popup is shown on the correct mouse event for the platform. See `src/seesaw/examples/popup.clj`</td></tr>
 </table>
 

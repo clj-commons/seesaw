@@ -263,6 +263,18 @@
       ; TODO need to figure out how to store JFrame ids. JFrame/getFrames is pretty useless
   ))
 
+(defn- location-option-handler [w v]
+  (cond
+    ; TODO to-point protocol
+    (instance? java.awt.Point v) (.setLocation w v)
+    :else (.setLocation w (first v) (second v))))
+
+(defn- bounds-option-handler [w v]
+  (cond
+    ; TODO to-rect protocol?
+    (instance? java.awt.Rectangle v) (.setBounds w v)
+    :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
+
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/listen %1 %2)
@@ -290,6 +302,8 @@
                        (.setPreferredSize d)
                        (.setMinimumSize d)
                        (.setMaximumSize d)))
+  :location   location-option-handler
+  :bounds     bounds-option-handler
   :popup      #(popup-option-handler %1 %2)
 })
 
