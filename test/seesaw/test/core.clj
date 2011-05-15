@@ -197,7 +197,7 @@
 (describe flow-panel
   (it "should create a FlowLayout of :items list"
     (let [[a b c] [(JPanel.) (JPanel.) (JPanel.)]
-          p (flow-panel :items [a b c] :align :trailing :hgap 99 :vgap 12 :align-on-baseline true)
+          p (flow-panel :items [a b c] :align :trailing :hgap 99 :vgap 12 :align-on-baseline? true)
           l (.getLayout p)]
       (expect (= java.awt.FlowLayout (class l)))
       (expect (= FlowLayout/TRAILING (.getAlignment l)))
@@ -340,6 +340,14 @@
     (let [t (text :text "HI" :multi-line? true)]
       (expect (= JTextArea (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should default line wrapping to false"
+    (not (.getLineWrap (text :multi-line? true))))
+  (it "should enable line wrapping when :wrap-lines? is true"
+    (.getLineWrap (text :multi-line? true :wrap-lines? true)))
+  (it "should set tab size with :tab-size"
+    (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
+  (it "should set number of rows with :rows"
+    (= 123 (.getRows (text :multi-line? true :rows 123))))
   (it "should honor the editable property"
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
@@ -425,6 +433,8 @@
 (describe table
   (it "should create a JTable"
     (= javax.swing.JTable (class (table))))
+  (it "should fill viewport height by default"
+    (.getFillsViewportHeight (table)))
   (it "should set the table's model from a TableModel"
     (let [m (javax.swing.table.DefaultTableModel.)
           t (table :model m)]

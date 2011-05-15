@@ -389,7 +389,7 @@
   :hgap #(.setHgap (.getLayout %1) %2)
   :vgap #(.setVgap (.getLayout %1) %2)
   :align #(.setAlignment (.getLayout %1) (get flow-align-table %2 %2))
-  :align-on-baseline #(.setAlignOnBaseline (.getLayout %1) (boolean %2))
+  :align-on-baseline? #(.setAlignOnBaseline (.getLayout %1) (boolean %2))
 })
 
 (defn flow-panel
@@ -399,7 +399,7 @@
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
     :align  :left, :right, :leading, :trailing, :center
-    :align-on-baseline 
+    :align-on-baseline? 
 
   See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html 
   "
@@ -639,16 +639,26 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
-  :columns #(.setColumns %1 %2) })
+  ; TODO split into single/multi options since some of these will fail if
+  ; multi-line? is false  
+  :columns     #(.setColumns %1 %2) 
+  :rows        #(.setRows    %1 %2)
+  :wrap-lines? #(.setLineWrap %1 (boolean %2))
+  :tab-size    #(.setTabSize %1 %2)
+})
 
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField 
   using the argument as the initial text value. Otherwise, supports the 
-  following properties:
+  following additional properties:
 
     :text         Initial text content
     :multi-line?  If true, a JTextArea is created (default false)
     :editable?    If false, the text is read-only (default true)
+    :wrap-lines?  If true (and :multi-line? is true) lines are wrapped. 
+                  (default false)
+    :tab-size     Tab size in spaces. Defaults to 8.
+    :rows         Number of rows if :multi-line? is true (default 0).
 
   To listen for document changes, use the :listen option:
 
@@ -658,7 +668,7 @@
     
     (text :id :my-text ...)
         ...
-    (listen (select [:#my-text]) :document #(... handler ...))
+    (listen (select root [:#my-text]) :document #(... handler ...))
 
   Given a single widget or document (or event) argument, retrieves the
   text of the argument. For example:
@@ -769,7 +779,9 @@
 ; JTable
 
 (def ^{:private true} table-options {
+
   :show-grid? #(.setShowGrid %1 (boolean %2))
+  :fills-viewport-height? #(.setFillsViewportHeight %1 (boolean %2))
 })
 
 (defn table
@@ -777,7 +789,9 @@
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
   [& args]
-  (apply-options (javax.swing.JTable.) args (merge default-options table-options)))
+  (apply-options 
+    (doto (javax.swing.JTable.)
+      (.setFillsViewportHeight true)) args (merge default-options table-options)))
 
 ;*******************************************************************************
 ; JTree
