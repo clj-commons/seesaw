@@ -42,8 +42,30 @@
     (f)
     (SwingUtilities/invokeAndWait f)))
 
-(defmacro invoke-later [& body] `(invoke-later* (fn [] ~@body)))
-(defmacro invoke-now   [& body] `(invoke-now*   (fn [] ~@body)))
+(defmacro invoke-later 
+  "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
+  in the future on the Swing UI thread. For example,
+
+    (invoke-later
+      (config! my-label :text \"New Text\"))
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeLater(java.lang.Runnable) 
+  "
+  [& body] `(invoke-later* (fn [] ~@body)))
+
+(defmacro invoke-now   
+  "Equivalent to SwingUtilities/invokeAndWait. Executes the given body immediately
+  on the Swing UI thread, possibly blocking the current thread if it's not the Swing
+  UI thread. For example,
+
+    (invoke-now
+      (config! my-label :text \"New Text\"))
+
+  Be very careful with this function in the presence of locks and stuff.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
+  "
+  [& body] `(invoke-now*   (fn [] ~@body)))
 
 (defn native!
   "Set native look and feel and other options to try to make things look right.
@@ -350,7 +372,8 @@
  
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
-   
+  
+  See http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
   [& opts]
   (let [p (JPanel. (BorderLayout.))]
@@ -370,6 +393,16 @@
 })
 
 (defn flow-panel
+  "Create a panel with a flow layout. Options:
+
+    :items  List of widgets (passed through to-widget)
+    :hgap   horizontal gap between widgets
+    :vgap   vertical gap between widgets
+    :align  :left, :right, :leading, :trailing, :center
+    :align-on-baseline 
+
+  See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html 
+  "
   [& opts]
   (let [p (JPanel. (FlowLayout.))]
     (apply-options p opts (merge default-options flow-panel-options))))
@@ -389,8 +422,22 @@
     (.setLayout panel layout)
     (apply-options panel opts default-options)))
 
-(defn horizontal-panel [& opts] (apply box-panel :horizontal opts))
-(defn vertical-panel   [& opts] (apply box-panel :vertical opts))
+(defn horizontal-panel 
+  "Create a panel where widgets are arranged horizontally. Options:
+
+    :items List of widgets (passed through to-widget)
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html 
+  "
+  [& opts] (apply box-panel :horizontal opts))
+(defn vertical-panel
+  "Create a panel where widgets are arranged vertically Options:
+
+    :items List of widgets (passed through to-widget)
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html 
+  "
+  [& opts] (apply box-panel :vertical opts))
 
 ;*******************************************************************************
 ; Grid
@@ -401,6 +448,18 @@
 })
 
 (defn grid-panel
+  "Create a panel where widgets are arranged horizontally. Options:
+    
+    :rows    Number of rows, defaults to 0, i.e. unspecified.
+    :columns Number of columns.
+    :items   List of widgets (passed through to-widget)
+    :hgap    horizontal gap between widgets
+    :vgap    vertical gap between widgets
+
+  Note that it's usually sufficient to just give :columns and ignore :rows.
+
+  See http://download.oracle.com/javase/6/docs/api/java/awt/GridLayout.html 
+  "
   [& {:keys [rows columns] 
       :as opts}]
   (let [columns* (or columns (if rows 0 1))
@@ -492,7 +551,10 @@
     [[\"Name\"         :weightx 0]
      [(text :id :name) :weightx 1 :fill :horizontal]]
 
-  This creates a label/field pair where the field expands."
+  This creates a label/field pair where the field expands.
+  
+  See http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html 
+  "
   [& opts]
   (let [^java.awt.Container p (JPanel. (GridBagLayout.))]
     (apply-options p opts (merge default-options form-panel-options))))
@@ -531,7 +593,7 @@
 
     :items [[ \"Propeller\"        \"split, span, gaptop 10\"]]
 
-  See http://www.miglayout.com.
+  See http://www.miglayout.com
   "
   [& opts]
   (let [p (JPanel. (net.miginfocom.swing.MigLayout.))]
@@ -541,6 +603,16 @@
 ; Labels
 
 (defn label 
+  "Create a label. Supports all default properties. Can take two forms:
+
+      (label \"My Label\")  ; Single text argument for the label
+
+  or with full options:
+
+      (label :id :my-label :text \"My Label\" ...)
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
+  "
   [& args]
   (if (next args)
     (apply-options (JLabel.) args default-options)
@@ -595,6 +667,8 @@
       user=> (text t)
       \"HI\"
 
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html 
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html 
   " 
   [& args]
   ; TODO this is crying out for a multi-method or protocol
@@ -677,6 +751,17 @@
 })
 
 (defn listbox
+  "Create a list box (JList). Additional options:
+
+    :model A ListModel, or a sequence of values with which a DefaultListModel
+           will be constructed.
+    :renderer A cell renderer to use. See (seesaw.cells/to-cell-renderer).
+
+  Note that retrieving and setting the current selection of the list box is fully
+  supported by the (selection) and (selection!) functions.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html 
+  "
   [& args]
   (apply-options (javax.swing.JList.) args (merge default-options listbox-options)))
 
@@ -688,6 +773,9 @@
 })
 
 (defn table
+  "Create a table (JTable).
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
   [& args]
   (apply-options (javax.swing.JTable.) args (merge default-options table-options)))
 
@@ -707,6 +795,10 @@
 })
 
 (defn tree
+  "Create a tree (JTree). Additional options:
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html
+  "
   [& args]
   (apply-options (javax.swing.JTree.) args (merge default-options tree-options)))
 
@@ -729,6 +821,17 @@
 })
 
 (defn combobox
+  "Create a combo box (JComboBox). Additional options:
+
+    :model Instance of ComboBoxModel, or sequence of values used to construct
+           a default model.
+    :renderer Cell renderer used for display. See (seesaw.cells/to-cell-renderer).
+
+  Note that the current selection can be retrieved and set with the (selection) and
+  (selection!) functions.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
+  "
   [& args]
   (apply-options (javax.swing.JComboBox.) args (merge default-options combobox-options)))
 
@@ -736,7 +839,10 @@
 ; Scrolling
 
 (defn scrollable 
-  "Wrap target in a JScrollPane and return the scroll pane"
+  "Wrap target in a JScrollPane and return the scroll pane.
+  
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
+  "
   [target]
   (let [sp (JScrollPane. target)]
     sp))
@@ -751,17 +857,27 @@
                (to-widget right true)))
 
 (defn left-right-split 
-  "Create a left/right (horizontal) splitpane with the given widgets"
+  "Create a left/right (horizontal) splitpane with the given widgets.
+  
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
+  "
   [left right & args] (apply splitter :left-right left right args))
 
 (defn top-bottom-split 
-  "Create a top/bottom (vertical) split pane with the given widgets"
+  "Create a top/bottom (vertical) split pane with the given widgets
+  
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
+  "
   [top bottom & args] (apply splitter :top-bottom top bottom args))
 
 ;*******************************************************************************
 ; Separator
 
 (defn separator
+  "Create a separator.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
+  "
   [& opts]
   (apply-options (javax.swing.JSeparator.) opts default-options))
 
@@ -793,10 +909,24 @@
 })
 
 (defn menu 
+  "Create a new menu. Additional options:
+
+    :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
+  
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   [& opts]
   (apply-button-defaults (javax.swing.JMenu.) opts menu-options))
 
 (defn popup 
+  "Create a new popup menu. Additional options:
+
+    :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
+
+  Note that in many cases, the :popup option is what you want if you want to
+  show a context menu on a widget. It handles all the yucky mouse stuff and
+  fixes various eccentricities of Swing.
+  
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   [& opts]
   (apply-options (javax.swing.JPopupMenu.) opts (merge default-options menu-options)))
 
@@ -821,6 +951,14 @@
 ;})
 
 (defn menubar
+  "Create a new menu bar, suitable for the :menubar property of (frame). 
+  Additional options:
+
+    :items Sequence of menus, see (menu).
+  
+  See seesaw.core/frame
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
+  "
   [& opts]
   (apply-options (javax.swing.JMenuBar.) opts default-options))
 
@@ -846,6 +984,8 @@
     :orientation Toolbar orientation, :horizontal or :vertical
     :items       Normal list of widgets to add to the toolbar. :separator
                  creates a toolbar separator.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
   (apply-options (JToolBar.) opts (merge default-options toolbar-options)))
@@ -892,6 +1032,8 @@
     :content   The content of the tab, passed through (to-widget) as usual.
 
   Returns the new JTabbedPane.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
   (apply-options (JTabbedPane.) opts (merge default-options tabbed-panel-options)))
@@ -940,6 +1082,8 @@
   Here's an example:
   
     (canvas :paint #(.drawString %2 \"I'm a canvas\" 10 10))
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
   "
   (let [p (create-paintable)]
     (.setLayout p nil)
@@ -1024,6 +1168,11 @@
 ;*******************************************************************************
 ; Alert
 (defn alert
+  "Show a simple message alert dialog. Take an optional parent component, source,
+  used for dialog placement, and a message which is passed through (str).
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
+  "
   ([source message] 
     (JOptionPane/showMessageDialog (to-widget source) (str message)))
   ([message] (alert nil message)))
