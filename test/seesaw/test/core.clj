@@ -456,7 +456,11 @@
   (it "should set the table's model from a TableModel"
     (let [m (javax.swing.table.DefaultTableModel.)
           t (table :model m)]
-      (= m (.getModel t)))))
+      (= m (.getModel t))))
+  (it "should set the table's model using seesaw.table/table-model"
+    (let [t (table :model [:columns [:a :b] :rows [[23 24] [25 26]]])
+          m (.getModel t)]
+      (expect (= 2 (.getRowCount m))))))
 
 (describe tree
   (it "should create a JTree"

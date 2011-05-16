@@ -15,6 +15,7 @@
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
             [seesaw.action :as ssa]
+            [seesaw.table :as ss-table]
             [seesaw.cells :as cells]
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
@@ -792,16 +793,34 @@
 ;*******************************************************************************
 ; JTable
 
-(def ^{:private true} table-options {
+(defn- to-table-model [v]
+  (cond
+    (instance? javax.swing.table.TableModel v) v
+    :else (apply seesaw.table/table-model v)))
 
+(def ^{:private true} table-options {
+  :model      #(.setModel %1 (to-table-model %2))
   :show-grid? #(.setShowGrid %1 (boolean %2))
   :fills-viewport-height? #(.setFillsViewportHeight %1 (boolean %2))
 })
 
 (defn table
-  "Create a table (JTable).
+  "Create a table (JTable). Additional options:
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
+    :model A TableModel, or a vector. If a vector, then it is used as
+           arguments to (seesaw.table/table-model).
+
+  Example:
+
+    (table 
+      :model [:columns [:age :height]
+              :rows    [{:age 13 :height 45}
+                        {:age 45 :height 13}]])
+
+  See:
+    seesaw.table/table-model 
+    seesaw.examples.table
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
   [& args]
   (apply-options 
     (doto (javax.swing.JTable.)
