@@ -41,6 +41,22 @@
       (expect (= "a0" (.getValueAt t 0 0)))
       (expect (= "b0" (.getValueAt t 0 1)))
       (expect (= "a1" (.getValueAt t 1 0)))
-      (expect (= "b1" (.getValueAt t 1 1))))))
+      (expect (= "b1" (.getValueAt t 1 1)))))
+  
+  (it "makes column metadata available through (.getValueAt model -1 -1)"
+    (let [t (table-model :columns [:a :b])]
+      (expect (= 1 (:b (.getValueAt t -1 -1)))))))
+
+(describe value-at
+  (it "gets the value of a row as a map"
+    (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
+      (expect (= {:a "a0" :b "b0" } (value-at t 0)))))
+  (it "gets the value of a row as a map (indexed by integers) if model was not
+      created with (table-model)"
+    (let [t (javax.swing.table.DefaultTableModel. 2 3)]
+      (expect (= {"A" nil "B" nil "C" nil } (value-at t 0)))))
+  (it "gets the value of multiple rows as a list of maps"
+    (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
+      (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t [0 1]))))))
 
 

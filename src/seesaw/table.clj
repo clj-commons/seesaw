@@ -26,6 +26,25 @@
     (map? row) (unpack-row-map col-key-map row)
     :else      (object-array row)))
 
+(defn- proxy-table-model [column-names column-key-map]
+  (proxy [javax.swing.table.DefaultTableModel] [column-names 0]
+    (getValueAt [row col] 
+      (if (= -1 row col)
+        column-key-map
+        (proxy-super getValueAt row col)))))
+
+(defn- get-column-key-map [model]
+  (try
+    ; Try to grab the column to key map using proxy hack above
+    (.getValueAt model -1 -1)
+    (catch ArrayIndexOutOfBoundsException e
+      ; Otherwise, just map from column names to values
+      (let [n (.getColumnCount model)]
+        (apply hash-map 
+               (interleave 
+                 (map #(.getColumnName model %) (range n)) 
+                 (range n)))))))
+
 (defn table-model
   "Creates a TableModel from column and row data. Takes two options:
 
@@ -57,9 +76,43 @@
   (let [norm-cols   (map normalize-column columns)
         col-names   (object-array (map :text norm-cols))
         col-key-map (reduce (fn [m [k v]] (assoc m k v)) {} (map-indexed #(vector (:key %2) %1) norm-cols))
-        model     (javax.swing.table.DefaultTableModel. col-names 0)]
+        model     (proxy-table-model col-names col-key-map)]
     (doseq [row rows]
       (.addRow model (unpack-row col-key-map row)))
     model))
 
+(defn- to-table-model [v]
+  (cond
+    (instance? javax.swing.table.TableModel v) v
+    ; TODO replace with (to-widget) so (value-at) works with events and stuff
+    (instance? javax.swing.JTable v) (.getModel v)
+    :else (throw (IllegalArgumentException. (str "Can't get table model from " v)))))
 
+(defn value-at 
+  "Retrieve one or more rows from a table or table model. target is a JTable or TableModel
+  created with (table-model). row is a row index or list of row indices (e.g as returned by
+  (selection).
+
+  If row is an integer, returns a single map of row values keyed as in (table-model).
+  If row is a list of integers, returns a list of rows.
+
+  If target was not created with (table-model), just returns the row as a map indexed
+  by column name.
+
+  See:
+    (seesaw.core/table)
+    (seesaw.table/table-model)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
+  "
+  [target row]
+  (cond
+    (integer? row)
+      (let [target      (to-table-model target)
+            col-key-map (get-column-key-map target)]
+        (reduce
+          (fn [result k] (assoc result k (.getValueAt target row (col-key-map k))))
+          {}
+          (keys col-key-map)))
+    (coll? row)
+      (map #(value-at target %) row)))
+    
