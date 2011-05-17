@@ -1218,12 +1218,109 @@
   "Show a simple message alert dialog. Take an optional parent component, source,
   used for dialog placement, and a message which is passed through (str).
 
+  Examples:
+
+    (alert \"Hello!\")
+    (alert e \"Hello!\")
+
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
   "
   ([source message] 
     (JOptionPane/showMessageDialog (to-widget source) (str message)))
   ([message] (alert nil message)))
 
+;*******************************************************************************
+; Input
+(def ^{:private true} input-type-map {
+  :error    JOptionPane/ERROR_MESSAGE
+  :info     JOptionPane/INFORMATION_MESSAGE
+  :warning  JOptionPane/WARNING_MESSAGE
+  :question JOptionPane/QUESTION_MESSAGE
+  :plain    JOptionPane/PLAIN_MESSAGE
+})
+
+(defrecord InputChoice [value to-string]
+  Object
+  (toString [this] (to-string value)))
+
+(defn- input-impl
+  "
+    showInputDialog(Component parentComponent, 
+                    Object message, 
+                    String title, 
+                    int messageType, 
+                    Icon icon, 
+                    Object[] selectionValues, 
+                    Object initialSelectionValue) 
+  "
+  [source message {:keys [title value type choices icon to-string] 
+                   :or {type :plain to-string str}}]
+  (let [source  (to-widget source)
+        message (if (coll? message) (object-array message) (str message))
+        choices (when choices (object-array (map #(InputChoice. % to-string) choices)))
+        result  (JOptionPane/showInputDialog ^java.awt.Component source 
+                                 message 
+                                 title 
+                                 (input-type-map type) 
+                                 (make-icon icon)
+                                 choices value)]
+    (if (and result choices)
+      (.value result)
+      result)))
+
+(defn input
+  "Show an input dialog:
+    
+    (input [source] message & options)
+
+  source  - optional parent component
+  message - The message to show the user. May be a string, or list of strings, widgets, etc.
+  options - additional options
+
+  Additional options:
+
+    :title     The dialog title
+    :value     The initial, default value to show in the dialog
+    :choices   List of values to choose from rather than freeform entry
+    :type      :warning, :error, :info, :plain, or :question
+    :icon      Icon to display (Icon, URL, etc)
+    :to-string A function which creates the string representation of the values 
+               in :choices. This let's you choose arbitrary clojure data structures
+               without while keeping things looking nice. Defaults to str.
+
+  Examples:
+
+    ; Ask for a string input
+    (input \"Bang the keyboard like a monkey\")
+
+    ; Ask for a choice from a set
+    (input \"Pick a color\" :choices [\"RED\" \"YELLO\" \"GREEN\"])
+
+    ; Choose from a list of maps using a custom string function for the display.
+    ; This will display only the city names, but the return value will be one of
+    ; maps in the :choices list. Yay!
+    (input \"Pick a city\" 
+      :choices [{ :name \"New York\"  :population 8000000 }
+                { :name \"Ann Arbor\" :population 100000 }
+                { :name \"Twin Peaks\" :population 5201 }]
+      :to-string :name)
+
+  Returns the user input or nil if they hit cancel.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html
+  "
+  [& args]
+  (let [n (count args)
+        f (first args)
+        s (second args)]
+    (cond
+      (or (= n 0) (keyword? f))
+        (throw (IllegalArgumentException. "input requires at least one non-keyword arg"))
+      (= n 1)      (input-impl nil f)
+      (= n 2)      (input-impl f s)
+      (keyword? s) (input-impl nil f (drop 1 args))
+      :else        (input-impl f  s (drop 2 args)))))
 
 ;*******************************************************************************
 ; Selectors
