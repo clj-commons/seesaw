@@ -46,6 +46,7 @@
   (it "makes column metadata available through (.getValueAt model -1 -1)"
     (let [t (table-model :columns [:a :b])]
       (expect (= 1 (:b (.getValueAt t -1 -1))))))
+
   (it "returns false for isCellEditable"
     (let [t (table-model :columns [:a :b] :rows [[0 0]])]
       (expect (not (.isCellEditable t 0 0))))))
@@ -62,4 +63,16 @@
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
       (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t [0 1]))))))
 
+(describe update-at!
+  (it "updates a row with the same format as :rows option of (table-model)"
+    (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
+          r (update-at! t 0 ["A0" "B0"])]
+      (expect (= t r))
+      (expect (= {:a "A0" :b "B0"} (value-at t 0)))))
+  (it "updates multiple rows with the same format as :rows option of (table-model)"
+    (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
+          r (update-at! t 1 ["A1" "B1"] 0 {:a "A0" :b "B0"})]
+      (expect (= t r))
+      (expect (= {:a "A0" :b "B0"} (value-at t 0))))
+      (expect (= {:a "A1" :b "B1"} (value-at t 1)))))
 

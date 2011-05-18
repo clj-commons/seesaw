@@ -116,4 +116,32 @@
           (keys col-key-map)))
     (coll? row)
       (map #(value-at target %) row)))
-    
+
+(defn update-at!
+  "Update a row in a table model or JTable. Accepts an arbitrary number of row/value
+  pairs where row is an integer row index and value is a map or vector of values
+  just like the :rows property of (table-model).
+
+  Examples:
+
+    ; Given a table created with column keys :a and :b, update row 3 and 5
+    (update-at! t 3 [\"Col0 Value\" \"Col1 Value\"]
+                  5 { :a \"A value\" \"B value\" })
+
+  See:
+    (seesaw.core/table)
+    (seesaw.table/table-model)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
+  "
+  ([target row value]
+    (let [target      (to-table-model target)
+          col-key-map (get-column-key-map target)
+          row-values  (unpack-row col-key-map value)]
+      (doseq [i (range 0 (.getColumnCount target))]
+        (.setValueAt target (aget row-values i) row i)))
+    target)
+  ([target row value & more]
+    (if more
+      (apply update-at! target more)
+      (update-at! target row value))))
+
