@@ -45,7 +45,10 @@
   
   (it "makes column metadata available through (.getValueAt model -1 -1)"
     (let [t (table-model :columns [:a :b])]
-      (expect (= 1 (:b (.getValueAt t -1 -1)))))))
+      (expect (= 1 (:b (.getValueAt t -1 -1))))))
+  (it "returns false for isCellEditable"
+    (let [t (table-model :columns [:a :b] :rows [[0 0]])]
+      (expect (not (.isCellEditable t 0 0))))))
 
 (describe value-at
   (it "gets the value of a row as a map"

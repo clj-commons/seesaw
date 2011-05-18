@@ -28,6 +28,7 @@
 
 (defn- proxy-table-model [column-names column-key-map]
   (proxy [javax.swing.table.DefaultTableModel] [column-names 0]
+    (isCellEditable [row col] false)
     (getValueAt [row col] 
       (if (= -1 row col)
         column-key-map
