@@ -91,11 +91,9 @@
 
 (defn value-at 
   "Retrieve one or more rows from a table or table model. target is a JTable or TableModel
-  created with (table-model). row is a row index or list of row indices (e.g as returned by
-  (selection).
-
-  If row is an integer, returns a single map of row values keyed as in (table-model).
-  If row is a list of integers, returns a list of rows.
+  created with (table-model). Zero or more row indices may be supplied. The rows may be in
+  any order. If multiple indices are given, returns a list of value, otherwise a single
+  value.
 
   If target was not created with (table-model), just returns the row as a map indexed
   by column name.
@@ -105,17 +103,15 @@
     (seesaw.table/table-model)
     http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
   "
-  [target row]
-  (cond
-    (integer? row)
-      (let [target      (to-table-model target)
-            col-key-map (get-column-key-map target)]
-        (reduce
-          (fn [result k] (assoc result k (.getValueAt target row (col-key-map k))))
-          {}
-          (keys col-key-map)))
-    (coll? row)
-      (map #(value-at target %) row)))
+  ([target row]
+    (let [target      (to-table-model target)
+          col-key-map (get-column-key-map target)]
+      (reduce
+        (fn [result k] (assoc result k (.getValueAt target row (col-key-map k))))
+        {}
+        (keys col-key-map))))
+  ([target row & more]
+    (reduce #(conj %1 (value-at target %2)) [(value-at target row)] more))) 
 
 (defn update-at!
   "Update a row in a table model or JTable. Accepts an arbitrary number of row/value
@@ -144,4 +140,76 @@
     (if more
       (apply update-at! target more)
       (update-at! target row value))))
+
+(defn insert-at!
+  "Inserts one or more rows into a table. The arguments are one or more row-index/value
+  pairs where value is either a map or a vector with the right number of columns. Each
+  row index indicates the position before which the new row will be inserted. All indices
+  are relative to the starting state of the table, i.e. they shouldn't take any shifting
+  of rows that takes place during the insert. The indices *must* be in ascending sorted
+  order!!
+
+  Returns target.
+
+  Examples:
+
+    ; Insert a row at the front of the table
+    (insert-at! 0 {:name \"Agent Cooper\" :likes \"Cherry pie and coffee\"})
+
+    ; Insert two rows, one at the front, one before row 3
+    (insert-at! 0 {:name \"Agent Cooper\" :likes \"Cherry pie and coffee\"}
+                3 {:name \"Big Ed\"       :likes \"Norma\"})
+
+  "
+  ([target row value]
+    (let [target      (to-table-model target)
+          col-key-map (get-column-key-map target)
+          row-values  (unpack-row col-key-map value)]
+      (.insertRow target row row-values))
+   target)
+  ([target row value & more]
+    (when more
+      (apply insert-at! target more))
+    (insert-at! target row value)))
+
+(defn remove-at!
+  "Remove one or more rows from a table or table model by index. Args are a list of row indices at
+  the start of the operation. The indices *must* be in ascending sorted order!
+
+  Returns target.
+
+  Examples:
+
+    ; Remove first row
+    (remove-at! t 0)
+
+    ; Remove first and third row
+    (remove-at! t 0 3)
+  "
+  ([target row]
+    (.removeRow (to-table-model target) row)
+   target)
+  ([target row & more]
+    (when more
+      (apply remove-at! target more))
+    (remove-at! target row)))
+
+(defn clear!
+  "Clear all rows from a table model or JTable. 
+
+  Returns target.
+  "
+  [target]
+  (.setRowCount (to-table-model target) 0)
+  target)
+
+(defn row-count
+  "Return number of rows in a table model or JTable."
+  [target]
+  (.getRowCount (to-table-model target)))
+
+(defn column-count
+  "Return number of columns in a table model or JTable."
+  [target]
+  (.getColumnCount (to-table-model target)))
 
