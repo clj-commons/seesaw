@@ -23,7 +23,7 @@ Add Seesaw to `project.clj`
                     [org.clojure/clojure-contrib "1.2.0"]
                     [seesaw "1.0.1"]])
 
-_Replace the Seesaw version with whatever the latest version tag is in case I forget to update this._
+_Replace the Seesaw version with whatever the latest version tag is in case I forget to update this. See below!_
 
 Now edit the generated `src/hello_seesaw/core.clj` file:
 
@@ -40,6 +40,13 @@ Now run it:
 
     $ lein run -m hello-seesaw.core
 
+*NOTE:* As mentioned above, Seesaw is experimental and changing daily. Thus, there's a good chance that what's on clojars and what's written here are out of sync. Here's how you can run against the bleeding edge of Seesaw:
+
+* Clone Seesaw master from github. Fork if you like.
+* In your Seesaw checkout, run `lein install` to build it
+* In your project's `project.clj` file, change the Seesaw version to `X.Y.Z-SNAPSHOT` to match whatever's in Seesaw's `project.clj`.
+* Run `lein deps`
+* Move along
 
 ## TODO
 
