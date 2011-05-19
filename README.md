@@ -1,10 +1,13 @@
-# Seesaw: a Clojure/Swing experiment
+# Seesaw: Clojure + UI
 
-_Seesaw's experimental and subject to radical change_
+_"killing CamelCase, proxy and reify, one class at a time"_
 
-Seesaw's an experiment to see what I can do to make Swing funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
+*_Seesaw's experimental and subject to radical change_*
 
-*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) for more detailed docs*
+_*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) for more detailed docs*_
+
+Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it. It's an experiment to see what I can do to make user interface development funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
+
 
 ## TL;DR
 
@@ -58,8 +61,6 @@ Now run it:
 * Styling
 * Some kind of ToModel protocol for auto-converting Clojure data-structures to Swing models.
 * Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
-
-
 
 ## License
 
