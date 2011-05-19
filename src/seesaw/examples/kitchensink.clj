@@ -148,5 +148,5 @@
   (invoke-later (app)))
 ;(doseq [f (JFrame/getFrames)]
   ;(.dispose f))
-;(-main)
+(-main)
 

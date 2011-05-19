@@ -172,9 +172,11 @@
 
 (def-widget-creational-coercion Object
   [v]
-  (if-let [u (to-url v)] 
-    (JLabel. (make-icon u)) 
-    (JLabel. (str v))))
+  (JLabel. (str v)))
+
+(def-widget-creational-coercion java.net.URL
+  [v]
+  (JLabel. (make-icon v)))
 
 (defn to-widget 
   "Try to convert the input argument to a widget based on the following rules:
@@ -190,8 +192,8 @@
     [:fill-h n] -> Box/createHorizontalStrut with width n
     [:fill-v n] -> Box/createVerticalStrut with height n
     [width :by height] -> create rigid area with given dimensions
-    A URL -> a label with the image located at the url
-    A non-url string -> a label with the given text
+    A java.net.URL -> a label with the image located at the url
+    Anything else -> a label with the text from passing the object through str
 
    If create? is false, will return nil for all rules (see above) that
    would create a new widget. The default value for create? is false
