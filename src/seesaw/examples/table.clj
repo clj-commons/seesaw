@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.table
-  (:use [seesaw core]))
+  (:use [seesaw core table]))
 
 ; A simple example of (table) for basic tabular data
 
@@ -30,11 +30,6 @@
       :center (scrollable (make-table))
       :south  (label :id :sel :text "Selection: "))))
 
-(defn get-selected-name [t]
-  (let [row (selection t)]
-    ; TODO This is super lame.
-    (.getValueAt (.getModel t) row 0)))
-
 (defn app []
   (let [f (make-frame)
         t (select f [:#table])]
@@ -42,7 +37,10 @@
     (listen t :selection 
       (fn [e] 
         (config! (select f [:#sel]) 
-          :text (str "Selection: " (get-selected-name t)))))))
+          :text (str "Selection: " 
+                     ; (selection t) returns the selected row index
+                     ; (value-at t row) returns the record at row
+                     (value-at t (selection t))))))))
 
 (defn -main [& args]
   (invoke-later (app)))
