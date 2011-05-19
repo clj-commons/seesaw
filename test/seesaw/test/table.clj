@@ -1,4 +1,4 @@
-;  Copyright (c) Dave Ray, 2011. All ritest/seesaw/test/core.clj
+;  Copyright (c) Dave Ray, 2011. All rights reserved.
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
@@ -69,6 +69,11 @@
           r (update-at! t 0 ["A0" "B0"])]
       (expect (= t r))
       (expect (= {:a "A0" :b "B0"} (value-at t 0)))))
+  (it "updates a only the columns specified in a row"
+    (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
+          r (update-at! t 0 {:a "A0"})]
+      (expect (= t r))
+      (expect (= {:a "A0" :b "b0"} (value-at t 0)))))
   (it "updates multiple rows with the same format as :rows option of (table-model)"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
           r (update-at! t 1 ["A1" "B1"] 0 {:a "A0" :b "B0"})]

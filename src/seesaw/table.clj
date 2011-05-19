@@ -1,4 +1,4 @@
-;  Copyright (c) Dave Ray, 2011. All ritest/seesaw/test/core.clj
+;  Copyright (c) Dave Ray, 2011. All rights reserved.
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
@@ -134,7 +134,9 @@
           col-key-map (get-column-key-map target)
           row-values  (unpack-row col-key-map value)]
       (doseq [i (range 0 (.getColumnCount target))]
-        (.setValueAt target (aget row-values i) row i)))
+        ; TODO this precludes setting a cell to nil. Do we care?
+        (when-let [v (aget row-values i)]
+          (.setValueAt target (aget row-values i) row i))))
     target)
   ([target row value & more]
     (if more
