@@ -89,29 +89,44 @@
     (instance? javax.swing.JTable v) (.getModel v)
     :else (throw (IllegalArgumentException. (str "Can't get table model from " v)))))
 
-(defn value-at 
-  "Retrieve one or more rows from a table or table model. target is a JTable or TableModel
-  created with (table-model). Zero or more row indices may be supplied. The rows may be in
-  any order. If multiple indices are given, returns a list of value, otherwise a single
-  value.
+(defn- single-value-at
+  [^javax.swing.table.TableModel model col-key-map row]
+  (reduce
+    (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
+    {}
+    (keys col-key-map)))
 
-  If target was not created with (table-model), just returns the row as a map indexed
+(defn value-at 
+  "Retrieve one or more rows from a table or table model. target is a JTable or TableModel.
+  rows is either a single integer row index, or a sequence of row indices. In the first case
+  a single map of row values is returns. Otherwise, returns a sequence of maps.
+
+  If target was not created with (table-model), the returned map(s) are indexed
   by column name.
 
+  Examples:
+
+    ; Retrieve row 3
+    (value-at t 3)
+
+    ; Retrieve rows 1, 3, and 5
+    (value-at t [1 3 5])
+
+    ; Print values of selected rows
+    (listen t :selection
+      (fn [e]
+        (println (value-at t (selection {:multi? true} t)))))
   See:
     (seesaw.core/table)
     (seesaw.table/table-model)
     http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
   "
-  ([target row]
-    (let [target      (to-table-model target)
-          col-key-map (get-column-key-map target)]
-      (reduce
-        (fn [result k] (assoc result k (.getValueAt target row (col-key-map k))))
-        {}
-        (keys col-key-map))))
-  ([target row & more]
-    (reduce #(conj %1 (value-at target %2)) [(value-at target row)] more))) 
+  [target rows]
+  (let [target      (to-table-model target)
+        col-key-map (get-column-key-map target)]
+    (cond 
+      (integer? rows) (single-value-at target col-key-map rows)
+      :else           (map #(single-value-at target col-key-map %) rows))))
 
 (defn update-at!
   "Update a row in a table model or JTable. Accepts an arbitrary number of row/value

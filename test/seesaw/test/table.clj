@@ -52,16 +52,16 @@
       (expect (not (.isCellEditable t 0 0))))))
 
 (describe value-at
-  (it "gets the value of a row as a map"
+  (it "gets the value of a single row index as a map"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
       (expect (= {:a "a0" :b "b0" } (value-at t 0)))))
   (it "gets the value of a row as a map (indexed by integers) if model was not
       created with (table-model)"
     (let [t (javax.swing.table.DefaultTableModel. 2 3)]
       (expect (= {"A" nil "B" nil "C" nil } (value-at t 0)))))
-  (it "gets the value of multiple rows as a list of maps"
+  (it "gets the value of a sequence of row indices as a list of maps"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
-      (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t 0 1))))))
+      (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t [0 1]))))))
 
 (describe update-at!
   (it "updates a row with the same format as :rows option of (table-model)"
@@ -94,7 +94,7 @@
           r (insert-at! t 1 ["A"] 3 ["B"])]
       (expect (= t r))
       (expect (= 7 (.getRowCount t)))
-      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (apply value-at t (range (.getRowCount t))))))))
+      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t))))))))
 
 (describe remove-at!
   (it "removes a row"
@@ -107,7 +107,7 @@
           r (remove-at! t 1 2 3)]
       (expect (= t r))
       (expect (= 2 (.getRowCount t)))
-      (expect (= [{:a 0} {:a 4}] (value-at t 0 1))))))
+      (expect (= [{:a 0} {:a 4}] (value-at t [0 1]))))))
 
 (describe clear!
   (it "removes all rows from a table"
