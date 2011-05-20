@@ -278,7 +278,7 @@
     (instance? java.awt.Rectangle v) (.setBounds w v)
     :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
 
-(def ^{:private true} default-options {
+(def default-options {
   :id          id-option-handler
   :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean %2))
