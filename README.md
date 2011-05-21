@@ -45,7 +45,7 @@ Now run it:
 
 *NOTE:* As mentioned above, Seesaw is experimental and changing daily. Thus, there's a good chance that what's on clojars and what's written here are out of sync. Here's how you can run against the bleeding edge of Seesaw:
 
-* Clone Seesaw master from github. Fork if you like.
+* Clone Seesaw from github. Fork if you like. *Switch to the "develop" branch.*
 * In your Seesaw checkout, run `lein install` to build it
 * In your project's `project.clj` file, change the Seesaw version to `X.Y.Z-SNAPSHOT` to match whatever's in Seesaw's `project.clj`.
 * Run `lein deps`

@@ -889,12 +889,24 @@
 
 (defn scrollable 
   "Wrap target in a JScrollPane and return the scroll pane.
+
+  The first argument is always the widget that should be scrolled. It's followed
+  by zero or more options *for the scroll pane*.
+
+  Examples:
+
+    ; Vanilla scrollable
+    (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]))
+
+    ; Scrollable with some options on the JScrollPane
+    (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]) :id :#scrollable :border 5)
+
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
-  [target]
-  (let [sp (JScrollPane. target)]
-    sp))
+  [target & opts]
+  (let [sp (JScrollPane. (to-widget target true))]
+    (apply-options sp opts default-options)))
 
 ;*******************************************************************************
 ; Splitter

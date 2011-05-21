@@ -475,7 +475,11 @@
     (let [l (label :text "Test")
           s (scrollable l)]
       (expect (= JScrollPane (class s)))
-      (expect (= l (.. s getViewport getView))))))
+      (expect (= l (.. s getViewport getView)))))
+  (it "should create a JScrollPane with options"
+    (let [l (label :text "Test")
+          s (scrollable l :id "MY-ID")]
+      (expect (= "MY-ID" (id-for s))))))
 
 (describe splitter
   (it "should create a JSplitPane with with two panes"
