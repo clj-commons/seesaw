@@ -1,4 +1,4 @@
-(defproject seesaw "1.0.2"
+(defproject seesaw "1.0.3-SNAPSHOT"
   :description "A Swing wrapper/DSL for Clojure"
   :warn-on-reflection true
   :dependencies [[org.clojure/clojure "1.2.0"]
