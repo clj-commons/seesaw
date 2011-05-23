@@ -308,6 +308,10 @@
     (expect (= "test label" (.getText (label :text "test label")))))
   (it "should create a label with horizontal alignment"
     (= SwingConstants/LEFT (.getHorizontalAlignment (label :halign :left))))
+  (it "should create a label with horizontal text position"
+    (= SwingConstants/LEFT (.getHorizontalTextPosition (label :h-text-position :left))))
+  (it "should create a label with vertical text position"
+    (= SwingConstants/BOTTOM (.getVerticalTextPosition (label :v-text-position :bottom))))
   (it "should create a label with vertical alignment"
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 

@@ -619,6 +619,11 @@
 ;*******************************************************************************
 ; Labels
 
+(def ^{:private true} label-options {
+  :h-text-position #(.setHorizontalTextPosition %1 (h-alignment-table %2))
+  :v-text-position #(.setVerticalTextPosition %1 (v-alignment-table %2))
+})
+
 (defn label 
   "Create a label. Supports all default properties. Can take two forms:
 
@@ -628,11 +633,16 @@
 
       (label :id :my-label :text \"My Label\" ...)
 
+  Additional options:
+
+    :h-text-position Horizontal text position, :left, :right, :center, etc.
+    :v-text-position Horizontal text position, :top, :center, :bottom, etc.
+
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
   [& args]
   (if (next args)
-    (apply-options (JLabel.) args default-options)
+    (apply-options (JLabel.) args (merge default-options label-options))
     (apply label :text args)))
 
 
