@@ -20,7 +20,7 @@
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
-             SwingUtilities SwingConstants UIManager
+             SwingUtilities SwingConstants UIManager ScrollPaneConstants
              Action
              BoxLayout
              JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
@@ -898,11 +898,34 @@
 ;*******************************************************************************
 ; Scrolling
 
+(def ^{:private true} hscroll-table {
+  :as-needed  ScrollPaneConstants/HORIZONTAL_SCROLLBAR_AS_NEEDED
+  :never      ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER
+  :always     ScrollPaneConstants/HORIZONTAL_SCROLLBAR_ALWAYS 
+})
+(def ^{:private true} vscroll-table {
+  :as-needed  ScrollPaneConstants/VERTICAL_SCROLLBAR_AS_NEEDED
+  :never      ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER
+  :always     ScrollPaneConstants/VERTICAL_SCROLLBAR_ALWAYS 
+})
+
+(def ^{:private true} scrollable-options {
+  :hscroll #(.setHorizontalScrollBarPolicy %1 (hscroll-table %2))
+  :vscroll #(.setVerticalScrollBarPolicy %1 (vscroll-table %2))
+})
+
 (defn scrollable 
   "Wrap target in a JScrollPane and return the scroll pane.
 
   The first argument is always the widget that should be scrolled. It's followed
   by zero or more options *for the scroll pane*.
+
+  Additional Options:
+
+    :hscroll - Controls appearance of horizontal scroll bar. 
+               One of :as-needed (default), :never, :always
+    :vscroll - Controls appearance of vertical scroll bar.
+               One of :as-needed (default), :never, :always
 
   Examples:
 
@@ -917,7 +940,7 @@
   "
   [target & opts]
   (let [sp (JScrollPane. (to-widget target true))]
-    (apply-options sp opts default-options)))
+    (apply-options sp opts (merge default-options scrollable-options))))
 
 ;*******************************************************************************
 ; Splitter

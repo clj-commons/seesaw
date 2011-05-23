@@ -484,6 +484,10 @@
           s (scrollable l)]
       (expect (= JScrollPane (class s)))
       (expect (= l (.. s getViewport getView)))))
+  (it "should create a scroll pane with horizontal policy"
+    (expect (= javax.swing.ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER (.getHorizontalScrollBarPolicy (scrollable (text) :hscroll :never)))))
+  (it "should create a scroll pane with vertical policy"
+    (expect (= javax.swing.ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER (.getVerticalScrollBarPolicy (scrollable (text) :vscroll :never)))))
   (it "should create a JScrollPane with options"
     (let [l (label :text "Test")
           s (scrollable l :id "MY-ID")]
