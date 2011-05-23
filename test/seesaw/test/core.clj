@@ -366,8 +366,10 @@
       (expect (= "HI" (.getText t)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
-  (it "should enable line wrapping when :wrap-lines? is true"
-    (.getLineWrap (text :multi-line? true :wrap-lines? true)))
+  (it "should enable line wrapping on words when :wrap-lines? is true"
+    (let [t (text :multi-line? true :wrap-lines? true)]
+      (expect (.getLineWrap t))
+      (expect (.getWrapStyleWord t))))
   (it "should set tab size with :tab-size"
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"

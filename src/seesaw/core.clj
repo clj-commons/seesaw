@@ -671,7 +671,7 @@
   ; multi-line? is false  
   :columns     #(.setColumns %1 %2) 
   :rows        #(.setRows    %1 %2)
-  :wrap-lines? #(.setLineWrap %1 (boolean %2))
+  :wrap-lines? #(doto %1 (.setLineWrap (boolean %2)) (.setWrapStyleWord (boolean %2)))
   :tab-size    #(.setTabSize %1 %2)
 })
 
