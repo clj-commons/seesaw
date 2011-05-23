@@ -227,6 +227,7 @@
   ([c w] (add-widget c w nil))
   ([c w constraint] 
     (let [w* (to-widget w true)]
+      (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
       (.add c w* constraint)
       w*)))
 

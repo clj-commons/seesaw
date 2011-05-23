@@ -222,7 +222,9 @@
       (expect (= 99 (.getHgap l)))
       (expect (= 12 (.getVgap l)))
       (expect (.getAlignOnBaseline l))
-      (expect (= [a b c] (seq (.getComponents p)))))))
+      (expect (= [a b c] (seq (.getComponents p))))))
+  (it "should throw IllegalArgumentException if a nil item is given"
+    (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
 (describe border-panel
   (it "should create a BorderLayout "
