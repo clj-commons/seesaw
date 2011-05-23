@@ -233,6 +233,7 @@
 
 (defn- add-widgets
   [c ws]
+  (.removeAll c)
   (doseq [w ws]
     (add-widget c w))
   (doto c
@@ -548,9 +549,13 @@
 
 (defn- add-grid-bag-items
   [panel items]
+  (.removeAll panel)
   (doseq [[widget constraints] (realize-grid-bag-constraints items)]
     (when widget
-      (add-widget panel widget constraints))))
+      (add-widget panel widget constraints)))
+  (doto panel
+    .revalidate
+    .repaint))
 
 (def ^{:private true} form-panel-options {
   :items add-grid-bag-items
@@ -590,8 +595,12 @@
       rc (.setRowConstraints rc))))
 
 (defn- add-mig-items [parent items]
+  (.removeAll parent)
   (doseq [[widget constraint] items]
-    (add-widget parent widget constraint)))
+    (add-widget parent widget constraint))
+  (doto parent
+    .revalidate
+    .repaint))
 
 (def ^{:private true} mig-panel-options {
   :constraints apply-mig-constraints
