@@ -1,10 +1,11 @@
 # gaidica
 
-FIXME: write description
+Example Seesaw application. Display weather data from weatherunderground.com
 
 ## Usage
 
-FIXME: write
+    $ lein deps
+    $ lein run -m gaidica.core
 
 ## License
 

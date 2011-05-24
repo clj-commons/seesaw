@@ -1,3 +1,13 @@
+;  Copyright (c) Dave Ray, 2011. All rights reserved.
+
+;   The use and distribution terms for this software are covered by the
+;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;   which can be found in the file epl-v10.html at the root of this 
+;   distribution.
+;   By using this software in any fashion, you are agreeing to be bound by
+;   the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
 (ns gaidica.core
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
@@ -45,6 +55,12 @@
   (let [forecasts (get-text-forecasts xml)]
     (config! forecast-panel :items (make-forecast-entries forecasts))))
 
+(defn make-webcam-panel []
+  (top-bottom-split
+    (scrollable (table))
+    "Under Construction"))
+
+
 (defn refresh-action-handler [e] 
   (let [root (to-frame e)
         city (text (select root [:#city]))
@@ -68,6 +84,12 @@
               :text "Ann%20Arbor,MI" 
               :action refresh-action)))
 
+(defn make-tabs []
+  (tabbed-panel
+    :tabs [{ :title "Forecast" :content (make-forecast-panel []) }
+           { :title "Webcams"  :content (make-webcam-panel) }]))
+
+
 (defn app []
   (frame
     :title "Gaidica"
@@ -78,7 +100,7 @@
     :menubar (menubar :items [(menu :text "View" :items [refresh-action])])
     :content (border-panel
                :north  (make-toolbar)
-               :center (make-forecast-panel []))))
+               :center (make-tabs))))
 
 (defn -main [& args]
   (invoke-later (app)))
