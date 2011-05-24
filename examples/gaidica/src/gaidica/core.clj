@@ -12,7 +12,7 @@
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
             [clojure.contrib.zip-filter.xml :as zfx])
-  (:use [seesaw core border]))
+  (:use [seesaw core border table]))
 
 (native!)
 
@@ -20,12 +20,28 @@
 (def title-font "ARIAL-14-BOLD")
 (def divider-color "#aaaaaa")
 
-(defn get-text-forecasts [xml]
-  (for [day  (zfx/xml-> (zip/xml-zip xml):txt_forecast :forecastday)]
-    {:title       (zfx/xml1-> day :title zfx/text) 
-     :description (zfx/xml1-> day :fcttext zfx/text) 
-     :icon        (zfx/xml1-> day :icons :icon_set :icon_url zfx/text)
-     :period      (zfx/xml1-> day :period zfx/text)}))
+(defn query-url [type value]
+  (str "http://api.wunderground.com/auto/wui/geo/" type "/index.xml?query=" (java.net.URLEncoder/encode value "UTF-8")))
+
+(defn get-text-forecasts [city]
+  (let [url (query-url "ForecastXML" city)
+        xml (xml/parse url)]
+    (for [day  (zfx/xml-> (zip/xml-zip xml) :txt_forecast :forecastday)]
+      {:title       (zfx/xml1-> day :title zfx/text) 
+       :description (zfx/xml1-> day :fcttext zfx/text) 
+       :icon        (zfx/xml1-> day :icons :icon_set :icon_url zfx/text)
+       :period      (zfx/xml1-> day :period zfx/text)})))
+
+(defn get-city-info [city]
+  (let [url (query-url "GeoLookupXML" city)
+        xml (xml/parse url)]
+    { :webcams 
+      (for [cam (zfx/xml-> (zip/xml-zip xml) :webcams :cam)]
+        {:handle  (zfx/xml1-> cam :handle zfx/text) 
+         :lat     (zfx/xml1-> cam :lat zfx/text) 
+         :lon     (zfx/xml1-> cam :lon zfx/text) 
+         :updated (zfx/xml1-> cam :updated zfx/text)
+         :image   (zfx/xml1-> cam :CURRENTIMAGEURL zfx/text) })}))
 
 (defn make-forecast-entry [f]
   (mig-panel 
@@ -51,25 +67,37 @@
     :constraints ["" "[grow, fill]"] 
     :items (make-forecast-entries forecasts)))
 
-(defn update-forecasts [forecast-panel xml]
-  (let [forecasts (get-text-forecasts xml)]
-    (config! forecast-panel :items (make-forecast-entries forecasts))))
+(defn update-forecasts [forecast-panel forecasts]
+  (config! forecast-panel :items (make-forecast-entries forecasts)))
 
 (defn make-webcam-panel []
-  (top-bottom-split
-    (scrollable (table))
-    "Under Construction"))
+  (let [image-label (label)]
+    (border-panel 
+      :id :webcam
+      :center
+        (top-bottom-split
+          (scrollable 
+            (table 
+              :id :webcam-table 
+              :model [:columns [:handle :lat :lon :updated :image]]))
+          image-label))))
 
+(defn update-webcams [webcam-panel webcams]
+  (let [t (select webcam-panel [:#webcam-table])]
+    (clear! t)
+    (apply insert-at! t (interleave (iterate identity 0) webcams))))
 
 (defn refresh-action-handler [e] 
   (let [root (to-frame e)
         city (text (select root [:#city]))
         forecast-panel (select root [:#forecast])
-        url  (str "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=" city)]
+        webcam-panel (select root [:#webcam])]
     (future 
-      (let [xml  (xml/parse url)]
+      (let [forecasts (get-text-forecasts city)
+            city-info (get-city-info city)]
         (invoke-later
-          (update-forecasts forecast-panel xml))))))
+          (update-webcams webcam-panel (:webcams city-info))
+          (update-forecasts forecast-panel forecasts))))))
 
 (def refresh-action
   (action :name "Refresh" :key "menu R" :handler refresh-action-handler))
@@ -81,7 +109,7 @@
     :west   (label :text "City:" :font title-font)
     :center (text 
               :id   :city
-              :text "Ann%20Arbor,MI" 
+              :text "Ann Arbor,MI" 
               :action refresh-action)))
 
 (defn make-tabs []
