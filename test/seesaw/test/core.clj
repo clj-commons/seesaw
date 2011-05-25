@@ -222,7 +222,9 @@
       (expect (= 99 (.getHgap l)))
       (expect (= 12 (.getVgap l)))
       (expect (.getAlignOnBaseline l))
-      (expect (= [a b c] (seq (.getComponents p)))))))
+      (expect (= [a b c] (seq (.getComponents p))))))
+  (it "should throw IllegalArgumentException if a nil item is given"
+    (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
 (describe border-panel
   (it "should create a BorderLayout "
@@ -308,6 +310,10 @@
     (expect (= "test label" (.getText (label :text "test label")))))
   (it "should create a label with horizontal alignment"
     (= SwingConstants/LEFT (.getHorizontalAlignment (label :halign :left))))
+  (it "should create a label with horizontal text position"
+    (= SwingConstants/LEFT (.getHorizontalTextPosition (label :h-text-position :left))))
+  (it "should create a label with vertical text position"
+    (= SwingConstants/BOTTOM (.getVerticalTextPosition (label :v-text-position :bottom))))
   (it "should create a label with vertical alignment"
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
@@ -360,8 +366,10 @@
       (expect (= "HI" (.getText t)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
-  (it "should enable line wrapping when :wrap-lines? is true"
-    (.getLineWrap (text :multi-line? true :wrap-lines? true)))
+  (it "should enable line wrapping on words when :wrap-lines? is true"
+    (let [t (text :multi-line? true :wrap-lines? true)]
+      (expect (.getLineWrap t))
+      (expect (.getWrapStyleWord t))))
   (it "should set tab size with :tab-size"
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"
@@ -476,6 +484,10 @@
           s (scrollable l)]
       (expect (= JScrollPane (class s)))
       (expect (= l (.. s getViewport getView)))))
+  (it "should create a scroll pane with horizontal policy"
+    (expect (= javax.swing.ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER (.getHorizontalScrollBarPolicy (scrollable (text) :hscroll :never)))))
+  (it "should create a scroll pane with vertical policy"
+    (expect (= javax.swing.ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER (.getVerticalScrollBarPolicy (scrollable (text) :vscroll :never)))))
   (it "should create a JScrollPane with options"
     (let [l (label :text "Test")
           s (scrollable l :id "MY-ID")]

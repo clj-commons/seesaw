@@ -18,7 +18,8 @@
 (defn- unpack-row-map [col-key-map row]
   (let [a (object-array (count col-key-map))]
     (doseq [[k v] row]
-      (aset a (get col-key-map k) v))
+      (if-let [col-key (get col-key-map k)]
+        (aset a col-key v)))
     a))
 
 (defn- unpack-row [col-key-map row]

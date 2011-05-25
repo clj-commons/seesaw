@@ -20,7 +20,7 @@
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
-             SwingUtilities SwingConstants UIManager
+             SwingUtilities SwingConstants UIManager ScrollPaneConstants
              Action
              BoxLayout
              JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
@@ -227,11 +227,13 @@
   ([c w] (add-widget c w nil))
   ([c w constraint] 
     (let [w* (to-widget w true)]
+      (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
       (.add c w* constraint)
       w*)))
 
 (defn- add-widgets
   [c ws]
+  (.removeAll c)
   (doseq [w ws]
     (add-widget c w))
   (doto c
@@ -547,9 +549,13 @@
 
 (defn- add-grid-bag-items
   [panel items]
+  (.removeAll panel)
   (doseq [[widget constraints] (realize-grid-bag-constraints items)]
     (when widget
-      (add-widget panel widget constraints))))
+      (add-widget panel widget constraints)))
+  (doto panel
+    .revalidate
+    .repaint))
 
 (def ^{:private true} form-panel-options {
   :items add-grid-bag-items
@@ -589,8 +595,12 @@
       rc (.setRowConstraints rc))))
 
 (defn- add-mig-items [parent items]
+  (.removeAll parent)
   (doseq [[widget constraint] items]
-    (add-widget parent widget constraint)))
+    (add-widget parent widget constraint))
+  (doto parent
+    .revalidate
+    .repaint))
 
 (def ^{:private true} mig-panel-options {
   :constraints apply-mig-constraints
@@ -619,6 +629,11 @@
 ;*******************************************************************************
 ; Labels
 
+(def ^{:private true} label-options {
+  :h-text-position #(.setHorizontalTextPosition %1 (h-alignment-table %2))
+  :v-text-position #(.setVerticalTextPosition %1 (v-alignment-table %2))
+})
+
 (defn label 
   "Create a label. Supports all default properties. Can take two forms:
 
@@ -628,11 +643,16 @@
 
       (label :id :my-label :text \"My Label\" ...)
 
+  Additional options:
+
+    :h-text-position Horizontal text position, :left, :right, :center, etc.
+    :v-text-position Horizontal text position, :top, :center, :bottom, etc.
+
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
   [& args]
   (if (next args)
-    (apply-options (JLabel.) args default-options)
+    (apply-options (JLabel.) args (merge default-options label-options))
     (apply label :text args)))
 
 
@@ -660,7 +680,7 @@
   ; multi-line? is false  
   :columns     #(.setColumns %1 %2) 
   :rows        #(.setRows    %1 %2)
-  :wrap-lines? #(.setLineWrap %1 (boolean %2))
+  :wrap-lines? #(doto %1 (.setLineWrap (boolean %2)) (.setWrapStyleWord (boolean %2)))
   :tab-size    #(.setTabSize %1 %2)
 })
 
@@ -887,11 +907,34 @@
 ;*******************************************************************************
 ; Scrolling
 
+(def ^{:private true} hscroll-table {
+  :as-needed  ScrollPaneConstants/HORIZONTAL_SCROLLBAR_AS_NEEDED
+  :never      ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER
+  :always     ScrollPaneConstants/HORIZONTAL_SCROLLBAR_ALWAYS 
+})
+(def ^{:private true} vscroll-table {
+  :as-needed  ScrollPaneConstants/VERTICAL_SCROLLBAR_AS_NEEDED
+  :never      ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER
+  :always     ScrollPaneConstants/VERTICAL_SCROLLBAR_ALWAYS 
+})
+
+(def ^{:private true} scrollable-options {
+  :hscroll #(.setHorizontalScrollBarPolicy %1 (hscroll-table %2))
+  :vscroll #(.setVerticalScrollBarPolicy %1 (vscroll-table %2))
+})
+
 (defn scrollable 
   "Wrap target in a JScrollPane and return the scroll pane.
 
   The first argument is always the widget that should be scrolled. It's followed
   by zero or more options *for the scroll pane*.
+
+  Additional Options:
+
+    :hscroll - Controls appearance of horizontal scroll bar. 
+               One of :as-needed (default), :never, :always
+    :vscroll - Controls appearance of vertical scroll bar.
+               One of :as-needed (default), :never, :always
 
   Examples:
 
@@ -906,7 +949,7 @@
   "
   [target & opts]
   (let [sp (JScrollPane. (to-widget target true))]
-    (apply-options sp opts default-options)))
+    (apply-options sp opts (merge default-options scrollable-options))))
 
 ;*******************************************************************************
 ; Splitter
