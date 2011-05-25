@@ -23,6 +23,7 @@
 (defn query-url [type value]
   (str "http://api.wunderground.com/auto/wui/geo/" type "/index.xml?query=" (java.net.URLEncoder/encode value "UTF-8")))
 
+; TODO this XML stuff is nasty
 (defn get-text-forecasts [city]
   (let [url (query-url "ForecastXML" city)
         xml (xml/parse url)]

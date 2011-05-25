@@ -1,3 +1,5 @@
+_Note that current development is on the *develop* branch, not master_
+
 # Seesaw: Clojure + UI
 
 _"killing CamelCase, proxy and reify, one class at a time"_
