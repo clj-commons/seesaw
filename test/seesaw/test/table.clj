@@ -34,6 +34,10 @@
       (expect (= "b0" (.getValueAt t 0 1)))
       (expect (= "a1" (.getValueAt t 1 0)))
       (expect (= "b1" (.getValueAt t 1 1)))))
+
+  (it "should create row from a map with extraneous fields without crashing"
+    (let [t (table-model :columns [:a] :rows [{:a "a0" :b "b0"}])]
+      (expect (= "a0" (.getValueAt t 0 0)))))
           
   (it "should create rows from a list of vectors"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
