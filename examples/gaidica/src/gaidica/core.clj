@@ -70,17 +70,30 @@
 (defn update-forecasts [forecast-panel forecasts]
   (config! forecast-panel :items (make-forecast-entries forecasts)))
 
+(defn make-webcam-table [] 
+  (table 
+    :id :webcam-table 
+    :model 
+      [:columns 
+        [{:key :handle :text "Name" } 
+         :lat :lon 
+         {:key :updated :text "Last Updated"}
+         {:key :image :text "Image"}]]))
+
 (defn make-webcam-panel []
-  (let [image-label (label)]
+  (let [webcam-table (make-webcam-table)
+        image-label  (label :text "")]
+    (listen webcam-table :selection 
+      (fn [e]
+        (when-let [row (selection webcam-table)]
+          (config! image-label :icon (:image (value-at webcam-table row))))))
     (border-panel 
       :id :webcam
+      :border 5
       :center
         (top-bottom-split
-          (scrollable 
-            (table 
-              :id :webcam-table 
-              :model [:columns [:handle :lat :lon :updated :image]]))
-          image-label))))
+          (scrollable webcam-table)
+          (scrollable image-label)))))
 
 (defn update-webcams [webcam-panel webcams]
   (let [t (select webcam-panel [:#webcam-table])]
