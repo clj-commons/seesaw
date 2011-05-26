@@ -157,6 +157,11 @@
         (.doClick button0)
         (.doClick button1))
       (expect (= 2 @called))))
+
+  (it "can register for window events on a frame"
+    (let [f (javax.swing.JFrame.)]
+      (listen f :window-closed (fn [e] nil))))
+
   (it "can register a ListSelectionListener on a JList with :selection key"
     (let [jlist (javax.swing.JList.)
           called (atom false)]
