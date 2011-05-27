@@ -9,8 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color meta]
-        [matchure :only (defn-match)])
+  (:use [seesaw util font border color meta])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -1376,65 +1375,6 @@
       (= n 2)      (input-impl f s)
       (keyword? s) (input-impl nil f (drop 1 args))
       :else        (input-impl f  s (drop 2 args)))))
-
-
-;*******************************************************************************
-; File input
-(let [last-directory (atom nil)]
- (defn-match ^{:arglists '[[parent & {:keys [directory multi-select? remember-directory? filters success-fn abort-fn]}]]}
-   file-input
-   "Show a file chooser dialog.
-
-      (file-input [source] & options)
-
-  source  - optional parent component
-  options - additional options
-
-  Additional options:
-
-    :parent               The parent component.
-    :directory            The initial directory to list files from. Default: \".\".
-    :multi-select?        Flag specifying whether to allow/disallow selection of multiple files. Default: false.
-    :remember-directory?  Flag specifying whether to remember the directory for future file-input invocations in case of successful exit. Default: true.
-    :filters              A seq of lists where each list contains a filter name and a seq of extensions as strings for that filter. Default: [].
-    :success-fn           Function which will be called with the JFileChooser and the File which has been selected by the user. Its result will be returned. Default: return selected File. In the case of MULTI-SELECT? being true, a seq of File instances will be passed instead of a single File.
-    :abort-fn             Function which will be called with the JFileChooser on user abort of the dialog. Its result will be returned. Default: returns nil.
-
-  Examples:
-
-    ; ask & return single file
-    (file-input)
-
-    ; ask & return including a filter for image files
-    (file-input :filters [[\"Images\" [\"png\" \"jpeg\"]]])
-
-    ; ask & return file as string
-    (file-input :success-fn (fn [fc file] (.getAbsolutePath file)))
-
-  Returns result of SUCCESS-FN in case of the user selecting a file, or result of ABORT-FN otherwise."
-   ([] (file-input :parent nil))
-   ([(and java.awt.Component ?parent) & ?kw]
-      (apply file-input parent kw))
-   ([& ?kw]
-      (let-kw [[parent nil]
-               [directory nil]
-               [multi-select? false]
-               [remember-directory? true]
-               [filters []]
-               [success-fn (fn [fc files] files)]
-               [abort-fn (fn [fc])]]
-              kw
-              (let [fc (javax.swing.JFileChooser. (java.io.File. (or directory @last-directory ".")))]
-                (when multi-select?
-                  (.setMultiSelectionEnabled fc multi-select?))
-                (doseq [[name exts] filters]
-                  (.setFileFilter fc (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
-                (let [result (= javax.swing.JFileChooser/APPROVE_OPTION (.showOpenDialog fc parent))]
-                  (when remember-directory?
-                    (reset! last-directory (.getAbsolutePath (.getCurrentDirectory fc))))
-                  (cond result (success-fn fc (if multi-select? (seq (.getSelectedFiles fc)) (.getSelectedFile fc)))
-                        true (abort-fn fc))))))))
-
 
 ;*******************************************************************************
 ; Selectors

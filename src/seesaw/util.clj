@@ -39,44 +39,6 @@
                 (partition 2 forms))
          ~gx)))
 
-(defmacro let-kw
-  "Adds flexible keyword handling to any form which has a parameter
-   list: fn, defn, defmethod, letfn, and others. Keywords may be
-   passed to the surrounding form as & rest arguments, lists, or
-   maps. Lists or maps must be used for functions with multiple
-   arities if more than one arity has keyword parameters. Keywords are
-   bound inside let-kw as symbols, with default values either
-   specified in the keyword spec or nil. Keyword specs may consist of
-   just the bare keyword symbol, which defaults to nil, or may have
-   the general form [keyword-name keyword-default-value*
-   keyword-supplied?*].  keyword-supplied?  is an optional symbol
-   bound to true if the keyword was supplied, and to false otherwise."
-  [kw-spec-raw kw-args & body]
-  (let [kw-spec  (map #(if (sequential? %) % [%]) kw-spec-raw)
-        symbols  (map first kw-spec)
-        keywords (map (comp keyword name) symbols)
-        defaults (map second kw-spec)
-        destrmap {:keys (vec symbols) :or (zipmap symbols defaults)}
-        supplied (reduce
-                  (fn [m [k v]] (assoc m k v)) (sorted-map)
-                  (remove (fn [[_ val]] (nil? val))
-                          (partition 2 (interleave
-                                        keywords
-                                        (map (comp second rest)
-                                             kw-spec)))))
-        kw-args-map (gensym)]
-    `(let [kw-args# ~kw-args
-           ~kw-args-map (if (map? kw-args#)
-                          kw-args#
-                          (apply hash-map kw-args#))
-           ~destrmap ~kw-args-map]
-       ~@(if (empty? supplied)
-           body
-           `((apply (fn [~@(vals supplied)]
-                      ~@body)
-                    (map (fn [x#] (contains? ~kw-args-map x#))
-                         [~@(keys supplied)])))))))
-
 (defn to-seq [v]
   "Stupid helper to turn possibly single values into seqs"
   (cond 
