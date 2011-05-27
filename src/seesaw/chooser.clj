@@ -59,7 +59,11 @@
           Defaults to :open.
     :dir  The initial working directory. If omitted, the previous directory chosen
           is remembered and used.
-    :multi? If true, multi-selection is enabled and a seq of files is returned.
+    :multi?  If true, multi-selection is enabled and a seq of files is returned.
+    :filters A seq of lists where each list contains a filter name and a seq of
+             extensions as strings for that filter. Default: [].
+    :remember-directory? Flag specifying whether to remember the directory for future
+                         file-input invocations in case of successful exit. Default: true.
 
   Returns nil if the user cancels, a single java.io.File if :multi? is false and
   a seq of files if :multi? is true.
@@ -67,15 +71,18 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
-  (let [[parent & {:keys [type] :or {type :open} :as opts}] (if (keyword? (first args)) (cons nil args) args)
+  (let [[parent & {:keys [type remember-directory?]
+                   :or {type :open remember-directory? true}
+                   :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type))
+        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory?))
         multi?  (.isMultiSelectionEnabled chooser)
         result  (show-file-chooser chooser parent type)]
     (cond 
       (= result JFileChooser/APPROVE_OPTION)
         (do
-          (remember-chooser-dir chooser)
+          (when remember-directory?
+            (remember-chooser-dir chooser))
           (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser)))
       :else nil)))
 
