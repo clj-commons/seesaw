@@ -21,6 +21,8 @@
 (def ^{:private true} file-chooser-options {
   :dir    #(.setCurrentDirectory %1 %2)
   :multi? #(.setMultiSelectionEnabled %1 (boolean %2))
+  :filters #(doseq [[name exts] %2]
+              (.setFileFilter %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
 })
 
 (def ^{:private true} last-dir (atom nil))
