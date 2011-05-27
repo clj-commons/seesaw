@@ -71,9 +71,20 @@
     :cancel-fn   Function which will be called with the JFileChooser on user abort of the dialog.
                  Its result will be returned. Default: returns nil.
 
-  Returns nil if the user cancels, a single java.io.File if :multi? is false and
-  a seq of files if :multi? is true.
+  Examples:
 
+    ; ask & return single file
+    (choose-file)
+
+    ; ask & return including a filter for image files
+    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]]])
+
+    ; ask & return absolute file path as string
+    (choose-file :success-fn (fn [fc file] (.getAbsolutePath file)))
+
+  Returns result of SUCCESS-FN (default: either java.io.File or seq of java.io.File iff multi? set to true)
+  in case of the user selecting a file, or result of CANCEL-FN otherwise.
+  
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
