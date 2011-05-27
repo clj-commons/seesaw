@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color])
+  (:use [seesaw util font border color meta])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -240,13 +240,13 @@
     .revalidate
     .repaint))
 
-(def ^{:private true} id-property "seesaw-widget-id")
+(def ^{:private true} id-property ::seesaw-widget-id)
 
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
    creation. See also (select)."
   [w] 
-  (when (instance? javax.swing.JComponent w) (.getClientProperty w id-property)))
+  (when (instance? javax.swing.JComponent w) (get-meta w id-property)))
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -261,10 +261,10 @@
   (let [id-key (name id)]
     (cond
       (instance? JComponent w)
-        (let [existing-id (.getClientProperty w id-property)]
+        (let [existing-id (get-meta w id-property)]
           (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
           ; TODO should we enforce unique ids?
-          (.putClientProperty w id-property id-key)))
+          (put-meta! w id-property id-key)))
       ; TODO need to figure out how to store JFrame ids. JFrame/getFrames is pretty useless
   ))
 
@@ -1152,7 +1152,7 @@
   (cond 
     (nil? v) (canvas-paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (canvas-paint-option-handler c {:after v})
-    (map? v) (do (.putClientProperty c paint-property v) (.repaint c))
+    (map? v) (do (put-meta! c paint-property v) (.repaint c))
     :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
 
 (def ^{:private true} canvas-options {
@@ -1162,7 +1162,7 @@
 (defn- create-paintable []
   (proxy [javax.swing.JPanel] []
     (paintComponent [g]
-      (let [{:keys [before after super?] :or {super? true}} (.getClientProperty this paint-property)]
+      (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
         (ssg/anti-alias g)
         (when before (ssg/push g (before this g)))
         (when super? (proxy-super paintComponent g))

@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.event
-  (:use seesaw.util)
+  (:use [seesaw util meta])
   (:import [javax.swing.event ChangeListener DocumentListener 
             ListSelectionListener TreeSelectionListener]
            [javax.swing.text Document]
@@ -171,20 +171,9 @@
     (flatten)
     (apply hash-map)))
 
-; TODO This is a hack. Need to find a place to associate this info with
-; a frame since it doesn't have client properties. We have the same problem
-; with :id. Maybe just a weak hash map with weak values?
-(def ^{:private true} frame-handler-info (atom {}))
-
 (defn- store-handlers
   [target event-group-name handlers]
-  (cond
-    (instance? javax.swing.JComponent target)
-      (.putClientProperty target event-group-name handlers)
-    (instance? java.awt.Window target)
-      (swap! frame-handler-info assoc-in [target event-group-name] handlers)
-    :else 
-      (throw (IllegalArgumentException. (str "Don't know how to store event handler meta info on " target)))))
+  (put-meta! target event-group-name handlers))
 
 (defn- install-group-handlers
   [target event-group]
@@ -197,13 +186,7 @@
 
 (defn- get-handlers*
   [target event-group-name]
-  (cond
-    (instance? javax.swing.JComponent target)
-      (.getClientProperty target event-group-name)
-    (instance? java.awt.Window target)
-      (get-in @frame-handler-info [target event-group-name])
-    :else
-      (throw (IllegalArgumentException. (str "Don't know how to store event handler meta info on " target)))))
+  (get-meta target event-group-name))
 
 (defn get-handlers
   [target event-group-name]
