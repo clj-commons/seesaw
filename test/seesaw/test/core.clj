@@ -300,8 +300,10 @@
       (expect (= f (.getFont l))))))
 
 (describe label
-  (it "should create a label"
-    (expect (= JLabel (class (label)))))
+  (it "should create an empty label"
+    (let [l (label)]
+      (expect (= JLabel (class l)))
+      (expect (= "" (.getText l)))))
   (it "should create a label with tooltip"
     (expect (= "HI" (.getToolTipText (label :tip "HI")))))
   (it "should create a label with text when given a single argument"

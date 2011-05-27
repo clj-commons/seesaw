@@ -651,9 +651,10 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
   [& args]
-  (if (next args)
-    (apply-options (JLabel.) args (merge default-options label-options))
-    (apply label :text args)))
+  (case (count args) 
+    0 (label :text "")
+    1 (label :text (first args))
+    (apply-options (JLabel.) args (merge default-options label-options))))
 
 
 ;*******************************************************************************
