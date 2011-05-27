@@ -634,6 +634,8 @@
 
 
 (describe frame
+  (it "should create a frame with an id"
+    (= "my-frame" (id-for (frame :id :my-frame :visible? false))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
       (expect (= javax.swing.JFrame (class f)))
@@ -665,6 +667,9 @@
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
+  (it "should find a frame by #id and return it"
+    (let [f (frame :id :my-frame :visible? false)]
+      (expect (= f (select f [:#my-frame])))))
   (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])

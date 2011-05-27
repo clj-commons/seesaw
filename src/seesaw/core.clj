@@ -246,7 +246,7 @@
   "Returns the id of the given widget if the :id property was specified at
    creation. See also (select)."
   [w] 
-  (when (instance? javax.swing.JComponent w) (get-meta w id-property)))
+  (get-meta w id-property))
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -258,15 +258,11 @@
   (constant-map SwingConstants :horizontal :vertical))
 
 (defn- id-option-handler [w id]
-  (let [id-key (name id)]
-    (cond
-      (instance? JComponent w)
-        (let [existing-id (get-meta w id-property)]
-          (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
-          ; TODO should we enforce unique ids?
-          (put-meta! w id-property id-key)))
-      ; TODO need to figure out how to store JFrame ids. JFrame/getFrames is pretty useless
-  ))
+  (let [id-key (name id)
+        existing-id (get-meta w id-property)]
+    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+    ; TODO should we enforce unique ids?
+    (put-meta! w id-property id-key)))
 
 (defn- location-option-handler [w v]
   (cond
