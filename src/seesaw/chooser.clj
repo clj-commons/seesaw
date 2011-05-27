@@ -64,6 +64,10 @@
              extensions as strings for that filter. Default: [].
     :remember-directory? Flag specifying whether to remember the directory for future
                          file-input invocations in case of successful exit. Default: true.
+    :success-fn  Function which will be called with the JFileChooser and the File which
+                 has been selected by the user. Its result will be returned.
+                 Default: return selected File. In the case of MULTI-SELECT? being true,
+                 a seq of File instances will be passed instead of a single File.
 
   Returns nil if the user cancels, a single java.io.File if :multi? is false and
   a seq of files if :multi? is true.
@@ -71,11 +75,13 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
-  (let [[parent & {:keys [type remember-directory?]
-                   :or {type :open remember-directory? true}
+  (let [[parent & {:keys [type remember-directory? success-fn]
+                   :or {type :open
+                        remember-directory? true
+                        success-fn (fn [fc files] files)}
                    :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory?))
+        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn))
         multi?  (.isMultiSelectionEnabled chooser)
         result  (show-file-chooser chooser parent type)]
     (cond 
@@ -83,6 +89,6 @@
         (do
           (when remember-directory?
             (remember-chooser-dir chooser))
-          (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser)))
+          (success-fn chooser (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser))))
       :else nil)))
 
