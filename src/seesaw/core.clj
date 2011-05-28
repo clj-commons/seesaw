@@ -1563,6 +1563,22 @@
     container))
 
 (defn add! [container subject & more]
+  "Add one or more widgets to a widget container. The container and each widget
+  argument are passed through (to-widget) as usual. Each widget can be a single
+  widget, or a widget/constraint pair with a layout-specific constraint.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    ; Add a label and a checkbox to a panel
+    (add! (vertical-panel) \"Hello\" (button ...))
+
+    ; Add a label and a checkbox to a border panel with layout constraints
+    (add! (border-panel) [\"Hello\" :north] [(button ...) :center])
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
   (doto (apply add!-impl container subject more)
     .revalidate
     .repaint))
@@ -1576,6 +1592,19 @@
     container))
 
 (defn remove!
+  "Remove one or more widgets from a container. container and each widget
+  are passed through (to-widget) as usual, but no new widgets are created.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (remove! p lbl)
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
   [container subject & more]
   (doto (apply remove!-impl container subject more)
     .revalidate
@@ -1602,6 +1631,22 @@
     container))
   
 (defn replace!
+  "Replace old-widget with new-widget from container. container and each widget
+  are passed through (to-widget) as usual. Note that the layout constraints of 
+  old-widget are retained for the new widget. This is different from the behavior
+  you'd get with just remove/add in Swing.
+
+  The container is properly revalidated and repainted after replacement.
+
+  Examples:
+
+    ; Replace a label with a new label.
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (replace! p lbl \"Goodbye\")
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
   [container old-widget new-widget]
   (doto (replace!-impl container old-widget new-widget)
     .revalidate
