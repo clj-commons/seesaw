@@ -1487,6 +1487,7 @@
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
+
 "
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
@@ -1527,13 +1528,13 @@
         :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
 
 ;*******************************************************************************
-; Widget hierarchy manipulation
+; Widget layout manipulation
 
-(defprotocol HierarchyManip
+(defprotocol LayoutManipulation
   (add!* [layout target widget constraint])
   (get-constraint [layout container widget]))
 
-(extend-protocol HierarchyManip
+(extend-protocol LayoutManipulation
   java.awt.LayoutManager
     (add!* [layout target widget constraint]
       (add-widget target widget))
@@ -1551,22 +1552,34 @@
     (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
 
 
-(defn add! 
+(defn- add!-impl 
   [container subject & more]
   (let [container (to-widget container)
         [widget constraint] (if (vector? subject) subject [subject nil])
         layout (.getLayout container)]
     (add!* layout container widget constraint)
     (when more
-      (apply add! container more))
+      (apply add!-impl container more))
+    container))
+
+(defn add! [container subject & more]
+  (doto (apply add!-impl container subject more)
+    .revalidate
+    .repaint))
+
+(defn- remove!-impl
+  [container subject & more]
+  (let [container (to-widget container)]
+    (.remove (to-widget container) (to-widget subject))
+    (when more
+      (apply remove!-impl container more))
     container))
 
 (defn remove!
   [container subject & more]
-  (.remove (to-widget container) (to-widget subject))
-  (when more
-    (apply remove! container more))
-  container)
+  (doto (apply remove!-impl container subject more)
+    .revalidate
+    .repaint))
 
 (defn- index-of-component
   [container widget]
@@ -1576,7 +1589,7 @@
       (= widget (first comps)) idx
       :else (recur (next comps) (inc idx)))))
 
-(defn replace!
+(defn- replace!-impl
   [container old-widget new-widget]
   (let [container  (to-widget container)
         old-widget (to-widget old-widget)
@@ -1588,4 +1601,10 @@
           (.add    (to-widget new-widget true) constraint))))
     container))
   
+(defn replace!
+  [container old-widget new-widget]
+  (doto (replace!-impl container old-widget new-widget)
+    .revalidate
+    .repaint))
+
 
