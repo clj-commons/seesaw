@@ -1402,7 +1402,10 @@
   :paint-labels? #(do (check-args (isa? (type %2) Boolean) ":paint-labels? must be a boolean.")
                       (.setPaintLabels %1 %2))
   :paint-track? #(do (check-args (isa? (type %2) Boolean) ":paint-track? must be a boolean.")
-                     (.setPaintTrack %1 %2)) 
+                     (.setPaintTrack %1 %2))
+  :inverted? #(do (check-args (isa? (type %2) Boolean) ":inverted? must be a boolean.")
+                  (.setInverted %1 %2))
+ 
 })
 
 (defn slider
@@ -1422,6 +1425,7 @@
     :paint-ticks?    A boolean value indicating whether to paint ticks.
     :paint-labels?   A boolean value indicating whether to paint labels for ticks.
     :paint-track?    A boolean value indicating whether to paint the track.
+    :inverted?       A boolean value indicating whether to invert the slider (to go from high to low).
 
   Examples:
 
@@ -1430,8 +1434,8 @@
 
   Returns a JSlider.
 "
-  [& {:keys [orientation min max minor-tick-spacing major-tick-spacing
-             snap-to-ticks? paint-ticks? paint-labels? paint-track?]
+  [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
+             snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}] 
   (let [sl (javax.swing.JSlider. )]
     (apply-options sl kw (merge default-options slider-options))))
