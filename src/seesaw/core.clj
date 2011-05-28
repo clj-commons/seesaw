@@ -242,7 +242,13 @@
   (doseq [target (map to-widget (to-seq targets))]
     (.repaint target))
   targets)
-  
+ 
+(defn- handle-structure-change [container]
+  "Helper. Revalidate and repaint a container after structure change"
+  (doto container
+    .revalidate
+    .repaint))
+
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
@@ -256,9 +262,7 @@
   (.removeAll c)
   (doseq [w ws]
     (add-widget c w))
-  (doto c
-    .revalidate
-    .repaint))
+  (handle-structure-change c))
 
 (def ^{:private true} id-property ::seesaw-widget-id)
 
@@ -589,9 +593,7 @@
   (doseq [[widget constraints] (realize-grid-bag-constraints items)]
     (when widget
       (add-widget panel widget constraints)))
-  (doto panel
-    .revalidate
-    .repaint))
+  (handle-structure-change panel))
 
 (def ^{:private true} form-panel-options {
   :items add-grid-bag-items
@@ -634,9 +636,7 @@
   (.removeAll parent)
   (doseq [[widget constraint] items]
     (add-widget parent widget constraint))
-  (doto parent
-    .revalidate
-    .repaint))
+  (handle-structure-change parent))
 
 (def ^{:private true} mig-panel-options {
   :constraints apply-mig-constraints
@@ -1579,9 +1579,7 @@
 
   Returns the target container *after* it's been passed through (to-widget).
   "
-  (doto (apply add!-impl container subject more)
-    .revalidate
-    .repaint))
+  (handle-structure-change (apply add!-impl container subject more)))
 
 (defn- remove!-impl
   [container subject & more]
@@ -1606,9 +1604,7 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container subject & more]
-  (doto (apply remove!-impl container subject more)
-    .revalidate
-    .repaint))
+  (handle-structure-change (apply remove!-impl container subject more)))
 
 (defn- index-of-component
   [container widget]
@@ -1648,8 +1644,6 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container old-widget new-widget]
-  (doto (replace!-impl container old-widget new-widget)
-    .revalidate
-    .repaint))
+  (handle-structure-change (replace!-impl container old-widget new-widget)))
 
 
