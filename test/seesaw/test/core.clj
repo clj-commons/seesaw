@@ -698,3 +698,76 @@
           p (flow-panel :items [a b c])]
       (expect (= [p a b c] (select p [:*]))))))
 
+(describe add!
+  (testing "When called on a panel with a FlowLayout"
+    (it "adds a widget to the end of the panel"
+      (let [p (flow-panel)
+            l (label)
+            result (add! p l)]
+        (expect (= result p))
+        (expect (= l (first (.getComponents p))))))
+    (it "adds a widget to the end of the panel"
+      (let [p (flow-panel)
+            label0 (label)
+            label1 (label)
+            result (add! p [label0 nil] label1 )]
+        (expect (= result p))
+        (expect (= label0 (first (.getComponents p))))
+        (expect (= label1 (second (.getComponents p)))))))
+
+  (testing "When called on a panel with a BoxLayout"
+    (it "adds a widget to the end of the panel"
+      (let [p (vertical-panel)
+            l (label)
+            result (add! p l)]
+        (expect (= result p))
+        (expect (= l (first (.getComponents p)))))))
+
+  (testing "When called on a panel with a BorderLayout"
+    (it "adds a widget at the given location"
+      (let [p (border-panel)
+            l (label)
+            result (add! p [l :north])]
+        (expect (= result p))
+        (expect (= BorderLayout/NORTH (.getConstraints (.getLayout p) l)))))))
+
+(describe remove!
+  (it "removes widgets from a container"
+    (let [l0 (label) l1 (label)
+          p (border-panel :north l0 :south l1)
+          result (remove! p l0 l1)]
+      (expect (= p result))
+      (expect (= 0 (count (.getComponents p)))))))
+
+(describe replace!
+  (testing "when called on a panel with a generic layout (e.g. flow)"
+    (it "replaces the given widget with a new widget"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (flow-panel :items [l0 l1])
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p)))))))
+  (testing "when called on a panel with a border layout"
+    (it "replaces the given widget with a new widget and maintains constraints"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (border-panel :north l0 :south l1)
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p))))
+        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2)))))))
+  (testing "when called on a panel with a mid layout"
+    (it "replaces the given widget with a new widget and maintains constraints"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p))))
+        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
+
+

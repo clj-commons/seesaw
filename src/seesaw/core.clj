@@ -1447,3 +1447,66 @@
         (= (first selector) :*) (collect (to-widget root))
         :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
 
+;*******************************************************************************
+; Widget hierarchy manipulation
+
+(defprotocol HierarchyManip
+  (add!* [layout target widget constraint])
+  (get-constraint [layout container widget]))
+
+(extend-protocol HierarchyManip
+  java.awt.LayoutManager
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] nil)
+
+  java.awt.BorderLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget (border-layout-dirs constraint)))
+    (get-constraint [layout container widget]
+      (.getConstraints layout widget))
+
+  net.miginfocom.swing.MigLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+
+
+(defn add! 
+  [container subject & more]
+  (let [container (to-widget container)
+        [widget constraint] (if (vector? subject) subject [subject nil])
+        layout (.getLayout container)]
+    (add!* layout container widget constraint)
+    (when more
+      (apply add! container more))
+    container))
+
+(defn remove!
+  [container subject & more]
+  (.remove (to-widget container) (to-widget subject))
+  (when more
+    (apply remove! container more))
+  container)
+
+(defn- index-of-component
+  [container widget]
+  (loop [comps (.getComponents container) idx 0]
+    (cond
+      (not comps)              nil
+      (= widget (first comps)) idx
+      :else (recur (next comps) (inc idx)))))
+
+(defn replace!
+  [container old-widget new-widget]
+  (let [container  (to-widget container)
+        old-widget (to-widget old-widget)
+        idx        (index-of-component container old-widget)]
+    (when idx
+      (let [constraint (get-constraint (.getLayout container) container old-widget)]
+        (doto container
+          (.remove idx)
+          (.add    (to-widget new-widget true) constraint))))
+    container))
+  
+
