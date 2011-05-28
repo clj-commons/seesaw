@@ -71,7 +71,17 @@
 (defn native!
   "Set native look and feel and other options to try to make things look right.
   This function must be called very early, like before any other Seesaw or Swing
-  calls!"
+  calls!
+  
+  Note that on OSX, you can set the application name in the menu bar (usually
+  displayed as the main class name) by setting the -Xdock:<name-of-your-app>
+  parameter to the JVM at startup. Sorry, I don't know of a way to do it 
+  dynamically.
+
+  See:
+
+  http://developer.apple.com/library/mac/#documentation/Java/Conceptual/Java14Development/07-NativePlatformIntegration/NativePlatformIntegration.html
+  "
   []
   (System/setProperty "apple.laf.useScreenMenuBar" "true")
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName)))
@@ -98,8 +108,18 @@
 
     multi? - If true the return value is a seq of selected values rather than
       a single value.
+
+  Examples:
+
+  (def t (table))
+  (listen t :selection 
+    (fn [e]
+      (let [selected-rows (selection t {:multi? true})]
+        (println \"Currently selected rows: \" selected-rows))))
   
-  See also seesaw.selection/selection.
+  See:
+
+    seesaw.selection/selection.
   "
   ([target] (selection target {}))
   ([target options] (sss/selection (to-widget target) options)))
@@ -248,6 +268,13 @@
   [w] 
   (get-meta w id-property))
 
+(defn- id-option-handler [w id]
+  (let [id-key (name id)
+        existing-id (get-meta w id-property)]
+    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+    ; TODO should we enforce unique ids?
+    (put-meta! w id-property id-key)))
+
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
 
@@ -256,13 +283,6 @@
 
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
-
-(defn- id-option-handler [w id]
-  (let [id-key (name id)
-        existing-id (get-meta w id-property)]
-    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
-    ; TODO should we enforce unique ids?
-    (put-meta! w id-property id-key)))
 
 (defn- location-option-handler [w v]
   (cond
@@ -366,10 +386,16 @@
 (def ^{:private true}  border-layout-dirs 
   (constant-map BorderLayout :north :south :east :west :center))
 
+(defn- border-panel-items-handler
+  [panel items]
+  (doseq [[w dir] items]
+    (add-widget panel w (border-layout-dirs dir))))
+
 (def ^{:private true} border-layout-options 
   (merge
-    { :hgap #(.setHgap (.getLayout %1) %2)
-      :vgap #(.setVgap (.getLayout %1) %2) }
+    { :hgap  #(.setHgap (.getLayout %1) %2)
+      :vgap  #(.setVgap (.getLayout %1) %2) 
+      :items border-panel-items-handler }
     (reduce 
       (fn [m [k v]] (assoc m k #(add-widget %1 %2 v)))
       {} 
@@ -387,8 +413,22 @@
  
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
+
+  The :items option is a list of widget/direction pairs which can be used
+  if you don't want to use the direction options directly. For example, both
+  of these are equivalent:
+
+    (border-panel :north \"North\" :south \"South\")
+
+  is the same as:
+
+    (border-panel :items [[\"North\" :north] [\"South\" :south]])
+
+  This is for consistency with other containers.
+
+  See:
   
-  See http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
+    http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
   [& opts]
   (let [p (JPanel. (BorderLayout.))]
