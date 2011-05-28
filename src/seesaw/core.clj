@@ -1376,6 +1376,67 @@
       (keyword? s) (input-impl nil f (drop 1 args))
       :else        (input-impl f  s (drop 2 args)))))
 
+
+;*******************************************************************************
+; Slider
+(def ^{:private true} slider-options {
+  :orientation #(.setOrientation %1 ({:horizontal javax.swing.SwingConstants/HORIZONTAL
+                                      :vertical javax.swing.SwingConstants/VERTICAL} %2
+                                      (throw (IllegalArgumentException. ":orientation must be either :horizontal or :vertical."))))
+  :value #(do (check-args (number? %2) ":value must be a number.")
+              (.setValue %1 %2))
+  :min #(do (check-args (number? %2) ":min must be a number.")
+            (.setMinimum %1 %2))
+  :max #(do (check-args (number? %2) ":max must be a number.")
+            (.setMaximum %1 %2))
+  :minor-tick-spacing #(do (check-args (number? %2) ":minor-tick-spacing must be a number.")
+                           (.setPaintTicks %1 true)
+                           (.setMinorTickSpacing %1 %2))
+  :major-tick-spacing #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
+                           (.setPaintTicks %1 true)
+                           (.setMajorTickSpacing %1 %2))
+  :snap-to-ticks? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
+                       (.setSnapToTicks %1 %2))
+  :paint-ticks? #(do (check-args (isa? (type %2) Boolean) ":paint-ticks? must be a boolean.")
+                     (.setPaintTicks %1 %2))
+  :paint-labels? #(do (check-args (isa? (type %2) Boolean) ":paint-labels? must be a boolean.")
+                      (.setPaintLabels %1 %2))
+  :paint-track? #(do (check-args (isa? (type %2) Boolean) ":paint-track? must be a boolean.")
+                     (.setPaintTrack %1 %2)) 
+})
+
+(defn slider
+  "Show a slider which can be used to modify a value.
+
+      (slider ... options ...)
+
+  Besides the default options, options can also be one of:
+
+    :orientation   The orientation of the slider. One of :horizontal, :vertical.
+    :value         The initial numerical value that is to be set.
+    :min           The minimum numerical value which can be set.
+    :max           The maximum numericl value which can be set.
+    :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
+    :major-tick-spacing  The spacing between major ticks. If set, will also set :paint-ticks? to true.
+    :snap-to-ticks?  A boolean value indicating whether the slider should snap to ticks.
+    :paint-ticks?    A boolean value indicating whether to paint ticks.
+    :paint-labels?   A boolean value indicating whether to paint labels for ticks.
+    :paint-track?    A boolean value indicating whether to paint the track.
+
+  Examples:
+
+    ; ask & return single file
+    (slider :value 10 :min -50 :max 50)
+
+  Returns a JSlider.
+"
+  [& {:keys [orientation min max minor-tick-spacing major-tick-spacing
+             snap-to-ticks? paint-ticks? paint-labels? paint-track?]
+      :as kw}] 
+  (let [sl (javax.swing.JSlider. )]
+    (apply-options sl kw (merge default-options slider-options))))
+
+
 ;*******************************************************************************
 ; Selectors
 (def ^{:private true} id-regex #"^#(.+)$")
