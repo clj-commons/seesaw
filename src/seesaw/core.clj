@@ -1484,6 +1484,9 @@
     (slider :value 10 :min -50 :max 50)
 
   Returns a JSlider.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
 "
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
