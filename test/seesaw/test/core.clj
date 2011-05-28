@@ -227,13 +227,25 @@
     (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
 (describe border-panel
-  (it "should create a BorderLayout "
+  (it "should create a BorderLayout with given h and v gaps"
+    (let [p (border-panel :hgap 99 :vgap 12)
+          l (.getLayout p)]
+      (expect (= java.awt.BorderLayout (class l)))
+      (expect (= 99 (.getHgap l)))
+      (expect (= 12 (.getVgap l)))))
+  (it "should create a BorderLayout using direction options"
     (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
           p (border-panel :hgap 99 :vgap 12 :north n :south s :east e :west w :center c)
           l (.getLayout p)]
       (expect (= java.awt.BorderLayout (class l)))
       (expect (= 99 (.getHgap l)))
       (expect (= 12 (.getVgap l)))
+      (expect (= #{n s e w c} (apply hash-set (.getComponents p))))))
+  (it "should create a BorderLayout using list of items with direction constraints"
+    (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
+          p (border-panel :hgap 99 :vgap 12 :items [[n :north] [s :south][e :east][w :west][c :center]])
+          l (.getLayout p)]
+      (expect (= java.awt.BorderLayout (class l)))
       (expect (= #{n s e w c} (apply hash-set (.getComponents p)))))))
 
 (describe horizontal-panel
