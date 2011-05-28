@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.selection
+  (:require [seesaw.core :as sc])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
         seesaw.selection
@@ -55,6 +56,10 @@
         (expect (= 2 (selection jlist)))
         (expect (= [2 3 4] (selection jlist {:multi? true}))))))
 
+  (testing "when given a JSlider"
+    (it "returns the current value"
+      (= 32 (selection (sc/slider :min 0 :max 100 :value 32)))))
+
   (testing "when given a JTable"
     (it "returns nil when no rows are selected"
       (nil? (selection (javax.swing.JTable.))))
@@ -84,6 +89,13 @@
         (do
           (expect (= cb (selection! cb 3)))
           (expect (= 3 (selection cb)))))))
+
+  (testing "when given a JSlider and an argument"
+    (it "sets the slider value to that argument"
+      (let [s (sc/slider :min 0 :max 100 :value 0)
+            result (selection! s 32)]
+        (expect (= result s))
+        (expect (= 32 (.getValue s))))))
 
   (testing "when given a JTree and an argument"
     (it "Clears the selection when the argument is nil"
