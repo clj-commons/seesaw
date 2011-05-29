@@ -1354,7 +1354,7 @@
   will block & return a value as further documented for argument :modal?.
 
 "
-  [& {:keys [width height visible? pack? modal?] 
+  [& {:keys [width height visible? pack? modal? on-close] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
   (let [dlg-result (atom nil)
@@ -1369,9 +1369,8 @@
                 :window-opened
                 (fn [_] (when (.isModal dlg)
                           (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
-                #{:window-closed}
+                #{:window-closing :window-closed}
                 (fn [_]
-                  (println "blub")
                   (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
                     (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
         (.setVisible dlg true)
@@ -1504,21 +1503,20 @@
 })
 
 (defn option-pane
-  [& {:keys [parent content option-type type title] :as kw}]
+  [& {:keys [title parent content option-type type actions default-action handler] :as kw}]
   ;; showOptionDialog(Component parentComponent,
   ;;                  Object message, String title, int optionType,
   ;;                  int messageType, Icon icon, Object[] options,
   ;;                  Object initialValue)
-  (JOptionPane/showOptionDialog
-   parent
-   (or content "No message set")
-   (or title "Option Pane")
-   (option-pane-option-type-map (or option-type :default))
-   (input-type-map (or type :plain))
-   nil                                  ;icon 
-   (into-array ["Ok" "Cancel"])
-   "Ok"                                 ; default selection
-   ))
+  (let [pane (JOptionPane. 
+              (or content "No message set") 
+              (option-pane-option-type-map (or option-type :default))
+              (input-type-map (or type :plain))
+              nil                       ;icon 
+              (into-array (map #(to-widget % true) actions))
+              (or default-action (first actions)) ; default selection
+              )]
+   (dialog :content pane :modal? true :title (or title "Option Pane"))))
 
 
 ;*******************************************************************************
