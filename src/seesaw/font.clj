@@ -16,7 +16,23 @@
 
 (def ^{:private true} name-table (constant-map Font :monospaced :serif :sans-serif))
 
-(defn font
+(defn
+  "Create and return a Font.
+
+      (font name)
+      (font ... options ...)
+
+  Options are:
+
+    :name   The name of the font. Besides string values, also possible are 
+            any of :monospaced, :serif, :sans-serif.
+    :style  The style. One of :bold, :plain, :italic. Default: :plain.
+    :size   The size of the font. Default: 12.
+    :from   A Font from which to derive the new Font.
+
+   Returns a java.awt.Font instance.
+    "
+  font
   [& args]
   (if (= 1 (count args))
     (Font/decode (str (first args)))
