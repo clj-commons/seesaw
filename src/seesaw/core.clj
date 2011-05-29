@@ -1491,6 +1491,37 @@
 
 
 ;*******************************************************************************
+; option-pane
+(def ^{:private true} option-pane-option-type-map {
+  :default     JOptionPane/DEFAULT_OPTION
+  :yes-no    JOptionPane/YES_NO_OPTION
+  :yes-no-cancel    JOptionPane/YES_NO_CANCEL_OPTION
+  :ok-cancel    JOptionPane/OK_CANCEL_OPTION
+})
+
+(def ^{:private true} option-pane-options {
+  
+})
+
+(defn option-pane
+  [& {:keys [parent content option-type type title] :as kw}]
+  ;; showOptionDialog(Component parentComponent,
+  ;;                  Object message, String title, int optionType,
+  ;;                  int messageType, Icon icon, Object[] options,
+  ;;                  Object initialValue)
+  (JOptionPane/showOptionDialog
+   parent
+   (or content "No message set")
+   (or title "Option Pane")
+   (option-pane-option-type-map (or option-type :default))
+   (input-type-map (or type :plain))
+   nil                                  ;icon 
+   (into-array ["Ok" "Cancel"])
+   "Ok"                                 ; default selection
+   ))
+
+
+;*******************************************************************************
 ; Slider
 (def ^{:private true} slider-options {
   :orientation #(.setOrientation %1 (or ({:horizontal javax.swing.SwingConstants/HORIZONTAL
