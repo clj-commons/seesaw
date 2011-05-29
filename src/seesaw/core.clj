@@ -1311,6 +1311,7 @@
 (def ^{:private true} dialog-options {
   :modal? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
                (.setModal %1 %2))
+  :parent #(.setLocationRelativeTo %1 %2)
 })
 
 (def ^:private current-modal-dialogs (atom nil))
@@ -1516,7 +1517,7 @@
               (into-array (map #(to-widget % true) actions))
               (or default-action (first actions)) ; default selection
               )]
-   (dialog :content pane :modal? true :title (or title "Option Pane"))))
+   (dialog :parent parent :content pane :modal? true :title (or title "Option Pane"))))
 
 
 ;*******************************************************************************
