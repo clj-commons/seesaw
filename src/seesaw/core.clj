@@ -1371,7 +1371,6 @@
                           (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
                 #{:window-closed}
                 (fn [_]
-                  (println "blub")
                   (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
                     (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
         (.setVisible dlg true)
