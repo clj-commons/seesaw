@@ -688,6 +688,18 @@
       (reset! v 20)
       (expect (= (.getValue sl) 20)))))
 
+(describe progress-bar
+  (it "should sync the value of the atom with the progress-bar value, if progress-bar value changed"
+    (let [v (atom 15)
+          pb (progress-bar :value v)]
+      (.setValue pb 20)
+      (expect (= @v 20))))
+  (it "should sync the value of the progress-bar with the atom value, if atom value changed"
+    (let [v (atom 15)
+          pb (progress-bar :value v)]
+      (reset! v 20)
+      (expect (= (.getValue pb) 20)))))
+
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
