@@ -1518,6 +1518,10 @@
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
             (.setMaximum %1 %2))
+  :paint-string? #(do (check-args (isa? (type %2) Boolean) ":paint-string? must be a boolean.")
+                      (.setStringPainted %1 %2))
+  :indeterminate? #(do (check-args (isa? (type %2) Boolean) ":indeterminate? must be a boolean.")
+                       (.setIndeterminate %1 %2))
 })
 
 (defn progress-bar
