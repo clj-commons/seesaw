@@ -1,6 +1,6 @@
 _Note that current development is on the *develop* branch, not master_
 
-There's now a Google Group at [[https://groups.google.com/group/seesaw-clj]] for discussion and questions.
+There's now a [Google Group] (https://groups.google.com/group/seesaw-clj) for discussion and questions.
 
 # Seesaw: Clojure + UI
 
