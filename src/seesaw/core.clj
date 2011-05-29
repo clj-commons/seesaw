@@ -242,7 +242,13 @@
   (doseq [target (map to-widget (to-seq targets))]
     (.repaint target))
   targets)
-  
+ 
+(defn- handle-structure-change [container]
+  "Helper. Revalidate and repaint a container after structure change"
+  (doto container
+    .revalidate
+    .repaint))
+
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
@@ -256,9 +262,7 @@
   (.removeAll c)
   (doseq [w ws]
     (add-widget c w))
-  (doto c
-    .revalidate
-    .repaint))
+  (handle-structure-change c))
 
 (def ^{:private true} id-property ::seesaw-widget-id)
 
@@ -589,9 +593,7 @@
   (doseq [[widget constraints] (realize-grid-bag-constraints items)]
     (when widget
       (add-widget panel widget constraints)))
-  (doto panel
-    .revalidate
-    .repaint))
+  (handle-structure-change panel))
 
 (def ^{:private true} form-panel-options {
   :items add-grid-bag-items
@@ -634,9 +636,7 @@
   (.removeAll parent)
   (doseq [[widget constraint] items]
     (add-widget parent widget constraint))
-  (doto parent
-    .revalidate
-    .repaint))
+  (handle-structure-change parent))
 
 (def ^{:private true} mig-panel-options {
   :constraints apply-mig-constraints
@@ -1484,6 +1484,10 @@
     (slider :value 10 :min -50 :max 50)
 
   Returns a JSlider.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
+
 "
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
@@ -1522,4 +1526,124 @@
       (cond
         (= (first selector) :*) (collect (to-widget root))
         :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
+
+;*******************************************************************************
+; Widget layout manipulation
+
+(defprotocol LayoutManipulation
+  (add!* [layout target widget constraint])
+  (get-constraint [layout container widget]))
+
+(extend-protocol LayoutManipulation
+  java.awt.LayoutManager
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] nil)
+
+  java.awt.BorderLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget (border-layout-dirs constraint)))
+    (get-constraint [layout container widget]
+      (.getConstraints layout widget))
+
+  net.miginfocom.swing.MigLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+
+
+(defn- add!-impl 
+  [container subject & more]
+  (let [container (to-widget container)
+        [widget constraint] (if (vector? subject) subject [subject nil])
+        layout (.getLayout container)]
+    (add!* layout container widget constraint)
+    (when more
+      (apply add!-impl container more))
+    container))
+
+(defn add! [container subject & more]
+  "Add one or more widgets to a widget container. The container and each widget
+  argument are passed through (to-widget) as usual. Each widget can be a single
+  widget, or a widget/constraint pair with a layout-specific constraint.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    ; Add a label and a checkbox to a panel
+    (add! (vertical-panel) \"Hello\" (button ...))
+
+    ; Add a label and a checkbox to a border panel with layout constraints
+    (add! (border-panel) [\"Hello\" :north] [(button ...) :center])
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  (handle-structure-change (apply add!-impl container subject more)))
+
+(defn- remove!-impl
+  [container subject & more]
+  (let [container (to-widget container)]
+    (.remove (to-widget container) (to-widget subject))
+    (when more
+      (apply remove!-impl container more))
+    container))
+
+(defn remove!
+  "Remove one or more widgets from a container. container and each widget
+  are passed through (to-widget) as usual, but no new widgets are created.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (remove! p lbl)
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  [container subject & more]
+  (handle-structure-change (apply remove!-impl container subject more)))
+
+(defn- index-of-component
+  [container widget]
+  (loop [comps (.getComponents container) idx 0]
+    (cond
+      (not comps)              nil
+      (= widget (first comps)) idx
+      :else (recur (next comps) (inc idx)))))
+
+(defn- replace!-impl
+  [container old-widget new-widget]
+  (let [container  (to-widget container)
+        old-widget (to-widget old-widget)
+        idx        (index-of-component container old-widget)]
+    (when idx
+      (let [constraint (get-constraint (.getLayout container) container old-widget)]
+        (doto container
+          (.remove idx)
+          (.add    (to-widget new-widget true) constraint))))
+    container))
+  
+(defn replace!
+  "Replace old-widget with new-widget from container. container and each widget
+  are passed through (to-widget) as usual. Note that the layout constraints of 
+  old-widget are retained for the new widget. This is different from the behavior
+  you'd get with just remove/add in Swing.
+
+  The container is properly revalidated and repainted after replacement.
+
+  Examples:
+
+    ; Replace a label with a new label.
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (replace! p lbl \"Goodbye\")
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  [container old-widget new-widget]
+  (handle-structure-change (replace!-impl container old-widget new-widget)))
+
 
