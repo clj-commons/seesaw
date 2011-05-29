@@ -1411,8 +1411,8 @@
     (cond
       (or (= n 0) (keyword? f))
         (throw (IllegalArgumentException. "input requires at least one non-keyword arg"))
-      (= n 1)      (input-impl nil f)
-      (= n 2)      (input-impl f s)
+      (= n 1)      (input-impl nil f {})
+      (= n 2)      (input-impl f s {})
       (keyword? s) (input-impl nil f (drop 1 args))
       :else        (input-impl f  s (drop 2 args)))))
 
