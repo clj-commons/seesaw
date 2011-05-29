@@ -1466,8 +1466,8 @@
   Besides the default options, options can also be one of:
 
     :orientation   The orientation of the slider. One of :horizontal, :vertical.
-    :value         The initial numerical value that is to be set. This may be a
-                   ref, in which case the ref will be kept in sync with the slider.
+    :value         The initial numerical value that is to be set. This may be an
+                   atom, in which case the atom will be kept in sync with the slider.
     :min           The minimum numerical value which can be set.
     :max           The maximum numericl value which can be set.
     :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
