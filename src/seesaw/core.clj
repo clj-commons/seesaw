@@ -1469,7 +1469,7 @@
     :value         The initial numerical value that is to be set. This may be an
                    atom, in which case the atom will be kept in sync with the slider.
     :min           The minimum numerical value which can be set.
-    :max           The maximum numericl value which can be set.
+    :max           The maximum numerical value which can be set.
     :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
     :major-tick-spacing  The spacing between major ticks. If set, will also set :paint-ticks? to true.
     :snap-to-ticks?  A boolean value indicating whether the slider should snap to ticks.
@@ -1518,9 +1518,41 @@
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
             (.setMaximum %1 %2))
+  :paint-string? #(do (check-args (isa? (type %2) Boolean) ":paint-string? must be a boolean.")
+                      (.setStringPainted %1 %2))
+  :indeterminate? #(do (check-args (isa? (type %2) Boolean) ":indeterminate? must be a boolean.")
+                       (.setIndeterminate %1 %2))
 })
 
 (defn progress-bar
+  "Show a progress-bar which can be used to display the progress of long running tasks.
+
+      (progress-bar ... options ...)
+
+  Besides the default options, options can also be one of:
+
+    :orientation   The orientation of the progress-bar. One of :horizontal, :vertical. Default: :horizontal.
+    :value         The initial numerical value that is to be set. This may be an
+                   atom, in which case the atom will be kept in sync with the slider. Default: 0.
+    :min           The minimum numerical value which can be set. Default: 0.
+    :max           The maximum numerical value which can be set. Default: 100.
+    :paint-string? A boolean value indicating whether to paint a string containing
+                   the progress' percentage. Default: false.
+    :indeterminate? A boolean value indicating whether the progress bar is to be in
+                    indeterminate mode (for when the exact state of the task is not
+                    yet known). Default: false.
+
+  Examples:
+
+    ; vertical progress bar from 0 to 100 starting with inital value at 15.
+    (progress-bar :orientation :vertical :min 0 :max 100 :value 15)
+
+  Returns a JProgressBar.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
+
+"
   [& {:keys [orientation value min max] :as kw}]
   (let [sl (javax.swing.JProgressBar.)]
     (apply-options sl kw (merge default-options progress-bar-options))))
