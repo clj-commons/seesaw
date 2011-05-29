@@ -16,7 +16,7 @@
 
 (def ^{:private true} name-table (constant-map Font :monospaced :serif :sans-serif))
 
-(defn
+(defn font
   "Create and return a Font.
 
       (font name)
@@ -32,7 +32,6 @@
 
    Returns a java.awt.Font instance.
     "
-  font
   [& args]
   (if (= 1 (count args))
     (Font/decode (str (first args)))
