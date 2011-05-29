@@ -676,6 +676,18 @@
     (let [c (label :text "HI")]
       (expect (nil? (to-frame c))))))
 
+(describe slider
+  (it "should sync the value of the atom with the slider value, if slider value changed"
+    (let [v (atom 15)
+          sl (slider :value v)]
+      (.setValue sl 20)
+      (expect (= @v 20))))
+  (it "should sync the value of the slider with the atom value, if atom value changed"
+    (let [v (atom 15)
+          sl (slider :value v)]
+      (reset! v 20)
+      (expect (= (.getValue sl) 20)))))
+
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))

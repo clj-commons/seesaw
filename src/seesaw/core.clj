@@ -1420,9 +1420,9 @@
 ;*******************************************************************************
 ; Slider
 (def ^{:private true} slider-options {
-  :orientation #(.setOrientation %1 ({:horizontal javax.swing.SwingConstants/HORIZONTAL
-                                      :vertical javax.swing.SwingConstants/VERTICAL} %2
-                                      (throw (IllegalArgumentException. ":orientation must be either :horizontal or :vertical."))))
+  :orientation #(.setOrientation %1 (or ({:horizontal javax.swing.SwingConstants/HORIZONTAL
+                                          :vertical javax.swing.SwingConstants/VERTICAL} %2)
+                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
                 (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
                                (fn [k r o n] (when (not (= o n))
@@ -1466,8 +1466,8 @@
   Besides the default options, options can also be one of:
 
     :orientation   The orientation of the slider. One of :horizontal, :vertical.
-    :value         The initial numerical value that is to be set. This may be a
-                   ref, in which case the ref will be kept in sync with the slider.
+    :value         The initial numerical value that is to be set. This may be an
+                   atom, in which case the atom will be kept in sync with the slider.
     :min           The minimum numerical value which can be set.
     :max           The maximum numericl value which can be set.
     :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
@@ -1494,6 +1494,37 @@
       :as kw}] 
   (let [sl (javax.swing.JSlider. )]
     (apply-options sl kw (merge default-options slider-options))))
+
+
+;*******************************************************************************
+; Progress Bar
+(def ^{:private true} progress-bar-options {
+  :orientation #(.setOrientation %1 (or ({:horizontal javax.swing.SwingConstants/HORIZONTAL
+                                          :vertical javax.swing.SwingConstants/VERTICAL} %2)
+                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
+  :value #(cond (isa? (type %2) clojure.lang.Atom)
+                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
+                               (fn [k r o n] (when (not (= o n))
+                                               (invoke-now (.setValue %1 n)))))
+                    (listen %1 :change (fn [e] (swap! %2
+                                                (fn [o] (if (not (= (.getValue %1) o))
+                                                          (.getValue %1)
+                                                          o))))))
+                (number? %2)
+                (.setValue %1 %2)
+                true
+                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :min #(do (check-args (number? %2) ":min must be a number.")
+            (.setMinimum %1 %2))
+  :max #(do (check-args (number? %2) ":max must be a number.")
+            (.setMaximum %1 %2))
+})
+
+(defn progress-bar
+  [& {:keys [orientation value min max] :as kw}]
+  (let [sl (javax.swing.JProgressBar.)]
+    (apply-options sl kw (merge default-options progress-bar-options))))
+
 
 
 ;*******************************************************************************
