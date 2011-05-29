@@ -23,7 +23,7 @@
              SwingUtilities SwingConstants UIManager ScrollPaneConstants
              Action
              BoxLayout
-             JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
+             JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
              AbstractButton JButton JToggleButton JCheckBox JRadioButton
              JOptionPane]
@@ -1304,6 +1304,79 @@
   [w]
   (get-root (to-widget w)))
   ;(SwingUtilities/getRoot (to-widget w)))
+
+
+;*******************************************************************************
+; Dialog
+(def ^{:private true} dialog-options {
+  :modal? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
+               (.setModal %1 %2))
+})
+
+(def ^:private current-modal-dialogs (atom nil))
+
+(defn return-from-dialog
+  "Return from the current dialog with the specified value. The dialog
+  must be modal and created from within the DIALOG fn with both
+  VISIBLE? and MODAL? set to true."
+  [x]
+  (if (empty? @current-modal-dialogs)
+    (throw (IllegalArgumentException. "Cannot return from dialog, as there is no modal dialog."))
+    (let [{:keys [dialog result]} (first @current-modal-dialogs)]
+     (try
+       (reset! result x)
+       (invoke-later (.dispose dialog))
+       (finally
+        (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
+
+(defn dialog
+  "Create a dialog and display it.
+
+      (dialog ... options ...)
+
+  Besides the default & frame options, options can also be one of:
+
+    :modal?  A boolean value indicating whether this dialog is to be a
+              modal dialog.  If :modal? *and* :visible? are set to
+              true (:visible? is true per default), the function will
+              block with a dialog. The function will return once the user:
+              a) Closes the window by using the system window
+                 manager (e.g. by pressing the \"X\" icon in many OS's)
+              b) A function from within an event calls the dialogs
+                 dispose method.
+              c) A function from within an event calls RETURN-FROM-DIALOG
+                  with a return value.
+              In the case of a) and b), this function returns nil. In the
+              case of c), this function returns the value passed to
+              RETURN-FROM-DIALOG.
+
+  Returns a JDialog if :visible? & :modal? are not both true. Otherwise
+  will block & return a value as further documented for argument :modal?.
+
+"
+  [& {:keys [width height visible? pack? modal?] 
+      :or {width 100 height 100 visible? true pack? true}
+      :as opts}]
+  (let [dlg-result (atom nil)
+        dlg (apply-options (JDialog.) 
+                           (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
+    (cond-doto dlg
+      true     (.setSize width height)
+      pack?    (.pack))
+    (if (and modal? visible?)
+      (do
+        (listen dlg
+                :window-opened
+                (fn [_] (when (.isModal dlg)
+                          (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
+                #{:window-closed}
+                (fn [_]
+                  (println "blub")
+                  (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
+                    (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
+        (.setVisible dlg true)
+        @dlg-result)
+      dlg)))
 
 
 ;*******************************************************************************
