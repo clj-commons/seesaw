@@ -12,7 +12,7 @@
   (:use seesaw.font)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import (java.awt Font)))
+  (:import [java.awt Font]))
 
 (describe font
   (it "can create a font from a font-spec"

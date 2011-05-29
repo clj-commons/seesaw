@@ -4,3 +4,5 @@ lib
 classes
 *.swp
 *.swo
+.DS_Store
+
