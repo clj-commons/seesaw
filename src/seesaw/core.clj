@@ -25,7 +25,7 @@
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
-             AbstractButton JButton JToggleButton JCheckBox JRadioButton
+             AbstractButton JButton JToggleButton JCheckBox JRadioButton ButtonGroup
              JOptionPane]
            [javax.swing.text JTextComponent]
            [java.awt Component FlowLayout BorderLayout GridLayout 
@@ -268,9 +268,17 @@
 
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
-   creation. See also (select)."
+   creation. The widget parameter is passed through (to-widget) first so
+   events and other objects can also be used. The id is always returned as
+   a string, even it if was originally given as a keyword.
+
+  Returns the id as a string, or nil.
+  
+  See:
+    (seesaw.core/select).
+  "
   [w] 
-  (get-meta w id-property))
+  (get-meta (to-widget w) id-property))
 
 (defn- id-option-handler [w id]
   (let [id-key (name id)
@@ -696,8 +704,47 @@
 ;*******************************************************************************
 ; Buttons
 
+(def ^{:private true} button-group-options {
+  :buttons #(doseq [b %2] (.add %1 b))
+})
+
+(defn button-group
+  "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
+  radio buttons, toggle-able menus, etc. Takes the following options:
+
+    :buttons A sequence of buttons to include in the group. They are *not*
+             passed through (to-widget), i.e. they must be button or menu 
+             instances.
+
+  The mutual exclusion of the buttons in the group will be maintained automatically.
+  The currently \"selected\" button can be retrieved and set with (selection) and
+  (selection!) as usual.
+
+  Note that a button can be added to a group when the button is created using the
+  :group option of the various button and menu creation functions.
+
+  Examples:
+
+    (let [bg (button-group)]
+      (flow-panel :items [(radio :id :a :text \"A\" :group bg)
+                          (radio :id :b :text \"B\" :group bg)]))
+
+    ; now A and B are mutually exclusive
+
+    ; Check A
+    (selection bg (select root [:#a]))
+
+  Returns an instance of javax.swing.ButtonGroup
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html
+  "
+  [& opts]
+  (apply-options (ButtonGroup.) opts button-group-options))
+
 (def ^{:private true} button-options {
   :selected?   #(.setSelected %1 (boolean %2))
+  :group       #(.add %2 %1)
 })
 
 (defn- apply-button-defaults
@@ -1290,6 +1337,7 @@
   (cond
     (nil? w) w
     (instance? java.awt.Window w) w
+    (instance? java.applet.Applet w) w
     (instance? javax.swing.JPopupMenu w) 
       (if-let [p (.getParent w)] 
         (get-root p) 
@@ -1303,8 +1351,6 @@
   directly to this."
   [w]
   (get-root (to-widget w)))
-  ;(SwingUtilities/getRoot (to-widget w)))
-
 
 ;*******************************************************************************
 ; Dialog
@@ -1590,8 +1636,7 @@
 ;*******************************************************************************
 ; Slider
 (def ^{:private true} slider-options {
-  :orientation #(.setOrientation %1 (or ({:horizontal javax.swing.SwingConstants/HORIZONTAL
-                                          :vertical javax.swing.SwingConstants/VERTICAL} %2)
+  :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
                 (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
@@ -1669,21 +1714,20 @@
 ;*******************************************************************************
 ; Progress Bar
 (def ^{:private true} progress-bar-options {
-  :orientation #(.setOrientation %1 (or ({:horizontal javax.swing.SwingConstants/HORIZONTAL
-                                          :vertical javax.swing.SwingConstants/VERTICAL} %2)
+  :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
-                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                               (fn [k r o n] (when (not (= o n))
-                                               (invoke-now (.setValue %1 n)))))
-                    (listen %1 :change (fn [e] (swap! %2
-                                                (fn [o] (if (not (= (.getValue %1) o))
-                                                          (.getValue %1)
-                                                          o))))))
+                  (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
+                                (fn [k r o n] (when (not (= o n))
+                                                (invoke-now (.setValue %1 n)))))
+                      (listen %1 :change (fn [e] (swap! %2
+                                                  (fn [o] (if (not (= (.getValue %1) o))
+                                                            (.getValue %1)
+                                                            o))))))
                 (number? %2)
-                (.setValue %1 %2)
+                  (.setValue %1 %2)
                 true
-                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")

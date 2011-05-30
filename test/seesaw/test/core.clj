@@ -29,6 +29,10 @@
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
     (nil? (id-for (label))))
+  (it "cerces to a widget before getting the id"
+    (let [b (button :id :my-button)
+          e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
+      (expect (= "my-button" (id-for e)))))
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
@@ -396,11 +400,25 @@
   (it "should create a JEditorPane"
     (= javax.swing.JEditorPane (class (editor-pane)))))
 
+(describe button-group
+  (it "should create a ButtonGroup"
+    (instance? javax.swing.ButtonGroup (button-group)))
+  (it "should create a button group with a list of buttons"
+    (let [[a b c] [(radio) (checkbox) (toggle)]
+          bg (button-group :buttons [a b c])]
+      (expect (= [a b c] (enumeration-seq (.getElements bg)))))))
+
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
+
+  (it "should add the button to a button group specified with the :group option"
+    (let [bg (button-group)
+          b  (button :group bg)]
+      (expect (= b (first (enumeration-seq (.getElements bg)))))))
+
   (it "should create a button from an action"
     (let [a (action :handler println)
           b (button :action a)]
@@ -668,6 +686,12 @@
       (expect (= c (.getContentPane f))))))
 
 (describe to-frame
+  (it "should convert a widget to its parent applet"
+    (let [c (label :text "HI")
+          a (javax.swing.JApplet.)]
+      (.add a c)
+      (expect (= a (to-frame c)))))
+
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
           f (frame :content c :visible? false)]
