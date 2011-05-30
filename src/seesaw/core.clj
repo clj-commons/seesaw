@@ -1329,6 +1329,7 @@
   (cond
     (nil? w) w
     (instance? java.awt.Window w) w
+    (instance? java.applet.Applet w) w
     (instance? javax.swing.JPopupMenu w) 
       (if-let [p (.getParent w)] 
         (get-root p) 
@@ -1342,8 +1343,6 @@
   directly to this."
   [w]
   (get-root (to-widget w)))
-  ;(SwingUtilities/getRoot (to-widget w)))
-
 
 ;*******************************************************************************
 ; Dialog
