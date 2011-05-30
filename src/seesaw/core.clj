@@ -1360,8 +1360,7 @@
 ;*******************************************************************************
 ; Dialog
 (def ^{:private true} dialog-options {
-  :modal? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
-               (.setModal %1 %2))
+  :modal? #(.setModal %1 (boolean %2))
 })
 
 (def ^:private current-modal-dialogs (atom nil))
@@ -1567,16 +1566,11 @@
   :major-tick-spacing #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
                            (.setPaintTicks %1 true)
                            (.setMajorTickSpacing %1 %2))
-  :snap-to-ticks? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
-                       (.setSnapToTicks %1 %2))
-  :paint-ticks? #(do (check-args (isa? (type %2) Boolean) ":paint-ticks? must be a boolean.")
-                     (.setPaintTicks %1 %2))
-  :paint-labels? #(do (check-args (isa? (type %2) Boolean) ":paint-labels? must be a boolean.")
-                      (.setPaintLabels %1 %2))
-  :paint-track? #(do (check-args (isa? (type %2) Boolean) ":paint-track? must be a boolean.")
-                     (.setPaintTrack %1 %2))
-  :inverted? #(do (check-args (isa? (type %2) Boolean) ":inverted? must be a boolean.")
-                  (.setInverted %1 %2))
+  :snap-to-ticks? #(.setSnapToTicks %1 (boolean %2))
+  :paint-ticks? #(.setPaintTicks %1 (boolean %2))
+  :paint-labels? #(.setPaintLabels %1 (boolean %2))
+  :paint-track? #(.setPaintTrack %1 (boolean %2))
+  :inverted? #(.setInverted %1 (boolean %2))
  
 })
 
@@ -1639,10 +1633,8 @@
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
             (.setMaximum %1 %2))
-  :paint-string? #(do (check-args (isa? (type %2) Boolean) ":paint-string? must be a boolean.")
-                      (.setStringPainted %1 %2))
-  :indeterminate? #(do (check-args (isa? (type %2) Boolean) ":indeterminate? must be a boolean.")
-                       (.setIndeterminate %1 %2))
+  :paint-string? #(.setStringPainted %1 (boolean %2))
+  :indeterminate? #(.setIndeterminate %1 (boolean %2))
 })
 
 (defn progress-bar
