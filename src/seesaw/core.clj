@@ -25,7 +25,7 @@
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
-             AbstractButton JButton JToggleButton JCheckBox JRadioButton
+             AbstractButton JButton JToggleButton JCheckBox JRadioButton ButtonGroup
              JOptionPane]
            [javax.swing.text JTextComponent]
            [java.awt Component FlowLayout BorderLayout GridLayout 
@@ -696,8 +696,47 @@
 ;*******************************************************************************
 ; Buttons
 
+(def ^{:private true} button-group-options {
+  :buttons #(doseq [b %2] (.add %1 b))
+})
+
+(defn button-group
+  "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
+  radio buttons, toggle-able menus, etc. Takes the following options:
+
+    :buttons A sequence of buttons to include in the group. They are *not*
+             passed through (to-widget), i.e. they must be button or menu 
+             instances.
+
+  The mutual exclusion of the buttons in the group will be maintained automatically.
+  The currently \"selected\" button can be retrieved and set with (selection) and
+  (selection!) as usual.
+
+  Note that a button can be added to a group when the button is created using the
+  :group option of the various button and menu creation functions.
+
+  Examples:
+
+    (let [bg (button-group)]
+      (flow-panel :items [(radio :id :a :text \"A\" :group bg)
+                          (radio :id :b :text \"B\" :group bg)]))
+
+    ; now A and B are mutually exclusive
+
+    ; Check A
+    (selection bg (select root [:#a]))
+
+  Returns an instance of javax.swing.ButtonGroup
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html
+  "
+  [& opts]
+  (apply-options (ButtonGroup.) opts button-group-options))
+
 (def ^{:private true} button-options {
   :selected?   #(.setSelected %1 (boolean %2))
+  :group       #(.add %2 %1)
 })
 
 (defn- apply-button-defaults

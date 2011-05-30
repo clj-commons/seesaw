@@ -29,6 +29,13 @@
     (it "returns a single-element seq with the text of the button if it's selected and multi? is true"
       (= ["something"] (selection (javax.swing.JCheckBox. "something" true) {:multi? true}))))
 
+  (testing "when given a ButtonGroup"
+    (it "returns nil when no button is selected"
+      (nil? (selection (sc/button-group :buttons [(sc/toggle) (sc/radio)]))))
+    (it "returns the first selected button in the group"
+      (let [b (sc/toggle :selected? true)]
+        (expect (= b (selection (sc/button-group :buttons [(sc/toggle) b (sc/radio)])))))))
+
   (testing "when given a ComboBox"
     (it "returns nil when nothing is selected"
       (nil? (selection (javax.swing.JComboBox.))))
@@ -82,6 +89,20 @@
         (do
           (expect (= cb (selection! cb "true")))
           (expect (selection cb))))))
+
+  (testing "when given a ButtonGroup and an argument"
+    (it "deselects the button if the argument is nil"
+      (let [bg (sc/button-group :buttons [(sc/toggle) (sc/radio :selected? true) (sc/radio)])]
+        (do
+          (expect (= bg (selection! bg nil)))
+          (expect (nil? (selection bg))))))
+    (it "selects a button if the argument is a button"
+      (let [b (sc/radio)
+            bg (sc/button-group :buttons [(sc/toggle :selected? true) b (sc/radio)])]
+        (do
+          (expect (= bg (selection! bg b)))
+          (expect (= b (selection bg)))
+          (expect (.isSelected b))))))
 
   (testing "when given a ComboBox and an argument"
     (it "sets the selection to that argument"

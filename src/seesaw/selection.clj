@@ -25,6 +25,16 @@
     (get-selection [target]      (seq (.getSelectedObjects target)))
     (set-selection [target [v]]  (doto target (.setSelected (boolean v))))
 
+  javax.swing.ButtonGroup
+    (get-selection [target]      
+      (when-let [sel (some #(when (.isSelected %) %) (enumeration-seq (.getElements target)))]
+        [sel]))
+    (set-selection [target [v]]  
+      (if v
+        (.setSelected target (.getModel v) true)
+        (.clearSelection target))
+      target)
+
   javax.swing.JSlider
     (get-selection [target]     (vector (.getValue target)))
     (set-selection [target [v]] (doto target (.setValue v)))

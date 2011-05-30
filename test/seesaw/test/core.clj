@@ -396,11 +396,25 @@
   (it "should create a JEditorPane"
     (= javax.swing.JEditorPane (class (editor-pane)))))
 
+(describe button-group
+  (it "should create a ButtonGroup"
+    (instance? javax.swing.ButtonGroup (button-group)))
+  (it "should create a button group with a list of buttons"
+    (let [[a b c] [(radio) (checkbox) (toggle)]
+          bg (button-group :buttons [a b c])]
+      (expect (= [a b c] (enumeration-seq (.getElements bg)))))))
+
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
+
+  (it "should add the button to a button group specified with the :group option"
+    (let [bg (button-group)
+          b  (button :group bg)]
+      (expect (= b (first (enumeration-seq (.getElements bg)))))))
+
   (it "should create a button from an action"
     (let [a (action :handler println)
           b (button :action a)]
