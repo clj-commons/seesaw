@@ -29,6 +29,10 @@
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
     (nil? (id-for (label))))
+  (it "cerces to a widget before getting the id"
+    (let [b (button :id :my-button)
+          e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
+      (expect (= "my-button" (id-for e)))))
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
@@ -227,13 +231,25 @@
     (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
 (describe border-panel
-  (it "should create a BorderLayout "
+  (it "should create a BorderLayout with given h and v gaps"
+    (let [p (border-panel :hgap 99 :vgap 12)
+          l (.getLayout p)]
+      (expect (= java.awt.BorderLayout (class l)))
+      (expect (= 99 (.getHgap l)))
+      (expect (= 12 (.getVgap l)))))
+  (it "should create a BorderLayout using direction options"
     (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
           p (border-panel :hgap 99 :vgap 12 :north n :south s :east e :west w :center c)
           l (.getLayout p)]
       (expect (= java.awt.BorderLayout (class l)))
       (expect (= 99 (.getHgap l)))
       (expect (= 12 (.getVgap l)))
+      (expect (= #{n s e w c} (apply hash-set (.getComponents p))))))
+  (it "should create a BorderLayout using list of items with direction constraints"
+    (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
+          p (border-panel :hgap 99 :vgap 12 :items [[n :north] [s :south][e :east][w :west][c :center]])
+          l (.getLayout p)]
+      (expect (= java.awt.BorderLayout (class l)))
       (expect (= #{n s e w c} (apply hash-set (.getComponents p)))))))
 
 (describe horizontal-panel
@@ -300,8 +316,10 @@
       (expect (= f (.getFont l))))))
 
 (describe label
-  (it "should create a label"
-    (expect (= JLabel (class (label)))))
+  (it "should create an empty label"
+    (let [l (label)]
+      (expect (= JLabel (class l)))
+      (expect (= "" (.getText l)))))
   (it "should create a label with tooltip"
     (expect (= "HI" (.getToolTipText (label :tip "HI")))))
   (it "should create a label with text when given a single argument"
@@ -382,11 +400,25 @@
   (it "should create a JEditorPane"
     (= javax.swing.JEditorPane (class (editor-pane)))))
 
+(describe button-group
+  (it "should create a ButtonGroup"
+    (instance? javax.swing.ButtonGroup (button-group)))
+  (it "should create a button group with a list of buttons"
+    (let [[a b c] [(radio) (checkbox) (toggle)]
+          bg (button-group :buttons [a b c])]
+      (expect (= [a b c] (enumeration-seq (.getElements bg)))))))
+
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
+
+  (it "should add the button to a button group specified with the :group option"
+    (let [bg (button-group)
+          b  (button :group bg)]
+      (expect (= b (first (enumeration-seq (.getElements bg)))))))
+
   (it "should create a button from an action"
     (let [a (action :handler println)
           b (button :action a)]
@@ -632,6 +664,8 @@
 
 
 (describe frame
+  (it "should create a frame with an id"
+    (= "my-frame" (id-for (frame :id :my-frame :visible? false))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
       (expect (= javax.swing.JFrame (class f)))
@@ -652,6 +686,12 @@
       (expect (= c (.getContentPane f))))))
 
 (describe to-frame
+  (it "should convert a widget to its parent applet"
+    (let [c (label :text "HI")
+          a (javax.swing.JApplet.)]
+      (.add a c)
+      (expect (= a (to-frame c)))))
+
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
           f (frame :content c :visible? false)]
@@ -660,9 +700,36 @@
     (let [c (label :text "HI")]
       (expect (nil? (to-frame c))))))
 
+(describe slider
+  (it "should sync the value of the atom with the slider value, if slider value changed"
+    (let [v (atom 15)
+          sl (slider :value v)]
+      (.setValue sl 20)
+      (expect (= @v 20))))
+  (it "should sync the value of the slider with the atom value, if atom value changed"
+    (let [v (atom 15)
+          sl (slider :value v)]
+      (reset! v 20)
+      (expect (= (.getValue sl) 20)))))
+
+(describe progress-bar
+  (it "should sync the value of the atom with the progress-bar value, if progress-bar value changed"
+    (let [v (atom 15)
+          pb (progress-bar :value v)]
+      (.setValue pb 20)
+      (expect (= @v 20))))
+  (it "should sync the value of the progress-bar with the atom value, if atom value changed"
+    (let [v (atom 15)
+          pb (progress-bar :value v)]
+      (reset! v 20)
+      (expect (= (.getValue pb) 20)))))
+
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
+  (it "should find a frame by #id and return it"
+    (let [f (frame :id :my-frame :visible? false)]
+      (expect (= f (select f [:#my-frame])))))
   (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
@@ -678,4 +745,92 @@
     (let [a (label) b (text) c (label)
           p (flow-panel :items [a b c])]
       (expect (= [p a b c] (select p [:*]))))))
+
+(describe add!
+  (testing "When called on a panel with a FlowLayout"
+    (it "adds a widget to the end of the panel"
+      (let [p (flow-panel)
+            l (label)
+            result (add! p l)]
+        (expect (= result p))
+        (expect (= l (first (.getComponents p))))))
+    (it "adds a widget to the end of the panel"
+      (let [p (flow-panel)
+            label0 (label)
+            label1 (label)
+            result (add! p [label0 nil] label1 )]
+        (expect (= result p))
+        (expect (= label0 (first (.getComponents p))))
+        (expect (= label1 (second (.getComponents p)))))))
+
+  (testing "When called on a panel with a BoxLayout"
+    (it "adds a widget to the end of the panel"
+      (let [p (vertical-panel)
+            l (label)
+            result (add! p l)]
+        (expect (= result p))
+        (expect (= l (first (.getComponents p)))))))
+
+  (testing "When called on a panel with a BorderLayout"
+    (it "adds a widget at the given location"
+      (let [p (border-panel)
+            l (label)
+            result (add! p [l :north])]
+        (expect (= result p))
+        (expect (= BorderLayout/NORTH (.getConstraints (.getLayout p) l)))))))
+
+(describe remove!
+  (it "removes widgets from a container"
+    (let [l0 (label) l1 (label)
+          p (border-panel :north l0 :south l1)
+          result (remove! p l0 l1)]
+      (expect (= p result))
+      (expect (= 0 (count (.getComponents p)))))))
+
+(describe replace!
+  (testing "when called on a panel with a generic layout (e.g. flow)"
+    (it "replaces the given widget with a new widget"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (flow-panel :items [l0 l1])
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p)))))))
+  (testing "when called on a panel with a border layout"
+    (it "replaces the given widget with a new widget and maintains constraints"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (border-panel :north l0 :south l1)
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p))))
+        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2)))))))
+  (testing "when called on a panel with a mid layout"
+    (it "replaces the given widget with a new widget and maintains constraints"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p))))
+        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
+
+(describe selection
+  (it "should get the selection from a button-group"
+    (let [a (radio)
+          b (radio :selected? true)
+          bg (button-group :buttons [a b])]
+      (expect (= b (selection bg))))))
+
+(describe selection!
+  (it "should set the selection of a button-group"
+    (let [a (radio)
+          b (radio)
+          bg (button-group :buttons [a b])]
+      (expect (nil? (selection bg)))
+      (selection! bg b)
+      (expect (= b (selection bg))))))
 

@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.selection
+  (:require [seesaw.core :as sc])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
         seesaw.selection
@@ -27,6 +28,13 @@
       (nil? (selection (javax.swing.JCheckBox. "something" false))))
     (it "returns a single-element seq with the text of the button if it's selected and multi? is true"
       (= ["something"] (selection (javax.swing.JCheckBox. "something" true) {:multi? true}))))
+
+  (testing "when given a ButtonGroup"
+    (it "returns nil when no button is selected"
+      (nil? (selection (sc/button-group :buttons [(sc/toggle) (sc/radio)]))))
+    (it "returns the first selected button in the group"
+      (let [b (sc/toggle :selected? true)]
+        (expect (= b (selection (sc/button-group :buttons [(sc/toggle) b (sc/radio)])))))))
 
   (testing "when given a ComboBox"
     (it "returns nil when nothing is selected"
@@ -55,6 +63,10 @@
         (expect (= 2 (selection jlist)))
         (expect (= [2 3 4] (selection jlist {:multi? true}))))))
 
+  (testing "when given a JSlider"
+    (it "returns the current value"
+      (= 32 (selection (sc/slider :min 0 :max 100 :value 32)))))
+
   (testing "when given a JTable"
     (it "returns nil when no rows are selected"
       (nil? (selection (javax.swing.JTable.))))
@@ -78,12 +90,33 @@
           (expect (= cb (selection! cb "true")))
           (expect (selection cb))))))
 
+  (testing "when given a ButtonGroup and an argument"
+    (it "deselects the button if the argument is nil"
+      (let [bg (sc/button-group :buttons [(sc/toggle) (sc/radio :selected? true) (sc/radio)])]
+        (do
+          (expect (= bg (selection! bg nil)))
+          (expect (nil? (selection bg))))))
+    (it "selects a button if the argument is a button"
+      (let [b (sc/radio)
+            bg (sc/button-group :buttons [(sc/toggle :selected? true) b (sc/radio)])]
+        (do
+          (expect (= bg (selection! bg b)))
+          (expect (= b (selection bg)))
+          (expect (.isSelected b))))))
+
   (testing "when given a ComboBox and an argument"
     (it "sets the selection to that argument"
       (let [cb (javax.swing.JComboBox. (to-array [1 2 3 4]))]
         (do
           (expect (= cb (selection! cb 3)))
           (expect (= 3 (selection cb)))))))
+
+  (testing "when given a JSlider and an argument"
+    (it "sets the slider value to that argument"
+      (let [s (sc/slider :min 0 :max 100 :value 0)
+            result (selection! s 32)]
+        (expect (= result s))
+        (expect (= 32 (.getValue s))))))
 
   (testing "when given a JTree and an argument"
     (it "Clears the selection when the argument is nil"

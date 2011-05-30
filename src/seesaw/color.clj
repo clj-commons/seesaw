@@ -21,6 +21,22 @@
   ([r g b a] (Color. r (or g 0) (or b 0) (or a 255)))
   ([r g b] (color r g b nil)))
 
+(defn default-color
+  "Retrieve a default color from the UIManager.
+
+  Examples:
+
+    ; Return the look and feel's label foreground color
+    (default-color \"Label.foreground\")
+
+  Returns a java.awt.Color instance or nil if not found.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/UIManager.html#getColor%28java.lang.Object%29
+  "
+  [name]
+  (.getColor (javax.swing.UIManager/getDefaults) name))
+
 (defn to-color
   [c]
   (cond

@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color])
+  (:use [seesaw util font border color meta])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -23,9 +23,9 @@
              SwingUtilities SwingConstants UIManager ScrollPaneConstants
              Action
              BoxLayout
-             JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
+             JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
-             AbstractButton JButton JToggleButton JCheckBox JRadioButton
+             AbstractButton JButton JToggleButton JCheckBox JRadioButton ButtonGroup
              JOptionPane]
            [javax.swing.text JTextComponent]
            [java.awt Component FlowLayout BorderLayout GridLayout 
@@ -71,7 +71,17 @@
 (defn native!
   "Set native look and feel and other options to try to make things look right.
   This function must be called very early, like before any other Seesaw or Swing
-  calls!"
+  calls!
+  
+  Note that on OSX, you can set the application name in the menu bar (usually
+  displayed as the main class name) by setting the -Xdock:<name-of-your-app>
+  parameter to the JVM at startup. Sorry, I don't know of a way to do it 
+  dynamically.
+
+  See:
+
+  http://developer.apple.com/library/mac/#documentation/Java/Conceptual/Java14Development/07-NativePlatformIntegration/NativePlatformIntegration.html
+  "
   []
   (System/setProperty "apple.laf.useScreenMenuBar" "true")
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName)))
@@ -85,9 +95,14 @@
 ; alias action/action for convenience
 (def action ssa/action)
 
-;(def choose-file seesaw.chooser/choose-file)
 
-; to-widget wrapper and stuff for (seesaw.selection/selection)
+; TODO protocol or whatever when needed
+(defn- to-selectable
+  [target]
+  (cond
+    (instance? javax.swing.ButtonGroup target) target
+    :else (to-widget target)))
+
 (defn selection 
   "Gets the selection of a widget. target is passed through (to-widget)
   so event objects can also be used. The default behavior is to return
@@ -98,11 +113,21 @@
 
     multi? - If true the return value is a seq of selected values rather than
       a single value.
+
+  Examples:
+
+  (def t (table))
+  (listen t :selection 
+    (fn [e]
+      (let [selected-rows (selection t {:multi? true})]
+        (println \"Currently selected rows: \" selected-rows))))
   
-  See also seesaw.selection/selection.
+  See:
+
+    seesaw.selection/selection.
   "
   ([target] (selection target {}))
-  ([target options] (sss/selection (to-widget target) options)))
+  ([target options] (sss/selection (to-selectable target) options)))
 
 (defn selection!
   "Sets the selection on a widget. target is passed through (to-widget)
@@ -120,7 +145,7 @@
   See also seesaw.selection/selection!.
   "
   ([target new-selection] (selection! target {} new-selection))
-  ([target opts new-selection] (sss/selection! (to-widget target) opts new-selection)))
+  ([target opts new-selection] (sss/selection! (to-selectable target) opts new-selection)))
 
 (def icon ssi/icon)
 (def ^{:private true} make-icon icon)
@@ -222,7 +247,13 @@
   (doseq [target (map to-widget (to-seq targets))]
     (.repaint target))
   targets)
-  
+ 
+(defn- handle-structure-change [container]
+  "Helper. Revalidate and repaint a container after structure change"
+  (doto container
+    .revalidate
+    .repaint))
+
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([c w constraint] 
@@ -236,17 +267,30 @@
   (.removeAll c)
   (doseq [w ws]
     (add-widget c w))
-  (doto c
-    .revalidate
-    .repaint))
+  (handle-structure-change c))
 
-(def ^{:private true} id-property "seesaw-widget-id")
+(def ^{:private true} id-property ::seesaw-widget-id)
 
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
-   creation. See also (select)."
+   creation. The widget parameter is passed through (to-widget) first so
+   events and other objects can also be used. The id is always returned as
+   a string, even it if was originally given as a keyword.
+
+  Returns the id as a string, or nil.
+  
+  See:
+    (seesaw.core/select).
+  "
   [w] 
-  (when (instance? javax.swing.JComponent w) (.getClientProperty w id-property)))
+  (get-meta (to-widget w) id-property))
+
+(defn- id-option-handler [w id]
+  (let [id-key (name id)
+        existing-id (get-meta w id-property)]
+    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+    ; TODO should we enforce unique ids?
+    (put-meta! w id-property id-key)))
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -256,17 +300,6 @@
 
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
-
-(defn- id-option-handler [w id]
-  (let [id-key (name id)]
-    (cond
-      (instance? JComponent w)
-        (let [existing-id (.getClientProperty w id-property)]
-          (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
-          ; TODO should we enforce unique ids?
-          (.putClientProperty w id-property id-key)))
-      ; TODO need to figure out how to store JFrame ids. JFrame/getFrames is pretty useless
-  ))
 
 (defn- location-option-handler [w v]
   (cond
@@ -370,10 +403,16 @@
 (def ^{:private true}  border-layout-dirs 
   (constant-map BorderLayout :north :south :east :west :center))
 
+(defn- border-panel-items-handler
+  [panel items]
+  (doseq [[w dir] items]
+    (add-widget panel w (border-layout-dirs dir))))
+
 (def ^{:private true} border-layout-options 
   (merge
-    { :hgap #(.setHgap (.getLayout %1) %2)
-      :vgap #(.setVgap (.getLayout %1) %2) }
+    { :hgap  #(.setHgap (.getLayout %1) %2)
+      :vgap  #(.setVgap (.getLayout %1) %2) 
+      :items border-panel-items-handler }
     (reduce 
       (fn [m [k v]] (assoc m k #(add-widget %1 %2 v)))
       {} 
@@ -391,8 +430,22 @@
  
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
+
+  The :items option is a list of widget/direction pairs which can be used
+  if you don't want to use the direction options directly. For example, both
+  of these are equivalent:
+
+    (border-panel :north \"North\" :south \"South\")
+
+  is the same as:
+
+    (border-panel :items [[\"North\" :north] [\"South\" :south]])
+
+  This is for consistency with other containers.
+
+  See:
   
-  See http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
+    http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
   [& opts]
   (let [p (JPanel. (BorderLayout.))]
@@ -553,9 +606,7 @@
   (doseq [[widget constraints] (realize-grid-bag-constraints items)]
     (when widget
       (add-widget panel widget constraints)))
-  (doto panel
-    .revalidate
-    .repaint))
+  (handle-structure-change panel))
 
 (def ^{:private true} form-panel-options {
   :items add-grid-bag-items
@@ -598,9 +649,7 @@
   (.removeAll parent)
   (doseq [[widget constraint] items]
     (add-widget parent widget constraint))
-  (doto parent
-    .revalidate
-    .repaint))
+  (handle-structure-change parent))
 
 (def ^{:private true} mig-panel-options {
   :constraints apply-mig-constraints
@@ -651,16 +700,56 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
   [& args]
-  (if (next args)
-    (apply-options (JLabel.) args (merge default-options label-options))
-    (apply label :text args)))
+  (case (count args) 
+    0 (label :text "")
+    1 (label :text (first args))
+    (apply-options (JLabel.) args (merge default-options label-options))))
 
 
 ;*******************************************************************************
 ; Buttons
 
+(def ^{:private true} button-group-options {
+  :buttons #(doseq [b %2] (.add %1 b))
+})
+
+(defn button-group
+  "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
+  radio buttons, toggle-able menus, etc. Takes the following options:
+
+    :buttons A sequence of buttons to include in the group. They are *not*
+             passed through (to-widget), i.e. they must be button or menu 
+             instances.
+
+  The mutual exclusion of the buttons in the group will be maintained automatically.
+  The currently \"selected\" button can be retrieved and set with (selection) and
+  (selection!) as usual.
+
+  Note that a button can be added to a group when the button is created using the
+  :group option of the various button and menu creation functions.
+
+  Examples:
+
+    (let [bg (button-group)]
+      (flow-panel :items [(radio :id :a :text \"A\" :group bg)
+                          (radio :id :b :text \"B\" :group bg)]))
+
+    ; now A and B are mutually exclusive
+
+    ; Check A
+    (selection bg (select root [:#a]))
+
+  Returns an instance of javax.swing.ButtonGroup
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html
+  "
+  [& opts]
+  (apply-options (ButtonGroup.) opts button-group-options))
+
 (def ^{:private true} button-options {
   :selected?   #(.setSelected %1 (boolean %2))
+  :group       #(.add %2 %1)
 })
 
 (defn- apply-button-defaults
@@ -1151,7 +1240,7 @@
   (cond 
     (nil? v) (canvas-paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (canvas-paint-option-handler c {:after v})
-    (map? v) (do (.putClientProperty c paint-property v) (.repaint c))
+    (map? v) (do (put-meta! c paint-property v) (.repaint c))
     :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
 
 (def ^{:private true} canvas-options {
@@ -1161,7 +1250,7 @@
 (defn- create-paintable []
   (proxy [javax.swing.JPanel] []
     (paintComponent [g]
-      (let [{:keys [before after super?] :or {super? true}} (.getClientProperty this paint-property)]
+      (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
         (ssg/anti-alias g)
         (when before (ssg/push g (before this g)))
         (when super? (proxy-super paintComponent g))
@@ -1253,6 +1342,7 @@
   (cond
     (nil? w) w
     (instance? java.awt.Window w) w
+    (instance? java.applet.Applet w) w
     (instance? javax.swing.JPopupMenu w) 
       (if-let [p (.getParent w)] 
         (get-root p) 
@@ -1266,7 +1356,77 @@
   directly to this."
   [w]
   (get-root (to-widget w)))
-  ;(SwingUtilities/getRoot (to-widget w)))
+
+;*******************************************************************************
+; Dialog
+(def ^{:private true} dialog-options {
+  :modal? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
+               (.setModal %1 %2))
+})
+
+(def ^:private current-modal-dialogs (atom nil))
+
+(defn return-from-dialog
+  "Return from the current dialog with the specified value. The dialog
+  must be modal and created from within the DIALOG fn with both
+  VISIBLE? and MODAL? set to true."
+  [x]
+  (if (empty? @current-modal-dialogs)
+    (throw (IllegalArgumentException. "Cannot return from dialog, as there is no modal dialog."))
+    (let [{:keys [dialog result]} (first @current-modal-dialogs)]
+     (try
+       (reset! result x)
+       (invoke-later (.dispose dialog))
+       (finally
+        (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
+
+(defn dialog
+  "Create a dialog and display it.
+
+      (dialog ... options ...)
+
+  Besides the default & frame options, options can also be one of:
+
+    :modal?  A boolean value indicating whether this dialog is to be a
+              modal dialog.  If :modal? *and* :visible? are set to
+              true (:visible? is true per default), the function will
+              block with a dialog. The function will return once the user:
+              a) Closes the window by using the system window
+                 manager (e.g. by pressing the \"X\" icon in many OS's)
+              b) A function from within an event calls the dialogs
+                 dispose method.
+              c) A function from within an event calls RETURN-FROM-DIALOG
+                  with a return value.
+              In the case of a) and b), this function returns nil. In the
+              case of c), this function returns the value passed to
+              RETURN-FROM-DIALOG.
+
+  Returns a JDialog if :visible? & :modal? are not both true. Otherwise
+  will block & return a value as further documented for argument :modal?.
+
+"
+  [& {:keys [width height visible? pack? modal?] 
+      :or {width 100 height 100 visible? true pack? true}
+      :as opts}]
+  (let [dlg-result (atom nil)
+        dlg (apply-options (JDialog.) 
+                           (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
+    (cond-doto dlg
+      true     (.setSize width height)
+      pack?    (.pack))
+    (if (and modal? visible?)
+      (do
+        (listen dlg
+                :window-opened
+                (fn [_] (when (.isModal dlg)
+                          (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
+                #{:window-closed}
+                (fn [_]
+                  (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
+                    (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
+        (.setVisible dlg true)
+        @dlg-result)
+      dlg)))
 
 
 ;*******************************************************************************
@@ -1374,10 +1534,151 @@
     (cond
       (or (= n 0) (keyword? f))
         (throw (IllegalArgumentException. "input requires at least one non-keyword arg"))
-      (= n 1)      (input-impl nil f)
-      (= n 2)      (input-impl f s)
+      (= n 1)      (input-impl nil f {})
+      (= n 2)      (input-impl f s {})
       (keyword? s) (input-impl nil f (drop 1 args))
       :else        (input-impl f  s (drop 2 args)))))
+
+
+;*******************************************************************************
+; Slider
+(def ^{:private true} slider-options {
+  :orientation #(.setOrientation %1 (or (orientation-table %2)
+                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
+  :value #(cond (isa? (type %2) clojure.lang.Atom)
+                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
+                               (fn [k r o n] (when (not (= o n))
+                                               (invoke-now (.setValue %1 n)))))
+                    (listen %1 :change (fn [e] (swap! %2
+                                                (fn [o] (if (not (= (.getValue %1) o))
+                                                          (.getValue %1)
+                                                          o))))))
+                (number? %2)
+                (.setValue %1 %2)
+                true
+                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :min #(do (check-args (number? %2) ":min must be a number.")
+            (.setMinimum %1 %2))
+  :max #(do (check-args (number? %2) ":max must be a number.")
+            (.setMaximum %1 %2))
+  :minor-tick-spacing #(do (check-args (number? %2) ":minor-tick-spacing must be a number.")
+                           (.setPaintTicks %1 true)
+                           (.setMinorTickSpacing %1 %2))
+  :major-tick-spacing #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
+                           (.setPaintTicks %1 true)
+                           (.setMajorTickSpacing %1 %2))
+  :snap-to-ticks? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
+                       (.setSnapToTicks %1 %2))
+  :paint-ticks? #(do (check-args (isa? (type %2) Boolean) ":paint-ticks? must be a boolean.")
+                     (.setPaintTicks %1 %2))
+  :paint-labels? #(do (check-args (isa? (type %2) Boolean) ":paint-labels? must be a boolean.")
+                      (.setPaintLabels %1 %2))
+  :paint-track? #(do (check-args (isa? (type %2) Boolean) ":paint-track? must be a boolean.")
+                     (.setPaintTrack %1 %2))
+  :inverted? #(do (check-args (isa? (type %2) Boolean) ":inverted? must be a boolean.")
+                  (.setInverted %1 %2))
+ 
+})
+
+(defn slider
+  "Show a slider which can be used to modify a value.
+
+      (slider ... options ...)
+
+  Besides the default options, options can also be one of:
+
+    :orientation   The orientation of the slider. One of :horizontal, :vertical.
+    :value         The initial numerical value that is to be set. This may be an
+                   atom, in which case the atom will be kept in sync with the slider.
+    :min           The minimum numerical value which can be set.
+    :max           The maximum numerical value which can be set.
+    :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
+    :major-tick-spacing  The spacing between major ticks. If set, will also set :paint-ticks? to true.
+    :snap-to-ticks?  A boolean value indicating whether the slider should snap to ticks.
+    :paint-ticks?    A boolean value indicating whether to paint ticks.
+    :paint-labels?   A boolean value indicating whether to paint labels for ticks.
+    :paint-track?    A boolean value indicating whether to paint the track.
+    :inverted?       A boolean value indicating whether to invert the slider (to go from high to low).
+
+  Examples:
+
+    ; ask & return single file
+    (slider :value 10 :min -50 :max 50)
+
+  Returns a JSlider.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
+
+"
+  [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
+             snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
+      :as kw}] 
+  (let [sl (javax.swing.JSlider. )]
+    (apply-options sl kw (merge default-options slider-options))))
+
+
+;*******************************************************************************
+; Progress Bar
+(def ^{:private true} progress-bar-options {
+  :orientation #(.setOrientation %1 (or (orientation-table %2)
+                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
+  :value #(cond (isa? (type %2) clojure.lang.Atom)
+                  (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
+                                (fn [k r o n] (when (not (= o n))
+                                                (invoke-now (.setValue %1 n)))))
+                      (listen %1 :change (fn [e] (swap! %2
+                                                  (fn [o] (if (not (= (.getValue %1) o))
+                                                            (.getValue %1)
+                                                            o))))))
+                (number? %2)
+                  (.setValue %1 %2)
+                true
+                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :min #(do (check-args (number? %2) ":min must be a number.")
+            (.setMinimum %1 %2))
+  :max #(do (check-args (number? %2) ":max must be a number.")
+            (.setMaximum %1 %2))
+  :paint-string? #(do (check-args (isa? (type %2) Boolean) ":paint-string? must be a boolean.")
+                      (.setStringPainted %1 %2))
+  :indeterminate? #(do (check-args (isa? (type %2) Boolean) ":indeterminate? must be a boolean.")
+                       (.setIndeterminate %1 %2))
+})
+
+(defn progress-bar
+  "Show a progress-bar which can be used to display the progress of long running tasks.
+
+      (progress-bar ... options ...)
+
+  Besides the default options, options can also be one of:
+
+    :orientation   The orientation of the progress-bar. One of :horizontal, :vertical. Default: :horizontal.
+    :value         The initial numerical value that is to be set. This may be an
+                   atom, in which case the atom will be kept in sync with the slider. Default: 0.
+    :min           The minimum numerical value which can be set. Default: 0.
+    :max           The maximum numerical value which can be set. Default: 100.
+    :paint-string? A boolean value indicating whether to paint a string containing
+                   the progress' percentage. Default: false.
+    :indeterminate? A boolean value indicating whether the progress bar is to be in
+                    indeterminate mode (for when the exact state of the task is not
+                    yet known). Default: false.
+
+  Examples:
+
+    ; vertical progress bar from 0 to 100 starting with inital value at 15.
+    (progress-bar :orientation :vertical :min 0 :max 100 :value 15)
+
+  Returns a JProgressBar.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
+
+"
+  [& {:keys [orientation value min max] :as kw}]
+  (let [sl (javax.swing.JProgressBar.)]
+    (apply-options sl kw (merge default-options progress-bar-options))))
+
+
 
 ;*******************************************************************************
 ; Selectors
@@ -1409,4 +1710,124 @@
       (cond
         (= (first selector) :*) (collect (to-widget root))
         :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
+
+;*******************************************************************************
+; Widget layout manipulation
+
+(defprotocol LayoutManipulation
+  (add!* [layout target widget constraint])
+  (get-constraint [layout container widget]))
+
+(extend-protocol LayoutManipulation
+  java.awt.LayoutManager
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] nil)
+
+  java.awt.BorderLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget (border-layout-dirs constraint)))
+    (get-constraint [layout container widget]
+      (.getConstraints layout widget))
+
+  net.miginfocom.swing.MigLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget))
+    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+
+
+(defn- add!-impl 
+  [container subject & more]
+  (let [container (to-widget container)
+        [widget constraint] (if (vector? subject) subject [subject nil])
+        layout (.getLayout container)]
+    (add!* layout container widget constraint)
+    (when more
+      (apply add!-impl container more))
+    container))
+
+(defn add! [container subject & more]
+  "Add one or more widgets to a widget container. The container and each widget
+  argument are passed through (to-widget) as usual. Each widget can be a single
+  widget, or a widget/constraint pair with a layout-specific constraint.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    ; Add a label and a checkbox to a panel
+    (add! (vertical-panel) \"Hello\" (button ...))
+
+    ; Add a label and a checkbox to a border panel with layout constraints
+    (add! (border-panel) [\"Hello\" :north] [(button ...) :center])
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  (handle-structure-change (apply add!-impl container subject more)))
+
+(defn- remove!-impl
+  [container subject & more]
+  (let [container (to-widget container)]
+    (.remove (to-widget container) (to-widget subject))
+    (when more
+      (apply remove!-impl container more))
+    container))
+
+(defn remove!
+  "Remove one or more widgets from a container. container and each widget
+  are passed through (to-widget) as usual, but no new widgets are created.
+
+  The container is properly revalidated and repainted after removal.
+
+  Examples:
+
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (remove! p lbl)
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  [container subject & more]
+  (handle-structure-change (apply remove!-impl container subject more)))
+
+(defn- index-of-component
+  [container widget]
+  (loop [comps (.getComponents container) idx 0]
+    (cond
+      (not comps)              nil
+      (= widget (first comps)) idx
+      :else (recur (next comps) (inc idx)))))
+
+(defn- replace!-impl
+  [container old-widget new-widget]
+  (let [container  (to-widget container)
+        old-widget (to-widget old-widget)
+        idx        (index-of-component container old-widget)]
+    (when idx
+      (let [constraint (get-constraint (.getLayout container) container old-widget)]
+        (doto container
+          (.remove idx)
+          (.add    (to-widget new-widget true) constraint))))
+    container))
+  
+(defn replace!
+  "Replace old-widget with new-widget from container. container and each widget
+  are passed through (to-widget) as usual. Note that the layout constraints of 
+  old-widget are retained for the new widget. This is different from the behavior
+  you'd get with just remove/add in Swing.
+
+  The container is properly revalidated and repainted after replacement.
+
+  Examples:
+
+    ; Replace a label with a new label.
+    (def lbl (label \"HI\"))
+    (def p (border-panel :north lbl))
+    (replace! p lbl \"Goodbye\")
+
+  Returns the target container *after* it's been passed through (to-widget).
+  "
+  [container old-widget new-widget]
+  (handle-structure-change (replace!-impl container old-widget new-widget)))
+
 

@@ -19,8 +19,10 @@
 })
 
 (def ^{:private true} file-chooser-options {
-  :dir    #(.setCurrentDirectory %1 %2)
+  :dir    #(.setCurrentDirectory %1 (if (isa? (type %2) java.io.File) %2 (java.io.File. %2)))
   :multi? #(.setMultiSelectionEnabled %1 (boolean %2))
+  :filters #(doseq [[name exts] %2]
+              (.setFileFilter %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
 })
 
 (def ^{:private true} last-dir (atom nil))
@@ -57,23 +59,50 @@
           Defaults to :open.
     :dir  The initial working directory. If omitted, the previous directory chosen
           is remembered and used.
-    :multi? If true, multi-selection is enabled and a seq of files is returned.
+    :multi?  If true, multi-selection is enabled and a seq of files is returned.
+    :filters A seq of lists where each list contains a filter name and a seq of
+             extensions as strings for that filter. Default: [].
+    :remember-directory? Flag specifying whether to remember the directory for future
+                         file-input invocations in case of successful exit. Default: true.
+    :success-fn  Function which will be called with the JFileChooser and the File which
+                 has been selected by the user. Its result will be returned.
+                 Default: return selected File. In the case of MULTI-SELECT? being true,
+                 a seq of File instances will be passed instead of a single File.
+    :cancel-fn   Function which will be called with the JFileChooser on user abort of the dialog.
+                 Its result will be returned. Default: returns nil.
 
-  Returns nil if the user cancels, a single java.io.File if :multi? is false and
-  a seq of files if :multi? is true.
+  Examples:
 
+    ; ask & return single file
+    (choose-file)
+
+    ; ask & return including a filter for image files
+    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]]])
+
+    ; ask & return absolute file path as string
+    (choose-file :success-fn (fn [fc file] (.getAbsolutePath file)))
+
+  Returns result of SUCCESS-FN (default: either java.io.File or seq of java.io.File iff multi? set to true)
+  in case of the user selecting a file, or result of CANCEL-FN otherwise.
+  
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
-  (let [[parent & {:keys [type] :or {type :open} :as opts}] (if (keyword? (first args)) (cons nil args) args)
+  (let [[parent & {:keys [type remember-directory? success-fn cancel-fn]
+                   :or {type :open
+                        remember-directory? true
+                        success-fn (fn [fc files] files)
+                        cancel-fn (fn [fc])}
+                   :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type))
+        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn :cancel-fn))
         multi?  (.isMultiSelectionEnabled chooser)
         result  (show-file-chooser chooser parent type)]
     (cond 
       (= result JFileChooser/APPROVE_OPTION)
         (do
-          (remember-chooser-dir chooser)
-          (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser)))
-      :else nil)))
+          (when remember-directory?
+            (remember-chooser-dir chooser))
+          (success-fn chooser (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser))))
+      :else (cancel-fn chooser))))
 

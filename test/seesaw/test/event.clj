@@ -10,9 +10,10 @@
 
 (ns seesaw.test.event
   (:use seesaw.event)
+  (:require [seesaw.core :as sc])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import [javax.swing JPanel JTextField JButton]
+  (:import [javax.swing JPanel JTextField JButton JRadioButton JToggleButton]
            [javax.swing.event ChangeListener]
            [java.awt.event ItemListener MouseListener MouseMotionListener]))
 
@@ -157,6 +158,22 @@
         (.doClick button0)
         (.doClick button1))
       (expect (= 2 @called))))
+
+  (it "can register for window events on a frame"
+    (let [f (javax.swing.JFrame.)]
+      (listen f :window-closed (fn [e] nil))))
+
+  (it "registers events on all buttons in a ButtonGroup"
+    (let [[a b c] [(JRadioButton.) (JToggleButton.) (JButton.)]
+          bg (sc/button-group :buttons [a b c])]
+      (expect (= 0 (count (.getActionListeners a))))
+      (expect (= 0 (count (.getActionListeners b))))
+      (expect (= 0 (count (.getActionListeners c))))
+      (listen bg :action (fn [e]))
+      (expect (= 1 (count (.getActionListeners a))))
+      (expect (= 1 (count (.getActionListeners b))))
+      (expect (= 1 (count (.getActionListeners c))))))
+
   (it "can register a ListSelectionListener on a JList with :selection key"
     (let [jlist (javax.swing.JList.)
           called (atom false)]

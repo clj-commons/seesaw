@@ -19,14 +19,26 @@
   javax.swing.Action
     (get-selection [target]      
       (when-let [s (.getValue target javax.swing.Action/SELECTED_KEY)] [true]))
-    (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v))))
+    (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v)))
 
-(extend-protocol Selection
   javax.swing.AbstractButton
     (get-selection [target]      (seq (.getSelectedObjects target)))
-    (set-selection [target [v]]  (doto target (.setSelected (boolean v)))))
+    (set-selection [target [v]]  (doto target (.setSelected (boolean v))))
 
-(extend-protocol Selection
+  javax.swing.ButtonGroup
+    (get-selection [target]      
+      (when-let [sel (some #(when (.isSelected %) %) (enumeration-seq (.getElements target)))]
+        [sel]))
+    (set-selection [target [v]]  
+      (if v
+        (.setSelected target (.getModel v) true)
+        (.clearSelection target))
+      target)
+
+  javax.swing.JSlider
+    (get-selection [target]     (vector (.getValue target)))
+    (set-selection [target [v]] (doto target (.setValue v)))
+
   javax.swing.JComboBox
     (get-selection [target]     (seq (.getSelectedObjects target)))
     (set-selection [target [v]] (doto target (.setSelectedItem v))))

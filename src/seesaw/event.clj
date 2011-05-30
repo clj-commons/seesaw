@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.event
-  (:use seesaw.util)
+  (:use [seesaw util meta])
   (:import [javax.swing.event ChangeListener DocumentListener 
             ListSelectionListener TreeSelectionListener]
            [javax.swing.text Document]
@@ -41,7 +41,7 @@
     :events  #{:window-activated :window-deactivated 
               :window-closed :window-closing :window-opened
               :window-deiconified :window-iconified}
-    :install #(.addWindowListener %1 %2)
+    :install  #(.addWindowListener %1 %2)
   }
   :focus {
     :name    :focus
@@ -171,18 +171,22 @@
     (flatten)
     (apply hash-map)))
 
+(defn- store-handlers
+  [target event-group-name handlers]
+  (put-meta! target event-group-name handlers))
+
 (defn- install-group-handlers
   [target event-group]
   (let [group-handlers (atom {})
         listener       (reify-listener (:class event-group) group-handlers)]
     (doto target
       ((:install event-group) listener)
-      (.putClientProperty (:name event-group) group-handlers))
+      (store-handlers (:name event-group) group-handlers))
     group-handlers))
 
 (defn- get-handlers*
   [target event-group-name]
-  (.getClientProperty target event-group-name))
+  (get-meta target event-group-name))
 
 (defn get-handlers
   [target event-group-name]
@@ -240,6 +244,16 @@
       (swap! handlers unappend-listener final-method-name event-fn)))
     targets)
 
+(defn- get-sub-targets
+  [targets]
+  (reduce
+    (fn [result target]
+      (cond
+        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements target)))
+        :else (conj result target)))  
+    []
+    targets))
+    
 (defn listen
   "
   *note: use seesaw.core/listen rather than calling this directly*
@@ -275,7 +289,7 @@
   *not* retrievable from the event object.
   "
   [targets & more]
-    (doseq [target (to-seq targets) 
+    (doseq [target (get-sub-targets (to-seq targets))
             [event-name event-fn] (preprocess-event-specs target more)]
       (let [handlers (get-or-install-handlers target event-name)
             final-method-name (get event-method-table event-name event-name)]

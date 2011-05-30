@@ -10,6 +10,7 @@
 
 (ns seesaw.util
   (:require clojure.string)
+  (:use [seesaw meta])
   (:import [java.net URL MalformedURLException]))
 
 (defn check-args 
@@ -95,19 +96,13 @@
 
 (def ^{:private true} options-property "seesaw-creation-options")
 
-; TODO custom metadata storage like this should be a protocol so apply-options
-; can be used on anybody.
 (defn- store-option-handlers
   [target handler-map]
-  (cond-doto target
-    (instance? javax.swing.JComponent target) (.putClientProperty options-property handler-map)
-    (instance? javax.swing.Action target)     (.putValue options-property handler-map)))
+  (put-meta! target options-property handler-map))
 
 (defn- get-option-handlers
   [target]
-  (cond
-    (instance? javax.swing.JComponent target) (.getClientProperty target options-property)
-    (instance? javax.swing.Action target)     (.getValue target options-property)))
+  (get-meta target options-property))
 
 (defn apply-options
   [target opts handler-map]
