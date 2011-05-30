@@ -244,6 +244,16 @@
       (swap! handlers unappend-listener final-method-name event-fn)))
     targets)
 
+(defn- get-sub-targets
+  [targets]
+  (reduce
+    (fn [result target]
+      (cond
+        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements target)))
+        :else (conj result target)))  
+    []
+    targets))
+    
 (defn listen
   "
   *note: use seesaw.core/listen rather than calling this directly*
@@ -279,7 +289,7 @@
   *not* retrievable from the event object.
   "
   [targets & more]
-    (doseq [target (to-seq targets) 
+    (doseq [target (get-sub-targets (to-seq targets))
             [event-name event-fn] (preprocess-event-specs target more)]
       (let [handlers (get-or-install-handlers target event-name)
             final-method-name (get event-method-table event-name event-name)]

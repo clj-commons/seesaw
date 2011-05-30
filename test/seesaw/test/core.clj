@@ -818,4 +818,19 @@
         (expect (= [l0 l2] (vec (.getComponents p))))
         (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
 
+(describe selection
+  (it "should get the selection from a button-group"
+    (let [a (radio)
+          b (radio :selected? true)
+          bg (button-group :buttons [a b])]
+      (expect (= b (selection bg))))))
+
+(describe selection!
+  (it "should set the selection of a button-group"
+    (let [a (radio)
+          b (radio)
+          bg (button-group :buttons [a b])]
+      (expect (nil? (selection bg)))
+      (selection! bg b)
+      (expect (= b (selection bg))))))
 

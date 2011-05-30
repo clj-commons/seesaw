@@ -95,9 +95,14 @@
 ; alias action/action for convenience
 (def action ssa/action)
 
-;(def choose-file seesaw.chooser/choose-file)
 
-; to-widget wrapper and stuff for (seesaw.selection/selection)
+; TODO protocol or whatever when needed
+(defn- to-selectable
+  [target]
+  (cond
+    (instance? javax.swing.ButtonGroup target) target
+    :else (to-widget target)))
+
 (defn selection 
   "Gets the selection of a widget. target is passed through (to-widget)
   so event objects can also be used. The default behavior is to return
@@ -122,7 +127,7 @@
     seesaw.selection/selection.
   "
   ([target] (selection target {}))
-  ([target options] (sss/selection (to-widget target) options)))
+  ([target options] (sss/selection (to-selectable target) options)))
 
 (defn selection!
   "Sets the selection on a widget. target is passed through (to-widget)
@@ -140,7 +145,7 @@
   See also seesaw.selection/selection!.
   "
   ([target new-selection] (selection! target {} new-selection))
-  ([target opts new-selection] (sss/selection! (to-widget target) opts new-selection)))
+  ([target opts new-selection] (sss/selection! (to-selectable target) opts new-selection)))
 
 (def icon ssi/icon)
 (def ^{:private true} make-icon icon)
