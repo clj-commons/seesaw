@@ -6,14 +6,9 @@
   (border-panel
     :north "This is a Seesaw applet"
     :center (canvas :id :canvas :background "#550000")
-    :south "Some kind of status bar"))
+    :south "This is a Seesaw applet"))
 
 (defapplet
-  :name applet.core
-  ; :init a function call at init
-  ; :start a function called when the applet is started
-  ; :stop a function called when the applet is stopped
-  ; A function called the returns the root panel to display
   :content make-content)
 
 ;keytool -genkey -alias seesaw -dname "cn=daveray, c=en"
