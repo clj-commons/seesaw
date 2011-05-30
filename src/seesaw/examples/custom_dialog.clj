@@ -33,7 +33,7 @@
             :modal? true
             :title "Display Options"
             :content (mig-panel :border (line-border)
-                                :items [[(label :font (font :from (.getFont (javax.swing.UIManager/getDefaults) "Label.font")
+                                :items [[(label :font (font :from (default-font "Label.font")
                                                             :style :bold)
                                                 :text "Display options for new geometry") "gaptop 10, wrap"]
                                         [:separator "growx, wrap, gaptop 10, spanx 2"]
