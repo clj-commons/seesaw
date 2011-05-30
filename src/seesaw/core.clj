@@ -1500,13 +1500,65 @@
 })
 
 (defn option-pane
-  [& {:keys [title parent content option-type type options default-action handler success-fn cancel-fn no-fn]
+  "Display a JOptionPane. This is a dialog which displays some
+  input/question to the user, which may be answered using several
+  standard button configurations or entirely custom ones.
+
+      (option-pane ... options ...)
+
+  Options can be any of:
+
+    :title       The title the dialog should have.
+    :parent      The window which the new dialog should be positioned relatively to.
+    :content     May be a string or a component (or a panel with even more components) which is to be displayed.
+    :option-type   In case :options is *not* specified, this may be one of :default, :yes-no, :yes-no-cancel, :ok-cancel
+                   to specify which standard button set is to be used in the dialog.
+    :type        The type of the dialog. One of :warning, :error, :info, :plain, or :question.
+    :options     Custom buttons/options can be provided using this
+                 argument. It must be a seq of \"to-widget\"'able
+                 objects which will be displayed as options the user
+                 can choose from. Note that in this
+                 case, :success-fn, :cancel-fn & :no-fn will *not* be
+                 called. Use the handlers on those buttons &
+                 RETURN-FROM-DIALOG to close the dialog.
+    :default-option  The default option instance which is to be selected. This should be an element
+                     from the :options seq.
+    :success-fn  A function taking the JOptionPane as its only
+                 argument. It will be called when no :options argument
+                 has been specified and the user has pressed any of the \"Yes\" or \"Ok\" buttons.
+                 Default: a function returning 'success.
+    :cancel-fn   A function taking the JOptionPane as its only
+                 argument. It will be called when no :options argument
+                 has been specified and the user has pressed the \"Cancel\" button.
+                 Default: a function returning 'cancel.
+    :no-fn       A function taking the JOptionPane as its only
+                 argument. It will be called when no :options argument
+                 has been specified and the user has pressed the \"No\" button.
+                 Default: a function returning 'no.
+
+  Examples:
+
+    ; display a dialog with only an \"Ok\" button.
+    (option-pane :content \"You may now press Ok\")
+
+    (option-pane :content
+     (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
+                 :options-type :ok-cancel
+                 :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
+
+  Blocks until the user enters a value. Then returns the result
+  of :success-fn, :cancel-fn or :no-fn depending on what button the
+  user pressed. Alternatively if :options has been specified, returns
+  the value which has been passed to RETURN-FROM-DIALOG.
+
+"
+  [& {:keys [title parent content option-type type options default-option success-fn cancel-fn no-fn]
       :or {success-fn (fn [_] 'success)
            cancel-fn (fn [_])
            no-fn (fn [_] 'no)}
       :as kw}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
-  (let [option-type (or option-type :yes-no)
+  (let [option-type (or option-type :default)
         content (or content "No message set")
         pane (JOptionPane. 
               content 
@@ -1515,7 +1567,7 @@
               nil                       ;icon
               (when options
                 (into-array (map #(to-widget % true) options)))
-              (or default-action (first options)) ; default selection
+              (or default-option (first options)) ; default selection
               )]
     (let [dispatch-fns {:yes-no [success-fn no-fn]
                         :yes-no-cancel [success-fn no-fn cancel-fn]
