@@ -1526,15 +1526,15 @@
     :success-fn  A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed any of the \"Yes\" or \"Ok\" buttons.
-                 Default: a function returning 'success.
+                 Default: a function returning :success.
     :cancel-fn   A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"Cancel\" button.
-                 Default: a function returning 'cancel.
+                 Default: a function returning nil.
     :no-fn       A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"No\" button.
-                 Default: a function returning 'no.
+                 Default: a function returning :no.
 
   Examples:
 
@@ -1553,9 +1553,9 @@
 
 "
   [& {:keys [title parent content option-type type options default-option success-fn cancel-fn no-fn]
-      :or {success-fn (fn [_] 'success)
+      :or {success-fn (fn [_] :success)
            cancel-fn (fn [_])
-           no-fn (fn [_] 'no)}
+           no-fn (fn [_] :no)}
       :as kw}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [option-type (or option-type :default)
