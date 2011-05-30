@@ -51,6 +51,8 @@
       (expect (= "Arial" (.getName f))))))
 
 (describe to-font
+  (it "returns nil if its input is nil"
+    (nil? (to-font nil)))
   (it "returns its input if its a font"
     (let [f (font)]
       (expect (= f (to-font f)))))
@@ -60,4 +62,11 @@
   (it "returns a new font if its input is a map"
     (let [f (to-font {:style :italic})]
       (expect (= Font/ITALIC (.getStyle f))))))
+
+(describe default-font
+  (it "retrieves a named from from the UIManager"
+    (let [f (default-font "Label.font")
+          expected (.getFont (javax.swing.UIManager/getDefaults) "Label.font")]
+      (expect (not (nil? f)))
+      (expect (= expected f)))))
 
