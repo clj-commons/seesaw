@@ -1309,7 +1309,7 @@
 ;*******************************************************************************
 ; Dialog
 (def ^{:private true} dialog-options {
-  :modal? #(do (check-args (isa? (type %2) Boolean) ":snap-to-ticks? must be a boolean.")
+  :modal? #(do (check-args (isa? (type %2) Boolean) ":modal? must be a boolean.")
                (.setModal %1 %2))
   :parent #(.setLocationRelativeTo %1 %2)
 })
