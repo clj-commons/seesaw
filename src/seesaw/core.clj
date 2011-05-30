@@ -268,9 +268,17 @@
 
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
-   creation. See also (select)."
+   creation. The widget parameter is passed through (to-widget) first so
+   events and other objects can also be used. The id is always returned as
+   a string, even it if was originally given as a keyword.
+
+  Returns the id as a string, or nil.
+  
+  See:
+    (seesaw.core/select).
+  "
   [w] 
-  (get-meta w id-property))
+  (get-meta (to-widget w) id-property))
 
 (defn- id-option-handler [w id]
   (let [id-key (name id)

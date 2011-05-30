@@ -29,6 +29,10 @@
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
     (nil? (id-for (label))))
+  (it "cerces to a widget before getting the id"
+    (let [b (button :id :my-button)
+          e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
+      (expect (= "my-button" (id-for e)))))
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
