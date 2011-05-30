@@ -1362,6 +1362,25 @@
 
 (def ^:private current-modal-dialogs (atom nil))
 
+(defn show-modal-dialog [dlg]
+  {:pre [(.isModal dlg)]}
+  (let [dlg-result (atom nil)]
+    (listen dlg
+            :window-opened
+            (fn [_] (when (.isModal dlg)
+                      (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
+            #{:window-closing :window-closed}
+            (fn [_]
+              (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
+                (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
+    (.setVisible dlg true)
+    @dlg-result))
+
+(defn show-dialog [dlg]
+  (if (.isModal dlg)
+    (show-modal-dialog dlg)
+    (.setVisible dlg true)))
+
 (defn return-from-dialog
   "Return from the current dialog with the specified value. The dialog
   must be modal and created from within the DIALOG fn with both
@@ -1383,6 +1402,7 @@
 
   Besides the default & frame options, options can also be one of:
 
+    :parent  The window which the new dialog should be positioned relatively to.
     :modal?  A boolean value indicating whether this dialog is to be a
               modal dialog.  If :modal? *and* :visible? are set to
               true (:visible? is true per default), the function will
@@ -1404,24 +1424,13 @@
   [& {:keys [width height visible? pack? modal? on-close] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
-  (let [dlg-result (atom nil)
-        dlg (apply-options (JDialog.) 
+  (let [dlg (apply-options (JDialog.) 
                            (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
     (cond-doto dlg
       true     (.setSize width height)
       pack?    (.pack))
     (if (and modal? visible?)
-      (do
-        (listen dlg
-                :window-opened
-                (fn [_] (when (.isModal dlg)
-                          (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
-                #{:window-closing :window-closed}
-                (fn [_]
-                  (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
-                    (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
-        (.setVisible dlg true)
-        @dlg-result)
+      (show-modal-dialog dlg)
       dlg)))
 
 
@@ -1538,12 +1547,38 @@
 
 ;*******************************************************************************
 ; option-pane
-(def ^{:private true} option-pane-option-type-map {
+(def ^:private option-pane-option-type-map {
   :default     JOptionPane/DEFAULT_OPTION
   :yes-no    JOptionPane/YES_NO_OPTION
   :yes-no-cancel    JOptionPane/YES_NO_CANCEL_OPTION
   :ok-cancel    JOptionPane/OK_CANCEL_OPTION
 })
+
+(def ^:private option-pane-options
+     {
+      :title #(assoc %1 :title %2)
+      :parent #(assoc %1 :parent %2)
+      :content #(assoc %1 :content %2)
+      :option-type #(assoc %1 :option-type %2)
+      :type #(assoc %1 :type %2)
+      :options #(assoc %1 :options %2)
+      :default-option #(assoc %1 :default-option %2)
+      :success-fn #(assoc %1 :success-fn %2)
+      :cancel-fn #(assoc %1 :cancel-fn %2)
+      :no-fn #(assoc %1 :no-fn %2)})
+
+(def ^:private option-pane-defaults
+     {
+      :title "Option Pane"
+      :parent nil
+      :content "Please set the :content option."
+      :option-type :default
+      :type :plain
+      :options nil
+      :default-option nil
+      :success-fn (fn [_] :success)
+      :cancel-fn (fn [_])
+      :no-fn (fn [_] :no)})
 
 (defn option-pane
   "Display a JOptionPane. This is a dialog which displays some
@@ -1554,8 +1589,6 @@
 
   Options can be any of:
 
-    :title       The title the dialog should have.
-    :parent      The window which the new dialog should be positioned relatively to.
     :content     May be a string or a component (or a panel with even more components) which is to be displayed.
     :option-type   In case :options is *not* specified, this may be one of :default, :yes-no, :yes-no-cancel, :ok-cancel
                    to specify which standard button set is to be used in the dialog.
@@ -1582,33 +1615,43 @@
                  has been specified and the user has pressed the \"No\" button.
                  Default: a function returning :no.
 
+  Any remaining options will be passed to dialog.
+
   Examples:
 
     ; display a dialog with only an \"Ok\" button.
     (option-pane :content \"You may now press Ok\")
 
+    ; display a dialog to enter a users name and return the entered name.
     (option-pane :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
                  :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
 
-  Blocks until the user enters a value. Then returns the result
-  of :success-fn, :cancel-fn or :no-fn depending on what button the
-  user pressed. Alternatively if :options has been specified, returns
-  the value which has been passed to RETURN-FROM-DIALOG.
+  Blocks until the user enters a value unless :visible? is false. Then
+  returns the result of :success-fn, :cancel-fn or :no-fn depending on
+  what button the user pressed. Alternatively if :options has been
+  specified, returns the value which has been passed to
+  RETURN-FROM-DIALOG. If :visible? is set to false, will return the
+  resulting dialog. You may get the above specified behavior by
+  calling SHOW-MODAL-DIALOG on it.
 
 "
-  [& {:keys [title parent content option-type type options default-option success-fn cancel-fn no-fn]
-      :or {success-fn (fn [_] :success)
-           cancel-fn (fn [_])
-           no-fn (fn [_] :no)}
+  [& {:keys [title parent content option-type type
+             options default-option success-fn cancel-fn no-fn] 
       :as kw}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
-  (let [option-type (or option-type :default)
-        content (or content "No message set")
+  (let [{:keys [title parent content option-type type
+                options default-option success-fn cancel-fn no-fn]}
+        (apply-options option-pane-defaults
+                       (reduce dissoc kw (-> dialog-options
+                                             (merge frame-options default-options)
+                                             keys
+                                             (concat [:visible?])))
+                       option-pane-options)
         pane (JOptionPane. 
               content 
-              (input-type-map (or type :plain))
+              (input-type-map type)
               (option-pane-option-type-map option-type)
               nil                       ;icon
               (when options
@@ -1625,12 +1668,17 @@
         (listen pane
                 :property-change
                 (fn [e] (when (and (= (.getSource e) pane)
-                                 (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
+                                   (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
                           (return-from-dialog ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane)))))))
-   (dialog :parent parent :content pane :modal? true :title (or title "Option Pane"))))
+    (let [visible? (get kw :visible? true) 
+          remaining-opts (reduce dissoc kw (concat (keys option-pane-options) [:visible?])) 
+          dlg (apply dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
+      (if visible?
+        (show-dialog dlg)
+        dlg))))
 
 
 ;*******************************************************************************
