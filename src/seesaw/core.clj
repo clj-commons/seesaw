@@ -1415,14 +1415,14 @@
                   with a return value.
               In the case of a) and b), this function returns nil. In the
               case of c), this function returns the value passed to
-              RETURN-FROM-DIALOG.
+              RETURN-FROM-DIALOG. Default: true.
 
   Returns a JDialog if :visible? & :modal? are not both true. Otherwise
   will block & return a value as further documented for argument :modal?.
 
 "
   [& {:keys [width height visible? pack? modal? on-close] 
-      :or {width 100 height 100 visible? true pack? true}
+      :or {width 100 height 100 visible? true pack? true modal? true}
       :as opts}]
   (let [dlg (apply-options (JDialog.) 
                            (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
