@@ -67,5 +67,6 @@
   (it "retrieves a named from from the UIManager"
     (let [f (default-font "Label.font")
           expected (.getFont (javax.swing.UIManager/getDefaults) "Label.font")]
-      (= expected f))))
+      (expect (not (nil? f)))
+      (expect (= expected f)))))
 
