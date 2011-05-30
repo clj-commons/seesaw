@@ -1499,24 +1499,39 @@
   :ok-cancel    JOptionPane/OK_CANCEL_OPTION
 })
 
-(def ^{:private true} option-pane-options {
-  
-})
-
 (defn option-pane
-  [& {:keys [title parent content option-type type actions default-action handler] :as kw}]
-  ;; showOptionDialog(Component parentComponent,
-  ;;                  Object message, String title, int optionType,
-  ;;                  int messageType, Icon icon, Object[] options,
-  ;;                  Object initialValue)
-  (let [pane (JOptionPane. 
-              (or content "No message set") 
-              (option-pane-option-type-map (or option-type :default))
+  [& {:keys [title parent content option-type type options default-action handler success-fn cancel-fn no-fn]
+      :or {success-fn (fn [_] 'success)
+           cancel-fn (fn [_])
+           no-fn (fn [_] 'no)}
+      :as kw}]
+  ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
+  (let [option-type (or option-type :yes-no)
+        content (or content "No message set")
+        pane (JOptionPane. 
+              content 
               (input-type-map (or type :plain))
-              nil                       ;icon 
-              (into-array (map #(to-widget % true) actions))
-              (or default-action (first actions)) ; default selection
+              (option-pane-option-type-map option-type)
+              nil                       ;icon
+              (when options
+                (into-array (map #(to-widget % true) options)))
+              (or default-action (first options)) ; default selection
               )]
+    (let [dispatch-fns {:yes-no [success-fn no-fn]
+                        :yes-no-cancel [success-fn no-fn cancel-fn]
+                        :ok-cancel [success-fn cancel-fn]
+                        :default [success-fn]}]
+      ;; when there was no options specified, default options will be
+      ;; used, so the success-fn cancel-fn & no-fn must be called
+      (when (not options)
+        (listen pane
+                :property-change
+                (fn [e] (when (and (= (.getSource e) pane)
+                                 (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
+                          (return-from-dialog ((get-in dispatch-fns
+                                                       [option-type (.getValue pane)]
+                                                       (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
+                                               pane)))))))
    (dialog :parent parent :content pane :modal? true :title (or title "Option Pane"))))
 
 
