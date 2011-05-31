@@ -1422,15 +1422,18 @@
 
 "
   [& {:keys [width height visible? pack? modal? on-close] 
-      :or {width 100 height 100 visible? true pack? true modal? true}
+      :or {width 100 height 100 visible? true pack? true}
       :as opts}]
   (let [dlg (apply-options (JDialog.) 
-                           (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
+                           (merge
+                            {:modal? true}
+                            (dissoc opts :width :height :visible? :pack?))
+                           (merge dialog-options frame-options))]
     (cond-doto dlg
       true     (.setSize width height)
       pack?    (.pack))
-    (if (and modal? visible?)
-      (show-modal-dialog dlg)
+    (if visible?
+      (show-dialog dlg)
       dlg)))
 
 
@@ -1555,17 +1558,16 @@
 })
 
 (def ^:private option-pane-options
-     {
-      :title #(assoc %1 :title %2)
-      :parent #(assoc %1 :parent %2)
-      :content #(assoc %1 :content %2)
-      :option-type #(assoc %1 :option-type %2)
-      :type #(assoc %1 :type %2)
-      :options #(assoc %1 :options %2)
-      :default-option #(assoc %1 :default-option %2)
-      :success-fn #(assoc %1 :success-fn %2)
-      :cancel-fn #(assoc %1 :cancel-fn %2)
-      :no-fn #(assoc %1 :no-fn %2)})
+     [
+      :title
+      :content
+      :option-type
+      :type
+      :options
+      :default-option
+      :success-fn
+      :cancel-fn
+      :no-fn])
 
 (def ^:private option-pane-defaults
      {
@@ -1641,14 +1643,10 @@
              options default-option success-fn cancel-fn no-fn] 
       :as kw}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
-  (let [{:keys [title parent content option-type type
+  (let [{:keys [content option-type type
                 options default-option success-fn cancel-fn no-fn]}
-        (apply-options option-pane-defaults
-                       (reduce dissoc kw (-> dialog-options
-                                             (merge frame-options default-options)
-                                             keys
-                                             (concat [:visible?])))
-                       option-pane-options)
+        (merge option-pane-defaults
+               kw) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
@@ -1674,7 +1672,7 @@
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane)))))))
     (let [visible? (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (concat (keys option-pane-options) [:visible?])) 
+          remaining-opts (reduce dissoc kw (concat option-pane-options [:visible?])) 
           dlg (apply dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
       (if visible?
         (show-dialog dlg)
