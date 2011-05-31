@@ -112,6 +112,9 @@
   (it "sets background using to-color when provided"
       (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
         (expect (= Color/BLACK (.getBackground c)))))
+  (it "sets opaque when background provided"
+      (let [c (apply-default-opts (JLabel.) {:background "#000000" })]
+        (expect (= true (.isOpaque c)))))
   (it "sets foreground when provided"
       (let [c (apply-default-opts (JPanel.) {:foreground "#00FF00" })]
         (expect (= Color/GREEN (.getForeground c)))))
