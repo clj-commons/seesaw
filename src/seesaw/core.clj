@@ -397,10 +397,7 @@
   :icon        #(.setIcon %1 (make-icon %2))
   :action      #(.setAction %1 %2)
   :editable?   #(.setEditable %1 (boolean %2))
-  :visible?    #(do (.setVisible %1 (boolean %2))
-                    (if-let [v (ns-resolve *ns* 'to-frame)]
-                      (if-let [frame ((var-get v) %1)]
-                       (.pack frame))))
+  :visible?    #(.setVisible %1 (boolean %2))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
