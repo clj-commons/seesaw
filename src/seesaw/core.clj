@@ -1798,21 +1798,22 @@
     (let [dispatch-fns {:yes-no [success-fn no-fn]
                         :yes-no-cancel [success-fn no-fn cancel-fn]
                         :ok-cancel [success-fn cancel-fn]
-                        :default [success-fn]}]
+                        :default [success-fn]}
+          visible? (get kw :visible? true) 
+          remaining-opts (reduce dissoc kw (concat option-pane-options [:visible?])) 
+          dlg (apply dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
       (when (not options)
         (listen pane
                 :property-change
-                (fn [e] (when (and (= (.getSource e) pane)
+                (fn [e] (when (and (= (.isVisible dlg))
+                                   (= (.getSource e) pane)
                                    (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
                           (return-from-dialog ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
-                                               pane)))))))
-    (let [visible? (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (concat option-pane-options [:visible?])) 
-          dlg (apply dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
+                                               pane))))))
       (if visible?
         (show-dialog dlg)
         dlg))))
