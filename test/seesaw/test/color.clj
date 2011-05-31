@@ -37,3 +37,13 @@
     (nil? (to-color nil)))
   (it "returns its input if its a color"
       (expect (= Color/BLACK (to-color Color/BLACK)))))
+
+(describe default-color
+  (it "retrieve a default color from the UIManager"
+    (let [name "Label.foreground"
+          c (default-color name)
+          expected (.getColor (javax.swing.UIManager/getDefaults) name)]
+      (expect (not (nil? c)))
+      (expect (= c expected)))))
+
+

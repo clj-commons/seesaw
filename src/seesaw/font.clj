@@ -16,6 +16,8 @@
 
 (def ^{:private true} name-table (constant-map Font :monospaced :serif :sans-serif))
 
+(declare to-font)
+
 (defn font
   "Create and return a Font.
 
@@ -38,16 +40,33 @@
     (let [{:keys [style size from] :as opts} args
           font-name (:name opts)
           font-style (get style-table (or style :plain))
-          font-size (or size 12)]
+          font-size (or size 12)
+          from (to-font from)]
       (if from
         (let [derived-style (if style font-style (.getStyle from))
               derived-size (if size font-size (.getSize from))]
           (.deriveFont from derived-style (float derived-size)))
         (Font. (get name-table font-name font-name) font-style font-size)))))
 
+(defn default-font
+  "Look up a default font from the UIManager.
+
+  Example:
+
+    (default-font \"Label.font\")
+
+  Returns an instane of java.awt.Font
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/UIManager.html#getFont%28java.lang.Object%29
+  "
+  [name]
+  (.getFont (javax.swing.UIManager/getDefaults) name))
+
 (defn to-font
   [f]
   (cond
+    (nil? f) nil
     (instance? Font f) f
     (map? f) (apply font (flatten (seq f)))
     true (font f))) 

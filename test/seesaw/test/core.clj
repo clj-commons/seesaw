@@ -29,6 +29,10 @@
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
     (nil? (id-for (label))))
+  (it "cerces to a widget before getting the id"
+    (let [b (button :id :my-button)
+          e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
+      (expect (= "my-button" (id-for e)))))
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
@@ -409,11 +413,25 @@
   (it "should create a JEditorPane"
     (= javax.swing.JEditorPane (class (editor-pane)))))
 
+(describe button-group
+  (it "should create a ButtonGroup"
+    (instance? javax.swing.ButtonGroup (button-group)))
+  (it "should create a button group with a list of buttons"
+    (let [[a b c] [(radio) (checkbox) (toggle)]
+          bg (button-group :buttons [a b c])]
+      (expect (= [a b c] (enumeration-seq (.getElements bg)))))))
+
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
+
+  (it "should add the button to a button group specified with the :group option"
+    (let [bg (button-group)
+          b  (button :group bg)]
+      (expect (= b (first (enumeration-seq (.getElements bg)))))))
+
   (it "should create a button from an action"
     (let [a (action :handler println)
           b (button :action a)]
@@ -681,6 +699,12 @@
       (expect (= c (.getContentPane f))))))
 
 (describe to-frame
+  (it "should convert a widget to its parent applet"
+    (let [c (label :text "HI")
+          a (javax.swing.JApplet.)]
+      (.add a c)
+      (expect (= a (to-frame c)))))
+
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
           f (frame :content c :visible? false)]
@@ -807,4 +831,47 @@
         (expect (= [l0 l2] (vec (.getComponents p))))
         (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
 
+(describe selection
+  (it "should get the selection from a button-group"
+    (let [a (radio)
+          b (radio :selected? true)
+          bg (button-group :buttons [a b])]
+      (expect (= b (selection bg))))))
+
+(describe selection!
+  (it "should set the selection of a button-group"
+    (let [a (radio)
+          b (radio)
+          bg (button-group :buttons [a b])]
+      (expect (nil? (selection bg)))
+      (selection! bg b)
+      (expect (= b (selection bg))))))
+
+(describe with-widget
+  (it "throws an exception if the factory class does not create the expected type"
+    (try
+      (do (with-widget JPanel (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the factory function does not create the expected type"
+    (try
+      (do (with-widget #(JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the given instance is not the expected type"
+    (try
+      (do (with-widget (JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not consistent with expected type"))))
+  (it "uses a function as a factory and applies a constructor function to the result"
+    (let [expected (javax.swing.JPasswordField.)
+          result   (with-widget (fn [] expected) (text :id "hi"))]
+      (expect (= expected result))
+      (expect (= "hi" (id-for result)))))
+  (it "uses a class literal as a factory and applies a constructor function to it"
+    (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
+      (expect (instance? javax.swing.JPasswordField result))
+      (expect (= "hi" (id-for result)))))
+  (it "applies a constructor function to an existing widget instance"
+    (let [existing (JPanel.)
+          result (with-widget existing (border-panel :id "hi"))]
+      (expect (= existing result))
+      (expect (= "hi" (id-for existing))))))
 
