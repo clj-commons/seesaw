@@ -231,6 +231,10 @@
     (let [f (frame :visible? false)]
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
+  (it "can configure a dialog"
+    (let [f (dialog :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
     (let [a (action :name "foo")]
       (config! a :name "bar")
