@@ -834,3 +834,31 @@
       (selection! bg b)
       (expect (= b (selection bg))))))
 
+(describe with-widget
+  (it "throws an exception if the factory class does not create the expected type"
+    (try
+      (do (with-widget JPanel (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the factory function does not create the expected type"
+    (try
+      (do (with-widget #(JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the given instance is not the expected type"
+    (try
+      (do (with-widget (JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not consistent with expected type"))))
+  (it "uses a function as a factory and applies a constructor function to the result"
+    (let [expected (javax.swing.JPasswordField.)
+          result   (with-widget (fn [] expected) (text :id "hi"))]
+      (expect (= expected result))
+      (expect (= "hi" (id-for result)))))
+  (it "uses a class literal as a factory and applies a constructor function to it"
+    (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
+      (expect (instance? javax.swing.JPasswordField result))
+      (expect (= "hi" (id-for result)))))
+  (it "applies a constructor function to an existing widget instance"
+    (let [existing (JPanel.)
+          result (with-widget existing (border-panel :id "hi"))]
+      (expect (= existing result))
+      (expect (= "hi" (id-for existing))))))
+

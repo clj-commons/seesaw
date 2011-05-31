@@ -228,6 +228,76 @@
   ([v create?] (when v (to-widget* v create?))))
 
 ;*******************************************************************************
+; Widget construction stuff
+
+(def ^{:private true} *with-widget* nil)
+
+(defmacro with-widget
+  "This macro allows a Seesaw widget 'constructor' function to be applied to
+  a sub-class of the widget type it usually produces. For example (listbox)
+  always returns an instance of exactly JList. Suppose you're using SwingX
+  and want to use the Seesaw goodness of (listbox), but want to get a 
+  JXList. That's what this macro is for:
+
+    (with-widget org.jdesktop.swingx.JXList
+      (listbox :id :my-list :model ...))
+
+  This will return a new instance of JXList, with the usual Seesaw listbox
+  options applied.
+
+  The factory argument can be one of the following:
+
+    A class literal - .newInstance is used to create a new instance of
+                      the class.
+
+    A function - The function is called with no arguments. It should
+                 return a sub-class of the expected class.
+
+    An existing instance - The instance is modified and returned.
+
+  If the instance in any of these cases is not a sub-class of the
+  type usually created by the constructor function, an IllegalArgumentException
+  is thrown. For example:
+
+    (with-widget JLabel (listbox ...)) ==> IllegalArgumentException
+
+  Returns a fully initialized instance of the class created by the
+  provided factory.
+  "
+  [factory form]
+  `(binding [*with-widget* ~factory]
+     ~form))
+
+(defn- construct 
+  "Use the current *with-widget* binding to create a new widget, ensuring the
+   result is consistent with the given expected class. If there's no 
+   *with-widget* binding, just fallback to a default instance of the expected
+   class.
+  
+  Returns an instance of the expected class, or throws IllegalArgumentException
+  if the result using *with-widget* isn't consistent with expected-class."
+  ([factory-class] (construct (or *with-widget* factory-class) factory-class))
+  ([factory expected-class]
+    (cond
+      (instance? expected-class factory) 
+        factory
+
+      (class? factory) 
+        (construct #(.newInstance factory) expected-class)
+
+      (fn? factory)
+        (let [result (factory)]
+          (if (instance? expected-class result)
+            result
+            (throw (IllegalArgumentException. 
+                     (str (class result) " is not an instance of " expected-class)))))
+
+      :else 
+        (throw (IllegalArgumentException. 
+                 (str "Factory or instance " factory 
+                      " is not consistent with expected type " expected-class))))))
+
+;*******************************************************************************
 ; Generic widget stuff
 
 (defn repaint!
@@ -448,7 +518,7 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
   [& opts]
-  (let [p (JPanel.)]
+  (let [p (construct JPanel)]
     (.setLayout p (BorderLayout.))
     (apply-options p opts (merge default-options border-layout-options))))
 
@@ -477,7 +547,7 @@
   See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html 
   "
   [& opts]
-  (let [p (JPanel.)]
+  (let [p (construct JPanel)]
     (.setLayout p (FlowLayout.))
     (apply-options p opts (merge default-options flow-panel-options))))
 
@@ -491,7 +561,7 @@
 
 (defn box-panel
   [dir & opts]
-  (let [panel  (JPanel.)
+  (let [panel  (construct JPanel)
         layout (BoxLayout. panel (dir box-layout-dir-table))]
     (.setLayout panel layout)
     (apply-options panel opts default-options)))
@@ -504,6 +574,7 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html 
   "
   [& opts] (apply box-panel :horizontal opts))
+
 (defn vertical-panel
   "Create a panel where widgets are arranged vertically Options:
 
@@ -538,7 +609,7 @@
       :as opts}]
   (let [columns* (or columns (if rows 0 1))
         layout   (GridLayout. (or rows 0) columns* 0 0)
-        panel    (JPanel.)]
+        panel    (construct JPanel)]
     (.setLayout panel layout)
     (apply-options panel 
       (dissoc opts :rows :columns) (merge default-options grid-panel-options))))
@@ -635,7 +706,7 @@
   See http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html 
   "
   [& opts]
-  (let [^java.awt.Container p (JPanel.)]
+  (let [^java.awt.Container p (construct JPanel)]
     (.setLayout p (GridBagLayout.))
     (apply-options p opts (merge default-options form-panel-options))))
 
@@ -678,7 +749,7 @@
   See http://www.miglayout.com
   "
   [& opts]
-  (let [p (JPanel.)]
+  (let [p (construct JPanel)]
     (.setLayout p (net.miginfocom.swing.MigLayout.))
     (apply-options p opts (merge default-options mig-panel-options))))
 
@@ -710,7 +781,7 @@
   (case (count args) 
     0 (label :text "")
     1 (label :text (first args))
-    (apply-options (JLabel.) args (merge default-options label-options))))
+    (apply-options (construct JLabel) args (merge default-options label-options))))
 
 
 ;*******************************************************************************
@@ -764,10 +835,10 @@
   ([button args custom-options]
     (apply-options button args (merge default-options button-options custom-options))))
 
-(defn button   [& args] (apply-button-defaults (JButton.) args))
-(defn toggle   [& args] (apply-button-defaults (JToggleButton.) args))
-(defn checkbox [& args] (apply-button-defaults (JCheckBox.) args))
-(defn radio    [& args] (apply-button-defaults (JRadioButton.) args))
+(defn button   [& args] (apply-button-defaults (construct JButton) args))
+(defn toggle   [& args] (apply-button-defaults (construct JToggleButton) args))
+(defn checkbox [& args] (apply-button-defaults (construct JCheckBox) args))
+(defn radio    [& args] (apply-button-defaults (construct JRadioButton) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -828,7 +899,7 @@
       one?                   (text :text arg0)
 
       :else (let [{:keys [multi-line?] :as opts} args
-                  t (if multi-line? (JTextArea.) (JTextField.))]
+                  t (if multi-line? (construct JTextArea) (construct JTextField))]
               (apply-options t 
                 (dissoc opts :multi-line?)
                 (merge default-options text-options))))))
@@ -875,7 +946,7 @@
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html"
   [& opts]
-  (apply-options (javax.swing.JEditorPane.) opts (merge default-options text-options)))
+  (apply-options (construct javax.swing.JEditorPane) opts (merge default-options text-options)))
 
 ;*******************************************************************************
 ; Listbox
@@ -906,7 +977,7 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html 
   "
   [& args]
-  (apply-options (javax.swing.JList.) args (merge default-options listbox-options)))
+  (apply-options (construct javax.swing.JList) args (merge default-options listbox-options)))
 
 ;*******************************************************************************
 ; JTable
@@ -935,13 +1006,16 @@
               :rows    [{:age 13 :height 45}
                         {:age 45 :height 13}]])
 
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
   See:
     seesaw.table/table-model 
     seesaw.examples.table
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
   [& args]
   (apply-options 
-    (doto (javax.swing.JTable.)
+    (doto (construct javax.swing.JTable)
       (.setFillsViewportHeight true)) args (merge default-options table-options)))
 
 ;*******************************************************************************
@@ -962,10 +1036,15 @@
 (defn tree
   "Create a tree (JTree). Additional options:
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+  
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html
   "
   [& args]
-  (apply-options (javax.swing.JTree.) args (merge default-options tree-options)))
+  (apply-options (construct javax.swing.JTree) args (merge default-options tree-options)))
 
 ;*******************************************************************************
 ; Combobox
@@ -995,10 +1074,14 @@
   Note that the current selection can be retrieved and set with the (selection) and
   (selection!) functions.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
   "
   [& args]
-  (apply-options (javax.swing.JComboBox.) args (merge default-options combobox-options)))
+  (apply-options (construct javax.swing.JComboBox) args (merge default-options combobox-options)))
 
 ;*******************************************************************************
 ; Scrolling
@@ -1040,11 +1123,13 @@
     ; Scrollable with some options on the JScrollPane
     (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]) :id :#scrollable :border 5)
 
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
   [target & opts]
-  (let [sp (JScrollPane.)]
+  (let [sp (construct JScrollPane)]
     (.setViewportView sp (to-widget target true))
     (apply-options sp opts (merge default-options scrollable-options))))
 
@@ -1053,7 +1138,7 @@
 (defn splitter
   [dir left right & opts]
   (apply-options
-    (doto (JSplitPane.)
+    (doto (construct JSplitPane)
       (.setOrientation (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
                              :top-bottom JSplitPane/VERTICAL_SPLIT}))
       (.setLeftComponent (to-widget left true))
@@ -1064,14 +1149,22 @@
 (defn left-right-split 
   "Create a left/right (horizontal) splitpane with the given widgets.
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
   [left right & args] (apply splitter :left-right left right args))
 
 (defn top-bottom-split 
   "Create a top/bottom (vertical) split pane with the given widgets
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
   [top bottom & args] (apply splitter :top-bottom top bottom args))
 
@@ -1081,10 +1174,13 @@
 (defn separator
   "Create a separator.
 
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
   "
   [& opts]
-  (apply-options (javax.swing.JSeparator.) opts default-options))
+  (apply-options (construct javax.swing.JSeparator) opts default-options))
 
 ;*******************************************************************************
 ; Menus
@@ -1118,9 +1214,13 @@
 
     :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   [& opts]
-  (apply-button-defaults (javax.swing.JMenu.) opts menu-options))
+  (apply-button-defaults (construct javax.swing.JMenu) opts menu-options))
 
 (defn popup 
   "Create a new popup menu. Additional options:
@@ -1131,9 +1231,13 @@
   show a context menu on a widget. It handles all the yucky mouse stuff and
   fixes various eccentricities of Swing.
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   [& opts]
-  (apply-options (javax.swing.JPopupMenu.) opts (merge default-options menu-options)))
+  (apply-options (construct javax.swing.JPopupMenu) opts (merge default-options menu-options)))
 
 
 (defn- make-popup [target arg event]
@@ -1161,11 +1265,15 @@
 
     :items Sequence of menus, see (menu).
   
-  See seesaw.core/frame
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    seesaw.core/frame
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
   "
   [& opts]
-  (apply-options (javax.swing.JMenuBar.) opts default-options))
+  (apply-options (construct javax.swing.JMenuBar) opts default-options))
 
 ;*******************************************************************************
 ; Toolbars
@@ -1190,10 +1298,14 @@
     :items       Normal list of widgets to add to the toolbar. :separator
                  creates a toolbar separator.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
-  (apply-options (JToolBar.) opts (merge default-options toolbar-options)))
+  (apply-options (construct JToolBar) opts (merge default-options toolbar-options)))
 
 ;*******************************************************************************
 ; Tabs
@@ -1238,10 +1350,14 @@
 
   Returns the new JTabbedPane.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
-  (apply-options (JTabbedPane.) opts (merge default-options tabbed-panel-options)))
+  (apply-options (construct JTabbedPane) opts (merge default-options tabbed-panel-options)))
 
 ;*******************************************************************************
 ; Canvas
@@ -1288,7 +1404,8 @@
   
     (canvas :paint #(.drawString %2 \"I'm a canvas\" 10 10))
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
   "
   (let [p (create-paintable)]
     (.setLayout p nil)
@@ -1332,12 +1449,15 @@
 
   returns the new frame.
  
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+  
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
   [& {:keys [width height visible? pack?] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
-  (cond-doto (apply-options (JFrame.) 
+  (cond-doto (apply-options (construct JFrame) 
                (dissoc opts :width :height :visible? :pack?) frame-options)
     true     (.setSize width height)
     true     (.setVisible (boolean visible?))
@@ -1415,12 +1535,17 @@
   Returns a JDialog if :visible? & :modal? are not both true. Otherwise
   will block & return a value as further documented for argument :modal?.
 
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+ 
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html
 "
   [& {:keys [width height visible? pack? modal?] 
       :or {width 100 height 100 visible? true pack? true}
       :as opts}]
   (let [dlg-result (atom nil)
-        dlg (apply-options (JDialog.) 
+        dlg (apply-options (construct JDialog) 
                            (dissoc opts :width :height :visible? :pack?) (merge dialog-options frame-options))]
     (cond-doto dlg
       true     (.setSize width height)
@@ -1606,13 +1731,16 @@
     :paint-track?    A boolean value indicating whether to paint the track.
     :inverted?       A boolean value indicating whether to invert the slider (to go from high to low).
 
+  Returns a JSlider.
+
   Examples:
 
     ; ask & return single file
     (slider :value 10 :min -50 :max 50)
 
-  Returns a JSlider.
-
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+ 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
 
@@ -1620,7 +1748,7 @@
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}] 
-  (let [sl (javax.swing.JSlider. )]
+  (let [sl (construct javax.swing.JSlider)]
     (apply-options sl kw (merge default-options slider-options))))
 
 
@@ -1674,12 +1802,15 @@
 
   Returns a JProgressBar.
 
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+ 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
 
 "
   [& {:keys [orientation value min max] :as kw}]
-  (let [sl (javax.swing.JProgressBar.)]
+  (let [sl (construct javax.swing.JProgressBar)]
     (apply-options sl kw (merge default-options progress-bar-options))))
 
 
@@ -1833,5 +1964,4 @@
   "
   [container old-widget new-widget]
   (handle-structure-change (replace!-impl container old-widget new-widget)))
-
 
