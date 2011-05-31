@@ -700,6 +700,65 @@
     (let [c (label :text "HI")]
       (expect (nil? (to-frame c))))))
 
+(letfn [(test-dlg-blocking
+         [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
+         (let [v (atom nil)]
+           (future
+            (future-fn) 
+            (swap! v (fn [v] (if (nil? v)
+                               'dialog-is-blocking
+                               v)))
+            (invoke-now (.dispose dlg)))
+           (invoke-now
+            (let [r (show-dialog dlg)] 
+              (swap! v (fn [v] (if (nil? v)
+                                 r
+                                 v))))) 
+           @v))]
+  (describe dialog
+    (it "should block until dialog is being disposed of"
+      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+        (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
+    (it "should not block"
+      (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
+        (expect (= (test-dlg-blocking dlg) nil))))
+    (it "should return value from call to RETURN-FROM-DIALOG"
+      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+        (expect (= (test-dlg-blocking
+                    dlg :future-fn #(do
+                                     (Thread/sleep 90)
+                                     (return-from-dialog :ok)
+                                     (Thread/sleep 50))) :ok)))))
+
+  
+  (describe option-pane
+    (it "should block until option-pane is being disposed of"
+      (let [dlg (option-pane :visible? false :content "Nothing" :modal? true)]
+        (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
+    (it "should not block"
+      (let [dlg (option-pane :visible? false :content "Nothing" :modal? false)]
+        (expect (= (test-dlg-blocking dlg) nil))))
+    (testing "return-from-dialog"
+      (let [ok (to-widget (action :name "Ok" :handler (fn [_] (return-from-dialog :ok))) true)
+            cancel (to-widget (action :name "Cancel" :handler (fn [_] (return-from-dialog :cancel))) true)
+            dlg (option-pane :visible? false :content "Nothing"
+                             :options (map #(to-widget % true) [ok cancel]))]
+       (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
+         (expect (= (test-dlg-blocking
+                     dlg
+                     :future-fn #(do
+                                   (Thread/sleep 90)
+                                   (invoke-now (.doClick ok))
+                                   (Thread/sleep 50))) :ok)))
+       (it "should return value passed to RETURN-FROM-DIALOG from clicking on cancel button"
+         (expect (= (test-dlg-blocking
+                     dlg
+                     :future-fn #(do
+                                   (Thread/sleep 90)
+                                   (invoke-now (.doClick cancel))
+                                   (Thread/sleep 50))) :cancel)))))))
+
+
 (describe slider
   (it "should sync the value of the atom with the slider value, if slider value changed"
     (let [v (atom 15)
