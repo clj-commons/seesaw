@@ -26,7 +26,7 @@
     []
     (apply option-pane
            (concat [:option-type :ok-cancel
-                    :success-fn (fn [pane] (return-from-dialog [(selection (select (to-frame pane) [:#angle]))]))]
+                    :success-fn (fn [pane] [(selection (select (to-frame pane) [:#angle]))])]
                    common-opts)))
 
   (defn open-display-options-custom-dlg
@@ -34,9 +34,7 @@
     (apply option-pane
            (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog :save)))
                               (action :name "Delete" :handler (fn [e] (return-from-dialog :delete)))
-                              (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]
-                    :success-fn (fn [pane] (return-from-dialog [(selection (select (to-frame pane) [:#angle]))
-                                                                (selection (select (to-frame pane) [:#mode]))]))]
+                              (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]]
                    common-opts))))
 
 (defn -main [& args]
