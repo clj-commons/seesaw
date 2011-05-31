@@ -227,6 +227,10 @@
   (it "configures a target with type-specific properties"
     (let [t (toggle :text "hi" :selected? false)]
       (expect (.isSelected (config! t :selected? true)))))
+  (it "can configure a frame"
+    (let [f (frame :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
     (let [a (action :name "foo")]
       (config! a :name "bar")

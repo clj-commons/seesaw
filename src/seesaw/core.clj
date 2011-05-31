@@ -439,6 +439,10 @@
   (config* [target args] 
     (reapply-options target args default-options)))
 
+(extend-type java.awt.Window ConfigureWidget 
+  (config* [target args] 
+    (reapply-options target args default-options)))
+
 (defn config!
   "Applies properties in the argument list to one or more targets. For example:
 
