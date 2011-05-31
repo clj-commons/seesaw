@@ -448,7 +448,8 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
   [& opts]
-  (let [p (JPanel. (BorderLayout.))]
+  (let [p (JPanel.)]
+    (.setLayout p (BorderLayout.))
     (apply-options p opts (merge default-options border-layout-options))))
 
 ;*******************************************************************************
@@ -476,7 +477,8 @@
   See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html 
   "
   [& opts]
-  (let [p (JPanel. (FlowLayout.))]
+  (let [p (JPanel.)]
+    (.setLayout p (FlowLayout.))
     (apply-options p opts (merge default-options flow-panel-options))))
 
 ;*******************************************************************************
@@ -536,7 +538,8 @@
       :as opts}]
   (let [columns* (or columns (if rows 0 1))
         layout   (GridLayout. (or rows 0) columns* 0 0)
-        panel    (JPanel. layout)]
+        panel    (JPanel.)]
+    (.setLayout panel layout)
     (apply-options panel 
       (dissoc opts :rows :columns) (merge default-options grid-panel-options))))
 
@@ -613,7 +616,9 @@
 })
 
 (defn form-panel
-  "A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
+  "*Don't use this. GridBagLaout is an abomination*
+
+  A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
   want to be reminded of GridBagLayout. The :items property should be a list
   of vectors of the form:
 
@@ -630,7 +635,8 @@
   See http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html 
   "
   [& opts]
-  (let [^java.awt.Container p (JPanel. (GridBagLayout.))]
+  (let [^java.awt.Container p (JPanel.)]
+    (.setLayout p (GridBagLayout.))
     (apply-options p opts (merge default-options form-panel-options))))
 
 (def grid-bag-panel form-panel)
@@ -672,7 +678,8 @@
   See http://www.miglayout.com
   "
   [& opts]
-  (let [p (JPanel. (net.miginfocom.swing.MigLayout.))]
+  (let [p (JPanel.)]
+    (.setLayout p (net.miginfocom.swing.MigLayout.))
     (apply-options p opts (merge default-options mig-panel-options))))
 
 ;*******************************************************************************
@@ -1037,17 +1044,22 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
   [target & opts]
-  (let [sp (JScrollPane. (to-widget target true))]
+  (let [sp (JScrollPane.)]
+    (.setViewportView sp (to-widget target true))
     (apply-options sp opts (merge default-options scrollable-options))))
 
 ;*******************************************************************************
 ; Splitter
 (defn splitter
   [dir left right & opts]
-  (JSplitPane. (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
-                     :top-bottom JSplitPane/VERTICAL_SPLIT})
-               (to-widget left true)
-               (to-widget right true)))
+  (apply-options
+    (doto (JSplitPane.)
+      (.setOrientation (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
+                             :top-bottom JSplitPane/VERTICAL_SPLIT}))
+      (.setLeftComponent (to-widget left true))
+      (.setRightComponent (to-widget right true)))
+    opts
+    default-options))
 
 (defn left-right-split 
   "Create a left/right (horizontal) splitpane with the given widgets.
