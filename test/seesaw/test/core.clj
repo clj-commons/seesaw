@@ -716,19 +716,41 @@
                                  v))))) 
            @v))]
   (describe dialog
-    (it "should block until dialog is being disposed of"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
-        (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
-    (it "should not block"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
-        (expect (= (test-dlg-blocking dlg) nil))))
-    (it "should return value from call to RETURN-FROM-DIALOG"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
-        (expect (= (test-dlg-blocking
-                    dlg :future-fn #(do
-                                     (Thread/sleep 90)
-                                     (return-from-dialog :ok)
-                                     (Thread/sleep 50))) :ok)))))
+    (testing "argument passing"
+      (it "should create a dialog with an id"
+       (= "my-dialog" (id-for (dialog :id :my-dialog :visible? false))))
+     (it "should create a JDialog and set its title, width, and height"
+       (let [f (dialog :title "Hello" :width 99 :height 88 :visible? false)]
+         (expect (= javax.swing.JDialog (class f)))
+         (expect (= "Hello" (.getTitle f)))))
+     (it "should set the dialog's default close operation"
+       (let [f (dialog :visible? false :on-close :dispose)]
+         (= javax.swing.JDialog/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
+     (it "should create a JDialog and make is not resizable"
+       (let [f (dialog :title "Hello" :resizable? false :visible? false)]
+         (expect (not (.isResizable f)))))
+     (it "should create a JDialog and set its menu bar"
+       (let [mb (menubar)
+             f (dialog :menubar mb :visible? false)]
+         (expect (= mb (.getJMenuBar f)))))
+     (it "should create a JDialog and set its content pane"
+       (let [c (label :text "HI")
+             f (dialog :content c :visible? false)]
+         (expect (= c (.getContentPane f))))))
+    (testing "blocking"
+      (it "should block until dialog is being disposed of"
+        (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+          (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
+      (it "should not block"
+        (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
+          (expect (= (test-dlg-blocking dlg) nil))))
+      (it "should return value from call to RETURN-FROM-DIALOG"
+        (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+          (expect (= (test-dlg-blocking
+                      dlg :future-fn #(do
+                                        (Thread/sleep 90)
+                                        (return-from-dialog :ok)
+                                        (Thread/sleep 50))) :ok))))))
 
   
   (describe option-pane
