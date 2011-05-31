@@ -230,7 +230,7 @@
 ;*******************************************************************************
 ; Widget construction stuff
 
-(def ^{:private true} *with-widget* nil)
+(def ^{:private true :dynamic true} *with-widget* nil)
 
 (defmacro with-widget
   "This macro allows a Seesaw widget 'constructor' function to be applied to
