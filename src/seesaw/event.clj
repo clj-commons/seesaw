@@ -15,7 +15,7 @@
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
-                          KeyListener]
+                          KeyListener ComponentListener]
            [java.beans PropertyChangeListener]))
 
 ; Declaratively set up all the Swing listener types available through the
@@ -23,6 +23,16 @@
 ; of reifying the interface and mapping to clojure handler functions.
 (def ^{:private true} event-groups {
 
+  :component {
+    :name    :component
+    :class   ComponentListener
+    :events  #{:component-hidden
+               :component-moved
+               :component-resized
+               :component-shown}
+    :install #(.addComponentListener %1 %2)
+  }
+                                    
   :property-change {
     :name    :property-change
     :class   PropertyChangeListener
