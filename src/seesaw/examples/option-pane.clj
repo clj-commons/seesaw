@@ -47,4 +47,4 @@
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
                                             (action :name "Show Dialog with custom option buttons" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))]))))
-(-main)
+;(-main)
