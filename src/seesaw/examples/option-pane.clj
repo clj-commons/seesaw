@@ -11,29 +11,40 @@
 (ns seesaw.examples.option-pane
   (:use [seesaw core font border]))
 
-(defn open-display-options-dlg
-  []
-  (option-pane :resizable? false
-               :id :dlg
-               :modal? true
-               :option-type :ok-cancel
-               :title "Display Options"
-               :success-fn (fn [pane] (return-from-dialog [(selection (select (to-frame pane) [:#angle]))
-                                                           (selection (select (to-frame pane) [:#mode]))]))
-               :content (mig-panel :border (line-border)
-                                   :items [[(label :font (font :from (default-font "Label.font")
-                                                               :style :bold)
-                                                   :text "Display options for new geometry") "gaptop 10, wrap"]
-                                           [:separator "growx, wrap, gaptop 10, spanx 2"]
-                                           ["Display mode:"]
-                                           [(combobox :id :mode :model ["Triangulated Mesh" "Lines"]) "wrap"]
-                                           ["Angle"]
-                                           [(slider :id :angle :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]])))
+(let [common-opts
+      [:content (mig-panel :items [[(label :font (font :from (default-font "Label.font")
+                                                       :style :bold)
+                                           :text "Display options for new geometry") "gaptop 10, wrap"]
+                                   [:separator "growx, wrap, gaptop 10, spanx 2"]
+                                   ["Display mode:"]
+                                   [(combobox :id :mode :model ["Triangulated Mesh" "Lines"]) "wrap"]
+                                   ["Angle"]
+                                   [(slider :id :angle :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]])
+       :resizable? false
+       :title "Display Options"]]
+  (defn open-display-options-dlg
+    []
+    (apply option-pane
+           (concat [:option-type :ok-cancel
+                    :success-fn (fn [pane] (return-from-dialog [(selection (select (to-frame pane) [:#angle]))]))]
+                   common-opts)))
+
+  (defn open-display-options-custom-dlg
+    []
+    (apply option-pane
+           (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog :save)))
+                              (action :name "Delete" :handler (fn [e] (return-from-dialog :delete)))
+                              (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]
+                    :success-fn (fn [pane] (return-from-dialog [(selection (select (to-frame pane) [:#angle]))
+                                                                (selection (select (to-frame pane) [:#mode]))]))]
+                   common-opts))))
 
 (defn -main [& args]
   (invoke-later
     (frame :title "Custom Dialog Example"
            :resizable? false
-           :content (action :name "Show Dialog" 
-                            :handler (fn [e] (alert (str "Result = " (open-display-options-dlg))))))))
-;(-main)
+           :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
+                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
+                                            (action :name "Show Dialog with custom option buttons" 
+                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))]))))
+(-main)
