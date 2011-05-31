@@ -314,6 +314,10 @@
   :icon        #(.setIcon %1 (make-icon %2))
   :action      #(.setAction %1 %2)
   :editable?   #(.setEditable %1 (boolean %2))
+  :visible?    #(do (.setVisible %1 (boolean %2))
+                    (if-let [v (ns-resolve *ns* 'to-frame)]
+                      (if-let [frame ((var-get v) %1)]
+                       (.pack frame))))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
@@ -1591,10 +1595,8 @@
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
             (.setMaximum %1 %2))
-  :paint-string? #(do (check-args (isa? (type %2) Boolean) ":paint-string? must be a boolean.")
-                      (.setStringPainted %1 %2))
-  :indeterminate? #(do (check-args (isa? (type %2) Boolean) ":indeterminate? must be a boolean.")
-                       (.setIndeterminate %1 %2))
+  :paint-string? #(.setStringPainted %1 (boolean %2))
+  :indeterminate? #(.setIndeterminate %1 (boolean %2))
 })
 
 (defn progress-bar
