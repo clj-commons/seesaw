@@ -136,7 +136,8 @@
                                          (.getComponents c))
       (instance? javax.swing.JMenuBar c) (.getSubElements c)
       (instance? javax.swing.JMenu c)    (.getSubElements c)
-      :else    (.getComponents c))))
+      (isa? (type c) java.awt.Container)    (.getComponents c)
+      :else nil)))
 
 (defn collect
   "Given a root widget or frame, returns a depth-fist seq of all the widgets
