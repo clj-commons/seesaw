@@ -753,6 +753,12 @@
      (it "should create a JDialog and make is not resizable"
        (let [f (custom-dialog :title "Hello" :resizable? false :visible? false)]
          (expect (not (.isResizable f)))))
+     (it "should create a JDialog that is modal"
+       (let [f (custom-dialog :title "Hello" :modal? true :visible? false)]
+         (expect (.isModal f))))
+     (it "should create a JDialog that is not modal"
+       (let [f (custom-dialog :title "Hello" :modal? false :visible? false)]
+         (expect (not (.isModal f)))))
      (it "should create a JDialog and set its menu bar"
        (let [mb (menubar)
              f (custom-dialog :menubar mb :visible? false)]

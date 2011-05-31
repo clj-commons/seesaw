@@ -1436,6 +1436,7 @@
   :minimum-size #(.setMinimumSize %1 (to-dimension %2))
   :size         #(.setSize %1 (to-dimension %2))
   :on-close     #(.setDefaultCloseOperation %1 (frame-on-close-map %2))
+  :visible?     #(.setVisible %1 (boolean %2))
 })
 
 (defn frame
@@ -1504,18 +1505,17 @@
 
 (def ^:private current-modal-dialogs (atom nil))
 
-(defn show-modal-dialog [dlg]
+(defn- show-modal-dialog [dlg]
   {:pre [(.isModal dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
-            (fn [_] (when (.isModal dlg)
-                      (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
+            (fn [_] (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v))))
             #{:window-closing :window-closed}
             (fn [_]
               (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
                 (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
-    (.setVisible dlg true)
+    (config! dlg :visible? true)
     @dlg-result))
 
 (defn show-dialog [dlg]
