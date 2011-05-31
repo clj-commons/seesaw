@@ -15,7 +15,7 @@
   []
   (let [ok-act (action :name "Ok" :handler (fn [e] (return-from-dialog "OK")))
         cancel-act (action :name "Cancel" :handler (fn [e] (return-from-dialog "Cancel")))]
-    (dialog :modal? true
+    (custom-dialog :modal? true
             :title "More Options"
             :content (flow-panel :items [ok-act cancel-act]))))
 
@@ -28,7 +28,7 @@
                            :handler (fn [e] (return-from-dialog nil)))
         more-act (action :name "More ..."
                          :handler (fn [e] (alert (str "More Result = " (open-more-options-dlg)))))]
-    (dialog :resizable? false
+    (custom-dialog :resizable? false
             :id :dlg
             :modal? true
             :title "Display Options"

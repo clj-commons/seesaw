@@ -1490,8 +1490,8 @@
   (get-root (to-widget w)))
 
 ;*******************************************************************************
-; Dialog
-(def ^{:private true} dialog-options {
+; Custom-Dialog
+(def ^{:private true} custom-dialog-options {
   :modal? #(.setModal %1 (boolean %2))
   :parent #(.setLocationRelativeTo %1 %2)
 })
@@ -1531,10 +1531,10 @@
        (finally
         (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
 
-(defn dialog
+(defn custom-dialog
   "Create a dialog and display it.
 
-      (dialog ... options ...)
+      (custom-dialog ... options ...)
 
   Besides the default & frame options, options can also be one of:
 
@@ -1567,7 +1567,7 @@
       :as opts}]
   (let [dlg (apply-options (construct JDialog) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
-                           (merge dialog-options frame-options))]
+                           (merge custom-dialog-options frame-options))]
     (cond-doto dlg
       true     (.setSize width height)
       pack?    (.pack))
@@ -1688,15 +1688,15 @@
 
 
 ;*******************************************************************************
-; option-pane
-(def ^:private option-pane-option-type-map {
+; dialog
+(def ^:private dialog-option-type-map {
   :default     JOptionPane/DEFAULT_OPTION
   :yes-no    JOptionPane/YES_NO_OPTION
   :yes-no-cancel    JOptionPane/YES_NO_CANCEL_OPTION
   :ok-cancel    JOptionPane/OK_CANCEL_OPTION
 })
 
-(def ^:private option-pane-options
+(def ^:private dialog-options
      [
       :title
       :content
@@ -1708,7 +1708,7 @@
       :cancel-fn
       :no-fn])
 
-(def ^:private option-pane-defaults
+(def ^:private dialog-defaults
      {
       :title "Option Pane"
       :parent nil
@@ -1721,12 +1721,12 @@
       :cancel-fn (fn [_])
       :no-fn (fn [_] :no)})
 
-(defn option-pane
+(defn dialog
   "Display a JOptionPane. This is a dialog which displays some
   input/question to the user, which may be answered using several
   standard button configurations or entirely custom ones.
 
-      (option-pane ... options ...)
+      (dialog ... options ...)
 
   Options can be any of:
 
@@ -1761,10 +1761,10 @@
   Examples:
 
     ; display a dialog with only an \"Ok\" button.
-    (option-pane :content \"You may now press Ok\")
+    (dialog :content \"You may now press Ok\")
 
     ; display a dialog to enter a users name and return the entered name.
-    (option-pane :content
+    (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
                  :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
@@ -1784,12 +1784,12 @@
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [{:keys [content option-type type
                 options default-option success-fn cancel-fn no-fn]}
-        (merge option-pane-defaults
+        (merge dialog-defaults
                kw) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
-              (option-pane-option-type-map option-type)
+              (dialog-option-type-map option-type)
               nil                       ;icon
               (when options
                 (into-array (map #(to-widget % true) options)))
@@ -1800,8 +1800,8 @@
                         :ok-cancel [success-fn cancel-fn]
                         :default [success-fn]}
           visible? (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (concat option-pane-options [:visible?])) 
-          dlg (apply dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
+          remaining-opts (reduce dissoc kw (concat dialog-options [:visible?])) 
+          dlg (apply custom-dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
       (when (not options)

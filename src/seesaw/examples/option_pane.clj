@@ -8,7 +8,7 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.examples.option-pane
+(ns seesaw.examples.dialog
   (:use [seesaw core font border]))
 
 (let [common-opts
@@ -24,14 +24,14 @@
        :title "Display Options"]]
   (defn open-display-options-dlg
     []
-    (apply option-pane
+    (apply dialog
            (concat [:option-type :ok-cancel
                     :success-fn (fn [pane] [(selection (select (to-frame pane) [:#angle]))])]
                    common-opts)))
 
   (defn open-display-options-custom-dlg
     []
-    (apply option-pane
+    (apply dialog
            (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog :save)))
                               (action :name "Delete" :handler (fn [e] (return-from-dialog :delete)))
                               (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]]
