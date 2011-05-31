@@ -97,6 +97,19 @@
     (it "sets enabled when provided a falsey value"
       (let [c (apply-default-opts (JPanel.) {:enabled? nil})]
         (expect (= false (.isEnabled c))))))
+  (testing "setting visible? option"
+    (it "does nothing when omitted"
+      (let [c (apply-default-opts (JPanel.))]
+        (expect (.isVisible c))))
+    (it "sets visible when provided"
+      (let [c (apply-default-opts (JPanel.) {:visible? false})]
+        (expect (not (.isVisible c)))))
+    (it "sets visible when provided a truthy value"
+      (let [c (apply-default-opts (JPanel.) {:visible? "something"})]
+        (expect (.isVisible c))))
+    (it "sets not visible when provided a falsey value"
+      (let [c (apply-default-opts (JPanel.) {:visible? nil})]
+        (expect (= false (.isVisible c))))))
   (testing "setting opaque? option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
