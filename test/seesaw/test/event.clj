@@ -15,7 +15,7 @@
         [lazytest.expect :only (expect)])
   (:import [javax.swing JPanel JTextField JButton JRadioButton JToggleButton]
            [javax.swing.event ChangeListener]
-           [java.awt.event ItemListener MouseListener MouseMotionListener]))
+           [java.awt.event ComponentListener ItemListener MouseListener MouseMotionListener]))
 
 (defn verify-empty-listener
   [listener-type handler-key dispatch-fn]
@@ -53,6 +53,17 @@
 
 
 (describe reify-listener
+  (testing "for ComponentListener"
+    (it "instantiates a ComponentListener instance"
+      (instance? ComponentListener (reify-listener ComponentListener (ref {}))))
+    (it "makes an instance that does nothing when there's no handler"
+      (verify-empty-listener ComponentListener :component-resized #(.componentResized % nil)))
+    (it "makes an instance that calls expected methods"
+      (verify-listeners ComponentListener 
+                        :component-hidden #(.componentHidden % nil)
+                        :component-moved #(.componentMoved % nil)
+                        :component-resized #(.componentResized % nil)
+                        :component-shown #(.componentShown % nil))))
   (testing "for ChangeListener"
     (it "instantiates a ChangeListener instance"
       (instance? ChangeListener (reify-listener ChangeListener (ref {}))))
