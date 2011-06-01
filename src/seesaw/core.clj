@@ -17,6 +17,7 @@
             [seesaw.action :as ssa]
             [seesaw.table :as ss-table]
             [seesaw.cells :as cells]
+            [seesaw.bind :as ssb]
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
@@ -1854,17 +1855,11 @@
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
-                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                               (fn [k r o n] (when (not= o n)
-                                               (invoke-now (.setValue %1 n)))))
-                    (listen %1 :change (fn [e] (swap! %2
-                                                (fn [o] (if (not= (.getValue %1) o)
-                                                          (.getValue %1)
-                                                          o))))))
+                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
-                (.setValue %1 %2)
-                true
-                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+                  (.setValue %1 %2)
+                :else
+                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
@@ -1930,16 +1925,10 @@
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
-                  (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                                (fn [k r o n] (when (not= o n)
-                                                (invoke-now (.setValue %1 n)))))
-                      (listen %1 :change (fn [e] (swap! %2
-                                                  (fn [o] (if (not= (.getValue %1) o)
-                                                            (.getValue %1)
-                                                            o))))))
+                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
                   (.setValue %1 %2)
-                true
+                :else
                   (throw (IllegalArgumentException. ":value must be a number or an atom.")))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
