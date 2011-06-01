@@ -62,7 +62,7 @@
   on the Swing UI thread, possibly blocking the current thread if it's not the Swing
   UI thread. Returns the result of executing body. For example,
 
-    (invoke-now-returning
+    (invoke-now
       (config! my-label :text \"New Text\"))
 
   Be very careful with this function in the presence of locks and stuff.
