@@ -10,7 +10,7 @@
 
 (ns seesaw.core
   (:use [seesaw util font border color meta]
-        [clojure.string :only (capitalize)])
+        [clojure.string :only (capitalize split)])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -409,31 +409,73 @@
 
 ;*******************************************************************************
 ; Property<->Atom syncing
-(def ^:private property-keywords-to-names-map
-     {:visible? "visible"})
+(def ^{:private true} short-property-keywords-to-long-map
+     {:min :minimum
+      :max :maximum
+      :tip :tool-tip-text})
 
-(def setup-property-change-on-atom nil)
-(defmulti setup-property-change-on-atom (fn [c k a] [(type c) k]))
+(defn kw->java-name
+  "(kw->java-name :preferred-size)"
+  [kw]
+  (reduce str
+          (map capitalize (split (-> (reduce str (drop 1 (str kw)))
+                                     (.replace "?" ""))
+                                 #"\-"))))
+
+(defn property-kw->java-name
+  "(property-kw->java-name :tip)"
+  [kw]
+  (reduce str
+          (map capitalize (split (-> (reduce
+                                      str
+                                      (drop 1 (-> short-property-keywords-to-long-map
+                                                  (get kw kw)
+                                                  (str ))))
+                                     (.replace "?" ""))
+                                 #"\-"))))
+
+(defn kw->java-method
+  "(kw->java-method :enabled?)"
+  [kw]
+  (str (if (.endsWith (str kw) "?")
+         "is"
+         "get") (kw->java-name kw)))
+
+(defn property-kw->java-method
+  "(property-kw->java-method :tip)"
+  [kw]
+  (kw->java-method (get short-property-keywords-to-long-map kw kw)))
+
+;; by default, property names' first character will be lowercased when
+;; added using a property change listener. For some however, the first
+;; character must stay uppercased. This map will specify those exceptions.
+(def ^{:private true}
+     property-change-listener-name-overrides
+     {"ToolTipText" "ToolTipText"})
+
+(defmulti ^{:private true} setup-property-change-on-atom (fn [c k a] [(type c) k]))
 (defmethod setup-property-change-on-atom :default
   [component property a]
-  (let [property-name (get property-keywords-to-names-map
-                           property
-                           (reduce str (drop 1 (str property))))]
+  (let [property-name (property-kw->java-name property)]
     (.addPropertyChangeListener
      component
-     property-name
+     ;; first letter of property-name must be lower-case
+     (get property-change-listener-name-overrides
+          property-name
+          (let [[a b](map #(reduce str %) (split-at 1 property-name))]
+            (str (clojure.string/lower-case a) b)))
      (proxy [java.beans.PropertyChangeListener] [] 
        (propertyChange [e] (swap! a
                                   (fn [o]
                                     (let [component-property-value (clojure.lang.Reflector/invokeInstanceMethod 
                                                                     component 
-                                                                    (str "get" (capitalize property-name))
+                                                                    (property-kw->java-method property)
                                                                     (to-array []))]
                                       (if (not= component-property-value o)
                                         component-property-value
                                         o)))))))))
 
-(defn ^:private setup-property-syncing
+(defn ^{:private true} setup-property-syncing
   [component property-name a]
   (add-watch a
              (keyword (gensym "property-syncing-watcher"))
@@ -444,7 +486,7 @@
                                                 n)))))
   (setup-property-change-on-atom component property-name a))
 
-(defn ^:private ensure-sync-when-atom
+(defn ^{:private true} ensure-sync-when-atom
   [component property-name atom-or-other]
   (if (isa? (type atom-or-other) clojure.lang.Atom)
     (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
@@ -456,28 +498,28 @@
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/listen %1 %2)
-  :opaque?     #(.setOpaque %1 (boolean %2))
-  :enabled?    #(.setEnabled %1 (boolean %2))
+  :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
+  :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
   :background  #(do
                   (let [v (ensure-sync-when-atom %1 :background %2)]
                     (.setBackground %1 (to-color v))
                     (.setOpaque %1 true)))
-  :foreground  #(.setForeground %1 (to-color %2))
-  :border      #(.setBorder %1 (to-border %2))
-  :font        #(.setFont %1 (to-font %2))
-  :tip         #(.setToolTipText %1 (str %2))
-  :text        #(.setText %1 (str %2))
-  :icon        #(.setIcon %1 (make-icon %2))
-  :action      #(.setAction %1 %2)
-  :editable?   #(.setEditable %1 (boolean %2))
+  :foreground  #(.setForeground %1 (to-color (ensure-sync-when-atom %1 :foreground %2)))
+  :border      #(.setBorder %1 (to-border (ensure-sync-when-atom %1 :border %2)))
+  :font        #(.setFont %1 (to-font (ensure-sync-when-atom %1 :font %2)))
+  :tip         #(.setToolTipText %1 (str (ensure-sync-when-atom %1 :tip %2)))
+  :text        #(.setText %1 (str (ensure-sync-when-atom %1 :text %2)))
+  :icon        #(.setIcon %1 (make-icon (ensure-sync-when-atom %1 :icon %2)))
+  :action      #(.setAction %1 (ensure-sync-when-atom %1 :action %2))
+  :editable?   #(.setEditable %1 (boolean (ensure-sync-when-atom %1 :editable? %2)))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table %2))
+  :orientation #(.setOrientation %1 (orientation-table (ensure-sync-when-atom %1 :orientation %2)))
   :items       #(add-widgets %1 %2)
   :model       #(.setModel %1 %2)
-  :preferred-size #(.setPreferredSize %1 (to-dimension %2))
-  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
-  :maximum-size   #(.setMaximumSize %1 (to-dimension %2))
+  :preferred-size #(.setPreferredSize %1 (to-dimension (ensure-sync-when-atom %1 :preferred-size %2)))
+  :minimum-size   #(.setMinimumSize %1 (to-dimension (ensure-sync-when-atom %1 :minimum-size %2)))
+  :maximum-size   #(.setMaximumSize %1 (to-dimension (ensure-sync-when-atom %1 :maximum-size %2)))
   :size           #(let [d (to-dimension %2)]
                      (doto %1 
                        (.setPreferredSize d)
