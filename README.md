@@ -28,9 +28,9 @@ Add Seesaw to `project.clj`
       :description "FIXME: write"
       :dependencies [[org.clojure/clojure "1.2.0"]
                     [org.clojure/clojure-contrib "1.2.0"]
-                    [seesaw "1.0.1"]])
+                    [seesaw "x.y.z"]])
 
-_Replace the Seesaw version with whatever the latest version tag is in case I forget to update this. See below!_
+_Replace the Seesaw version with whatever the latest version tag is. See below!_
 
 Now edit the generated `src/hello_seesaw/core.clj` file:
 
@@ -57,13 +57,8 @@ Now run it:
 
 ## TODO
 
-* A non-trivial example app to see if this stuff holds up
-* GridBagLayout needs more work
-* Graphics - I'd rather not wrap the entire Java2D API if there's already something out there (maybe processing?) that does that.
-* Structural manip - add/remove widgets to containers.
 * Selectors - select widgets by class, data, etc.
 * Styling
-* Some kind of ToModel protocol for auto-converting Clojure data-structures to Swing models.
 * Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
 
 ## License

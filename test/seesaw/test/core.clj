@@ -134,8 +134,22 @@
         (expect (.isEnabled c))))
     (it "sets enabled when provided a falsey value"
       (let [c (apply-default-opts (JPanel.) {:enabled? nil})]
-        (expect (= false (.isEnabled c)))))
-    (test-option :enabled? false true))
+        (expect (= false (.isEnabled c)))))) 
+  (testing "setting visible? option"
+    (it "does nothing when omitted"
+      (let [c (apply-default-opts (JPanel.))]
+        (expect (.isVisible c))))
+    (it "sets visible when provided"
+      (let [c (apply-default-opts (JPanel.) {:visible? false})]
+        (expect (not (.isVisible c)))))
+    (it "sets visible when provided a truthy value"
+      (let [c (apply-default-opts (JPanel.) {:visible? "something"})]
+        (expect (.isVisible c))))
+    (it "sets not visible when provided a falsey value"
+      (let [c (apply-default-opts (JPanel.) {:visible? nil})]
+        (expect (= false (.isVisible c)))))
+    ;; TODO: (test-option :visible? false true) ;; for some reason no property change listener exists for this?
+    )
   (testing "setting opaque? option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
@@ -254,6 +268,14 @@
   (it "configures a target with type-specific properties"
     (let [t (toggle :text "hi" :selected? false)]
       (expect (.isSelected (config! t :selected? true)))))
+  (it "can configure a frame"
+    (let [f (frame :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
+  (it "can configure a dialog"
+    (let [f (dialog :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
     (let [a (action :name "foo")]
       (config! a :name "bar")
@@ -772,6 +794,12 @@
      (it "should create a JDialog and make is not resizable"
        (let [f (custom-dialog :title "Hello" :resizable? false :visible? false)]
          (expect (not (.isResizable f)))))
+     (it "should create a JDialog that is modal"
+       (let [f (custom-dialog :title "Hello" :modal? true :visible? false)]
+         (expect (.isModal f))))
+     (it "should create a JDialog that is not modal"
+       (let [f (custom-dialog :title "Hello" :modal? false :visible? false)]
+         (expect (not (.isModal f)))))
      (it "should create a JDialog and set its menu bar"
        (let [mb (menubar)
              f (custom-dialog :menubar mb :visible? false)]
@@ -985,4 +1013,54 @@
           result (with-widget existing (border-panel :id "hi"))]
       (expect (= existing result))
       (expect (= "hi" (id-for existing))))))
+
+(describe dispose!
+  (it "should dispose of a JFrame"
+    (let [f (frame :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f))))))
+  (it "should dispose of a JDialog"
+    (let [f (dialog :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f)))))))
+
+(describe assert-ui-thread
+  ; TODO test non-exception case
+  (it "should throw an IllegalStateException if not called on the Swing UI thread"
+     @(future
+        (try 
+          (do (assert-ui-thread "some message") false)
+          (catch IllegalStateException e true)))))
+
+(describe move!
+  (it "should set the absolute location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= point new-loc))))
+  (it "should set the relative location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            _ (move! lbl :to [5 40])
+            result (move! lbl :by point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 106 142) new-loc))))
+  (it "should set the relative location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          _ (move! lbl :to [5 40])
+          result (move! lbl :by point)
+          new-loc (.getLocation lbl)]
+      (expect (= (java.awt.Point. 104 140) new-loc)))))
 
