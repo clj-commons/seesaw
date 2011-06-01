@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color meta])
+  (:use [seesaw util font border color meta]
+        [clojure.string :only (capitalize)])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -299,6 +300,46 @@
 
 ;*******************************************************************************
 ; Generic widget stuff
+(def ^:private property-keywords-to-names-map
+     {:visible? "visible"})
+
+(def setup-property-change-on-atom nil)
+(defmulti setup-property-change-on-atom (fn [c k a] [(type c) k]))
+(defmethod setup-property-change-on-atom :default
+  [component property a]
+  (let [property-name (get property-keywords-to-names-map
+                           property
+                           (reduce str (drop 1 (str property))))]
+    (.addPropertyChangeListener
+     component
+     property-name
+     (proxy [java.beans.PropertyChangeListener] [] 
+       (propertyChange [e] (swap! a
+                                  (fn [o]
+                                    (let [component-property-value (clojure.lang.Reflector/invokeInstanceMethod 
+                                                                    component 
+                                                                    (str "get" (capitalize property-name))
+                                                                    (to-array []))]
+                                      (if (not= component-property-value o)
+                                        component-property-value
+                                        o)))))))))
+
+(defn ^:private setup-property-syncing
+  [component property-name a]
+  (add-watch a
+             (keyword (gensym "property-syncing-watcher"))
+             (fn atom-watcher-fn
+               [k r o n] (when (not= o n)
+                           (invoke-now (config! component
+                                                property-name
+                                                n)))))
+  (setup-property-change-on-atom component property-name a))
+
+(defn ^:private ensure-sync-when-atom
+  [component property-name atom-or-other]
+  (if (isa? (type atom-or-other) clojure.lang.Atom)
+    (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
+    atom-or-other))
 
 (defn repaint!
   "Request a repaint of a list of widget-able things.
@@ -388,8 +429,10 @@
   :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean %2))
   :enabled?    #(.setEnabled %1 (boolean %2))
-  :background  #(do (.setBackground %1 (to-color %2))
-                    (.setOpaque %1 true))
+  :background  #(do
+                  (let [v (ensure-sync-when-atom %1 :background %2)]
+                    (.setBackground %1 (to-color v))
+                    (.setOpaque %1 true)))
   :foreground  #(.setForeground %1 (to-color %2))
   :border      #(.setBorder %1 (to-border %2))
   :font        #(.setFont %1 (to-font %2))
@@ -1822,22 +1865,22 @@
 
 ;*******************************************************************************
 ; Slider
+(defmethod setup-property-change-on-atom [javax.swing.JSlider :value]
+  [component _ a]
+  (listen component
+          :change
+          (fn [e]
+            (swap! a
+                   (fn [o] (if (not= (.getValue component) o)
+                             (.getValue component)
+                             o))))))
+
 (def ^{:private true} slider-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(cond (isa? (type %2) clojure.lang.Atom)
-                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                               (fn [k r o n] (when (not= o n)
-                                               (invoke-now (.setValue %1 n)))))
-                    (listen %1 :change (fn [e] (swap! %2
-                                                (fn [o] (if (not= (.getValue %1) o)
-                                                          (.getValue %1)
-                                                          o)))))
-                    (.setValue %1 @%2))
-                (number? %2)
-                (.setValue %1 %2)
-                true
-                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :value #(let [v (ensure-sync-when-atom %1 :value %2)]
+            (check-args (number? v) ":value must be a number or an atom.")
+            (.setValue %1 v))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
