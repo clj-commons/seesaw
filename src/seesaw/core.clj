@@ -43,6 +43,14 @@
     (f)
     (SwingUtilities/invokeAndWait f)))
 
+(defn invoke-now-returning* [f]
+  (let [result (atom nil)]
+   (letfn [(invoker [] (reset! result (f)))]
+     (if (SwingUtilities/isEventDispatchThread)
+       (invoker)
+       (SwingUtilities/invokeAndWait invoker))
+     @result)))
+
 (defmacro invoke-later 
   "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
   in the future on the Swing UI thread. For example,
@@ -67,6 +75,20 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
   "
   [& body] `(invoke-now*   (fn [] ~@body)))
+
+(defmacro invoke-now-returning
+  "Equivalent to SwingUtilities/invokeAndWait. Executes the given body immediately
+  on the Swing UI thread, possibly blocking the current thread if it's not the Swing
+  UI thread. Returns the result. For example,
+
+    (invoke-now-returning
+      (config! my-label :text \"New Text\"))
+
+  Be very careful with this function in the presence of locks and stuff.
+
+  See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
+  "
+  [& body] `(invoke-now-returning*   (fn [] ~@body)))
 
 (defn native!
   "Set native look and feel and other options to try to make things look right.
