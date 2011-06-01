@@ -86,6 +86,24 @@
   (System/setProperty "apple.laf.useScreenMenuBar" "true")
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName)))
 
+(defn assert-ui-thread
+  "Verify that the current thread is the Swing UI thread and throw
+  IllegalStateException if it's not. message is included in the exception
+  message.
+
+  Returns nil.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#isEventDispatchThread%28%29
+  "
+  [message]
+  (when-not (SwingUtilities/isEventDispatchThread)
+    (throw (IllegalStateException. 
+             (str "Expected UI thread, but got '"
+                  (.. (Thread/currentThread) getName)
+                  "' : "
+                  message)))))
+
 ; alias timer/timer for convenience
 (def timer sst/timer)
 

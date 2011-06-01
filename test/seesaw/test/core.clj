@@ -987,3 +987,11 @@
         (expect (= result f))
         (expect (not (.isDisplayable f)))))))
 
+(describe assert-ui-thread
+  ; TODO test non-exception case
+  (it "should throw an IllegalStateException if not called on the Swing UI thread"
+     @(future
+        (try 
+          (do (assert-ui-thread "some message") false)
+          (catch IllegalStateException e true)))))
+
