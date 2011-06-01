@@ -38,10 +38,13 @@
 ;(set! *warn-on-reflection* true)
 (defn invoke-later* [f] (SwingUtilities/invokeLater f))
 
-(defn invoke-now* [f] 
-  (if (SwingUtilities/isEventDispatchThread)
-    (f)
-    (SwingUtilities/invokeAndWait f)))
+(defn invoke-now* [f]
+  (let [result (atom nil)]
+   (letfn [(invoker [] (reset! result (f)))]
+     (if (SwingUtilities/isEventDispatchThread)
+       (invoker)
+       (SwingUtilities/invokeAndWait invoker))
+     @result)))
 
 (defmacro invoke-later 
   "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
@@ -54,10 +57,10 @@
   "
   [& body] `(invoke-later* (fn [] ~@body)))
 
-(defmacro invoke-now   
+(defmacro invoke-now
   "Equivalent to SwingUtilities/invokeAndWait. Executes the given body immediately
   on the Swing UI thread, possibly blocking the current thread if it's not the Swing
-  UI thread. For example,
+  UI thread. Returns the result of executing body. For example,
 
     (invoke-now
       (config! my-label :text \"New Text\"))
