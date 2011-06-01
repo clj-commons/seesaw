@@ -300,47 +300,6 @@
 
 ;*******************************************************************************
 ; Generic widget stuff
-(def ^:private property-keywords-to-names-map
-     {:visible? "visible"})
-
-(def setup-property-change-on-atom nil)
-(defmulti setup-property-change-on-atom (fn [c k a] [(type c) k]))
-(defmethod setup-property-change-on-atom :default
-  [component property a]
-  (let [property-name (get property-keywords-to-names-map
-                           property
-                           (reduce str (drop 1 (str property))))]
-    (.addPropertyChangeListener
-     component
-     property-name
-     (proxy [java.beans.PropertyChangeListener] [] 
-       (propertyChange [e] (swap! a
-                                  (fn [o]
-                                    (let [component-property-value (clojure.lang.Reflector/invokeInstanceMethod 
-                                                                    component 
-                                                                    (str "get" (capitalize property-name))
-                                                                    (to-array []))]
-                                      (if (not= component-property-value o)
-                                        component-property-value
-                                        o)))))))))
-
-(defn ^:private setup-property-syncing
-  [component property-name a]
-  (add-watch a
-             (keyword (gensym "property-syncing-watcher"))
-             (fn atom-watcher-fn
-               [k r o n] (when (not= o n)
-                           (invoke-now (config! component
-                                                property-name
-                                                n)))))
-  (setup-property-change-on-atom component property-name a))
-
-(defn ^:private ensure-sync-when-atom
-  [component property-name atom-or-other]
-  (if (isa? (type atom-or-other) clojure.lang.Atom)
-    (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
-    atom-or-other))
-
 (defn repaint!
   "Request a repaint of a list of widget-able things.
 
@@ -424,6 +383,76 @@
     (instance? java.awt.Rectangle v) (.setBounds w v)
     :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
 
+
+;*******************************************************************************
+; Widget configuration stuff
+(defprotocol ConfigureWidget (config* [target args]))
+
+(defn config!
+  "Applies properties in the argument list to one or more targets. For example:
+
+    (config! button1 :enabled? false :text \"I' disabled\")
+
+  or:
+
+    (config! [button1 button2] :enabled? false :text \"We're disabled\")
+ 
+  Targets may be actual widgets, or convertible to widgets with (to-widget).
+  For example, the target can be an event object.
+
+  Returns the input targets."
+  [targets & args]
+  (doseq [target (to-seq targets)]
+    (config* target args))
+  targets)
+
+
+;*******************************************************************************
+; Property<->Atom syncing
+(def ^:private property-keywords-to-names-map
+     {:visible? "visible"})
+
+(def setup-property-change-on-atom nil)
+(defmulti setup-property-change-on-atom (fn [c k a] [(type c) k]))
+(defmethod setup-property-change-on-atom :default
+  [component property a]
+  (let [property-name (get property-keywords-to-names-map
+                           property
+                           (reduce str (drop 1 (str property))))]
+    (.addPropertyChangeListener
+     component
+     property-name
+     (proxy [java.beans.PropertyChangeListener] [] 
+       (propertyChange [e] (swap! a
+                                  (fn [o]
+                                    (let [component-property-value (clojure.lang.Reflector/invokeInstanceMethod 
+                                                                    component 
+                                                                    (str "get" (capitalize property-name))
+                                                                    (to-array []))]
+                                      (if (not= component-property-value o)
+                                        component-property-value
+                                        o)))))))))
+
+(defn ^:private setup-property-syncing
+  [component property-name a]
+  (add-watch a
+             (keyword (gensym "property-syncing-watcher"))
+             (fn atom-watcher-fn
+               [k r o n] (when (not= o n)
+                           (invoke-now (config! component
+                                                property-name
+                                                n)))))
+  (setup-property-change-on-atom component property-name a))
+
+(defn ^:private ensure-sync-when-atom
+  [component property-name atom-or-other]
+  (if (isa? (type atom-or-other) clojure.lang.Atom)
+    (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
+    atom-or-other))
+
+
+;*******************************************************************************
+; Default options
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/listen %1 %2)
@@ -459,17 +488,6 @@
   :popup      #(popup-option-handler %1 %2)
 })
 
-(defn apply-default-opts
-  "only used in tests!"
-  ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:as opts}]
-    (apply-options p opts default-options)))
-
-;*******************************************************************************
-; Widget configuration stuff
-
-(defprotocol ConfigureWidget (config* [target args]))
-
 (extend-type java.util.EventObject ConfigureWidget 
   (config* [target args] (config* (to-widget target false) args)))
 
@@ -481,23 +499,12 @@
   (config* [target args] 
     (reapply-options target args default-options)))
 
-(defn config!
-  "Applies properties in the argument list to one or more targets. For example:
+(defn apply-default-opts
+  "only used in tests!"
+  ([p] (apply-default-opts p {}))
+  ([^javax.swing.JComponent p {:as opts}]
+    (apply-options p opts default-options)))
 
-    (config! button1 :enabled? false :text \"I' disabled\")
-
-  or:
-
-    (config! [button1 button2] :enabled? false :text \"We're disabled\")
- 
-  Targets may be actual widgets, or convertible to widgets with (to-widget).
-  For example, the target can be an event object.
-
-  Returns the input targets."
-  [targets & args]
-  (doseq [target (to-seq targets)]
-    (config* target args))
-  targets)
 
 ;*******************************************************************************
 ; ToDocument
