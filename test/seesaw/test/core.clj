@@ -973,3 +973,17 @@
       (expect (= existing result))
       (expect (= "hi" (id-for existing))))))
 
+(describe dispose!
+  (it "should dispose of a JFrame"
+    (let [f (frame :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f))))))
+  (it "should dispose of a JDialog"
+    (let [f (dialog :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f)))))))
+

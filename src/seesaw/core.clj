@@ -300,6 +300,22 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
+(declare to-frame)
+
+(defn dispose!
+  "Dispose the given frame, dialog or window. target can be anything that can
+  be converted to a root-level object with (to-frame).
+
+  Returns the frame, window, or dialog that was disposed, not target.
+
+  See:
+   http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
+  "
+  [target]
+  (let [#^java.awt.Window disposable (to-frame target)]
+    (doto disposable
+      .dispose)))
+
 (defn repaint!
   "Request a repaint of a list of widget-able things.
 
@@ -1533,7 +1549,7 @@
     (let [{:keys [dialog result]} (first @current-modal-dialogs)]
      (try
        (reset! result x)
-       (invoke-later (.dispose dialog))
+       (invoke-later (dispose! dialog))
        (finally
         (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
 
@@ -1801,8 +1817,7 @@
       (when-not options
         (listen pane
                 :property-change
-                (fn [e] (when (and (= (.isVisible dlg))
-                                   (= (.getSource e) pane)
+                (fn [e] (when (and (.isVisible dlg)
                                    (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
                           (return-from-dialog ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
