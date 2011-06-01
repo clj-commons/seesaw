@@ -63,7 +63,7 @@
          (expect (= ~reset-atom-value ~'@a))))))
 
         
-(describe "Applying default options" {:focus true}
+(describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
       (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
