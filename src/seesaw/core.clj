@@ -1832,7 +1832,8 @@
                     (listen %1 :change (fn [e] (swap! %2
                                                 (fn [o] (if (not= (.getValue %1) o)
                                                           (.getValue %1)
-                                                          o))))))
+                                                          o)))))
+                    (.setValue %1 @%2))
                 (number? %2)
                 (.setValue %1 %2)
                 true
