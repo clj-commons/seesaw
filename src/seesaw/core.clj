@@ -104,14 +104,16 @@
                   "' : "
                   message)))))
 
+; TODO make a macro for this. There's one in contrib I think, but I don't trust contrib.
+
 ; alias timer/timer for convenience
-(def timer sst/timer)
+(def ^{:doc (str "Alias of seesaw.timer/timer:\n" (:doc (meta #'sst/timer)))} timer sst/timer)
 
 ; alias event/listen for convenience
-(def listen sse/listen)
+(def ^{:doc (str "Alias of seesaw.event/listen:\n" (:doc (meta #'sse/listen)))} listen sse/listen)
 
 ; alias action/action for convenience
-(def action ssa/action)
+(def ^{:doc (str "Alias of seesaw.action/action:\n" (:doc (meta #'ssa/action)))} action ssa/action)
 
 
 ; TODO protocol or whatever when needed
