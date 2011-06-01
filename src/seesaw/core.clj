@@ -357,7 +357,43 @@
   (doseq [target (map to-widget (to-seq targets))]
     (.repaint target))
   targets)
- 
+
+(defn move!
+  "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
+  type is :by or :to, and loc is a two-element vector or instance of 
+  java.awt.Point. The type parameter has the following interpretation:
+
+    :to The absolute position of the widget is set to the given point
+    :by The position of th widget is adjusted by the amount in the given point
+        relative to its current position.
+
+  Returns target.
+
+  Examples:
+
+    ; Move x to the point (42, 43)
+    (move! x :to [42, 43])
+
+    ; Move x relative to its current position. Assume initial position is (42, 43).
+    (move! x :by [50, -20])
+    ; ... now x's position is [92, 23]
+
+  Notes: 
+    This function will generally only have an affect on widget whose container
+    has a nil layout!
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
+  "
+  [target type loc]
+  (check-args (#{:by :to} type) "Expected :by or :to in move!")
+  (let [target (to-widget target)
+        [x y]  (if (instance? java.awt.Point loc) [(.x loc) (.y loc)] loc)]
+    (case type
+      :to      (doto target (.setLocation x y))
+      :by      (let [current (.getLocation target)]
+                 (doto target (.setLocation (+ x (.x current)) (+ y (.y current))))))))
+
 (defn- handle-structure-change [container]
   "Helper. Revalidate and repaint a container after structure change"
   (doto container

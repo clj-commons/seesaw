@@ -995,3 +995,31 @@
           (do (assert-ui-thread "some message") false)
           (catch IllegalStateException e true)))))
 
+(describe move!
+  (it "should set the absolute location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= point new-loc))))
+  (it "should set the relative location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            _ (move! lbl :to [5 40])
+            result (move! lbl :by point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 106 142) new-loc))))
+  (it "should set the relative location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          _ (move! lbl :to [5 40])
+          result (move! lbl :by point)
+          new-loc (.getLocation lbl)]
+      (expect (= (java.awt.Point. 104 140) new-loc)))))
+
