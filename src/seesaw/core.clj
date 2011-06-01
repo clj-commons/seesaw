@@ -1696,36 +1696,24 @@
 ;*******************************************************************************
 ; dialog
 (def ^:private dialog-option-type-map {
-  :default     JOptionPane/DEFAULT_OPTION
-  :yes-no    JOptionPane/YES_NO_OPTION
-  :yes-no-cancel    JOptionPane/YES_NO_CANCEL_OPTION
-  :ok-cancel    JOptionPane/OK_CANCEL_OPTION
+  :default       JOptionPane/DEFAULT_OPTION
+  :yes-no        JOptionPane/YES_NO_OPTION
+  :yes-no-cancel JOptionPane/YES_NO_CANCEL_OPTION
+  :ok-cancel     JOptionPane/OK_CANCEL_OPTION
 })
 
-(def ^:private dialog-options
-     [
-      :title
-      :content
-      :option-type
-      :type
-      :options
-      :default-option
-      :success-fn
-      :cancel-fn
-      :no-fn])
-
-(def ^:private dialog-defaults
-     {
-      :title "Option Pane"
-      :parent nil
-      :content "Please set the :content option."
-      :option-type :default
-      :type :plain
-      :options nil
-      :default-option nil
-      :success-fn (fn [_] :success)
-      :cancel-fn (fn [_])
-      :no-fn (fn [_] :no)})
+(def ^:private dialog-defaults {
+  :title "Option Pane"
+  :parent nil
+  :content "Please set the :content option."
+  :option-type :default
+  :type :plain
+  :options nil
+  :default-option nil
+  :success-fn (fn [_] :success)
+  :cancel-fn (fn [_])
+  :no-fn (fn [_] :no)
+})
 
 (defn dialog
   "Display a JOptionPane. This is a dialog which displays some
@@ -1801,16 +1789,16 @@
                 (into-array (map #(to-widget % true) options)))
               (or default-option (first options)) ; default selection
               )]
-    (let [dispatch-fns {:yes-no [success-fn no-fn]
-                        :yes-no-cancel [success-fn no-fn cancel-fn]
-                        :ok-cancel [success-fn cancel-fn]
-                        :default [success-fn]}
-          visible? (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (concat dialog-options [:visible?])) 
-          dlg (apply custom-dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
+    (let [dispatch-fns   {:yes-no        [success-fn no-fn]
+                          :yes-no-cancel [success-fn no-fn cancel-fn]
+                          :ok-cancel     [success-fn cancel-fn]
+                          :default       [success-fn]}
+          visible?       (get kw :visible? true) 
+          remaining-opts (reduce dissoc kw (conj (keys dialog-defaults) :visible?)) 
+          dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
-      (when (not options)
+      (when-not options
         (listen pane
                 :property-change
                 (fn [e] (when (and (= (.isVisible dlg))
