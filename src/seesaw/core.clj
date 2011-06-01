@@ -544,10 +544,7 @@
      (proxy [java.beans.PropertyChangeListener] [] 
        (propertyChange [e] (swap! a
                                   (fn [o]
-                                    (let [component-property-value (clojure.lang.Reflector/invokeInstanceMethod 
-                                                                    component 
-                                                                    (property-kw->java-method property)
-                                                                    (to-array []))]
+                                    (let [component-property-value (.getNewValue e)]
                                       (if (not= component-property-value o)
                                         component-property-value
                                         o)))))))))
