@@ -430,6 +430,10 @@
 (extend-type java.util.EventObject ConfigureWidget 
   (config* [target args] (config* (to-widget target false) args)))
 
+(extend-type java.awt.Component ConfigureWidget 
+  (config* [target args] 
+    (reapply-options target args default-options)))
+
 (extend-type javax.swing.JComponent ConfigureWidget 
   (config* [target args] 
     (reapply-options target args default-options)))
