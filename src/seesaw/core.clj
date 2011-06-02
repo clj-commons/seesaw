@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color meta])
+  (:use [seesaw util font border color meta]
+        [clojure.string :only (capitalize split)])
   (:require [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
@@ -459,30 +460,137 @@
     (instance? java.awt.Rectangle v) (.setBounds w v)
     :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
 
+
+;*******************************************************************************
+; Widget configuration stuff
+(defprotocol ConfigureWidget (config* [target args]))
+
+(defn config!
+  "Applies properties in the argument list to one or more targets. For example:
+
+    (config! button1 :enabled? false :text \"I' disabled\")
+
+  or:
+
+    (config! [button1 button2] :enabled? false :text \"We're disabled\")
+ 
+  Targets may be actual widgets, or convertible to widgets with (to-widget).
+  For example, the target can be an event object.
+
+  Returns the input targets."
+  [targets & args]
+  (doseq [target (to-seq targets)]
+    (config* target args))
+  targets)
+
+
+;*******************************************************************************
+; Property<->Atom syncing
+
+(def ^{:private true} short-property-keywords-to-long-map
+     {:min :minimum
+      :max :maximum
+      :tip :tool-tip-text})
+
+(defn- kw->java-name
+  "(kw->java-name :preferred-size)"
+  [kw]
+  (reduce str
+          (map capitalize (split (-> (name kw)
+                                     (.replace "?" ""))
+                                 #"\-"))))
+
+(defn property-kw->java-name
+  "INTERNAL USE ONLY. DO NOT USE
+  (property-kw->java-name :tip)"
+  [kw]
+  (apply str
+          (map capitalize (split (-> (short-property-keywords-to-long-map kw kw)
+                                     name
+                                     (.replace "?" ""))
+                                 #"\-"))))
+
+(defn- kw->java-method
+  "USED ONLY BY TESTS. DO NOT USE.
+  (kw->java-method :enabled?)"
+  [kw]
+  (str (if (.endsWith (str kw) "?")
+         "is"
+         "get") (kw->java-name kw)))
+
+(defn property-kw->java-method
+  "USED ONLY BY TESTS. DO NOT USE.
+  (property-kw->java-method :tip)"
+  [kw]
+  (kw->java-method (get short-property-keywords-to-long-map kw kw)))
+
+;; by default, property names' first character will be lowercased when
+;; added using a property change listener. For some however, the first
+;; character must stay uppercased. This map will specify those exceptions.
+(def ^{:private true} property-change-listener-name-overrides {
+  "ToolTipText" "ToolTipText"
+})
+
+(defmulti ^{:private true} setup-property-change-on-atom (fn [c k a] [(type c) k]))
+
+(defmethod ^{:private true} setup-property-change-on-atom :default
+  [component property a]
+  (let [property-name (property-kw->java-name property)]
+    (.addPropertyChangeListener
+     component
+     ; first letter of *some* property-names must be lower-case
+     (property-change-listener-name-overrides
+        property-name
+        (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
+     (proxy [java.beans.PropertyChangeListener] [] 
+       (propertyChange [e] (reset! a (.getNewValue e)))))))
+
+(defn- setup-property-syncing
+  [component property-name a]
+  (add-watch a
+             (keyword (gensym "property-syncing-watcher"))
+             (fn atom-watcher-fn
+               [k r o n] (when-not (= o n)
+                           (invoke-now (config! component
+                                                property-name
+                                                n)))))
+  (setup-property-change-on-atom component property-name a))
+
+(defn- ensure-sync-when-atom
+  [component property-name atom-or-other]
+  (if (atom? atom-or-other)
+    (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
+    atom-or-other))
+
+
+;*******************************************************************************
+; Default options
 (def ^{:private true} default-options {
   :id          id-option-handler
   :listen      #(apply sse/listen %1 %2)
-  :opaque?     #(.setOpaque %1 (boolean %2))
-  :enabled?    #(.setEnabled %1 (boolean %2))
-  :background  #(do (.setBackground %1 (to-color %2))
-                    (.setOpaque %1 true))
-  :foreground  #(.setForeground %1 (to-color %2))
-  :border      #(.setBorder %1 (to-border %2))
-  :font        #(.setFont %1 (to-font %2))
-  :tip         #(.setToolTipText %1 (str %2))
-  :text        #(.setText %1 (str %2))
-  :icon        #(.setIcon %1 (make-icon %2))
-  :action      #(.setAction %1 %2)
-  :editable?   #(.setEditable %1 (boolean %2))
-  :visible?    #(.setVisible %1 (boolean %2))
+  :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
+  :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
+  :background  #(do
+                  (let [v (ensure-sync-when-atom %1 :background %2)]
+                    (.setBackground %1 (to-color v))
+                    (.setOpaque %1 true)))
+  :foreground  #(.setForeground %1 (to-color (ensure-sync-when-atom %1 :foreground %2)))
+  :border      #(.setBorder %1 (to-border (ensure-sync-when-atom %1 :border %2)))
+  :font        #(.setFont %1 (to-font (ensure-sync-when-atom %1 :font %2)))
+  :tip         #(.setToolTipText %1 (str (ensure-sync-when-atom %1 :tip %2)))
+  :text        #(.setText %1 (str (ensure-sync-when-atom %1 :text %2)))
+  :icon        #(.setIcon %1 (make-icon (ensure-sync-when-atom %1 :icon %2)))
+  :action      #(.setAction %1 (ensure-sync-when-atom %1 :action %2))
+  :editable?   #(.setEditable %1 (boolean (ensure-sync-when-atom %1 :editable? %2)))
+  :visible?    #(.setVisible %1 (boolean (ensure-sync-when-atom %1 :visible? %2)))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table %2))
+  :orientation #(.setOrientation %1 (orientation-table (ensure-sync-when-atom %1 :orientation %2)))
   :items       #(add-widgets %1 %2)
   :model       #(.setModel %1 %2)
-  :preferred-size #(.setPreferredSize %1 (to-dimension %2))
-  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
-  :maximum-size   #(.setMaximumSize %1 (to-dimension %2))
+  :preferred-size #(.setPreferredSize %1 (to-dimension (ensure-sync-when-atom %1 :preferred-size %2)))
+  :minimum-size   #(.setMinimumSize %1 (to-dimension (ensure-sync-when-atom %1 :minimum-size %2)))
+  :maximum-size   #(.setMaximumSize %1 (to-dimension (ensure-sync-when-atom %1 :maximum-size %2)))
   :size           #(let [d (to-dimension %2)]
                      (doto %1 
                        (.setPreferredSize d)
@@ -492,17 +600,6 @@
   :bounds     bounds-option-handler
   :popup      #(popup-option-handler %1 %2)
 })
-
-(defn apply-default-opts
-  "only used in tests!"
-  ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:as opts}]
-    (apply-options p opts default-options)))
-
-;*******************************************************************************
-; Widget configuration stuff
-
-(defprotocol ConfigureWidget (config* [target args]))
 
 (extend-type java.util.EventObject ConfigureWidget 
   (config* [target args] (config* (to-widget target false) args)))
@@ -523,23 +620,11 @@
   (config* [target args] 
     (reapply-options target args default-options)))
 
-(defn config!
-  "Applies properties in the argument list to one or more targets. For example:
-
-    (config! button1 :enabled? false :text \"I' disabled\")
-
-  or:
-
-    (config! [button1 button2] :enabled? false :text \"We're disabled\")
- 
-  Targets may be actual widgets, or convertible to widgets with (to-widget).
-  For example, the target can be an event object.
-
-  Returns the input targets."
-  [targets & args]
-  (doseq [target (to-seq targets)]
-    (config* target args))
-  targets)
+(defn apply-default-opts
+  "only used in tests!"
+  ([p] (apply-default-opts p {}))
+  ([^javax.swing.JComponent p {:as opts}]
+    (apply-options p opts default-options)))
 
 ;*******************************************************************************
 ; ToDocument
@@ -1894,15 +1979,19 @@
 
 ;*******************************************************************************
 ; Slider
+(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JSlider :value]
+  [component _ a]
+  (listen component
+          :change
+          (fn [e]
+            (reset! a (.getValue component)))))
+
 (def ^{:private true} slider-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(cond (isa? (type %2) clojure.lang.Atom)
-                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
-                (number? %2)
-                  (.setValue %1 %2)
-                :else
-                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :value #(let [v (ensure-sync-when-atom %1 :value %2)]
+            (check-args (number? v) ":value must be a number or an atom.")
+            (.setValue %1 v))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
@@ -1967,7 +2056,7 @@
 (def ^{:private true} progress-bar-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(cond (isa? (type %2) clojure.lang.Atom)
+  :value #(cond (atom? %2)
                   (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
                   (.setValue %1 %2)
