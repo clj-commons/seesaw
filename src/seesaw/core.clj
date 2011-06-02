@@ -1099,6 +1099,61 @@
       multi?      (do (doseq [w targets] (text w value)) targets))))
 
 ;*******************************************************************************
+; JPasswordField
+
+(def ^{:private true} password-options (merge {
+  :echo-char #(.setEchoChar %1 %2)
+} text-options))
+
+(defn password
+  "Create a password field. Options are the same as single-line text fields with
+  the following additions:
+
+    :echo-char The char displayed for the characters in the password field
+
+  Returns an instance of JPasswordField.
+
+  Example:
+
+    (password :echo-char \\X)
+
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
+  "
+  [& opts]
+  (let [pw (construct javax.swing.JPasswordField)]
+    (apply-options pw opts (merge password-options default-options))))
+
+(defn with-password*
+  "Retrieve the password of a password field and passes it to the given handler
+  function as an array or characters. Upon completion, the array is zero'd out
+  and the value returned by the handler is returned.
+
+  This is the 'safe' way to access the password. The (text) function will work too
+  but that method is discouraged, at least by the JPasswordField docs.
+
+  Example:
+
+    (with-password* my-password-field
+      (fn [password-chars]
+        (... do something with chars ...)))
+
+  See:
+    (seesaw.core/password)
+    (seesaw.core/text)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
+  "
+  [^javax.swing.JPasswordField field handler]
+  (let [chars (.getPassword field)]
+    (try
+      (handler chars)
+      (finally
+        (java.util.Arrays/fill chars \0)))))
+
+;*******************************************************************************
 ; JEditorPane
 
 (def ^{:private true} editor-pane-options {
@@ -1115,7 +1170,12 @@
                   HTML rendering.
     :editor-kit   The EditorKit. See Javadoc.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html"
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html
+  "
   [& opts]
   (apply-options (construct javax.swing.JEditorPane) opts (merge default-options text-options)))
 
@@ -1142,10 +1202,14 @@
            will be constructed.
     :renderer A cell renderer to use. See (seesaw.cells/to-cell-renderer).
 
-  Note that retrieving and setting the current selection of the list box is fully
-  supported by the (selection) and (selection!) functions.
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html 
+    Retrieving and setting the current selection of the list box is fully 
+    supported by the (selection) and (selection!) functions.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html 
   "
   [& args]
   (apply-options (construct javax.swing.JList) args (merge default-options listbox-options)))

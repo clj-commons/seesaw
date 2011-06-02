@@ -461,6 +461,32 @@
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
 
+(describe password
+  (it "should create a JPasswordField"
+    (= javax.swing.JPasswordField (class (password))))
+  (it "should set the initial text"
+    (= "secret" (text (password :text "secret"))))
+  (it "should set the columns"
+    (= 30 (.getColumns (password :columns 30))))
+  (it "should set the echo char with a char"
+    (= \S (.getEchoChar (password :echo-char \S)))))
+
+(describe with-password*
+  (it "should call the handler with the password in a character array"
+    (let [s (atom nil)
+          p (password :text "secret")]
+      (with-password* p (fn [chars] (reset! s (apply str chars))))
+      (expect (= "secret" @s))))
+
+  (it "should return the return value of the handler"
+    (= "HEY!" (with-password* (password) (fn [chars] "HEY!"))))
+
+  (it "should fill the password character array with zeroes after then handler has completed"
+    (let [s (atom nil)
+          p (password :text "secret")]
+      (with-password* p (fn [chars] (reset! s chars)))
+      (expect (= [\0 \0 \0 \0 \0 \0] (vec @s))))))
+
 (describe editor-pane
   (it "should create a JEditorPane"
     (= javax.swing.JEditorPane (class (editor-pane)))))
