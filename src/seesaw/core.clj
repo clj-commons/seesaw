@@ -11,7 +11,8 @@
 (ns seesaw.core
   (:use [seesaw util font border color meta]
         [clojure.string :only (capitalize split)])
-  (:require [seesaw.event :as sse]
+  (:require [seesaw.invoke]
+            [seesaw.event :as sse]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
@@ -37,41 +38,8 @@
 (declare to-widget)
 (declare popup-option-handler)
 
-;(set! *warn-on-reflection* true)
-(defn invoke-later* [f] (SwingUtilities/invokeLater f))
-
-(defn invoke-now* [f]
-  (let [result (atom nil)]
-   (letfn [(invoker [] (reset! result (f)))]
-     (if (SwingUtilities/isEventDispatchThread)
-       (invoker)
-       (SwingUtilities/invokeAndWait invoker))
-     @result)))
-
-(defmacro invoke-later 
-  "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
-  in the future on the Swing UI thread. For example,
-
-    (invoke-later
-      (config! my-label :text \"New Text\"))
-
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeLater(java.lang.Runnable) 
-  "
-  [& body] `(invoke-later* (fn [] ~@body)))
-
-(defmacro invoke-now
-  "Equivalent to SwingUtilities/invokeAndWait. Executes the given body immediately
-  on the Swing UI thread, possibly blocking the current thread if it's not the Swing
-  UI thread. Returns the result of executing body. For example,
-
-    (invoke-now
-      (config! my-label :text \"New Text\"))
-
-  Be very careful with this function in the presence of locks and stuff.
-
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
-  "
-  [& body] `(invoke-now*   (fn [] ~@body)))
+(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-now"} invoke-now #'seesaw.invoke/invoke-now)
+(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-later"} invoke-later #'seesaw.invoke/invoke-later)
 
 (defn native!
   "Set native look and feel and other options to try to make things look right.
