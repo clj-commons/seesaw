@@ -486,83 +486,79 @@
 
 ;*******************************************************************************
 ; Property<->Atom syncing
+
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum
       :max :maximum
       :tip :tool-tip-text})
 
-(defn kw->java-name
+(defn- kw->java-name
   "(kw->java-name :preferred-size)"
   [kw]
   (reduce str
-          (map capitalize (split (-> (reduce str (drop 1 (str kw)))
+          (map capitalize (split (-> (name kw)
                                      (.replace "?" ""))
                                  #"\-"))))
 
 (defn property-kw->java-name
-  "(property-kw->java-name :tip)"
+  "INTERNAL USE ONLY. DO NOT USE
+  (property-kw->java-name :tip)"
   [kw]
-  (reduce str
-          (map capitalize (split (-> (reduce
-                                      str
-                                      (drop 1 (-> short-property-keywords-to-long-map
-                                                  (get kw kw)
-                                                  (str ))))
+  (apply str
+          (map capitalize (split (-> (short-property-keywords-to-long-map kw kw)
+                                     name
                                      (.replace "?" ""))
                                  #"\-"))))
 
-(defn kw->java-method
-  "(kw->java-method :enabled?)"
+(defn- kw->java-method
+  "USED ONLY BY TESTS. DO NOT USE.
+  (kw->java-method :enabled?)"
   [kw]
   (str (if (.endsWith (str kw) "?")
          "is"
          "get") (kw->java-name kw)))
 
 (defn property-kw->java-method
-  "(property-kw->java-method :tip)"
+  "USED ONLY BY TESTS. DO NOT USE.
+  (property-kw->java-method :tip)"
   [kw]
   (kw->java-method (get short-property-keywords-to-long-map kw kw)))
 
 ;; by default, property names' first character will be lowercased when
 ;; added using a property change listener. For some however, the first
 ;; character must stay uppercased. This map will specify those exceptions.
-(def ^{:private true}
-     property-change-listener-name-overrides
-     {"ToolTipText" "ToolTipText"})
+(def ^{:private true} property-change-listener-name-overrides {
+  "ToolTipText" "ToolTipText"
+})
 
 (defmulti ^{:private true} setup-property-change-on-atom (fn [c k a] [(type c) k]))
-(defmethod setup-property-change-on-atom :default
+
+(defmethod ^{:private true} setup-property-change-on-atom :default
   [component property a]
   (let [property-name (property-kw->java-name property)]
     (.addPropertyChangeListener
      component
-     ;; first letter of property-name must be lower-case
-     (get property-change-listener-name-overrides
-          property-name
-          (let [[a b](map #(reduce str %) (split-at 1 property-name))]
-            (str (clojure.string/lower-case a) b)))
+     ; first letter of *some* property-names must be lower-case
+     (property-change-listener-name-overrides
+        property-name
+        (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
      (proxy [java.beans.PropertyChangeListener] [] 
-       (propertyChange [e] (swap! a
-                                  (fn [o]
-                                    (let [component-property-value (.getNewValue e)]
-                                      (if (not= component-property-value o)
-                                        component-property-value
-                                        o)))))))))
+       (propertyChange [e] (reset! a (.getNewValue e)))))))
 
-(defn ^{:private true} setup-property-syncing
+(defn- setup-property-syncing
   [component property-name a]
   (add-watch a
              (keyword (gensym "property-syncing-watcher"))
              (fn atom-watcher-fn
-               [k r o n] (when (not= o n)
+               [k r o n] (when-not (= o n)
                            (invoke-now (config! component
                                                 property-name
                                                 n)))))
   (setup-property-change-on-atom component property-name a))
 
-(defn ^{:private true} ensure-sync-when-atom
+(defn- ensure-sync-when-atom
   [component property-name atom-or-other]
-  (if (isa? (type atom-or-other) clojure.lang.Atom)
+  (if (atom? atom-or-other)
     (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
     atom-or-other))
 
@@ -1979,15 +1975,12 @@
 
 ;*******************************************************************************
 ; Slider
-(defmethod setup-property-change-on-atom [javax.swing.JSlider :value]
+(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JSlider :value]
   [component _ a]
   (listen component
           :change
           (fn [e]
-            (swap! a
-                   (fn [o] (if (not= (.getValue component) o)
-                             (.getValue component)
-                             o))))))
+            (reset! a (.getValue component)))))
 
 (def ^{:private true} slider-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
@@ -2059,7 +2052,7 @@
 (def ^{:private true} progress-bar-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(cond (isa? (type %2) clojure.lang.Atom)
+  :value #(cond (atom? %2)
                   (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
                   (.setValue %1 %2)

@@ -45,7 +45,7 @@
    meth
    (to-array [])))
 
-(defmacro test-option [opt-kw initial-atom-value reset-atom-value]
+(defmacro test-option [opt-kw initial-atom-value final-atom-value]
   `(testing ~(str "atom for option " (property-kw->java-name opt-kw))
      (it ~(str "should set the component's " (property-kw->java-name opt-kw) " using an atom")
        (let [~'a (atom ~initial-atom-value)
@@ -54,13 +54,13 @@
      (it ~(str "should update the " (property-kw->java-name opt-kw) " to value of atom")
        (let [~'a (atom ~initial-atom-value)
              ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
-         (reset! ~'a ~reset-atom-value)
-         (expect (= ~reset-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
+         (reset! ~'a ~final-atom-value)
+         (expect (= ~final-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
      (it ~(str "should update the atom to " (property-kw->java-name opt-kw))
        (let [~'a (atom ~initial-atom-value)
              ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
-         (config! ~'p ~opt-kw ~reset-atom-value)
-         (expect (= ~reset-atom-value ~'@a))))))
+         (config! ~'p ~opt-kw ~final-atom-value)
+         (expect (= ~final-atom-value ~'@a))))))
 
         
 (describe "Applying default options" 
