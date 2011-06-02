@@ -13,6 +13,25 @@
   (:use [seesaw meta])
   (:import [java.net URL MalformedURLException]))
 
+(defmacro preferences-node
+  "Return the java.util.prefs.Preferences/userRoot for the current
+  namespace."
+  []
+  `(.node (java.util.prefs.Preferences/userRoot) ~(str (ns-name *ns*))))
+
+(defn gen-pref-atom
+  "Generate and return an atom, which will automatically be synced
+  with (java.util.prefs.Preferences/userRoot) for the current
+  namespace and a given string KEY. If not yet set, the atom will have
+  INITIAL-VALUE as its value, or the value which has already been set
+  inside the preferences. Note that the value must be printable per
+  PRINT-DUP and readable per READ-STRING for it to be used with the
+  preferences store."  [key initial-value]
+  (let [v (atom (read-string (.get (preferences-node) key (binding [*print-dup* true] (pr-str initial-value)))))]
+    (add-watch v (keyword (gensym "pref-atom-watcher"))
+               (fn [k r o n] (when (not= o n) 
+                               (.put (preferences-node) key (binding [*print-dup* true] (pr-str n))))))))
+
 (defn check-args 
   [condition message]
   (if-not condition
