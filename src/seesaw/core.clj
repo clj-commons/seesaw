@@ -1576,7 +1576,7 @@
 
   A tab descriptor is a map with the following properties:
 
-    :title     Title of the tab
+    :title     Title of the tab or a component to be displayed.
     :tip       Tab's tooltip text
     :icon      Tab's icon, passed through (icon)
     :content   The content of the tab, passed through (to-widget) as usual.
