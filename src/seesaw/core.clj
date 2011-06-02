@@ -17,6 +17,7 @@
             [seesaw.action :as ssa]
             [seesaw.table :as ss-table]
             [seesaw.cells :as cells]
+            [seesaw.bind :as ssb]
             [seesaw.graphics :as ssg])
   (:import [java.util EventObject]
            [javax.swing 
@@ -38,10 +39,13 @@
 ;(set! *warn-on-reflection* true)
 (defn invoke-later* [f] (SwingUtilities/invokeLater f))
 
-(defn invoke-now* [f] 
-  (if (SwingUtilities/isEventDispatchThread)
-    (f)
-    (SwingUtilities/invokeAndWait f)))
+(defn invoke-now* [f]
+  (let [result (atom nil)]
+   (letfn [(invoker [] (reset! result (f)))]
+     (if (SwingUtilities/isEventDispatchThread)
+       (invoker)
+       (SwingUtilities/invokeAndWait invoker))
+     @result)))
 
 (defmacro invoke-later 
   "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
@@ -54,10 +58,10 @@
   "
   [& body] `(invoke-later* (fn [] ~@body)))
 
-(defmacro invoke-now   
+(defmacro invoke-now
   "Equivalent to SwingUtilities/invokeAndWait. Executes the given body immediately
   on the Swing UI thread, possibly blocking the current thread if it's not the Swing
-  UI thread. For example,
+  UI thread. Returns the result of executing body. For example,
 
     (invoke-now
       (config! my-label :text \"New Text\"))
@@ -86,14 +90,34 @@
   (System/setProperty "apple.laf.useScreenMenuBar" "true")
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName)))
 
+(defn assert-ui-thread
+  "Verify that the current thread is the Swing UI thread and throw
+  IllegalStateException if it's not. message is included in the exception
+  message.
+
+  Returns nil.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#isEventDispatchThread%28%29
+  "
+  [message]
+  (when-not (SwingUtilities/isEventDispatchThread)
+    (throw (IllegalStateException. 
+             (str "Expected UI thread, but got '"
+                  (.. (Thread/currentThread) getName)
+                  "' : "
+                  message)))))
+
+; TODO make a macro for this. There's one in contrib I think, but I don't trust contrib.
+
 ; alias timer/timer for convenience
-(def timer sst/timer)
+(def ^{:doc (str "Alias of seesaw.timer/timer:\n" (:doc (meta #'sst/timer)))} timer sst/timer)
 
 ; alias event/listen for convenience
-(def listen sse/listen)
+(def ^{:doc (str "Alias of seesaw.event/listen:\n" (:doc (meta #'sse/listen)))} listen sse/listen)
 
 ; alias action/action for convenience
-(def action ssa/action)
+(def ^{:doc (str "Alias of seesaw.action/action:\n" (:doc (meta #'ssa/action)))} action ssa/action)
 
 
 ; TODO protocol or whatever when needed
@@ -300,6 +324,22 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
+(declare to-frame)
+
+(defn dispose!
+  "Dispose the given frame, dialog or window. target can be anything that can
+  be converted to a root-level object with (to-frame).
+
+  Returns the frame, window, or dialog that was disposed, not target.
+
+  See:
+   http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
+  "
+  [target]
+  (let [#^java.awt.Window disposable (to-frame target)]
+    (doto disposable
+      .dispose)))
+
 (defn repaint!
   "Request a repaint of a list of widget-able things.
 
@@ -317,7 +357,43 @@
   (doseq [target (map to-widget (to-seq targets))]
     (.repaint target))
   targets)
- 
+
+(defn move!
+  "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
+  type is :by or :to, and loc is a two-element vector or instance of 
+  java.awt.Point. The type parameter has the following interpretation:
+
+    :to The absolute position of the widget is set to the given point
+    :by The position of th widget is adjusted by the amount in the given point
+        relative to its current position.
+
+  Returns target.
+
+  Examples:
+
+    ; Move x to the point (42, 43)
+    (move! x :to [42, 43])
+
+    ; Move x relative to its current position. Assume initial position is (42, 43).
+    (move! x :by [50, -20])
+    ; ... now x's position is [92, 23]
+
+  Notes: 
+    This function will generally only have an affect on widget whose container
+    has a nil layout!
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
+  "
+  [target type loc]
+  (check-args (#{:by :to} type) "Expected :by or :to in move!")
+  (let [target (to-widget target)
+        [x y]  (if (instance? java.awt.Point loc) [(.x loc) (.y loc)] loc)]
+    (case type
+      :to      (doto target (.setLocation x y))
+      :by      (let [current (.getLocation target)]
+                 (doto target (.setLocation (+ x (.x current)) (+ y (.y current))))))))
+
 (defn- handle-structure-change [container]
   "Helper. Revalidate and repaint a container after structure change"
   (doto container
@@ -398,6 +474,7 @@
   :icon        #(.setIcon %1 (make-icon %2))
   :action      #(.setAction %1 %2)
   :editable?   #(.setEditable %1 (boolean %2))
+  :visible?    #(.setVisible %1 (boolean %2))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
   :orientation #(.setOrientation %1 (orientation-table %2))
@@ -439,6 +516,10 @@
     (reapply-options target args default-options)))
 
 (extend-type Action ConfigureWidget 
+  (config* [target args] 
+    (reapply-options target args default-options)))
+
+(extend-type java.awt.Window ConfigureWidget 
   (config* [target args] 
     (reapply-options target args default-options)))
 
@@ -1435,6 +1516,7 @@
   :minimum-size #(.setMinimumSize %1 (to-dimension %2))
   :size         #(.setSize %1 (to-dimension %2))
   :on-close     #(.setDefaultCloseOperation %1 (frame-on-close-map %2))
+  :visible?     #(.setVisible %1 (boolean %2))
 })
 
 (defn frame
@@ -1503,18 +1585,17 @@
 
 (def ^:private current-modal-dialogs (atom nil))
 
-(defn show-modal-dialog [dlg]
+(defn- show-modal-dialog [dlg]
   {:pre [(.isModal dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
-            (fn [_] (when (.isModal dlg)
-                      (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v)))))
+            (fn [_] (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v))))
             #{:window-closing :window-closed}
             (fn [_]
               (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
                 (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
-    (.setVisible dlg true)
+    (config! dlg :visible? true)
     @dlg-result))
 
 (defn show-dialog [dlg]
@@ -1532,7 +1613,7 @@
     (let [{:keys [dialog result]} (first @current-modal-dialogs)]
      (try
        (reset! result x)
-       (invoke-later (.dispose dialog))
+       (invoke-later (dispose! dialog))
        (finally
         (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
 
@@ -1695,36 +1776,24 @@
 ;*******************************************************************************
 ; dialog
 (def ^:private dialog-option-type-map {
-  :default     JOptionPane/DEFAULT_OPTION
-  :yes-no    JOptionPane/YES_NO_OPTION
-  :yes-no-cancel    JOptionPane/YES_NO_CANCEL_OPTION
-  :ok-cancel    JOptionPane/OK_CANCEL_OPTION
+  :default       JOptionPane/DEFAULT_OPTION
+  :yes-no        JOptionPane/YES_NO_OPTION
+  :yes-no-cancel JOptionPane/YES_NO_CANCEL_OPTION
+  :ok-cancel     JOptionPane/OK_CANCEL_OPTION
 })
 
-(def ^:private dialog-options
-     [
-      :title
-      :content
-      :option-type
-      :type
-      :options
-      :default-option
-      :success-fn
-      :cancel-fn
-      :no-fn])
-
-(def ^:private dialog-defaults
-     {
-      :title "Option Pane"
-      :parent nil
-      :content "Please set the :content option."
-      :option-type :default
-      :type :plain
-      :options nil
-      :default-option nil
-      :success-fn (fn [_] :success)
-      :cancel-fn (fn [_])
-      :no-fn (fn [_] :no)})
+(def ^:private dialog-defaults {
+  :title "Option Pane"
+  :parent nil
+  :content "Please set the :content option."
+  :option-type :default
+  :type :plain
+  :options nil
+  :default-option nil
+  :success-fn (fn [_] :success)
+  :cancel-fn (fn [_])
+  :no-fn (fn [_] :no)
+})
 
 (defn dialog
   "Display a JOptionPane. This is a dialog which displays some
@@ -1800,20 +1869,19 @@
                 (into-array (map #(to-widget % true) options)))
               (or default-option (first options)) ; default selection
               )]
-    (let [dispatch-fns {:yes-no [success-fn no-fn]
-                        :yes-no-cancel [success-fn no-fn cancel-fn]
-                        :ok-cancel [success-fn cancel-fn]
-                        :default [success-fn]}
-          visible? (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (concat dialog-options [:visible?])) 
-          dlg (apply custom-dialog (concat [:visible? false :content pane] (interleave (keys remaining-opts) (vals remaining-opts))))]
+    (let [dispatch-fns   {:yes-no        [success-fn no-fn]
+                          :yes-no-cancel [success-fn no-fn cancel-fn]
+                          :ok-cancel     [success-fn cancel-fn]
+                          :default       [success-fn]}
+          visible?       (get kw :visible? true) 
+          remaining-opts (reduce dissoc kw (conj (keys dialog-defaults) :visible?)) 
+          dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
-      (when (not options)
+      (when-not options
         (listen pane
                 :property-change
-                (fn [e] (when (and (= (.isVisible dlg))
-                                   (= (.getSource e) pane)
+                (fn [e] (when (and (.isVisible dlg)
                                    (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
                           (return-from-dialog ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
@@ -1830,18 +1898,11 @@
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
-                (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                               (fn [k r o n] (when (not= o n)
-                                               (invoke-now (.setValue %1 n)))))
-                    (listen %1 :change (fn [e] (swap! %2
-                                                (fn [o] (if (not= (.getValue %1) o)
-                                                          (.getValue %1)
-                                                          o)))))
-                    (.setValue %1 @%2))
+                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
-                (.setValue %1 %2)
-                true
-                (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+                  (.setValue %1 %2)
+                :else
+                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
@@ -1907,16 +1968,10 @@
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (isa? (type %2) clojure.lang.Atom)
-                  (do (add-watch %2 (keyword (gensym "seesaw-slider-watcher"))
-                                (fn [k r o n] (when (not= o n)
-                                                (invoke-now (.setValue %1 n)))))
-                      (listen %1 :change (fn [e] (swap! %2
-                                                  (fn [o] (if (not= (.getValue %1) o)
-                                                            (.getValue %1)
-                                                            o))))))
+                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
                   (.setValue %1 %2)
-                true
+                :else
                   (throw (IllegalArgumentException. ":value must be a number or an atom.")))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
