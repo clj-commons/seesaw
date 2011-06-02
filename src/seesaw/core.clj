@@ -607,6 +607,36 @@
       (instance? JTextComponent w)                  (.getDocument w))))
 
 ;*******************************************************************************
+; Null Layout
+
+(defn xyz-panel
+  "Creates a JPanel on which widgets can be positioned arbitrarily by client
+  code. No layout manager is installed. 
+
+  Initial widget positions can be given with their :bounds property. After
+  construction they can be moved with the (seesaw.core/move!) function.
+
+  Examples:
+
+    ; Create a panel with a label positions at (10, 10) with width 200 and height 40.
+    (xyz-panel :items [(label :text \"The Black Lodge\" :bounds [10 10 200 40]))
+
+    ; Move a widget up 50 pixels and right 25 pixels
+    (move! my-label :by [25 -50])
+
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    (seesaw.core/move!)
+  "
+  [& opts]
+  (let [p (construct JPanel)]
+    (doto p
+      (.setLayout nil)
+      (apply-default-opts opts))))
+
+;*******************************************************************************
 ; Border Layout
 
 (def ^{:private true}  border-layout-dirs 

@@ -295,6 +295,16 @@
   (it "should throw IllegalArgumentException if a nil item is given"
     (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
+(describe xyz-panel
+  (it "should create a JPanel"
+    (= JPanel (class (xyz-panel))))
+  (it "should create a JPanel with a nil layout"
+    (nil? (.getLayout (xyz-panel))))
+  (it "should add items"
+    (let [[a b c :as items] [(label :text "a") (label :text "b") (button :text "c")]
+          p (xyz-panel :items items)]
+      (expect (= items (vec (.getComponents p)))))))
+
 (describe border-panel
   (it "should create a BorderLayout with given h and v gaps"
     (let [p (border-panel :hgap 99 :vgap 12)
