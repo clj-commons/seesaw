@@ -100,8 +100,16 @@
       (let [p (apply-default-opts (JPanel.) {:location [23 45]})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a two-element vector, where :* means keep the old value "
+      (let [p (apply-default-opts (JPanel.) {:location [23 :*]})
+            l (.getLocation p)]
+        (expect (= [23 0] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Point"
       (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a java.awt.Rectangle"
+      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)])))))
   (testing "the :bounds option"
@@ -109,6 +117,22 @@
       (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a [x y width height] vector, where :* means keep the old value"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds [24 :* :* 90])
+            b (.getBounds p)]
+        (expect (= [24 45 67 90] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds to its preferred size if given :preferred, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            ps (.getPreferredSize p)
+            p (config! p :bounds :preferred)
+            b (.getBounds p)]
+        (expect (= [23 45 (.width ps) (.height ps)] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a java.awt.Dimension, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds (java.awt.Dimension. 80 90))
+            b (.getBounds p)]
+        (expect (= [23 45 80 90] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a java.awt.Rectangle"
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
@@ -1079,12 +1103,24 @@
             result (move! lbl :to point)
             new-loc (.getLocation lbl)]
         (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a vector, where :* means to keep the old value"
+      (let [lbl (label :location [5 6])
+            point [:* 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 5 102) new-loc))))
   (it "should set the absolute location of a widget with a Point"
     (let [lbl (label)
           point (java.awt.Point. 99 100)
           result (move! lbl :to point)
           new-loc (.getLocation lbl)]
       (expect (= point new-loc))))
+  (it "should set the absolute location of a widget with the upper left corner of a Rectangle"
+    (let [lbl (label)
+          point (java.awt.Rectangle. 99 100 123 456)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= (.getLocation point) new-loc))))
   (it "should set the relative location of a widget with a vector"
       (let [lbl (label)
             point [101 102]

@@ -20,23 +20,23 @@
         (move! w :to (SwingUtilities/convertPoint w (.getPoint e) (.getParent w))))))
   w)
 
-(defn resize [w]
-  (let [ps (.getPreferredSize w)]
-    (config! w :bounds [0 0 (.width ps) (.height ps)])))
-
 (defn make-label
   [text]
-  (label 
-    :text text 
-    :border (line-border :thickness 2 :color "#FFFFFF")
-    :bounds [0 0 50 20] 
-    :background "#DDDDDD"))
+  (config!
+    (label 
+      :text       text 
+      :location   [(rand-int 300) (rand-int 300)]
+      :border     (line-border :thickness 2 :color "#FFFFFF")
+      :background "#DDDDDD") 
+    ; Set the bounds to its preferred size. Note that this has to be
+    ; done after the label is fully constructed.
+    :bounds :preferred))
 
 (defn make-panel []
   (xyz-panel 
     :id :xyz 
     :background "#000000"
-    :items (map (comp draggable resize make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])))
+    :items (map (comp draggable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])))
 
 (defn -main [& args]
   (invoke-later

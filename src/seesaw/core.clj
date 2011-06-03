@@ -343,21 +343,34 @@
     ; Move x to the point (42, 43)
     (move! x :to [42, 43])
 
+    ; Move x to y position 43 while keeping x unchanged
+    (move! x :to [:*, 43])
+
     ; Move x relative to its current position. Assume initial position is (42, 43).
     (move! x :by [50, -20])
     ; ... now x's position is [92, 23]
 
   Notes: 
     This function will generally only have an affect on widget whose container
-    has a nil layout!
+    has a nil layout! This function has similar functionality to the :bounds
+    and :location options, but is a little more flexible and readable.
 
   See:
+    (seesaw.core/xyz-panel)
     http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
   "
   [target type loc]
   (check-args (#{:by :to} type) "Expected :by or :to in move!")
   (let [target (to-widget target)
-        [x y]  (if (instance? java.awt.Point loc) [(.x loc) (.y loc)] loc)]
+        old    (.getLocation target)
+        [x y]  (cond 
+                 (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                 (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
+                 (= type :to)
+                  (let [[x y] loc]
+                    [(if (= :* x) (.x old) x)
+                     (if (= :* y) (.y old) y)])
+                 :else loc)]
     (case type
       :to      (doto target (.setLocation x y))
       :by      (let [current (.getLocation target)]
@@ -416,17 +429,37 @@
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
 
-(defn- location-option-handler [w v]
+(defn- location-option-handler [target v]
   (cond
     ; TODO to-point protocol
-    (instance? java.awt.Point v) (.setLocation w v)
-    :else (.setLocation w (first v) (second v))))
+    (instance? java.awt.Point v) (.setLocation target v)
+    (instance? java.awt.Rectangle v) (.setLocation target (.x v) (.y v))
+    :else 
+      (let [[x y] v
+            old (.getLocation target)
+            x (if (= :* x) (.x old) x) 
+            y (if (= :* y) (.y old) y)] 
+        (.setLocation target x y))))
 
-(defn- bounds-option-handler [w v]
+(defn- bounds-option-handler [target v]
   (cond
     ; TODO to-rect protocol?
-    (instance? java.awt.Rectangle v) (.setBounds w v)
-    :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
+    (= :preferred v)
+      (let [ps  (.getPreferredSize target)
+            loc (.getLocation target)]
+        (.setBounds target (.x loc) (.y loc) (.width ps) (.height ps)))
+    (instance? java.awt.Rectangle v) (.setBounds target v)
+    (instance? java.awt.Dimension v) 
+      (let [loc (.getLocation target)]
+        (.setBounds target (.x loc) (.y loc) (.width v) (.height v)))
+    :else
+      (let [oldBounds (.getBounds target)
+            [x y w h] v
+            x (if (= x :*) (.x oldBounds) x)
+            y (if (= y :*) (.y oldBounds) y)
+            w (if (= w :*) (.width oldBounds) w)
+            h (if (= h :*) (.height oldBounds) h)]
+        (.setBounds target x y w h))))
 
 
 ;*******************************************************************************
