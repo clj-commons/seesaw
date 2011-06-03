@@ -1,4 +1,4 @@
-(defproject seesaw "1.0.5"
+(defproject seesaw "1.0.6-SNAPSHOT"
   :description "A Swing wrapper/DSL for Clojure. See http://seesaw-clj.org for more info."
   :url "http://seesaw-clj.org"
   :mailing-list {:name "seesaw-clj"
