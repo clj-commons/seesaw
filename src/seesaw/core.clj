@@ -327,6 +327,12 @@
     (.repaint target))
   targets)
 
+(defn- handle-structure-change [container]
+  "Helper. Revalidate and repaint a container after structure change"
+  (doto container
+    .revalidate
+    .repaint))
+
 (defn move!
   "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
   type is :by or :to, and loc is a two-element vector or instance of 
@@ -335,6 +341,7 @@
     :to The absolute position of the widget is set to the given point
     :by The position of th widget is adjusted by the amount in the given point
         relative to its current position.
+    :to-front Move the widget to the top of the z-order in its parent.
 
   Returns target.
 
@@ -359,28 +366,38 @@
     (seesaw.core/xyz-panel)
     http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
   "
-  [target type loc]
-  (check-args (#{:by :to} type) "Expected :by or :to in move!")
-  (let [target (to-widget target)
-        old    (.getLocation target)
-        [x y]  (cond 
-                 (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
-                 (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
-                 (= type :to)
-                  (let [[x y] loc]
-                    [(if (= :* x) (.x old) x)
-                     (if (= :* y) (.y old) y)])
-                 :else loc)]
+  [target type & [loc]]
+  (check-args (#{:by :to :to-front :to-back} type) "Expected :by, :to, :to-front, :to-back in move!")
+  (let [target (to-widget target)]
     (case type
-      :to      (doto target (.setLocation x y))
-      :by      (let [current (.getLocation target)]
-                 (doto target (.setLocation (+ x (.x current)) (+ y (.y current))))))))
+      (:to :by)
+        (let [old    (.getLocation target)
+            [x y]  (cond 
+                    (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                    (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
+                    (= type :to)
+                      (let [[x y] loc]
+                        [(if (= :* x) (.x old) x)
+                        (if (= :* y) (.y old) y)])
+                    :else loc)]
+        (case type
+          :to      (doto target (.setLocation x y))
+          :by      (let [current (.getLocation target)]
+                    (doto target (.setLocation (+ x (.x current)) (+ y (.y current)))))))
+      :to-front
+        (do
+          (doto (.getParent target)
+            (.setComponentZOrder  target 0)
+            handle-structure-change)
+          target)
+      :to-back
+        (let [parent (.getParent target)
+              n      (.getComponentCount parent)]
+          (doto parent 
+            (.setComponentZOrder target (dec n))
+            handle-structure-change)
+          target))))
 
-(defn- handle-structure-change [container]
-  "Helper. Revalidate and repaint a container after structure change"
-  (doto container
-    .revalidate
-    .repaint))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))

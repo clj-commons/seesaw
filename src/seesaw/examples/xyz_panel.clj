@@ -12,8 +12,13 @@
   (:use [seesaw core border])
   (:import [javax.swing SwingUtilities]))
 
+; Put in some basic dragging support.
 (defn draggable [w]
   (listen w
+    ; When the mouse is pressed, move the widget to the front of the z order
+    :mouse-pressed 
+      (fn [e] (move! w :to-front))
+    ; When the mouse is dragged move the widget
     :mouse-dragged 
       (fn [e] 
         (let [w (to-widget e)]
@@ -36,7 +41,14 @@
   (xyz-panel 
     :id :xyz 
     :background "#000000"
-    :items (map (comp draggable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])))
+    :items (conj 
+             (map (comp draggable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
+             (draggable 
+               (config! (border-panel
+                          :border (line-border :top 15 :color "#0000BB")
+                          :north (label "I'm a draggable label with a text box!")
+                          :center (text :text "Hey type some stuff here"))
+                :bounds :preferred)))))
 
 (defn -main [& args]
   (invoke-later

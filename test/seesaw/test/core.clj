@@ -1097,6 +1097,20 @@
           (catch IllegalStateException e true)))))
 
 (describe move!
+  (it "should move the widget to the back of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 0 (.getComponentZOrder p a)))
+        (move! a :to-back)
+        (expect (= 1 (.getComponentZOrder p a)))))
+  (it "should move the widget to the front of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 1 (.getComponentZOrder p b)))
+        (move! b :to-front)
+        (expect (= 0 (.getComponentZOrder p b)))))
   (it "should set the absolute location of a widget with a vector"
       (let [lbl (label)
             point [101 102]
