@@ -829,16 +829,12 @@
          [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
          (let [v (atom nil)]
            (future
-            (future-fn) 
-            (swap! v (fn [v] (if (nil? v)
-                               'dialog-is-blocking
-                               v)))
-            (invoke-now (.dispose dlg)))
+             (future-fn) 
+             (swap! v #(if % % 'dialog-is-blocking))
+             (invoke-now (.dispose dlg)))
            (invoke-now
             (let [r (show-dialog dlg)] 
-              (swap! v (fn [v] (if (nil? v)
-                                 r
-                                 v))))) 
+              (swap! v #(if % % r)))) 
            @v))]
   (describe custom-dialog
     (testing "argument passing"
@@ -872,15 +868,15 @@
       (it "should block until dialog is being disposed of"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
-      (it "should not block"
+      (it "should not block if :modal? is false"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
           (expect (= (test-dlg-blocking dlg) nil))))
-      (it "should return value from call to RETURN-FROM-DIALOG"
+      (it "should return value passed to RETURN-FROM-DIALOG"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking
                       dlg :future-fn #(do
                                         (Thread/sleep 90)
-                                        (return-from-dialog :ok)
+                                        (return-from-dialog dlg :ok)
                                         (Thread/sleep 50))) :ok))))))
 
   
@@ -892,8 +888,8 @@
       (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
         (expect (= (test-dlg-blocking dlg) nil))))
     (testing "return-from-dialog"
-      (let [ok (to-widget (action :name "Ok" :handler (fn [_] (return-from-dialog :ok))) true)
-            cancel (to-widget (action :name "Cancel" :handler (fn [_] (return-from-dialog :cancel))) true)
+      (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
+            cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
             dlg (dialog :visible? false :content "Nothing"
                              :options (map #(to-widget % true) [ok cancel]))]
        (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"

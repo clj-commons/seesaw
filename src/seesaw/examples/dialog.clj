@@ -37,9 +37,9 @@
   (defn open-display-options-custom-dlg
     []
     (apply dialog
-           (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog :save)))
-                              (action :name "Delete" :handler (fn [e] (return-from-dialog :delete)))
-                              (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]]
+           (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog e :save)))
+                              (action :name "Delete" :handler (fn [e] (return-from-dialog e :delete)))
+                              (action :name "Cancel" :handler (fn [e] (return-from-dialog e nil)))]]
                    common-opts)))
   (defn open-display-options-remembered-dlg
     []

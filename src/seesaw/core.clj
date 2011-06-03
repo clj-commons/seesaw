@@ -1775,45 +1775,69 @@
 
 ;*******************************************************************************
 ; Custom-Dialog
+
+(def ^{:private true} dialog-modality-table {
+  true         java.awt.Dialog$ModalityType/APPLICATION_MODAL
+  false        java.awt.Dialog$ModalityType/MODELESS
+  nil          java.awt.Dialog$ModalityType/MODELESS
+  :application java.awt.Dialog$ModalityType/APPLICATION_MODAL
+  :document    java.awt.Dialog$ModalityType/DOCUMENT_MODAL
+  :toolkit     java.awt.Dialog$ModalityType/TOOLKIT_MODAL
+})
+
 (def ^{:private true} custom-dialog-options {
-  :modal? #(.setModal %1 (boolean %2))
+  :modal? #(.setModalityType %1 (or (dialog-modality-table %2) (dialog-modality-table (boolean %2))))
   :parent #(.setLocationRelativeTo %1 %2)
 })
 
-(def ^:private current-modal-dialogs (atom nil))
+(def ^{:private true} dialog-result-property ::dialog-result)
+
+(defn- is-modal? [dlg] (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS))
 
 (defn- show-modal-dialog [dlg]
-  {:pre [(.isModal dlg)]}
+  {:pre [(is-modal? dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
-            (fn [_] (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v))))
+            (fn [_] (put-meta! dlg dialog-result-property dlg-result))
             #{:window-closing :window-closed}
-            (fn [_]
-              (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
-                (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
+            (fn [_] (put-meta! dlg dialog-result-property nil)))
     (config! dlg :visible? true)
     @dlg-result))
 
 (defn show-dialog [dlg]
-  (if (.isModal dlg)
+  (if (is-modal? dlg)
     (show-modal-dialog dlg)
     (.setVisible dlg true)))
 
 (defn return-from-dialog
-  "Return from the current dialog with the specified value. The dialog
-  must be modal and created from within the DIALOG fn with both
-  VISIBLE? and MODAL? set to true."
-  [x]
+  "Return from the given dialog with the specified value. dlg may be anything
+  that can be converted into a dialog as with (to-frame). For example, an
+  event, or a child widget of the dialog. Result is the value that will
+  be returned from the blocking (dialog), (custom-dialog), or (show-dialog)
+  call.
+
+  Examples:
+
+    ; A button with an action listener that will cause the dialog to close
+    ; and return :ok to the invoker.
+    (button 
+      :text \"OK\" 
+      :listen [:action (fn [e] (return-from-dialog e :ok))])
+  
+  Notes:
+    The dialog must be modal and created from within the DIALOG fn with both
+    VISIBLE? and MODAL? set to true.
+  "
+  [dlg result]
   ;(assert-ui-thread "return-from-dialog")
-  (if (empty? @current-modal-dialogs)
-    (throw (IllegalArgumentException. "Cannot return from dialog, as there is no modal dialog."))
-    (let [{:keys [dialog result]} (first @current-modal-dialogs)]
-     (try
-       (reset! result x)
-       (invoke-later (dispose! dialog))
-       (finally
-        (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
+  (let [dlg    (to-frame dlg)
+        result-atom (get-meta dlg dialog-result-property)]
+    (if result-atom
+      (do 
+        (reset! result-atom result)
+        (invoke-now (dispose! dlg)))
+      (throw (IllegalArgumentException. "Counld not find dialog meta data!")))))
 
 (defn custom-dialog
   "Create a dialog and display it.
@@ -1829,8 +1853,7 @@
               block with a dialog. The function will return once the user:
               a) Closes the window by using the system window
                  manager (e.g. by pressing the \"X\" icon in many OS's)
-              b) A function from within an event calls the dialogs
-                 dispose method.
+              b) A function from within an event calls (dispose!) on the dialog
               c) A function from within an event calls RETURN-FROM-DIALOG
                   with a return value.
               In the case of a) and b), this function returns nil. In the
@@ -2058,14 +2081,11 @@
   SHOW-MODAL-DIALOG on it.
 
 "
-  [& {:keys [title parent content option-type type
-             options default-option success-fn cancel-fn no-fn] 
-      :as kw}]
+  [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [{:keys [content option-type type
                 options default-option success-fn cancel-fn no-fn]}
-        (merge dialog-defaults
-               kw) 
+        (merge dialog-defaults opts) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
@@ -2079,8 +2099,8 @@
                           :yes-no-cancel [success-fn no-fn cancel-fn]
                           :ok-cancel     [success-fn cancel-fn]
                           :default       [success-fn]}
-          visible?       (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (conj (keys dialog-defaults) :visible?)) 
+          visible?       (get opts :visible? true) 
+          remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
           dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
@@ -2089,7 +2109,7 @@
                 :property-change
                 (fn [e] (when (and (.isVisible dlg)
                                    (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
-                          (return-from-dialog ((get-in dispatch-fns
+                          (return-from-dialog e ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane))))))
