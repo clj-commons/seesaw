@@ -1805,6 +1805,7 @@
   must be modal and created from within the DIALOG fn with both
   VISIBLE? and MODAL? set to true."
   [x]
+  ;(assert-ui-thread "return-from-dialog")
   (if (empty? @current-modal-dialogs)
     (throw (IllegalArgumentException. "Cannot return from dialog, as there is no modal dialog."))
     (let [{:keys [dialog result]} (first @current-modal-dialogs)]
@@ -1980,7 +1981,6 @@
 })
 
 (def ^:private dialog-defaults {
-  :title "Option Pane"
   :parent nil
   :content "Please set the :content option."
   :option-type :default
@@ -2001,27 +2001,35 @@
 
   Options can be any of:
 
-    :content     May be a string or a component (or a panel with even more components) which is to be displayed.
-    :option-type   In case :options is *not* specified, this may be one of :default, :yes-no, :yes-no-cancel, :ok-cancel
-                   to specify which standard button set is to be used in the dialog.
+    :content      May be a string or a component (or a panel with even more 
+                  components) which is to be displayed.
+
+    :option-type  In case :options is *not* specified, this may be one of 
+                  :default, :yes-no, :yes-no-cancel, :ok-cancel to specify 
+                  which standard button set is to be used in the dialog.
+
     :type        The type of the dialog. One of :warning, :error, :info, :plain, or :question.
-    :options     Custom buttons/options can be provided using this
-                 argument. It must be a seq of \"to-widget\"'able
-                 objects which will be displayed as options the user
-                 can choose from. Note that in this
-                 case, :success-fn, :cancel-fn & :no-fn will *not* be
-                 called. Use the handlers on those buttons &
-                 RETURN-FROM-DIALOG to close the dialog.
+
+    :options     Custom buttons/options can be provided using this argument. 
+                 It must be a seq of \"to-widget\"'able objects which will be 
+                 displayed as options the user can choose from. Note that in this
+                 case, :success-fn, :cancel-fn & :no-fn will *not* be called. 
+                 Use the handlers on those buttons & RETURN-FROM-DIALOG to close 
+                 the dialog.
+
     :default-option  The default option instance which is to be selected. This should be an element
                      from the :options seq.
+
     :success-fn  A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed any of the \"Yes\" or \"Ok\" buttons.
                  Default: a function returning :success.
+ 
     :cancel-fn   A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"Cancel\" button.
                  Default: a function returning nil.
+
     :no-fn       A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"No\" button.
@@ -2040,13 +2048,14 @@
                  :options-type :ok-cancel
                  :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
 
-  Blocks until the user enters a value unless :visible? is false. Then
-  returns the result of :success-fn, :cancel-fn or :no-fn depending on
-  what button the user pressed. Alternatively if :options has been
-  specified, returns the value which has been passed to
-  RETURN-FROM-DIALOG. If :visible? is set to false, will return the
-  resulting dialog. You may get the above specified behavior by
-  calling SHOW-MODAL-DIALOG on it.
+  Blocks until the user enters a value unless :visible? is false. Then returns 
+  the result of :success-fn, :cancel-fn or :no-fn depending on what button the 
+  user pressed. 
+  
+  Alternatively if :options has been specified, returns the value which has been 
+  passed to RETURN-FROM-DIALOG. If :visible? is set to false, will return the
+  resulting dialog. You may get the above specified behavior by calling 
+  SHOW-MODAL-DIALOG on it.
 
 "
   [& {:keys [title parent content option-type type
