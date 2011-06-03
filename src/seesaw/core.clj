@@ -295,22 +295,49 @@
 
 (declare to-frame)
 
+(defn show!
+  "Show a frame, dialog or widget.
+   
+   If target is a modal dialog, the call will block and show! will return the
+   dialog's result. See (seesaw.core/return-from-dialog).
+
+   Returns its input.
+  "
+  [target]
+  (let [#^java.awt.Window showable (to-frame target)]
+    (.setVisible showable true))
+  target)
+
+(defn pack!
+  "Pack a frame or window, causing it to resize to accommodate the preferred
+  size of its contents.
+
+  Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29 
+  "
+  [target]
+  (let [#^java.awt.Window packable (to-frame target)]
+    (.pack packable))
+  target)
+
 (defn dispose!
   "Dispose the given frame, dialog or window. target can be anything that can
   be converted to a root-level object with (to-frame).
 
-  Returns the frame, window, or dialog that was disposed, not target.
+  Returns its input. 
 
   See:
    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
   "
   [target]
   (let [#^java.awt.Window disposable (to-frame target)]
-    (doto disposable
-      .dispose)))
+    (.dispose disposable))
+  target)
 
 (defn repaint!
-  "Request a repaint of a list of widget-able things.
+  "Request a repaint of one or a list of widget-able things.
 
   Example:
 
@@ -1721,31 +1748,45 @@
 
     :id       id of the window, used by (select).
     :title    the title of the window
-    :pack?     true/false whether JFrame/pack should be called (default true)
-    :width    initial width if :pack? is false
-    :height   initial height if :pack? is false
-    :size     initial size if :pack? is false, e.g. [640 :by 480]
+    :width    initial width. Note that calling (pack!) will negate this setting
+    :height   initial height. Note that calling (pack!) will negate this setting
+    :size     initial size. Note that calling (pack!) will negate this setting
     :minimum-size minimum size of frame, e.g. [640 :by 480]
     :content  passed through (to-widget) and used as the frame's content-pane
-    :visible?  whether frame should be initially visible (default true)
+    :visible?  whether frame should be initially visible (default false)
     :resizable? whether the frame can be resized (default true)
     :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
 
   returns the new frame.
- 
+
+  Examples:
+
+    ; Create a frame, pack it and show it.
+    (-> (frame :title \"HI!\" :content \"I'm a label!\")
+      pack!
+      show!)
+      
+    ; Create a frame with an initial size (note that pack! isn't called)
+    (show! (frame :title \"HI!\" :content \"I'm a label!\" :width 500 :height 600))
+
   Notes:
+    Unless :visible? is set to true, the frame will not be displayed until (show!)
+    is called on it.
+
+    Call (pack!) on the frame if you'd like the frame to resize itself to fit its
+    contents. Sometimes this doesn't look like crap.
+
     This function is compatible with (seesaw.core/with-widget).
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
-  [& {:keys [width height visible? pack?] 
-      :or {width 100 height 100 visible? true pack? true}
+  [& {:keys [width height visible?] 
+      :or {width 100 height 100}
       :as opts}]
   (cond-doto (apply-options (construct JFrame) 
-               (dissoc opts :width :height :visible? :pack?) frame-options)
+               (dissoc opts :width :height :visible?) frame-options)
     true     (.setSize width height)
-    true     (.setVisible (boolean visible?))
-    pack?    (.pack)))
+    true     (.setVisible (boolean visible?))))
 
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 

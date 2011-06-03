@@ -293,7 +293,7 @@
     (let [t (toggle :text "hi" :selected? false)]
       (expect (.isSelected (config! t :selected? true)))))
   (it "can configure a frame"
-    (let [f (frame :visible? false)]
+    (let [f (frame)]
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
   (it "can configure a dialog"
@@ -790,24 +790,24 @@
 
 (describe frame
   (it "should create a frame with an id"
-    (= "my-frame" (id-for (frame :id :my-frame :visible? false))))
+    (= "my-frame" (id-for (frame :id :my-frame))))
   (it "should create a JFrame and set its title, width, and height"
-    (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
+    (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
   (it "should set the frame's default close operation"
-    (let [f (frame :visible? false :on-close :dispose)]
+    (let [f (frame :on-close :dispose)]
       (= javax.swing.JFrame/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
   (it "should create a JFrame and make is not resizable"
-    (let [f (frame :title "Hello" :resizable? false :visible? false)]
+    (let [f (frame :title "Hello" :resizable? false)]
       (expect (not (.isResizable f)))))
   (it "should create a JFrame and set its menu bar"
     (let [mb (menubar)
-          f (frame :menubar mb :visible? false)]
+          f (frame :menubar mb)]
       (expect (= mb (.getJMenuBar f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
-          f (frame :content c :visible? false)]
+          f (frame :content c)]
       (expect (= c (.getContentPane f))))))
 
 (describe to-frame
@@ -819,7 +819,7 @@
 
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
-          f (frame :content c :visible? false)]
+          f (frame :content c)]
       (expect (= f (to-frame c)))))
   (it "should return nil for an un-parented widget"
     (let [c (label :text "HI")]
@@ -936,17 +936,17 @@
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
   (it "should find a frame by #id and return it"
-    (let [f (frame :id :my-frame :visible? false)]
+    (let [f (frame :id :my-frame)]
       (expect (= f (select f [:#my-frame])))))
   (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
-          f (frame :title "select by id" :visible? false :content p)]
+          f (frame :title "select by id" :content p)]
       (expect (= c (select f [:#hi])))
       (expect (= p (select f ["#panel"])))))
   (it "should find menu items by id in a frame's menubar"
     (let [m (menu-item :id :my-menu)
-          f (frame :title "select menu item" :visible? false 
+          f (frame :title "select menu item"
                    :menubar (menubar :items [(menu :text "File" :items [(menu :text "Nested" :items [m])])]))]
       (expect (= m (select f [:#my-menu]))))) 
   (it "should select all of the components in a tree with :*"
@@ -1072,7 +1072,7 @@
 
 (describe dispose!
   (it "should dispose of a JFrame"
-    (let [f (frame :title "dispose!" :visible? false)]
+    (let [f (pack! (frame :title "dispose!"))]
       (expect (.isDisplayable f))
       (let [result (dispose! f)]
         (expect (= result f))

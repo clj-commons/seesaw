@@ -27,5 +27,7 @@
 
 (defn -main [& args]
   (invoke-later
-    (make-frame "FIRST")
-    (make-frame "SECOND")))
+    (-> (make-frame "FIRST") pack! show!)
+    (-> (make-frame "SECOND") pack! show!)))
+;(-main)
+

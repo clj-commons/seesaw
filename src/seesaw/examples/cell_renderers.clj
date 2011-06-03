@@ -23,7 +23,7 @@
                              :renderer render-fn)))) 
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 
 ;(-main)
 

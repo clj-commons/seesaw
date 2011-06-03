@@ -47,6 +47,6 @@
     :content (scrollable (vertical-panel :items people))))
 
 (defn -main [& args]
-  (invoke-later app))
+  (invoke-later (show! (pack! (app)))))
 ;(-main)
 

@@ -47,7 +47,7 @@
 
 (defn -main [& args]
   (invoke-later
-    (frame :title "Custom Dialog Example"
+    (show! (frame :title "Custom Dialog Example"
            :content (action :name "Show Dialog" 
-                            :handler (fn [e] (alert (str "Result = " (open-display-options-dlg))))))))
+                            :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))))))
 ;(-main)

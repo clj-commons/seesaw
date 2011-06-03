@@ -80,12 +80,12 @@
 
 (defn -main [& args]
   (invoke-later
-    (frame :title "Custom Dialog Example"
+    (show! (frame :title "Custom Dialog Example"
            :resizable? false
            :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
                                             (action :name "Show Dialog with custom option buttons" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))
                                             (action :name "Show Dialog with remembered values" 
-                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))]))))
+                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])))))
 ;(-main)

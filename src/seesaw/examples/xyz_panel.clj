@@ -52,12 +52,13 @@
 
 (defn -main [& args]
   (invoke-later
-    (frame 
-      :title "Seesaw xyz-panel example" 
-      :content 
-        (border-panel
-          :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
-          :center (make-panel))
-      :on-close :exit
-      :width 600 :height 600 :pack? false)))
+    (show!
+      (frame 
+        :title "Seesaw xyz-panel example" 
+        :content 
+          (border-panel
+            :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
+            :center (make-panel))
+        :width 600 :height 600))))
+;(-main)
 
