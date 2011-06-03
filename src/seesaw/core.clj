@@ -372,14 +372,14 @@
     (case type
       (:to :by)
         (let [old    (.getLocation target)
-            [x y]  (cond 
-                    (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
-                    (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
-                    (= type :to)
-                      (let [[x y] loc]
-                        [(if (= :* x) (.x old) x)
-                        (if (= :* y) (.y old) y)])
-                    :else loc)]
+              [x y]  (cond 
+                      (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                      (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
+                      (= type :to)
+                        (let [[x y] loc]
+                          [(if (= :* x) (.x old) x)
+                          (if (= :* y) (.y old) y)])
+                      :else loc)]
         (case type
           :to      (doto target (.setLocation x y))
           :by      (let [current (.getLocation target)]
