@@ -86,4 +86,9 @@
       (expect (= 1 (.getWidth d)))
       (expect (= 2 (.getHeight d))))))
 
+(describe atom?
+  (it "should return true for an atom"
+    (atom? (atom nil)))
+  (it "should return false for a non-atom"
+    (not (atom? (ref nil)))))
 

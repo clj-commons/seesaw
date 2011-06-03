@@ -13,22 +13,22 @@
 
 (defn open-more-options-dlg
   []
-  (let [ok-act (action :name "Ok" :handler (fn [e] (return-from-dialog "OK")))
-        cancel-act (action :name "Cancel" :handler (fn [e] (return-from-dialog "Cancel")))]
-    (dialog :modal? true
+  (let [ok-act (action :name "Ok" :handler (fn [e] (return-from-dialog e "OK")))
+        cancel-act (action :name "Cancel" :handler (fn [e] (return-from-dialog e "Cancel")))]
+    (custom-dialog :modal? true
             :title "More Options"
             :content (flow-panel :items [ok-act cancel-act]))))
 
 (defn open-display-options-dlg
   []
   (let [ok-act (action :name "Ok"
-                       :handler (fn [e] (return-from-dialog [(selection (select (to-frame e) [:#angle]))
-                                                             (selection (select (to-frame e) [:#mode]))])))
+                       :handler (fn [e] (return-from-dialog e [(selection (select (to-frame e) [:#angle]))
+                                                               (selection (select (to-frame e) [:#mode]))])))
         cancel-act (action :name "Cancel"
-                           :handler (fn [e] (return-from-dialog nil)))
+                           :handler (fn [e] (return-from-dialog e nil)))
         more-act (action :name "More ..."
                          :handler (fn [e] (alert (str "More Result = " (open-more-options-dlg)))))]
-    (dialog :resizable? false
+    (custom-dialog :resizable? false
             :id :dlg
             :modal? true
             :title "Display Options"

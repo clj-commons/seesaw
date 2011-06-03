@@ -28,7 +28,33 @@
   :handler   #(put-meta! %1 action-handler-property %2)
 })
 
-(defn action [& opts]
+(defn action 
+  "Construct a new Action object. Supports the following properties:
+
+    :enabled? Whether the action is enabled
+    :selected? Whether the action is selected (for use with radio buttons, 
+               toggle buttons, etc.
+    :name      The name of the action, i.e. the text that will be displayed
+               in whatever widget it's associated with
+    :command   The action command key. An arbitrary string identifier associated
+               with the action.
+    :tip       The action's tooltip
+    :icon      The action's icon. See (seesaw.core/icon)
+    :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
+    :handler   A single-argument function that performs whatever operations are
+               associated with the action. The argument is a ActionEvent instance.
+
+  Instances of action can be passed to the :action option of most buttons, menu items,
+  etc.
+
+  Actions can be later configured with the same properties above with (seesaw.core/config!).
+
+  Returns an instance of javax.swing.Action.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/Action.html
+  "
+  [& opts]
   (let [a (proxy [AbstractAction] [] 
             (actionPerformed [e] 
               (if-let [f (get-meta this action-handler-property)] (f e))))]

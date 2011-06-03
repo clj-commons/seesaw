@@ -80,6 +80,10 @@
    provided."
   (or (true? b) (false? b)))
 
+(defn atom? [a]
+  "Return true if a is an atom"
+  (isa? (type a) clojure.lang.Atom))
+
 (defn try-cast [c x]
   "Just like clojure.core/cast, but returns nil on failure rather than throwing ClassCastException"
   (try
@@ -136,7 +140,8 @@
                                          (.getComponents c))
       (instance? javax.swing.JMenuBar c) (.getSubElements c)
       (instance? javax.swing.JMenu c)    (.getSubElements c)
-      :else    (.getComponents c))))
+      (isa? (type c) java.awt.Container)    (.getComponents c)
+      :else nil)))
 
 (defn collect
   "Given a root widget or frame, returns a depth-fist seq of all the widgets

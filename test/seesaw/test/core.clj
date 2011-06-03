@@ -12,9 +12,12 @@
   (:use seesaw.core
         seesaw.font
         seesaw.graphics
-        seesaw.cells)
+        seesaw.cells
+        [seesaw.util :only (to-dimension)]
+        [seesaw.color :only (color)])
   (:use [lazytest.describe :only (describe it testing)]
-        [lazytest.expect :only (expect)])
+        [lazytest.expect :only (expect)]
+        [clojure.string :only (capitalize split)])
   (:import [javax.swing SwingConstants
                         Action
                         JFrame
@@ -36,7 +39,31 @@
   (it "returns the correct id if a widget has an id"
     (= "id of the label" (id-for (label :id "id of the label")))))
 
-(describe "Applying default options"
+(defn invoke-getter [inst meth]
+  (clojure.lang.Reflector/invokeInstanceMethod 
+   inst
+   meth
+   (to-array [])))
+
+(defmacro test-option [opt-kw initial-atom-value final-atom-value]
+  `(testing ~(str "atom for option " (property-kw->java-name opt-kw))
+     (it ~(str "should set the component's " (property-kw->java-name opt-kw) " using an atom")
+       (let [~'a (atom ~initial-atom-value)
+             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
+         (expect (= ~initial-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
+     (it ~(str "should update the " (property-kw->java-name opt-kw) " to value of atom")
+       (let [~'a (atom ~initial-atom-value)
+             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
+         (reset! ~'a ~final-atom-value)
+         (expect (= ~final-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
+     (it ~(str "should update the atom to " (property-kw->java-name opt-kw))
+       (let [~'a (atom ~initial-atom-value)
+             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
+         (config! ~'p ~opt-kw ~final-atom-value)
+         (expect (= ~final-atom-value ~'@a))))))
+
+        
+(describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
       (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
@@ -49,15 +76,18 @@
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getPreferredSize p))))))
+        (expect (= (Dimension. 10 20) (.getPreferredSize p)))))
+    (test-option :preferred-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
   (testing "the :minimum-size option"
     (it "set the component's minimum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:minimum-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getMinimumSize p))))))
+        (expect (= (Dimension. 10 20) (.getMinimumSize p)))))
+    (test-option :minimum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
   (testing "the :maximum-size option"
     (it "set the component's maximum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:maximum-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getMaximumSize p))))))
+        (expect (= (Dimension. 10 20) (.getMaximumSize p)))))
+    (test-option :maximum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
   (testing "the :size option"
     (it "set the component's min, max, and preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:size [11 :by 21]})
@@ -70,8 +100,16 @@
       (let [p (apply-default-opts (JPanel.) {:location [23 45]})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a two-element vector, where :* means keep the old value "
+      (let [p (apply-default-opts (JPanel.) {:location [23 :*]})
+            l (.getLocation p)]
+        (expect (= [23 0] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Point"
       (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a java.awt.Rectangle"
+      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)])))))
   (testing "the :bounds option"
@@ -79,11 +117,35 @@
       (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a [x y width height] vector, where :* means keep the old value"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds [24 :* :* 90])
+            b (.getBounds p)]
+        (expect (= [24 45 67 90] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds to its preferred size if given :preferred, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            ps (.getPreferredSize p)
+            p (config! p :bounds :preferred)
+            b (.getBounds p)]
+        (expect (= [23 45 (.width ps) (.height ps)] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a java.awt.Dimension, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds (java.awt.Dimension. 80 90))
+            b (.getBounds p)]
+        (expect (= [23 45 80 90] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a java.awt.Rectangle"
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)])))))
 
+  (test-option :foreground (color 255 0 0) (color 0 0 0))
+  (test-option :background (color 255 0 0) (color 0 0 0))
+  ;; TODO: (test-option :border (color 255 0 0) (color 0 0 0))
+  (test-option :font (font :name :monospaced) (font :name :serif))
+  (test-option :tip "hello" "world")
+  ;; TODO: (test-option :icon)
+  ;; TODO: (test-option :action (action :name :blub) (action :name :bla))
+  ;; TODO: (test-option :editable? true false)
   (testing "setting enabled option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
@@ -96,28 +158,47 @@
         (expect (.isEnabled c))))
     (it "sets enabled when provided a falsey value"
       (let [c (apply-default-opts (JPanel.) {:enabled? nil})]
-        (expect (= false (.isEnabled c))))))
+        (expect (= false (.isEnabled c)))))) 
+  (testing "setting visible? option"
+    (it "does nothing when omitted"
+      (let [c (apply-default-opts (JPanel.))]
+        (expect (.isVisible c))))
+    (it "sets visible when provided"
+      (let [c (apply-default-opts (JPanel.) {:visible? false})]
+        (expect (not (.isVisible c)))))
+    (it "sets visible when provided a truthy value"
+      (let [c (apply-default-opts (JPanel.) {:visible? "something"})]
+        (expect (.isVisible c))))
+    (it "sets not visible when provided a falsey value"
+      (let [c (apply-default-opts (JPanel.) {:visible? nil})]
+        (expect (= false (.isVisible c)))))
+    ;; TODO: (test-option :visible? false true) ;; for some reason no property change listener exists for this?
+    )
   (testing "setting opaque? option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
         (expect (.isOpaque c))))
     (it "sets opacity when provided"
       (let [c (apply-default-opts (JPanel.) {:opaque? false})]
-        (expect (not (.isOpaque c))))))
+        (expect (not (.isOpaque c)))))
+    (test-option :opaque? false true))
   (testing "the :model property"
     (it "sets the model when provided"
       (let [model  (javax.swing.DefaultButtonModel.)
             widget (apply-default-opts (button :model model))]
         (expect (= model (.getModel widget))))))
   (it "sets background using to-color when provided"
-      (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
-        (expect (= Color/BLACK (.getBackground c)))))
+    (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
+      (expect (= Color/BLACK (.getBackground c)))))
+  (it "sets opaque when background provided"
+    (let [c (apply-default-opts (JLabel.) {:background "#000000" })]
+      (expect (= true (.isOpaque c)))))
   (it "sets foreground when provided"
-      (let [c (apply-default-opts (JPanel.) {:foreground "#00FF00" })]
-        (expect (= Color/GREEN (.getForeground c)))))
+    (let [c (apply-default-opts (JPanel.) {:foreground "#00FF00" })]
+      (expect (= Color/GREEN (.getForeground c)))))
   (it "sets border when provided using to-border"
-      (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
-        (expect (= "TEST" (.. c getBorder getTitle))))))
+    (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
+      (expect (= "TEST" (.. c getBorder getTitle))))))
 
 (describe to-widget
   (it "returns nil if input is nil"
@@ -211,6 +292,14 @@
   (it "configures a target with type-specific properties"
     (let [t (toggle :text "hi" :selected? false)]
       (expect (.isSelected (config! t :selected? true)))))
+  (it "can configure a frame"
+    (let [f (frame :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
+  (it "can configure a dialog"
+    (let [f (dialog :visible? false)]
+      (config! f :title "I set the title")
+      (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
     (let [a (action :name "foo")]
       (config! a :name "bar")
@@ -229,6 +318,16 @@
       (expect (= [a b c] (seq (.getComponents p))))))
   (it "should throw IllegalArgumentException if a nil item is given"
     (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
+
+(describe xyz-panel
+  (it "should create a JPanel"
+    (= JPanel (class (xyz-panel))))
+  (it "should create a JPanel with a nil layout"
+    (nil? (.getLayout (xyz-panel))))
+  (it "should add items"
+    (let [[a b c :as items] [(label :text "a") (label :text "b") (button :text "c")]
+          p (xyz-panel :items items)]
+      (expect (= items (vec (.getComponents p)))))))
 
 (describe border-panel
   (it "should create a BorderLayout with given h and v gaps"
@@ -395,6 +494,32 @@
   (it "should honor the editable property"
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
+
+(describe password
+  (it "should create a JPasswordField"
+    (= javax.swing.JPasswordField (class (password))))
+  (it "should set the initial text"
+    (= "secret" (text (password :text "secret"))))
+  (it "should set the columns"
+    (= 30 (.getColumns (password :columns 30))))
+  (it "should set the echo char with a char"
+    (= \S (.getEchoChar (password :echo-char \S)))))
+
+(describe with-password*
+  (it "should call the handler with the password in a character array"
+    (let [s (atom nil)
+          p (password :text "secret")]
+      (with-password* p (fn [chars] (reset! s (apply str chars))))
+      (expect (= "secret" @s))))
+
+  (it "should return the return value of the handler"
+    (= "HEY!" (with-password* (password) (fn [chars] "HEY!"))))
+
+  (it "should fill the password character array with zeroes after then handler has completed"
+    (let [s (atom nil)
+          p (password :text "secret")]
+      (with-password* p (fn [chars] (reset! s chars)))
+      (expect (= [\0 \0 \0 \0 \0 \0] (vec @s))))))
 
 (describe editor-pane
   (it "should create a JEditorPane"
@@ -700,6 +825,89 @@
     (let [c (label :text "HI")]
       (expect (nil? (to-frame c))))))
 
+(letfn [(test-dlg-blocking
+         [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
+         (let [v (atom nil)]
+           (future
+             (future-fn) 
+             (swap! v #(if % % 'dialog-is-blocking))
+             (invoke-now (.dispose dlg)))
+           (invoke-now
+            (let [r (show-dialog dlg)] 
+              (swap! v #(if % % r)))) 
+           @v))]
+  (describe custom-dialog
+    (testing "argument passing"
+      (it "should create a dialog with an id"
+       (= "my-dialog" (id-for (custom-dialog :id :my-dialog :visible? false))))
+     (it "should create a JDialog and set its title, width, and height"
+       (let [f (custom-dialog :title "Hello" :width 99 :height 88 :visible? false)]
+         (expect (= javax.swing.JDialog (class f)))
+         (expect (= "Hello" (.getTitle f)))))
+     (it "should set the dialog's default close operation"
+       (let [f (custom-dialog :visible? false :on-close :dispose)]
+         (= javax.swing.JDialog/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
+     (it "should create a JDialog and make is not resizable"
+       (let [f (custom-dialog :title "Hello" :resizable? false :visible? false)]
+         (expect (not (.isResizable f)))))
+     (it "should create a JDialog that is modal"
+       (let [f (custom-dialog :title "Hello" :modal? true :visible? false)]
+         (expect (.isModal f))))
+     (it "should create a JDialog that is not modal"
+       (let [f (custom-dialog :title "Hello" :modal? false :visible? false)]
+         (expect (not (.isModal f)))))
+     (it "should create a JDialog and set its menu bar"
+       (let [mb (menubar)
+             f (custom-dialog :menubar mb :visible? false)]
+         (expect (= mb (.getJMenuBar f)))))
+     (it "should create a JDialog and set its content pane"
+       (let [c (label :text "HI")
+             f (custom-dialog :content c :visible? false)]
+         (expect (= c (.getContentPane f))))))
+    (testing "blocking"
+      (it "should block until dialog is being disposed of"
+        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+          (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
+      (it "should not block if :modal? is false"
+        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
+          (expect (= (test-dlg-blocking dlg) nil))))
+      (it "should return value passed to RETURN-FROM-DIALOG"
+        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+          (expect (= (test-dlg-blocking
+                      dlg :future-fn #(do
+                                        (Thread/sleep 90)
+                                        (return-from-dialog dlg :ok)
+                                        (Thread/sleep 50))) :ok))))))
+
+  
+  (describe dialog
+    (it "should block until dialog is being disposed of"
+      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+        (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
+    (it "should not block"
+      (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
+        (expect (= (test-dlg-blocking dlg) nil))))
+    (testing "return-from-dialog"
+      (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
+            cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
+            dlg (dialog :visible? false :content "Nothing"
+                             :options (map #(to-widget % true) [ok cancel]))]
+       (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
+         (expect (= (test-dlg-blocking
+                     dlg
+                     :future-fn #(do
+                                   (Thread/sleep 90)
+                                   (invoke-now (.doClick ok))
+                                   (Thread/sleep 50))) :ok)))
+       (it "should return value passed to RETURN-FROM-DIALOG from clicking on cancel button"
+         (expect (= (test-dlg-blocking
+                     dlg
+                     :future-fn #(do
+                                   (Thread/sleep 90)
+                                   (invoke-now (.doClick cancel))
+                                   (Thread/sleep 50))) :cancel)))))))
+
+
 (describe slider
   (it "should sync the value of the atom with the slider value, if slider value changed"
     (let [v (atom 15)
@@ -833,4 +1041,108 @@
       (expect (nil? (selection bg)))
       (selection! bg b)
       (expect (= b (selection bg))))))
+
+(describe with-widget
+  (it "throws an exception if the factory class does not create the expected type"
+    (try
+      (do (with-widget JPanel (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the factory function does not create the expected type"
+    (try
+      (do (with-widget #(JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
+  (it "throws an exception if the given instance is not the expected type"
+    (try
+      (do (with-widget (JPanel.) (text :id :hi)) false)
+      (catch IllegalArgumentException e (.contains (.getMessage e) "is not consistent with expected type"))))
+  (it "uses a function as a factory and applies a constructor function to the result"
+    (let [expected (javax.swing.JPasswordField.)
+          result   (with-widget (fn [] expected) (text :id "hi"))]
+      (expect (= expected result))
+      (expect (= "hi" (id-for result)))))
+  (it "uses a class literal as a factory and applies a constructor function to it"
+    (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
+      (expect (instance? javax.swing.JPasswordField result))
+      (expect (= "hi" (id-for result)))))
+  (it "applies a constructor function to an existing widget instance"
+    (let [existing (JPanel.)
+          result (with-widget existing (border-panel :id "hi"))]
+      (expect (= existing result))
+      (expect (= "hi" (id-for existing))))))
+
+(describe dispose!
+  (it "should dispose of a JFrame"
+    (let [f (frame :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f))))))
+  (it "should dispose of a JDialog"
+    (let [f (dialog :title "dispose!" :visible? false)]
+      (expect (.isDisplayable f))
+      (let [result (dispose! f)]
+        (expect (= result f))
+        (expect (not (.isDisplayable f)))))))
+
+(describe assert-ui-thread
+  ; TODO test non-exception case
+  (it "should throw an IllegalStateException if not called on the Swing UI thread"
+     @(future
+        (try 
+          (do (assert-ui-thread "some message") false)
+          (catch IllegalStateException e true)))))
+
+(describe move!
+  (it "should move the widget to the back of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 0 (.getComponentZOrder p a)))
+        (move! a :to-back)
+        (expect (= 1 (.getComponentZOrder p a)))))
+  (it "should move the widget to the front of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 1 (.getComponentZOrder p b)))
+        (move! b :to-front)
+        (expect (= 0 (.getComponentZOrder p b)))))
+  (it "should set the absolute location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a vector, where :* means to keep the old value"
+      (let [lbl (label :location [5 6])
+            point [:* 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 5 102) new-loc))))
+  (it "should set the absolute location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= point new-loc))))
+  (it "should set the absolute location of a widget with the upper left corner of a Rectangle"
+    (let [lbl (label)
+          point (java.awt.Rectangle. 99 100 123 456)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= (.getLocation point) new-loc))))
+  (it "should set the relative location of a widget with a vector"
+      (let [lbl (label)
+            point [101 102]
+            _ (move! lbl :to [5 40])
+            result (move! lbl :by point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 106 142) new-loc))))
+  (it "should set the relative location of a widget with a Point"
+    (let [lbl (label)
+          point (java.awt.Point. 99 100)
+          _ (move! lbl :to [5 40])
+          result (move! lbl :by point)
+          new-loc (.getLocation lbl)]
+      (expect (= (java.awt.Point. 104 140) new-loc)))))
 
