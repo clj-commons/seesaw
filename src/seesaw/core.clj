@@ -293,7 +293,7 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
-(declare to-frame)
+(declare to-root)
 
 (defn show!
   "Show a frame, dialog or widget.
@@ -304,7 +304,7 @@
    Returns its input.
   "
   [target]
-  (let [#^java.awt.Window showable (to-frame target)]
+  (let [#^java.awt.Window showable (to-root target)]
     (.setVisible showable true))
   target)
 
@@ -318,13 +318,13 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29 
   "
   [target]
-  (let [#^java.awt.Window packable (to-frame target)]
+  (let [#^java.awt.Window packable (to-root target)]
     (.pack packable))
   target)
 
 (defn dispose!
   "Dispose the given frame, dialog or window. target can be anything that can
-  be converted to a root-level object with (to-frame).
+  be converted to a root-level object with (to-root).
 
   Returns its input. 
 
@@ -332,7 +332,7 @@
    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
   "
   [target]
-  (let [#^java.awt.Window disposable (to-frame target)]
+  (let [#^java.awt.Window disposable (to-root target)]
     (.dispose disposable))
   target)
 
@@ -1791,7 +1791,7 @@
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 
   by following the invoker of the popup if it doesn't have a parent. This
-  allows (to-frame) to work correctly on action event objects fired from
+  allows (to-root) to work correctly on action event objects fired from
   menus.
   
   Returns top-level Window (e.g. a JFrame), or nil if not found."
@@ -1806,13 +1806,15 @@
         (get-root (.getInvoker w)))
     :else (get-root (.getParent w))))
 
-(defn to-frame 
+(defn to-root
   "Get the frame or window that contains the given widget. Useful for APIs
   like JDialog that want a JFrame, when all you have is a widget or event.
   Note that w is run through (to-widget) first, so you can pass event object
   directly to this."
   [w]
   (get-root (to-widget w)))
+
+(def to-frame to-root)
 
 ;*******************************************************************************
 ; Custom-Dialog
@@ -1853,7 +1855,7 @@
 
 (defn return-from-dialog
   "Return from the given dialog with the specified value. dlg may be anything
-  that can be converted into a dialog as with (to-frame). For example, an
+  that can be converted into a dialog as with (to-root). For example, an
   event, or a child widget of the dialog. Result is the value that will
   be returned from the blocking (dialog), (custom-dialog), or (show-dialog)
   call.
@@ -1872,7 +1874,7 @@
   "
   [dlg result]
   ;(assert-ui-thread "return-from-dialog")
-  (let [dlg    (to-frame dlg)
+  (let [dlg    (to-root dlg)
         result-atom (get-meta dlg dialog-result-property)]
     (if result-atom
       (do 
@@ -2110,7 +2112,7 @@
     (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
-                 :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
+                 :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
 
   Blocks until the user enters a value unless :visible? is false. Then returns 
   the result of :success-fn, :cancel-fn or :no-fn depending on what button the 
@@ -2303,11 +2305,11 @@
     (select root [:#id])   Look up widget by id. A single widget is returned
     (select root [:*])     root and all the widgets under it
 
-   For example, to find a widget by id from an event handler, use (to-frame) on
+   For example, to find a widget by id from an event handler, use (to-root) on
    the event to get the root:
 
     (fn [e]
-      (let [my-widget (select (to-frame e) [:#my-widget])]
+      (let [my-widget (select (to-root e) [:#my-widget])]
          ...))
 
    Someday more selectors will be supported :)

@@ -810,20 +810,24 @@
           f (frame :content c)]
       (expect (= c (.getContentPane f))))))
 
-(describe to-frame
+(describe to-root
   (it "should convert a widget to its parent applet"
     (let [c (label :text "HI")
           a (javax.swing.JApplet.)]
       (.add a c)
-      (expect (= a (to-frame c)))))
+      (expect (= a (to-root c)))))
 
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
           f (frame :content c)]
-      (expect (= f (to-frame c)))))
+      (expect (= f (to-root c)))))
   (it "should return nil for an un-parented widget"
     (let [c (label :text "HI")]
-      (expect (nil? (to-frame c))))))
+      (expect (nil? (to-root c))))))
+
+(describe to-frame
+  (it "should be an alias for to-root"
+    (= to-frame to-root)))
 
 (letfn [(test-dlg-blocking
          [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
