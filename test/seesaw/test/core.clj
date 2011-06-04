@@ -297,7 +297,7 @@
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
   (it "can configure a dialog"
-    (let [f (dialog :visible? false)]
+    (let [f (dialog)]
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
@@ -840,43 +840,44 @@
             (let [r (show! dlg)] 
               (swap! v #(if % % r)))) 
            @v))]
+
   (describe custom-dialog
     (testing "argument passing"
       (it "should create a dialog with an id"
-       (= "my-dialog" (id-for (custom-dialog :id :my-dialog :visible? false))))
+       (= "my-dialog" (id-for (custom-dialog :id :my-dialog))))
      (it "should create a JDialog and set its title, width, and height"
-       (let [f (custom-dialog :title "Hello" :width 99 :height 88 :visible? false)]
+       (let [f (custom-dialog :title "Hello" :width 99 :height 88)]
          (expect (= javax.swing.JDialog (class f)))
          (expect (= "Hello" (.getTitle f)))))
      (it "should set the dialog's default close operation"
-       (let [f (custom-dialog :visible? false :on-close :dispose)]
+       (let [f (custom-dialog :on-close :dispose)]
          (= javax.swing.JDialog/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
      (it "should create a JDialog and make is not resizable"
-       (let [f (custom-dialog :title "Hello" :resizable? false :visible? false)]
+       (let [f (custom-dialog :title "Hello" :resizable? false)]
          (expect (not (.isResizable f)))))
      (it "should create a JDialog that is modal"
-       (let [f (custom-dialog :title "Hello" :modal? true :visible? false)]
+       (let [f (custom-dialog :title "Hello" :modal? true)]
          (expect (.isModal f))))
      (it "should create a JDialog that is not modal"
-       (let [f (custom-dialog :title "Hello" :modal? false :visible? false)]
+       (let [f (custom-dialog :title "Hello" :modal? false)]
          (expect (not (.isModal f)))))
      (it "should create a JDialog and set its menu bar"
        (let [mb (menubar)
-             f (custom-dialog :menubar mb :visible? false)]
+             f (custom-dialog :menubar mb)]
          (expect (= mb (.getJMenuBar f)))))
      (it "should create a JDialog and set its content pane"
        (let [c (label :text "HI")
-             f (custom-dialog :content c :visible? false)]
+             f (custom-dialog :content c)]
          (expect (= c (.getContentPane f))))))
     (testing "blocking"
       (it "should block until dialog is being disposed of"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+        (let [dlg (custom-dialog :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
       (it "should not block if :modal? is false"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
+        (let [dlg (custom-dialog :content "Nothing" :modal? false)]
           (expect (= (test-dlg-blocking dlg) dlg))))
       (it "should return value passed to RETURN-FROM-DIALOG"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+        (let [dlg (custom-dialog :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking
                       dlg :future-fn #(do
                                         (Thread/sleep 90)
@@ -886,15 +887,15 @@
   
   (describe dialog
     (it "should block until dialog is being disposed of"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+      (let [dlg (dialog :content "Nothing" :modal? true)]
         (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
     (it "should not block"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
+      (let [dlg (dialog :content "Nothing" :modal? false)]
         (expect (= (test-dlg-blocking dlg) dlg))))
     (testing "return-from-dialog"
       (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
             cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
-            dlg (dialog :visible? false :content "Nothing"
+            dlg (dialog :content "Nothing"
                              :options (map #(to-widget % true) [ok cancel]))]
        (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
          (expect (= (test-dlg-blocking
@@ -1082,7 +1083,7 @@
         (expect (= result f))
         (expect (not (.isDisplayable f))))))
   (it "should dispose of a JDialog"
-    (let [f (dialog :title "dispose!" :visible? false)]
+    (let [f (pack! (dialog :title "dispose!"))]
       (expect (.isDisplayable f))
       (let [result (dispose! f)]
         (expect (= result f))

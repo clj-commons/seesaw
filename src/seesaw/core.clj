@@ -1918,7 +1918,7 @@
   "
   [dlg result]
   ;(assert-ui-thread "return-from-dialog")
-  (let [dlg    (to-root dlg)
+  (let [dlg         (to-root dlg)
         result-atom (get-meta dlg dialog-result-property)]
     (if result-atom
       (do 
@@ -1947,24 +1947,23 @@
               case of c), this function returns the value passed to
               RETURN-FROM-DIALOG. Default: true.
 
-  Returns a JDialog if :visible? & :modal? are not both true. Otherwise
-  will block & return a value as further documented for argument :modal?.
+
+  Returns a JDialog. Use (seesaw.core/show!) to display the dialog.
 
   Notes:
     This function is compatible with (seesaw.core/with-widget).
  
   See:
+    (seesaw.core/show!)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html
 "
-  [& {:keys [width height visible? pack? modal? on-close] 
-      :or {width 100 height 100 visible? true pack? true}
+  [& {:keys [width height visible? modal? on-close] 
+      :or {width 100 height 100 visible? false}
       :as opts}]
   (let [dlg (apply-options (construct JDialog) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge custom-dialog-options frame-options))]
-    (cond-doto dlg
-      true     (.setSize width height)
-      pack?    (.pack))
+    (.setSize dlg width height)
     (if visible?
       (show! dlg)
       dlg)))
@@ -2158,15 +2157,12 @@
                  :options-type :ok-cancel
                  :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
 
-  Blocks until the user enters a value unless :visible? is false. Then returns 
-  the result of :success-fn, :cancel-fn or :no-fn depending on what button the 
-  user pressed. 
+  The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
+  If the dialog is model this will return the result of :success-fn, :cancel-fn or 
+  :no-fn depending on what button the user pressed. 
   
   Alternatively if :options has been specified, returns the value which has been 
-  passed to RETURN-FROM-DIALOG. If :visible? is set to false, will return the
-  resulting dialog. You may get the above specified behavior by calling 
-  SHOW-MODAL-DIALOG on it.
-
+  passed to (seesaw.core/return-from-dialog).
 "
   [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
@@ -2186,7 +2182,7 @@
                           :yes-no-cancel [success-fn no-fn cancel-fn]
                           :ok-cancel     [success-fn cancel-fn]
                           :default       [success-fn]}
-          visible?       (get opts :visible? true) 
+          visible?       (get opts :visible? false) 
           remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
           dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
