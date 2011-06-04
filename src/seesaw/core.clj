@@ -1118,8 +1118,15 @@
   [& opts]
   (apply-options (ButtonGroup.) opts button-group-options))
 
+(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JToggleButton :selected?]
+  [component _ a]
+  (listen component
+          :change
+          (fn [e]
+            (reset! a (.isSelected component)))))
+
 (def ^{:private true} button-options {
-  :selected?   #(.setSelected %1 (boolean %2))
+  :selected?   #(.setSelected %1 (boolean (ensure-sync-when-atom %1 :selected? %2)))
   :group       #(.add %2 %1)
 })
 
@@ -1700,7 +1707,7 @@
 
   A tab descriptor is a map with the following properties:
 
-    :title     Title of the tab
+    :title     Title of the tab or a component to be displayed.
     :tip       Tab's tooltip text
     :icon      Tab's icon, passed through (icon)
     :content   The content of the tab, passed through (to-widget) as usual.
