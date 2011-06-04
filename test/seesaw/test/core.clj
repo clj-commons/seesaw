@@ -200,6 +200,14 @@
     (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
       (expect (= "TEST" (.. c getBorder getTitle))))))
 
+(describe show!
+  (it "makes a widget visible and returns it"
+    (.isVisible (show! (doto (JPanel.) (.setVisible false))))))
+
+(describe hide!
+  (it "hides a widget and returns it"
+    (not (.isVisible (hide! (doto (JPanel.) (.setVisible true)))))))
+
 (describe to-widget
   (it "returns nil if input is nil"
       (= nil (to-widget nil)))
