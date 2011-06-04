@@ -33,7 +33,7 @@ namespace."
   key must be printable per PRINT-DUP and readable per READ-STRING for
   it to be used with the preferences store."
   [ns key atom]
-  (let [v (read-string (.get (preferences-node) key (binding [*print-dup* true] (pr-str @atom))))]
+  (let [v (read-string (.get (preferences-node ns) key (binding [*print-dup* true] (pr-str @atom))))]
     (when (not= @atom v)
       (reset! atom v))
     (doto atom
