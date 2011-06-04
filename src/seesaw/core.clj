@@ -1044,7 +1044,7 @@
   [& opts]
   (apply-options (ButtonGroup.) opts button-group-options))
 
-(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JRadioButton :selected?]
+(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JToggleButton :selected?]
   [component _ a]
   (listen component
           :change
