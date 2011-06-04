@@ -294,6 +294,16 @@
 ; Generic widget stuff
 
 (declare to-root)
+(declare show-modal-dialog)
+(declare is-modal-dialog?)
+
+(defn- set-visible-impl [targets visible]
+  (if (and visible (is-modal-dialog? targets))
+    (show-modal-dialog targets)
+    (do
+      (doseq [#^java.awt.Component target (to-seq targets)]
+        (.setVisible target visible))
+      targets)))
 
 (defn show!
   "Show a frame, dialog or widget.
@@ -302,11 +312,23 @@
    dialog's result. See (seesaw.core/return-from-dialog).
 
    Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
   "
-  [target]
-  (let [#^java.awt.Window showable (to-root target)]
-    (.setVisible showable true))
-  target)
+  [targets]
+  (set-visible-impl targets true))
+
+(defn hide!
+  "Hide a frame, dialog or widget.
+   
+   Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
+  "
+  [targets]
+  (set-visible-impl targets false))
 
 (defn pack!
   "Pack a frame or window, causing it to resize to accommodate the preferred
@@ -317,10 +339,10 @@
   See:
     http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29 
   "
-  [target]
-  (let [#^java.awt.Window packable (to-root target)]
-    (.pack packable))
-  target)
+  [targets]
+  (doseq [#^java.awt.Window target (to-seq targets)]
+    (.pack (to-root target)))
+  targets)
 
 (defn dispose!
   "Dispose the given frame, dialog or window. target can be anything that can
@@ -331,10 +353,10 @@
   See:
    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
   "
-  [target]
-  (let [#^java.awt.Window disposable (to-root target)]
-    (.dispose disposable))
-  target)
+  [targets]
+  (doseq [#^java.awt.Window target (to-seq targets)]
+    (.dispose (to-root target)))
+  targets)
 
 (defn repaint!
   "Request a repaint of one or a list of widget-able things.
@@ -350,8 +372,8 @@
   Returns targets.
   "
   [targets]
-  (doseq [target (map to-widget (to-seq targets))]
-    (.repaint target))
+  (doseq [target (to-seq targets)]
+    (.repaint (to-widget target)))
   targets)
 
 (defn- handle-structure-change [container]
@@ -1835,10 +1857,12 @@
 
 (def ^{:private true} dialog-result-property ::dialog-result)
 
-(defn- is-modal? [dlg] (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS))
+(defn- is-modal-dialog? [dlg] 
+  (and (instance? java.awt.Dialog dlg) 
+       (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS)))
 
 (defn- show-modal-dialog [dlg]
-  {:pre [(is-modal? dlg)]}
+  {:pre [(is-modal-dialog? dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
@@ -1848,16 +1872,11 @@
     (config! dlg :visible? true)
     @dlg-result))
 
-(defn show-dialog [dlg]
-  (if (is-modal? dlg)
-    (show-modal-dialog dlg)
-    (.setVisible dlg true)))
-
 (defn return-from-dialog
   "Return from the given dialog with the specified value. dlg may be anything
   that can be converted into a dialog as with (to-root). For example, an
   event, or a child widget of the dialog. Result is the value that will
-  be returned from the blocking (dialog), (custom-dialog), or (show-dialog)
+  be returned from the blocking (dialog), (custom-dialog), or (show!)
   call.
 
   Examples:
@@ -1922,7 +1941,7 @@
       true     (.setSize width height)
       pack?    (.pack))
     (if visible?
-      (show-dialog dlg)
+      (show! dlg)
       dlg)))
 
 
@@ -2157,7 +2176,7 @@
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane))))))
       (if visible?
-        (show-dialog dlg)
+        (show! dlg)
         dlg))))
 
 

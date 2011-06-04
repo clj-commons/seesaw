@@ -837,7 +837,7 @@
              (swap! v #(if % % 'dialog-is-blocking))
              (invoke-now (.dispose dlg)))
            (invoke-now
-            (let [r (show-dialog dlg)] 
+            (let [r (show! dlg)] 
               (swap! v #(if % % r)))) 
            @v))]
   (describe custom-dialog
@@ -874,7 +874,7 @@
           (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
       (it "should not block if :modal? is false"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
-          (expect (= (test-dlg-blocking dlg) nil))))
+          (expect (= (test-dlg-blocking dlg) dlg))))
       (it "should return value passed to RETURN-FROM-DIALOG"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking
@@ -890,7 +890,7 @@
         (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
     (it "should not block"
       (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
-        (expect (= (test-dlg-blocking dlg) nil))))
+        (expect (= (test-dlg-blocking dlg) dlg))))
     (testing "return-from-dialog"
       (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
             cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
