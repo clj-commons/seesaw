@@ -293,16 +293,34 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
-(declare to-root)
 (declare show-modal-dialog)
+(declare to-root)
 (declare is-modal-dialog?)
+
+(defprotocol Showable
+  (visible! [this v])
+  (visible? [this]))
+
+(extend-protocol Showable
+  java.awt.Component
+    (visible! [this v] (doto this (.setVisible (boolean v))))
+    (visible? [this] (.isVisible this))
+  java.awt.Dialog
+    (visible! [this v]
+      (if (and v (is-modal-dialog? this))
+        (show-modal-dialog this)
+        (doto this (.setVisible false))))
+  java.util.EventObject
+    (visible! [this v] (visible! (.getSource this) v))
+    (visible? [this] (visible? (.getSource this))))
+
 
 (defn- set-visible-impl [targets visible]
   (if (and visible (is-modal-dialog? targets))
-    (show-modal-dialog targets)
+    (visible! targets true)
     (do
-      (doseq [#^java.awt.Component target (to-seq targets)]
-        (.setVisible target visible))
+      (doseq [target (to-seq targets)]
+        (visible! target visible))
       targets)))
 
 (defn show!
@@ -317,7 +335,12 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
   "
   [targets]
-  (set-visible-impl targets true))
+  (if (is-modal-dialog? targets)
+    (visible! targets true)
+    (do
+      (doseq [target (to-seq targets)]
+        (visible! target true))
+      targets)))
 
 (defn hide!
   "Hide a frame, dialog or widget.
@@ -328,7 +351,9 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
   "
   [targets]
-  (set-visible-impl targets false))
+  (doseq [target (to-seq targets)]
+    (visible! target false))
+  targets)
 
 (defn pack!
   "Pack a frame or window, causing it to resize to accommodate the preferred
@@ -340,8 +365,8 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29 
   "
   [targets]
-  (doseq [#^java.awt.Window target (to-seq targets)]
-    (.pack (to-root target)))
+  (doseq [#^java.awt.Window target (map to-root (to-seq targets))]
+    (.pack target))
   targets)
 
 (defn dispose!
@@ -354,8 +379,8 @@
    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
   "
   [targets]
-  (doseq [#^java.awt.Window target (to-seq targets)]
-    (.dispose (to-root target)))
+  (doseq [#^java.awt.Window target (map to-root (to-seq targets))]
+    (.dispose target))
   targets)
 
 (defn repaint!
@@ -372,8 +397,8 @@
   Returns targets.
   "
   [targets]
-  (doseq [target (to-seq targets)]
-    (.repaint (to-widget target)))
+  (doseq [target (map to-widget (to-seq targets))]
+    (.repaint target))
   targets)
 
 (defn- handle-structure-change [container]
