@@ -17,6 +17,9 @@
     :content
       (horizontal-panel :items [
         (vertical-panel :items [
+          "<html>
+          Slide the sliders to change<br>
+          the color to the right</html>"
           (slider :id :red   :min 0 :max 255)
           (slider :id :green :min 0 :max 255)
           (slider :id :blue  :min 0 :max 255)])
@@ -30,7 +33,7 @@
 
 (defn -main [& args]
   (invoke-later
-    (let [root (make-frame)]
+    (let [root (-> (make-frame) pack! show!)]
       (listen (map #(select root [%]) [:#red :#green :#blue]) :change
         (fn [e]
           (update-color root))))))

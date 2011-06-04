@@ -22,7 +22,7 @@
   [(str "HI-" (rand)) "BYE"])
 
 (defn app []
-  (frame :title "Popup Menu Example" :width 500 :height 300 :pack? false
+  (frame :title "Popup Menu Example" :width 500 :height 300
     :content 
       (left-right-split 
         ; Just a couple of labels with popup menus associated
@@ -36,7 +36,7 @@
                :popup dynamic-popup))))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 
 ;(-main)
 

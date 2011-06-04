@@ -39,6 +39,6 @@
   (frame :title "MigLayout Example" :resizable? false :content (frame-content)))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (-> (app) pack! show!)))
 ;(-main) 
 

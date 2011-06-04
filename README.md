@@ -39,9 +39,11 @@ Now edit the generated `src/hello_seesaw/core.clj` file:
 
     (defn -main [& args]
       (invoke-later 
-        (frame :title "Hello", 
+        (-> (frame :title "Hello", 
                :content "Hello, Seesaw",
-               :on-close :exit)))
+               :on-close :exit)
+         pack!
+         show!)))
 
 Now run it:
 

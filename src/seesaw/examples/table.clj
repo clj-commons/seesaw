@@ -25,13 +25,13 @@
 
 ; The rest is boilerplate ...
 (defn make-frame []
-  (frame :title "JTable Example" :width 400 :height 400 :pack? false :content
+  (frame :title "JTable Example" :width 400 :height 400 :content
     (border-panel
       :center (scrollable (make-table))
       :south  (label :id :sel :text "Selection: "))))
 
 (defn app []
-  (let [f (make-frame)
+  (let [f (show! (make-frame))
         t (select f [:#table])]
     ; Listen for selection changes and show them in the label
     (listen t :selection 

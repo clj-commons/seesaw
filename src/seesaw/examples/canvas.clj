@@ -78,7 +78,7 @@
 
 (defn app
   []
-  (frame :title "Canvas Example" :width 500 :height 300 :pack? false
+  (frame :title "Canvas Example" :width 500 :height 300
     :content 
       (border-panel :hgap 5 :vgap 5 :border 5
         ; Create the canvas with initial nil paint function, i.e. just canvas
@@ -92,6 +92,6 @@
                                         (switch-paint-action "Ovals" paint2)]))))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 ;(-main)
 

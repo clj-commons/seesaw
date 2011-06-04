@@ -100,8 +100,16 @@
       (let [p (apply-default-opts (JPanel.) {:location [23 45]})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a two-element vector, where :* means keep the old value "
+      (let [p (apply-default-opts (JPanel.) {:location [23 :*]})
+            l (.getLocation p)]
+        (expect (= [23 0] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Point"
       (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a java.awt.Rectangle"
+      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)])))))
   (testing "the :bounds option"
@@ -109,6 +117,22 @@
       (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a [x y width height] vector, where :* means keep the old value"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds [24 :* :* 90])
+            b (.getBounds p)]
+        (expect (= [24 45 67 90] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds to its preferred size if given :preferred, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            ps (.getPreferredSize p)
+            p (config! p :bounds :preferred)
+            b (.getBounds p)]
+        (expect (= [23 45 (.width ps) (.height ps)] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a java.awt.Dimension, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds (java.awt.Dimension. 80 90))
+            b (.getBounds p)]
+        (expect (= [23 45 80 90] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a java.awt.Rectangle"
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
@@ -175,6 +199,14 @@
   (it "sets border when provided using to-border"
     (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
       (expect (= "TEST" (.. c getBorder getTitle))))))
+
+(describe show!
+  (it "makes a widget visible and returns it"
+    (.isVisible (show! (doto (JPanel.) (.setVisible false))))))
+
+(describe hide!
+  (it "hides a widget and returns it"
+    (not (.isVisible (hide! (doto (JPanel.) (.setVisible true)))))))
 
 (describe to-widget
   (it "returns nil if input is nil"
@@ -269,11 +301,11 @@
     (let [t (toggle :text "hi" :selected? false)]
       (expect (.isSelected (config! t :selected? true)))))
   (it "can configure a frame"
-    (let [f (frame :visible? false)]
+    (let [f (frame)]
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
   (it "can configure a dialog"
-    (let [f (dialog :visible? false)]
+    (let [f (dialog)]
       (config! f :title "I set the title")
       (expect (= "I set the title" (.getTitle f)))))
   (it "can configure an action"
@@ -766,111 +798,112 @@
 
 (describe frame
   (it "should create a frame with an id"
-    (= "my-frame" (id-for (frame :id :my-frame :visible? false))))
+    (= "my-frame" (id-for (frame :id :my-frame))))
   (it "should create a JFrame and set its title, width, and height"
-    (let [f (frame :title "Hello" :width 99 :height 88 :visible? false)]
+    (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))
       (expect (= "Hello" (.getTitle f)))))
   (it "should set the frame's default close operation"
-    (let [f (frame :visible? false :on-close :dispose)]
+    (let [f (frame :on-close :dispose)]
       (= javax.swing.JFrame/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
   (it "should create a JFrame and make is not resizable"
-    (let [f (frame :title "Hello" :resizable? false :visible? false)]
+    (let [f (frame :title "Hello" :resizable? false)]
       (expect (not (.isResizable f)))))
   (it "should create a JFrame and set its menu bar"
     (let [mb (menubar)
-          f (frame :menubar mb :visible? false)]
+          f (frame :menubar mb)]
       (expect (= mb (.getJMenuBar f)))))
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
-          f (frame :content c :visible? false)]
+          f (frame :content c)]
       (expect (= c (.getContentPane f))))))
 
-(describe to-frame
+(describe to-root
   (it "should convert a widget to its parent applet"
     (let [c (label :text "HI")
           a (javax.swing.JApplet.)]
       (.add a c)
-      (expect (= a (to-frame c)))))
+      (expect (= a (to-root c)))))
 
   (it "should convert a widget to its parent frame"
     (let [c (label :text "HI")
-          f (frame :content c :visible? false)]
-      (expect (= f (to-frame c)))))
+          f (frame :content c)]
+      (expect (= f (to-root c)))))
   (it "should return nil for an un-parented widget"
     (let [c (label :text "HI")]
-      (expect (nil? (to-frame c))))))
+      (expect (nil? (to-root c))))))
+
+(describe to-frame
+  (it "should be an alias for to-root"
+    (= to-frame to-root)))
 
 (letfn [(test-dlg-blocking
          [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
          (let [v (atom nil)]
            (future
-            (future-fn) 
-            (swap! v (fn [v] (if (nil? v)
-                               'dialog-is-blocking
-                               v)))
-            (invoke-now (.dispose dlg)))
+             (future-fn) 
+             (swap! v #(if % % 'dialog-is-blocking))
+             (invoke-now (.dispose dlg)))
            (invoke-now
-            (let [r (show-dialog dlg)] 
-              (swap! v (fn [v] (if (nil? v)
-                                 r
-                                 v))))) 
+            (let [r (show! dlg)] 
+              (swap! v #(if % % r)))) 
            @v))]
+
   (describe custom-dialog
     (testing "argument passing"
       (it "should create a dialog with an id"
-       (= "my-dialog" (id-for (custom-dialog :id :my-dialog :visible? false))))
+       (= "my-dialog" (id-for (custom-dialog :id :my-dialog))))
      (it "should create a JDialog and set its title, width, and height"
-       (let [f (custom-dialog :title "Hello" :width 99 :height 88 :visible? false)]
+       (let [f (custom-dialog :title "Hello" :width 99 :height 88)]
          (expect (= javax.swing.JDialog (class f)))
          (expect (= "Hello" (.getTitle f)))))
      (it "should set the dialog's default close operation"
-       (let [f (custom-dialog :visible? false :on-close :dispose)]
+       (let [f (custom-dialog :on-close :dispose)]
          (= javax.swing.JDialog/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))
      (it "should create a JDialog and make is not resizable"
-       (let [f (custom-dialog :title "Hello" :resizable? false :visible? false)]
+       (let [f (custom-dialog :title "Hello" :resizable? false)]
          (expect (not (.isResizable f)))))
      (it "should create a JDialog that is modal"
-       (let [f (custom-dialog :title "Hello" :modal? true :visible? false)]
+       (let [f (custom-dialog :title "Hello" :modal? true)]
          (expect (.isModal f))))
      (it "should create a JDialog that is not modal"
-       (let [f (custom-dialog :title "Hello" :modal? false :visible? false)]
+       (let [f (custom-dialog :title "Hello" :modal? false)]
          (expect (not (.isModal f)))))
      (it "should create a JDialog and set its menu bar"
        (let [mb (menubar)
-             f (custom-dialog :menubar mb :visible? false)]
+             f (custom-dialog :menubar mb)]
          (expect (= mb (.getJMenuBar f)))))
      (it "should create a JDialog and set its content pane"
        (let [c (label :text "HI")
-             f (custom-dialog :content c :visible? false)]
+             f (custom-dialog :content c)]
          (expect (= c (.getContentPane f))))))
     (testing "blocking"
       (it "should block until dialog is being disposed of"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+        (let [dlg (custom-dialog :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
-      (it "should not block"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
-          (expect (= (test-dlg-blocking dlg) nil))))
-      (it "should return value from call to RETURN-FROM-DIALOG"
-        (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
+      (it "should not block if :modal? is false"
+        (let [dlg (custom-dialog :content "Nothing" :modal? false)]
+          (expect (= (test-dlg-blocking dlg) dlg))))
+      (it "should return value passed to RETURN-FROM-DIALOG"
+        (let [dlg (custom-dialog :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking
                       dlg :future-fn #(do
                                         (Thread/sleep 90)
-                                        (return-from-dialog :ok)
+                                        (return-from-dialog dlg :ok)
                                         (Thread/sleep 50))) :ok))))))
 
   
   (describe dialog
     (it "should block until dialog is being disposed of"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? true)]
+      (let [dlg (dialog :content "Nothing" :modal? true)]
         (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
     (it "should not block"
-      (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
-        (expect (= (test-dlg-blocking dlg) nil))))
+      (let [dlg (dialog :content "Nothing" :modal? false)]
+        (expect (= (test-dlg-blocking dlg) dlg))))
     (testing "return-from-dialog"
-      (let [ok (to-widget (action :name "Ok" :handler (fn [_] (return-from-dialog :ok))) true)
-            cancel (to-widget (action :name "Cancel" :handler (fn [_] (return-from-dialog :cancel))) true)
-            dlg (dialog :visible? false :content "Nothing"
+      (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
+            cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
+            dlg (dialog :content "Nothing"
                              :options (map #(to-widget % true) [ok cancel]))]
        (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
          (expect (= (test-dlg-blocking
@@ -916,17 +949,17 @@
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
   (it "should find a frame by #id and return it"
-    (let [f (frame :id :my-frame :visible? false)]
+    (let [f (frame :id :my-frame)]
       (expect (= f (select f [:#my-frame])))))
   (it "should find a widget by #id and returns it"
     (let [c (label :id "hi")
           p (flow-panel :id :panel :items [c])
-          f (frame :title "select by id" :visible? false :content p)]
+          f (frame :title "select by id" :content p)]
       (expect (= c (select f [:#hi])))
       (expect (= p (select f ["#panel"])))))
   (it "should find menu items by id in a frame's menubar"
     (let [m (menu-item :id :my-menu)
-          f (frame :title "select menu item" :visible? false 
+          f (frame :title "select menu item"
                    :menubar (menubar :items [(menu :text "File" :items [(menu :text "Nested" :items [m])])]))]
       (expect (= m (select f [:#my-menu]))))) 
   (it "should select all of the components in a tree with :*"
@@ -1052,13 +1085,13 @@
 
 (describe dispose!
   (it "should dispose of a JFrame"
-    (let [f (frame :title "dispose!" :visible? false)]
+    (let [f (pack! (frame :title "dispose!"))]
       (expect (.isDisplayable f))
       (let [result (dispose! f)]
         (expect (= result f))
         (expect (not (.isDisplayable f))))))
   (it "should dispose of a JDialog"
-    (let [f (dialog :title "dispose!" :visible? false)]
+    (let [f (pack! (dialog :title "dispose!"))]
       (expect (.isDisplayable f))
       (let [result (dispose! f)]
         (expect (= result f))
@@ -1073,18 +1106,44 @@
           (catch IllegalStateException e true)))))
 
 (describe move!
+  (it "should move the widget to the back of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 0 (.getComponentZOrder p a)))
+        (move! a :to-back)
+        (expect (= 1 (.getComponentZOrder p a)))))
+  (it "should move the widget to the front of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 1 (.getComponentZOrder p b)))
+        (move! b :to-front)
+        (expect (= 0 (.getComponentZOrder p b)))))
   (it "should set the absolute location of a widget with a vector"
       (let [lbl (label)
             point [101 102]
             result (move! lbl :to point)
             new-loc (.getLocation lbl)]
         (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a vector, where :* means to keep the old value"
+      (let [lbl (label :location [5 6])
+            point [:* 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 5 102) new-loc))))
   (it "should set the absolute location of a widget with a Point"
     (let [lbl (label)
           point (java.awt.Point. 99 100)
           result (move! lbl :to point)
           new-loc (.getLocation lbl)]
       (expect (= point new-loc))))
+  (it "should set the absolute location of a widget with the upper left corner of a Rectangle"
+    (let [lbl (label)
+          point (java.awt.Rectangle. 99 100 123 456)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= (.getLocation point) new-loc))))
   (it "should set the relative location of a widget with a vector"
       (let [lbl (label)
             point [101 102]

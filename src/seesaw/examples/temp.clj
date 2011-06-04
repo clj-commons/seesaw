@@ -55,6 +55,6 @@
          (listen-temp f c f-to-c)]))))
 
 (defn -main [& args]
-  (invoke-later (temp-app)))
+  (invoke-later (-> (temp-app) pack! show!)))
 ;(-main) 
 

@@ -29,21 +29,21 @@
        :title "Display Options"]]
   (defn open-display-options-dlg
     []
-    (apply dialog
+    (-> (apply dialog
            (concat [:option-type :ok-cancel
                     :success-fn (fn [pane] [(selection (select (to-frame pane) [:#angle]))])]
-                   common-opts)))
+                   common-opts)) pack! show!))
 
   (defn open-display-options-custom-dlg
     []
-    (apply dialog
-           (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog :save)))
-                              (action :name "Delete" :handler (fn [e] (return-from-dialog :delete)))
-                              (action :name "Cancel" :handler (fn [e] (return-from-dialog nil)))]]
-                   common-opts)))
+    (-> (apply dialog
+            (concat [:options [(action :name "Save" :handler (fn [e] (return-from-dialog e :save)))
+                                (action :name "Delete" :handler (fn [e] (return-from-dialog e :delete)))
+                                (action :name "Cancel" :handler (fn [e] (return-from-dialog e nil)))]]
+                    common-opts)) pack! show!))
   (defn open-display-options-remembered-dlg
     []
-    (dialog :id :dlg 
+    (-> (dialog :id :dlg 
             ;;:options [ok-act cancel-act]
             :success-fn (fn [p]
                           (let [knn (selection (select (to-frame p) [:#knn]))] 
@@ -76,16 +76,16 @@
                                                   (fn [e]
                                                     (if-let [clr (javax.swing.JColorChooser/showDialog nil "Choose a color" (.getBackground (.getSource e)))]
                                                       (config! (.getSource e) :background clr)))]) "growx, wrap"]
-                                 ]))))
+                                 ])) pack! show!)))
 
 (defn -main [& args]
   (invoke-later
-    (frame :title "Custom Dialog Example"
+    (-> (frame :title "Custom Dialog Example"
            :resizable? false
            :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
                                             (action :name "Show Dialog with custom option buttons" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))
                                             (action :name "Show Dialog with remembered values" 
-                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))]))))
+                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])) pack! show!)))
 ;(-main)
