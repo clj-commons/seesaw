@@ -41,7 +41,6 @@
       :title "Hot Potatoes!"
       :menubar (menubar :items [(menu :text "File" :items [exit-action])])
       :width 500 :height 600
-      :pack? false ; So width and height have an effect
       :content 
         (border-panel
           :border 5
@@ -60,6 +59,6 @@
           :south status))))
 
 (defn -main [& args]
-  (invoke-later (app true)))
-;(app false)
+  (invoke-later (show! (app true))))
+;(show! (app false))
 

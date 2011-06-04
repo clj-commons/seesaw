@@ -14,10 +14,11 @@
 ; Tiny test for showing multiple "document modal" dialogs at the same time.
 
 (defn do-dialog [title]
-  (dialog 
-    :title title 
-    :modal? :document
-    :options [(button :text "CLICK!" :listen [:action (fn [e] (return-from-dialog e title))])]))
+  (-> (dialog 
+        :title title 
+        :modal? :document
+        :options [(button :text "CLICK!" :listen [:action (fn [e] (return-from-dialog e title))])])
+    pack! show!))
 
 (defn make-frame [title]
   (frame
@@ -27,5 +28,6 @@
 
 (defn -main [& args]
   (invoke-later
-    (make-frame "FIRST")
-    (make-frame "SECOND")))
+    (-> [(make-frame "FIRST") (make-frame "SECOND")] pack! show!)))
+;(-main)
+

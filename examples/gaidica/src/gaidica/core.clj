@@ -137,7 +137,6 @@
     :title "Gaidica"
     :width  600
     :height 600
-    :pack? false
     :on-close :exit
     :menubar (menubar :items [(menu :text "View" :items [refresh-action])])
     :content (border-panel
@@ -145,5 +144,5 @@
                :center (make-tabs))))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 

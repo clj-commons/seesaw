@@ -48,11 +48,11 @@
 
 (defn -main [& args]
   (invoke-later
-    (frame :title "Seesaw Button Group Example"
-           :height 150
-           :width 300
-           :pack? false
-           :content (content))))
+    (show! 
+      (frame :title "Seesaw Button Group Example"
+             :height 150
+             :width 300
+             :content (content)))))
 
 ;(-main)
 

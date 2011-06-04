@@ -293,24 +293,98 @@
 ;*******************************************************************************
 ; Generic widget stuff
 
-(declare to-frame)
+(declare show-modal-dialog)
+(declare to-root)
+(declare is-modal-dialog?)
+
+(defprotocol Showable
+  (visible! [this v])
+  (visible? [this]))
+
+(extend-protocol Showable
+  java.awt.Component
+    (visible! [this v] (doto this (.setVisible (boolean v))))
+    (visible? [this] (.isVisible this))
+  java.awt.Dialog
+    (visible! [this v]
+      (if (and v (is-modal-dialog? this))
+        (show-modal-dialog this)
+        (doto this (.setVisible false))))
+  java.util.EventObject
+    (visible! [this v] (visible! (.getSource this) v))
+    (visible? [this] (visible? (.getSource this))))
+
+
+(defn- set-visible-impl [targets visible]
+  (if (and visible (is-modal-dialog? targets))
+    (visible! targets true)
+    (do
+      (doseq [target (to-seq targets)]
+        (visible! target visible))
+      targets)))
+
+(defn show!
+  "Show a frame, dialog or widget.
+   
+   If target is a modal dialog, the call will block and show! will return the
+   dialog's result. See (seesaw.core/return-from-dialog).
+
+   Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
+  "
+  [targets]
+  (if (is-modal-dialog? targets)
+    (visible! targets true)
+    (do
+      (doseq [target (to-seq targets)]
+        (visible! target true))
+      targets)))
+
+(defn hide!
+  "Hide a frame, dialog or widget.
+   
+   Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29
+  "
+  [targets]
+  (doseq [target (to-seq targets)]
+    (visible! target false))
+  targets)
+
+(defn pack!
+  "Pack a frame or window, causing it to resize to accommodate the preferred
+  size of its contents.
+
+  Returns its input.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29 
+  "
+  [targets]
+  (doseq [#^java.awt.Window target (map to-root (to-seq targets))]
+    (.pack target))
+  targets)
 
 (defn dispose!
   "Dispose the given frame, dialog or window. target can be anything that can
-  be converted to a root-level object with (to-frame).
+  be converted to a root-level object with (to-root).
 
-  Returns the frame, window, or dialog that was disposed, not target.
+  Returns its input. 
 
   See:
    http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29 
   "
-  [target]
-  (let [#^java.awt.Window disposable (to-frame target)]
-    (doto disposable
-      .dispose)))
+  [targets]
+  (doseq [#^java.awt.Window target (map to-root (to-seq targets))]
+    (.dispose target))
+  targets)
 
 (defn repaint!
-  "Request a repaint of a list of widget-able things.
+  "Request a repaint of one or a list of widget-able things.
 
   Example:
 
@@ -1721,36 +1795,50 @@
 
     :id       id of the window, used by (select).
     :title    the title of the window
-    :pack?     true/false whether JFrame/pack should be called (default true)
-    :width    initial width if :pack? is false
-    :height   initial height if :pack? is false
-    :size     initial size if :pack? is false, e.g. [640 :by 480]
+    :width    initial width. Note that calling (pack!) will negate this setting
+    :height   initial height. Note that calling (pack!) will negate this setting
+    :size     initial size. Note that calling (pack!) will negate this setting
     :minimum-size minimum size of frame, e.g. [640 :by 480]
     :content  passed through (to-widget) and used as the frame's content-pane
-    :visible?  whether frame should be initially visible (default true)
+    :visible?  whether frame should be initially visible (default false)
     :resizable? whether the frame can be resized (default true)
     :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
 
   returns the new frame.
- 
+
+  Examples:
+
+    ; Create a frame, pack it and show it.
+    (-> (frame :title \"HI!\" :content \"I'm a label!\")
+      pack!
+      show!)
+      
+    ; Create a frame with an initial size (note that pack! isn't called)
+    (show! (frame :title \"HI!\" :content \"I'm a label!\" :width 500 :height 600))
+
   Notes:
+    Unless :visible? is set to true, the frame will not be displayed until (show!)
+    is called on it.
+
+    Call (pack!) on the frame if you'd like the frame to resize itself to fit its
+    contents. Sometimes this doesn't look like crap.
+
     This function is compatible with (seesaw.core/with-widget).
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
-  [& {:keys [width height visible? pack?] 
-      :or {width 100 height 100 visible? true pack? true}
+  [& {:keys [width height visible?] 
+      :or {width 100 height 100}
       :as opts}]
   (cond-doto (apply-options (construct JFrame) 
-               (dissoc opts :width :height :visible? :pack?) frame-options)
+               (dissoc opts :width :height :visible?) frame-options)
     true     (.setSize width height)
-    true     (.setVisible (boolean visible?))
-    pack?    (.pack)))
+    true     (.setVisible (boolean visible?))))
 
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 
   by following the invoker of the popup if it doesn't have a parent. This
-  allows (to-frame) to work correctly on action event objects fired from
+  allows (to-root) to work correctly on action event objects fired from
   menus.
   
   Returns top-level Window (e.g. a JFrame), or nil if not found."
@@ -1765,13 +1853,15 @@
         (get-root (.getInvoker w)))
     :else (get-root (.getParent w))))
 
-(defn to-frame 
+(defn to-root
   "Get the frame or window that contains the given widget. Useful for APIs
   like JDialog that want a JFrame, when all you have is a widget or event.
   Note that w is run through (to-widget) first, so you can pass event object
   directly to this."
   [w]
   (get-root (to-widget w)))
+
+(def to-frame to-root)
 
 ;*******************************************************************************
 ; Custom-Dialog
@@ -1792,10 +1882,12 @@
 
 (def ^{:private true} dialog-result-property ::dialog-result)
 
-(defn- is-modal? [dlg] (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS))
+(defn- is-modal-dialog? [dlg] 
+  (and (instance? java.awt.Dialog dlg) 
+       (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS)))
 
 (defn- show-modal-dialog [dlg]
-  {:pre [(is-modal? dlg)]}
+  {:pre [(is-modal-dialog? dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
@@ -1805,16 +1897,11 @@
     (config! dlg :visible? true)
     @dlg-result))
 
-(defn show-dialog [dlg]
-  (if (is-modal? dlg)
-    (show-modal-dialog dlg)
-    (.setVisible dlg true)))
-
 (defn return-from-dialog
   "Return from the given dialog with the specified value. dlg may be anything
-  that can be converted into a dialog as with (to-frame). For example, an
+  that can be converted into a dialog as with (to-root). For example, an
   event, or a child widget of the dialog. Result is the value that will
-  be returned from the blocking (dialog), (custom-dialog), or (show-dialog)
+  be returned from the blocking (dialog), (custom-dialog), or (show!)
   call.
 
   Examples:
@@ -1831,7 +1918,7 @@
   "
   [dlg result]
   ;(assert-ui-thread "return-from-dialog")
-  (let [dlg    (to-frame dlg)
+  (let [dlg         (to-root dlg)
         result-atom (get-meta dlg dialog-result-property)]
     (if result-atom
       (do 
@@ -1860,26 +1947,25 @@
               case of c), this function returns the value passed to
               RETURN-FROM-DIALOG. Default: true.
 
-  Returns a JDialog if :visible? & :modal? are not both true. Otherwise
-  will block & return a value as further documented for argument :modal?.
+
+  Returns a JDialog. Use (seesaw.core/show!) to display the dialog.
 
   Notes:
     This function is compatible with (seesaw.core/with-widget).
  
   See:
+    (seesaw.core/show!)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html
 "
-  [& {:keys [width height visible? pack? modal? on-close] 
-      :or {width 100 height 100 visible? true pack? true}
+  [& {:keys [width height visible? modal? on-close] 
+      :or {width 100 height 100 visible? false}
       :as opts}]
   (let [dlg (apply-options (construct JDialog) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge custom-dialog-options frame-options))]
-    (cond-doto dlg
-      true     (.setSize width height)
-      pack?    (.pack))
+    (.setSize dlg width height)
     (if visible?
-      (show-dialog dlg)
+      (show! dlg)
       dlg)))
 
 
@@ -2069,17 +2155,14 @@
     (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
-                 :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
+                 :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
 
-  Blocks until the user enters a value unless :visible? is false. Then returns 
-  the result of :success-fn, :cancel-fn or :no-fn depending on what button the 
-  user pressed. 
+  The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
+  If the dialog is model this will return the result of :success-fn, :cancel-fn or 
+  :no-fn depending on what button the user pressed. 
   
   Alternatively if :options has been specified, returns the value which has been 
-  passed to RETURN-FROM-DIALOG. If :visible? is set to false, will return the
-  resulting dialog. You may get the above specified behavior by calling 
-  SHOW-MODAL-DIALOG on it.
-
+  passed to (seesaw.core/return-from-dialog).
 "
   [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
@@ -2099,7 +2182,7 @@
                           :yes-no-cancel [success-fn no-fn cancel-fn]
                           :ok-cancel     [success-fn cancel-fn]
                           :default       [success-fn]}
-          visible?       (get opts :visible? true) 
+          visible?       (get opts :visible? false) 
           remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
           dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
@@ -2114,7 +2197,7 @@
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane))))))
       (if visible?
-        (show-dialog dlg)
+        (show! dlg)
         dlg))))
 
 
@@ -2262,11 +2345,11 @@
     (select root [:#id])   Look up widget by id. A single widget is returned
     (select root [:*])     root and all the widgets under it
 
-   For example, to find a widget by id from an event handler, use (to-frame) on
+   For example, to find a widget by id from an event handler, use (to-root) on
    the event to get the root:
 
     (fn [e]
-      (let [my-widget (select (to-frame e) [:#my-widget])]
+      (let [my-widget (select (to-root e) [:#my-widget])]
          ...))
 
    Someday more selectors will be supported :)

@@ -76,12 +76,14 @@
    nil
    (fn [_ _ _ new] (text! current-file-label (str new))))
   (invoke-now
-   (frame
-    :title "Seesaw Example Text Editor"
-    :content main-panel
-    :on-close :exit
-    :minimum-size [640 :by 480]
-    :menubar menus)))
+   (-> (frame
+          :title "Seesaw Example Text Editor"
+          :content main-panel
+          :on-close :exit
+          :minimum-size [640 :by 480]
+          :menubar menus)
+     pack!
+     show!)))
 
 ;(-main)
 
