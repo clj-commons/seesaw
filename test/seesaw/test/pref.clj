@@ -15,15 +15,15 @@
 
 (describe preference-atom
   (it "should return an atom with nil as its default value"
-    (do (.remove (preferences-node) "key")
+    (do (.remove (preferences-node) (pr-str "key"))
      (let [atom (preference-atom "key")]
        (expect (= @atom nil)))))
   (it "should return an atom with the specified default value"
-    (do (.remove (preferences-node) "key")
+    (do (.remove (preferences-node) (pr-str "key"))
         (let [atom (preference-atom "key" 'some-value)]
           (expect (= @atom 'some-value)))))
   (it "should keep pref in sync with atom"
-    (do (.remove (preferences-node) "key")
+    (do (.remove (preferences-node) (pr-str "key"))
         (let [atom (preference-atom "key")]
           (reset! atom 'new-value)
           (expect (= (read-string (.get (preferences-node) "key" "nil")) 'new-value))))))

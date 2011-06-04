@@ -40,7 +40,9 @@ namespace."
       (add-watch (keyword (gensym "pref-atom-watcher"))
                  (fn [k r o n]
                    (when (not= o n) 
-                     (.put (preferences-node ns) key (binding [*print-dup* true] (pr-str n)))))))))
+                     (.put (preferences-node ns)
+                           (binding [*print-dup* true] (pr-str key))
+                           (binding [*print-dup* true] (pr-str n)))))))))
 
 (defmacro bind-preference-to-atom
   "Bind atom to preference by syncing it
