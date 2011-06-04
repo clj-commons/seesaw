@@ -100,8 +100,16 @@
       (let [p (apply-default-opts (JPanel.) {:location [23 45]})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a two-element vector, where :* means keep the old value "
+      (let [p (apply-default-opts (JPanel.) {:location [23 :*]})
+            l (.getLocation p)]
+        (expect (= [23 0] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Point"
       (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+            l (.getLocation p)]
+        (expect (= [23 45] [(.x l) (.y l)]))))
+    (it "sets the component's location with a java.awt.Rectangle"
+      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)])))))
   (testing "the :bounds option"
@@ -109,6 +117,22 @@
       (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a [x y width height] vector, where :* means keep the old value"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds [24 :* :* 90])
+            b (.getBounds p)]
+        (expect (= [24 45 67 90] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds to its preferred size if given :preferred, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            ps (.getPreferredSize p)
+            p (config! p :bounds :preferred)
+            b (.getBounds p)]
+        (expect (= [23 45 (.width ps) (.height ps)] [(.x b) (.y b) (.width b) (.height b)]))))
+    (it "sets the component's bounds with a java.awt.Dimension, preserving x and y"
+      (let [p (label :bounds [23 45 67 89])
+            p (config! p :bounds (java.awt.Dimension. 80 90))
+            b (.getBounds p)]
+        (expect (= [23 45 80 90] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a java.awt.Rectangle"
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
@@ -805,16 +829,12 @@
          [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
          (let [v (atom nil)]
            (future
-            (future-fn) 
-            (swap! v (fn [v] (if (nil? v)
-                               'dialog-is-blocking
-                               v)))
-            (invoke-now (.dispose dlg)))
+             (future-fn) 
+             (swap! v #(if % % 'dialog-is-blocking))
+             (invoke-now (.dispose dlg)))
            (invoke-now
             (let [r (show-dialog dlg)] 
-              (swap! v (fn [v] (if (nil? v)
-                                 r
-                                 v))))) 
+              (swap! v #(if % % r)))) 
            @v))]
   (describe custom-dialog
     (testing "argument passing"
@@ -848,15 +868,15 @@
       (it "should block until dialog is being disposed of"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking dlg) 'dialog-is-blocking))))
-      (it "should not block"
+      (it "should not block if :modal? is false"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? false)]
           (expect (= (test-dlg-blocking dlg) nil))))
-      (it "should return value from call to RETURN-FROM-DIALOG"
+      (it "should return value passed to RETURN-FROM-DIALOG"
         (let [dlg (custom-dialog :visible? false :content "Nothing" :modal? true)]
           (expect (= (test-dlg-blocking
                       dlg :future-fn #(do
                                         (Thread/sleep 90)
-                                        (return-from-dialog :ok)
+                                        (return-from-dialog dlg :ok)
                                         (Thread/sleep 50))) :ok))))))
 
   
@@ -868,8 +888,8 @@
       (let [dlg (dialog :visible? false :content "Nothing" :modal? false)]
         (expect (= (test-dlg-blocking dlg) nil))))
     (testing "return-from-dialog"
-      (let [ok (to-widget (action :name "Ok" :handler (fn [_] (return-from-dialog :ok))) true)
-            cancel (to-widget (action :name "Cancel" :handler (fn [_] (return-from-dialog :cancel))) true)
+      (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
+            cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
             dlg (dialog :visible? false :content "Nothing"
                              :options (map #(to-widget % true) [ok cancel]))]
        (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
@@ -1073,18 +1093,44 @@
           (catch IllegalStateException e true)))))
 
 (describe move!
+  (it "should move the widget to the back of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 0 (.getComponentZOrder p a)))
+        (move! a :to-back)
+        (expect (= 1 (.getComponentZOrder p a)))))
+  (it "should move the widget to the front of the z order"
+      (let [a (label)
+            b (label)
+            p (xyz-panel :items [a b])]
+        (expect (= 1 (.getComponentZOrder p b)))
+        (move! b :to-front)
+        (expect (= 0 (.getComponentZOrder p b)))))
   (it "should set the absolute location of a widget with a vector"
       (let [lbl (label)
             point [101 102]
             result (move! lbl :to point)
             new-loc (.getLocation lbl)]
         (expect (= (java.awt.Point. 101 102) new-loc))))
+  (it "should set the absolute location of a widget with a vector, where :* means to keep the old value"
+      (let [lbl (label :location [5 6])
+            point [:* 102]
+            result (move! lbl :to point)
+            new-loc (.getLocation lbl)]
+        (expect (= (java.awt.Point. 5 102) new-loc))))
   (it "should set the absolute location of a widget with a Point"
     (let [lbl (label)
           point (java.awt.Point. 99 100)
           result (move! lbl :to point)
           new-loc (.getLocation lbl)]
       (expect (= point new-loc))))
+  (it "should set the absolute location of a widget with the upper left corner of a Rectangle"
+    (let [lbl (label)
+          point (java.awt.Rectangle. 99 100 123 456)
+          result (move! lbl :to point)
+          new-loc (.getLocation lbl)]
+      (expect (= (.getLocation point) new-loc))))
   (it "should set the relative location of a widget with a vector"
       (let [lbl (label)
             point [101 102]

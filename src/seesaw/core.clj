@@ -327,6 +327,12 @@
     (.repaint target))
   targets)
 
+(defn- handle-structure-change [container]
+  "Helper. Revalidate and repaint a container after structure change"
+  (doto container
+    .revalidate
+    .repaint))
+
 (defn move!
   "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
   type is :by or :to, and loc is a two-element vector or instance of 
@@ -335,6 +341,7 @@
     :to The absolute position of the widget is set to the given point
     :by The position of th widget is adjusted by the amount in the given point
         relative to its current position.
+    :to-front Move the widget to the top of the z-order in its parent.
 
   Returns target.
 
@@ -343,31 +350,54 @@
     ; Move x to the point (42, 43)
     (move! x :to [42, 43])
 
+    ; Move x to y position 43 while keeping x unchanged
+    (move! x :to [:*, 43])
+
     ; Move x relative to its current position. Assume initial position is (42, 43).
     (move! x :by [50, -20])
     ; ... now x's position is [92, 23]
 
   Notes: 
     This function will generally only have an affect on widget whose container
-    has a nil layout!
+    has a nil layout! This function has similar functionality to the :bounds
+    and :location options, but is a little more flexible and readable.
 
   See:
+    (seesaw.core/xyz-panel)
     http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
   "
-  [target type loc]
-  (check-args (#{:by :to} type) "Expected :by or :to in move!")
-  (let [target (to-widget target)
-        [x y]  (if (instance? java.awt.Point loc) [(.x loc) (.y loc)] loc)]
+  [target type & [loc]]
+  (check-args (#{:by :to :to-front :to-back} type) "Expected :by, :to, :to-front, :to-back in move!")
+  (let [target (to-widget target)]
     (case type
-      :to      (doto target (.setLocation x y))
-      :by      (let [current (.getLocation target)]
-                 (doto target (.setLocation (+ x (.x current)) (+ y (.y current))))))))
+      (:to :by)
+        (let [old    (.getLocation target)
+              [x y]  (cond 
+                      (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                      (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
+                      (= type :to)
+                        (let [[x y] loc]
+                          [(if (= :* x) (.x old) x)
+                          (if (= :* y) (.y old) y)])
+                      :else loc)]
+        (case type
+          :to      (doto target (.setLocation x y))
+          :by      (let [current (.getLocation target)]
+                    (doto target (.setLocation (+ x (.x current)) (+ y (.y current)))))))
+      :to-front
+        (do
+          (doto (.getParent target)
+            (.setComponentZOrder  target 0)
+            handle-structure-change)
+          target)
+      :to-back
+        (let [parent (.getParent target)
+              n      (.getComponentCount parent)]
+          (doto parent 
+            (.setComponentZOrder target (dec n))
+            handle-structure-change)
+          target))))
 
-(defn- handle-structure-change [container]
-  "Helper. Revalidate and repaint a container after structure change"
-  (doto container
-    .revalidate
-    .repaint))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
@@ -416,17 +446,37 @@
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
 
-(defn- location-option-handler [w v]
+(defn- location-option-handler [target v]
   (cond
     ; TODO to-point protocol
-    (instance? java.awt.Point v) (.setLocation w v)
-    :else (.setLocation w (first v) (second v))))
+    (instance? java.awt.Point v) (.setLocation target v)
+    (instance? java.awt.Rectangle v) (.setLocation target (.x v) (.y v))
+    :else 
+      (let [[x y] v
+            old (.getLocation target)
+            x (if (= :* x) (.x old) x) 
+            y (if (= :* y) (.y old) y)] 
+        (.setLocation target x y))))
 
-(defn- bounds-option-handler [w v]
+(defn- bounds-option-handler [target v]
   (cond
     ; TODO to-rect protocol?
-    (instance? java.awt.Rectangle v) (.setBounds w v)
-    :else (.setBounds w (nth v 0) (nth v 1) (nth v 2) (nth v 3))))
+    (= :preferred v)
+      (let [ps  (.getPreferredSize target)
+            loc (.getLocation target)]
+        (.setBounds target (.x loc) (.y loc) (.width ps) (.height ps)))
+    (instance? java.awt.Rectangle v) (.setBounds target v)
+    (instance? java.awt.Dimension v) 
+      (let [loc (.getLocation target)]
+        (.setBounds target (.x loc) (.y loc) (.width v) (.height v)))
+    :else
+      (let [oldBounds (.getBounds target)
+            [x y w h] v
+            x (if (= x :*) (.x oldBounds) x)
+            y (if (= y :*) (.y oldBounds) y)
+            w (if (= w :*) (.width oldBounds) w)
+            h (if (= h :*) (.height oldBounds) h)]
+        (.setBounds target x y w h))))
 
 
 ;*******************************************************************************
@@ -1732,44 +1782,69 @@
 
 ;*******************************************************************************
 ; Custom-Dialog
+
+(def ^{:private true} dialog-modality-table {
+  true         java.awt.Dialog$ModalityType/APPLICATION_MODAL
+  false        java.awt.Dialog$ModalityType/MODELESS
+  nil          java.awt.Dialog$ModalityType/MODELESS
+  :application java.awt.Dialog$ModalityType/APPLICATION_MODAL
+  :document    java.awt.Dialog$ModalityType/DOCUMENT_MODAL
+  :toolkit     java.awt.Dialog$ModalityType/TOOLKIT_MODAL
+})
+
 (def ^{:private true} custom-dialog-options {
-  :modal? #(.setModal %1 (boolean %2))
+  :modal? #(.setModalityType %1 (or (dialog-modality-table %2) (dialog-modality-table (boolean %2))))
   :parent #(.setLocationRelativeTo %1 %2)
 })
 
-(def ^:private current-modal-dialogs (atom nil))
+(def ^{:private true} dialog-result-property ::dialog-result)
+
+(defn- is-modal? [dlg] (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS))
 
 (defn- show-modal-dialog [dlg]
-  {:pre [(.isModal dlg)]}
+  {:pre [(is-modal? dlg)]}
   (let [dlg-result (atom nil)]
     (listen dlg
             :window-opened
-            (fn [_] (swap! current-modal-dialogs (fn [v] (concat [{:dialog dlg :result dlg-result}] v))))
+            (fn [_] (put-meta! dlg dialog-result-property dlg-result))
             #{:window-closing :window-closed}
-            (fn [_]
-              (if-let [dlg-info (some #(when (= (:dialog %) dlg) %) @current-modal-dialogs)]
-                (swap! current-modal-dialogs (fn [v] (remove #{dlg-info} v))))))
+            (fn [_] (put-meta! dlg dialog-result-property nil)))
     (config! dlg :visible? true)
     @dlg-result))
 
 (defn show-dialog [dlg]
-  (if (.isModal dlg)
+  (if (is-modal? dlg)
     (show-modal-dialog dlg)
     (.setVisible dlg true)))
 
 (defn return-from-dialog
-  "Return from the current dialog with the specified value. The dialog
-  must be modal and created from within the DIALOG fn with both
-  VISIBLE? and MODAL? set to true."
-  [x]
-  (if (empty? @current-modal-dialogs)
-    (throw (IllegalArgumentException. "Cannot return from dialog, as there is no modal dialog."))
-    (let [{:keys [dialog result]} (first @current-modal-dialogs)]
-     (try
-       (reset! result x)
-       (invoke-later (dispose! dialog))
-       (finally
-        (swap! current-modal-dialogs (fn [v] (drop 1 v))))))))
+  "Return from the given dialog with the specified value. dlg may be anything
+  that can be converted into a dialog as with (to-frame). For example, an
+  event, or a child widget of the dialog. Result is the value that will
+  be returned from the blocking (dialog), (custom-dialog), or (show-dialog)
+  call.
+
+  Examples:
+
+    ; A button with an action listener that will cause the dialog to close
+    ; and return :ok to the invoker.
+    (button 
+      :text \"OK\" 
+      :listen [:action (fn [e] (return-from-dialog e :ok))])
+  
+  Notes:
+    The dialog must be modal and created from within the DIALOG fn with both
+    VISIBLE? and MODAL? set to true.
+  "
+  [dlg result]
+  ;(assert-ui-thread "return-from-dialog")
+  (let [dlg    (to-frame dlg)
+        result-atom (get-meta dlg dialog-result-property)]
+    (if result-atom
+      (do 
+        (reset! result-atom result)
+        (invoke-now (dispose! dlg)))
+      (throw (IllegalArgumentException. "Counld not find dialog meta data!")))))
 
 (defn custom-dialog
   "Create a dialog and display it.
@@ -1785,8 +1860,7 @@
               block with a dialog. The function will return once the user:
               a) Closes the window by using the system window
                  manager (e.g. by pressing the \"X\" icon in many OS's)
-              b) A function from within an event calls the dialogs
-                 dispose method.
+              b) A function from within an event calls (dispose!) on the dialog
               c) A function from within an event calls RETURN-FROM-DIALOG
                   with a return value.
               In the case of a) and b), this function returns nil. In the
@@ -1937,7 +2011,6 @@
 })
 
 (def ^:private dialog-defaults {
-  :title "Option Pane"
   :parent nil
   :content "Please set the :content option."
   :option-type :default
@@ -1958,27 +2031,35 @@
 
   Options can be any of:
 
-    :content     May be a string or a component (or a panel with even more components) which is to be displayed.
-    :option-type   In case :options is *not* specified, this may be one of :default, :yes-no, :yes-no-cancel, :ok-cancel
-                   to specify which standard button set is to be used in the dialog.
+    :content      May be a string or a component (or a panel with even more 
+                  components) which is to be displayed.
+
+    :option-type  In case :options is *not* specified, this may be one of 
+                  :default, :yes-no, :yes-no-cancel, :ok-cancel to specify 
+                  which standard button set is to be used in the dialog.
+
     :type        The type of the dialog. One of :warning, :error, :info, :plain, or :question.
-    :options     Custom buttons/options can be provided using this
-                 argument. It must be a seq of \"to-widget\"'able
-                 objects which will be displayed as options the user
-                 can choose from. Note that in this
-                 case, :success-fn, :cancel-fn & :no-fn will *not* be
-                 called. Use the handlers on those buttons &
-                 RETURN-FROM-DIALOG to close the dialog.
+
+    :options     Custom buttons/options can be provided using this argument. 
+                 It must be a seq of \"to-widget\"'able objects which will be 
+                 displayed as options the user can choose from. Note that in this
+                 case, :success-fn, :cancel-fn & :no-fn will *not* be called. 
+                 Use the handlers on those buttons & RETURN-FROM-DIALOG to close 
+                 the dialog.
+
     :default-option  The default option instance which is to be selected. This should be an element
                      from the :options seq.
+
     :success-fn  A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed any of the \"Yes\" or \"Ok\" buttons.
                  Default: a function returning :success.
+ 
     :cancel-fn   A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"Cancel\" button.
                  Default: a function returning nil.
+
     :no-fn       A function taking the JOptionPane as its only
                  argument. It will be called when no :options argument
                  has been specified and the user has pressed the \"No\" button.
@@ -1997,23 +2078,21 @@
                  :options-type :ok-cancel
                  :success-fn (fn [p] (.getText (select (to-frame p) [:#name]))))
 
-  Blocks until the user enters a value unless :visible? is false. Then
-  returns the result of :success-fn, :cancel-fn or :no-fn depending on
-  what button the user pressed. Alternatively if :options has been
-  specified, returns the value which has been passed to
-  RETURN-FROM-DIALOG. If :visible? is set to false, will return the
-  resulting dialog. You may get the above specified behavior by
-  calling SHOW-MODAL-DIALOG on it.
+  Blocks until the user enters a value unless :visible? is false. Then returns 
+  the result of :success-fn, :cancel-fn or :no-fn depending on what button the 
+  user pressed. 
+  
+  Alternatively if :options has been specified, returns the value which has been 
+  passed to RETURN-FROM-DIALOG. If :visible? is set to false, will return the
+  resulting dialog. You may get the above specified behavior by calling 
+  SHOW-MODAL-DIALOG on it.
 
 "
-  [& {:keys [title parent content option-type type
-             options default-option success-fn cancel-fn no-fn] 
-      :as kw}]
+  [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [{:keys [content option-type type
                 options default-option success-fn cancel-fn no-fn]}
-        (merge dialog-defaults
-               kw) 
+        (merge dialog-defaults opts) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
@@ -2027,8 +2106,8 @@
                           :yes-no-cancel [success-fn no-fn cancel-fn]
                           :ok-cancel     [success-fn cancel-fn]
                           :default       [success-fn]}
-          visible?       (get kw :visible? true) 
-          remaining-opts (reduce dissoc kw (conj (keys dialog-defaults) :visible?)) 
+          visible?       (get opts :visible? true) 
+          remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
           dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
@@ -2037,7 +2116,7 @@
                 :property-change
                 (fn [e] (when (and (.isVisible dlg)
                                    (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
-                          (return-from-dialog ((get-in dispatch-fns
+                          (return-from-dialog e ((get-in dispatch-fns
                                                        [option-type (.getValue pane)]
                                                        (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
                                                pane))))))
