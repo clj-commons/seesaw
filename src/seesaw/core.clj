@@ -994,8 +994,15 @@
   [& opts]
   (apply-options (ButtonGroup.) opts button-group-options))
 
+(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JRadioButton :selected?]
+  [component _ a]
+  (listen component
+          :change
+          (fn [e]
+            (reset! a (.isSelected component)))))
+
 (def ^{:private true} button-options {
-  :selected?   #(.setSelected %1 (boolean %2))
+  :selected?   #(.setSelected %1 (boolean (ensure-sync-when-atom %1 :selected? %2)))
   :group       #(.add %2 %1)
 })
 
