@@ -314,15 +314,6 @@
     (visible! [this v] (visible! (.getSource this) v))
     (visible? [this] (visible? (.getSource this))))
 
-
-(defn- set-visible-impl [targets visible]
-  (if (and visible (is-modal-dialog? targets))
-    (visible! targets true)
-    (do
-      (doseq [target (to-seq targets)]
-        (visible! target visible))
-      targets)))
-
 (defn show!
   "Show a frame, dialog or widget.
    
@@ -407,6 +398,46 @@
     .revalidate
     .repaint))
 
+;*******************************************************************************
+; move!
+
+(defprotocol ^{:private true} Movable
+  (move-to! [this x y])
+  (move-by! [this dx dy])
+  (move-to-front! [this])
+  (move-to-back! [this]))
+
+(extend-protocol Movable
+  java.util.EventObject
+    (move-to! [this x y] (move-to! (.getSource this) x y))
+    (move-by! [this dx dy] (move-by! (.getSource this) dx dy))
+    (move-to-front! [this] (move-to-front! (.getSource this)))
+    (move-to-back! [this] (move-to-back! (.getSource this)))
+  java.awt.Component
+    (move-to! [this x y]
+      (let [old-loc (.getLocation this)
+            x (or x (.x old-loc))
+            y (or y (.y old-loc))]
+        (doto this (.setLocation x y))))
+    (move-by! [this dx dy]
+      (let [old-loc (.getLocation this)
+            x (.x old-loc)
+            y (.y old-loc)]
+        (doto this (.setLocation (+ x dx) (+ y dy)))))
+    (move-to-front! [this] 
+      (do
+        (doto (.getParent this)
+          (.setComponentZOrder this 0)
+          handle-structure-change)
+        this))
+    (move-to-back! [this]
+      (let [parent (.getParent this)
+            n      (.getComponentCount parent)]
+        (doto parent 
+          (.setComponentZOrder this (dec n))
+          handle-structure-change)
+        this)))
+    
 (defn move!
   "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
   type is :by or :to, and loc is a two-element vector or instance of 
@@ -440,37 +471,22 @@
     (seesaw.core/xyz-panel)
     http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
   "
-  [target type & [loc]]
-  (check-args (#{:by :to :to-front :to-back} type) "Expected :by, :to, :to-front, :to-back in move!")
-  (let [target (to-widget target)]
-    (case type
-      (:to :by)
-        (let [old    (.getLocation target)
-              [x y]  (cond 
-                      (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
-                      (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
-                      (= type :to)
-                        (let [[x y] loc]
-                          [(if (= :* x) (.x old) x)
-                          (if (= :* y) (.y old) y)])
-                      :else loc)]
-        (case type
-          :to      (doto target (.setLocation x y))
-          :by      (let [current (.getLocation target)]
-                    (doto target (.setLocation (+ x (.x current)) (+ y (.y current)))))))
-      :to-front
-        (do
-          (doto (.getParent target)
-            (.setComponentZOrder  target 0)
-            handle-structure-change)
-          target)
-      :to-back
-        (let [parent (.getParent target)
-              n      (.getComponentCount parent)]
-          (doto parent 
-            (.setComponentZOrder target (dec n))
-            handle-structure-change)
-          target))))
+  [target adverb & [loc]]
+  (check-args (#{:by :to :to-front :to-back} adverb) "Expected :by, :to, :to-front, :to-back in move!")
+  (case adverb
+    (:to :by)
+      (let [[x y] (cond 
+                    (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                    (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
+                    (= adverb :to) (replace {:* nil} loc)
+                    :else loc)]
+        (case adverb
+          :to      (move-to! target x y)
+          :by      (move-by! target x y)))
+    :to-front
+      (move-to-front! target)
+    :to-back
+      (move-to-back! target)))
 
 
 (defn- add-widget 
