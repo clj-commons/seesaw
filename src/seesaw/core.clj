@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.core
-  (:use [seesaw util font border color meta]
+  (:use [seesaw util font border color meta to-widget]
         [clojure.string :only (capitalize split)])
   (:require [seesaw.invoke]
             [seesaw.event :as sse]
@@ -146,64 +146,14 @@
 ;*******************************************************************************
 ; Widget coercion prototcol
 
-(defprotocol ToWidget (to-widget* [v create?]))
-
-; A couple macros to make definining the ToWidget protocol a little less
-; tedious. Mostly just for fun...
-
-(defmacro ^{:private true} def-widget-coercion [t b & forms]
-  `(extend-type 
-     ~t
-     ToWidget 
-     (~'to-widget* [~(first b) create?#] ~@forms)))
-
-(defmacro ^{:private true} def-widget-creational-coercion [t b & forms]
-  `(extend-type 
-     ~t
-     ToWidget 
-     (~'to-widget* [~(first b) create?#] (when create?# ~@forms))))
-
-; ... for example, a component coerces to itself.
-(def-widget-coercion java.awt.Component [c] c)
-
-(def-widget-coercion java.util.EventObject 
-  [v] 
-  (try-cast java.awt.Component (.getSource v)))
-
-(def-widget-creational-coercion java.awt.Dimension [v] (Box/createRigidArea v))
-
-(def-widget-creational-coercion javax.swing.Action [v] (JButton. v))
-
-(def-widget-creational-coercion clojure.lang.Keyword 
-  [v] 
-  (condp = v
-    :separator (javax.swing.JSeparator.)
-    :fill-h (Box/createHorizontalGlue)
-    :fill-v (Box/createVerticalGlue)))
-
-(def-widget-creational-coercion clojure.lang.IPersistentVector 
-  [[v0 v1 v2]]
-  (cond
-    (= :fill-h v0) (Box/createHorizontalStrut v1)
-    (= :fill-v v0) (Box/createVerticalStrut v1)
-    (= :by v1) (Box/createRigidArea (Dimension. v0 v2))))
-
-(def-widget-creational-coercion Object
-  [v]
-  (JLabel. (str v)))
-
-(def-widget-creational-coercion java.net.URL
-  [v]
-  (JLabel. (make-icon v)))
-
 (defn to-widget 
   "Try to convert the input argument to a widget based on the following rules:
 
     nil -> nil
     java.awt.Component -> return argument unchanged
+    java.util.EventObject -> return the event source
     java.awt.Dimension -> return Box/createRigidArea
     java.swing.Action    -> return a button using the action
-    java.util.EventObject -> return the event source
     :separator -> create a horizontal JSeparator
     :fill-h -> Box/createHorizontalGlue
     :fill-v -> Box/createVerticalGlue
