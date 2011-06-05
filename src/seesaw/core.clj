@@ -2506,14 +2506,12 @@
 
 (defn- replace!-impl
   [container old-widget new-widget]
-  (let [container  (to-widget container)
-        old-widget (to-widget old-widget)
-        idx        (index-of-component container old-widget)]
+  (let [idx        (index-of-component container old-widget)]
     (when idx
       (let [constraint (get-constraint (.getLayout container) container old-widget)]
         (doto container
           (.remove idx)
-          (.add    (to-widget new-widget true) constraint))))
+          (.add    new-widget constraint))))
     container))
   
 (defn replace!
@@ -2534,5 +2532,6 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container old-widget new-widget]
-  (handle-structure-change (replace!-impl container old-widget new-widget)))
+  (handle-structure-change 
+    (replace!-impl (to-widget container) (to-widget old-widget) (to-widget new-widget true))))
 
