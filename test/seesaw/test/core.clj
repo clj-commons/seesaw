@@ -948,6 +948,22 @@
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
+  (it "should find a widget by type, loosely allowing for sub-classing"
+    (let [c (label)
+          d (label)
+          b (toggle)
+          p (flow-panel :items [c d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= [c d] (select f [:*javax.swing.JLabel])))
+      (expect (= [b] (select f ["*javax.swing.AbstractButton"])))))
+  (it "should find a widget by type, strictly"
+    (let [c (proxy [JLabel] []) ; should be ignored
+          d (label)
+          b (toggle) ; should be ignored
+          p (flow-panel :items [c d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= [d] (select f [:+javax.swing.JLabel])))
+      (expect (= nil (seq (select f ["+javax.swing.AbstractButton"]))))))
   (it "should find a frame by #id and return it"
     (let [f (frame :id :my-frame)]
       (expect (= f (select f [:#my-frame])))))

@@ -2354,6 +2354,24 @@
 ;*******************************************************************************
 ; Selectors
 (def ^{:private true} id-regex #"^#(.+)$")
+(def ^{:private true} strict-type-regex #"^\+(.+)$")
+(def ^{:private true} loose-type-regex #"^\*(.+)$")
+
+; TODO do some memoization of this rather than always searching the
+; entire tree.
+
+(declare select)
+
+(defn- select-by-id [root id]
+  (some #(when (= id (id-for %)) %) (select root [:*])))
+
+(defn- select-by-type-strict [root type-name]
+  (let [type (Class/forName type-name)]
+    (filter #(= type (class %)) (select root [:*]))))
+
+(defn- select-by-type-loose [root type-name]
+  (let [type (Class/forName type-name)]
+    (filter #(.isInstance type %) (select root [:*]))))
 
 (defn select
   "Select a widget using the given selector expression. Selectors are *always*
@@ -2361,26 +2379,43 @@
    from, usually either a (frame) or other container.
 
     (select root [:#id])   Look up widget by id. A single widget is returned
+    (select root [:+type]) Look up widgets by fully-qualified class name. The class
+                           must match exactly. Always returns a sequence of widgets.
+    (select root [:*type]) Same as :+, but includes sub-classes.
     (select root [:*])     root and all the widgets under it
 
-   For example, to find a widget by id from an event handler, use (to-root) on
-   the event to get the root:
+  Examples:
 
-    (fn [e]
-      (let [my-widget (select (to-root e) [:#my-widget])]
-         ...))
+    To find a widget by id from an event handler, use (to-root) on the event to get 
+    the root and then select on the id:
 
-   Someday more selectors will be supported :)
+      (fn [e]
+        (let [my-widget (select (to-root e) [:#my-widget])]
+          ...))
+
+    Disable all JButtons (excluding subclasses) in a hierarchy:
+
+      (config! (select root [:+javax.swing.JButton]) :enabled? false)
+
+  Notes:
+    Someday more selectors will be supported :)
+
+  See:
+    https://github.com/cgrand/enlive
   "
   ([root selector]
     (check-args (vector? selector) "selector must be vector")
-    (if-let [[_ id] (re-find id-regex (name (first selector)))]
-      ; TODO do some memoization of this rather than always searching the
-      ; entire tree.
-      (some #(when (= id (id-for %)) %) (select (to-widget root) [:*]))
-      (cond
-        (= (first selector) :*) (collect (to-widget root))
-        :else (throw (IllegalArgumentException. (str "Unsupported selector " selector)))))))
+    ; TODO NASTY
+    (let [root (to-widget root)]
+      (if-let [[_ id] (re-find id-regex (name (first selector)))]
+        (select-by-id root id)
+        (if-let [[_ type-name] (re-find strict-type-regex (name (first selector)))]
+          (select-by-type-strict root type-name)
+          (if-let [[_ type-name] (re-find loose-type-regex (name (first selector)))]
+            (select-by-type-loose root type-name)
+            (cond
+              (= (first selector) :*) (collect root)
+              :else (throw (IllegalArgumentException. (str "Unsupported selector " selector))))))))))
 
 ;*******************************************************************************
 ; Widget layout manipulation
