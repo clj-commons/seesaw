@@ -166,6 +166,9 @@
    If create? is false, will return nil for all rules (see above) that
    would create a new widget. The default value for create? is false
    to avoid inadvertently creating widgets all over the place.
+
+  See:
+    (seeseaw.to-widget)
   "
   ([v]         (to-widget v false))
   ([v create?] (when v (to-widget* v create?))))
@@ -917,7 +920,9 @@
 })
 
 (defn realize-grid-bag-constraints
-  "Turn item specs into [widget constraint] pairs by successively applying
+  "*INTERNAL USE ONLY. DO NOT USE.*
+
+  Turn item specs into [widget constraint] pairs by successively applying
   options to GridBagConstraints"
   [items]
   (second
@@ -1029,7 +1034,8 @@
     :h-text-position Horizontal text position, :left, :right, :center, etc.
     :v-text-position Horizontal text position, :top, :center, :bottom, etc.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
   [& args]
   (case (count args) 
@@ -1142,8 +1148,9 @@
       user=> (text t)
       \"HI\"
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html 
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html 
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html 
   " 
   [& args]
   ; TODO this is crying out for a multi-method or protocol
@@ -1502,7 +1509,8 @@
   Notes:
     This function is compatible with (seesaw.core/with-widget).
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
   "
   [& opts]
   (apply-options (construct javax.swing.JSeparator) opts default-options))
@@ -1594,7 +1602,7 @@
     This function is compatible with (seesaw.core/with-widget).
   
   See:
-    seesaw.core/frame
+    (seesaw.core/frame)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
   "
   [& opts]
@@ -1793,7 +1801,11 @@
 
     This function is compatible with (seesaw.core/with-widget).
   
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
+  See:
+    (seesaw.core/show!)
+    (seesaw.core/hide!)
+    (seesaw.core/move!)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
   [& {:keys [width height visible?] 
       :or {width 100 height 100}
@@ -1829,6 +1841,7 @@
   [w]
   (get-root (to-widget w)))
 
+; I want to phase out to-frame. For now, it's an alias of to-root.
 (def to-frame to-root)
 
 ;*******************************************************************************
@@ -1881,8 +1894,12 @@
       :listen [:action (fn [e] (return-from-dialog e :ok))])
   
   Notes:
-    The dialog must be modal and created from within the DIALOG fn with both
-    VISIBLE? and MODAL? set to true.
+    The dialog must be modal and created from within the DIALOG fn with
+    :modal? set to true.
+
+  See:
+    (seesaw.core/dialog)
+    (seesaw.core/custom-dialog)
   "
   [dlg result]
   ;(assert-ui-thread "return-from-dialog")
@@ -1923,6 +1940,7 @@
  
   See:
     (seesaw.core/show!)
+    (seesaw.core/return-from-dialog)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html
 "
   [& {:keys [width height visible? modal? on-close] 
@@ -1948,7 +1966,8 @@
     (alert \"Hello!\")
     (alert e \"Hello!\")
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
   "
   ([source message] 
     (JOptionPane/showMessageDialog (to-widget source) (str message)))
@@ -2131,6 +2150,10 @@
   
   Alternatively if :options has been specified, returns the value which has been 
   passed to (seesaw.core/return-from-dialog).
+
+  See:
+    (seesaw.core/show!)
+    (seesaw.core/return-from-dialog)
 "
   [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
@@ -2234,7 +2257,6 @@
  
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
-
 "
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
