@@ -547,25 +547,21 @@
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
 
-(defn- bounds-option-handler [target v]
+(defn- bounds-option-handler [^java.awt.Component target v]
   (cond
     ; TODO to-rect protocol?
     (= :preferred v)
-      (let [ps  (.getPreferredSize target)
-            loc (.getLocation target)]
-        (.setBounds target (.x loc) (.y loc) (.width ps) (.height ps)))
+      (bounds-option-handler target (.getPreferredSize target))
     (instance? java.awt.Rectangle v) (.setBounds target v)
     (instance? java.awt.Dimension v) 
       (let [loc (.getLocation target)]
         (.setBounds target (.x loc) (.y loc) (.width v) (.height v)))
     :else
-      (let [oldBounds (.getBounds target)
-            [x y w h] v
-            x (if (= x :*) (.x oldBounds) x)
-            y (if (= y :*) (.y oldBounds) y)
-            w (if (= w :*) (.width oldBounds) w)
-            h (if (= h :*) (.height oldBounds) h)]
-        (.setBounds target x y w h))))
+      (let [old       (.getBounds target)
+            [x y w h] (replace {:* nil} v)]
+        (.setBounds target 
+            (or x (.x old))     (or y (.y old)) 
+            (or w (.width old)) (or h (.height old))))))
 
 
 ;*******************************************************************************
