@@ -547,18 +547,6 @@
 (def ^{:private true} orientation-table
   (constant-map SwingConstants :horizontal :vertical))
 
-(defn- location-option-handler [target v]
-  (cond
-    ; TODO to-point protocol
-    (instance? java.awt.Point v) (.setLocation target v)
-    (instance? java.awt.Rectangle v) (.setLocation target (.x v) (.y v))
-    :else 
-      (let [[x y] v
-            old (.getLocation target)
-            x (if (= :* x) (.x old) x) 
-            y (if (= :* y) (.y old) y)] 
-        (.setLocation target x y))))
-
 (defn- bounds-option-handler [target v]
   (cond
     ; TODO to-rect protocol?
@@ -715,7 +703,7 @@
                        (.setPreferredSize d)
                        (.setMinimumSize d)
                        (.setMaximumSize d)))
-  :location   location-option-handler
+  :location   #(move! %1 :to %2)
   :bounds     bounds-option-handler
   :popup      #(popup-option-handler %1 %2)
 })
