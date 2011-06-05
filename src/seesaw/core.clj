@@ -407,23 +407,29 @@
   (move-to-front! [this])
   (move-to-back! [this]))
 
+; A protocol impl can't have a partial implementation, so these are
+; here for re-use.
+(defn- move-component-to! [^java.awt.Component this x y]
+  (let [old-loc (.getLocation this)
+        x (or x (.x old-loc))
+        y (or y (.y old-loc))]
+    (doto this (.setLocation x y))))
+
+(defn- move-component-by! [^java.awt.Component this dx dy]
+  (let [old-loc (.getLocation this)
+        x (.x old-loc)
+        y (.y old-loc)]
+    (doto this (.setLocation (+ x dx) (+ y dy)))))
+
 (extend-protocol Movable
   java.util.EventObject
-    (move-to! [this x y] (move-to! (.getSource this) x y))
+    (move-to! [this x y]   (move-to! (.getSource this) x y))
     (move-by! [this dx dy] (move-by! (.getSource this) dx dy))
     (move-to-front! [this] (move-to-front! (.getSource this)))
-    (move-to-back! [this] (move-to-back! (.getSource this)))
+    (move-to-back! [this]  (move-to-back! (.getSource this)))
   java.awt.Component
-    (move-to! [this x y]
-      (let [old-loc (.getLocation this)
-            x (or x (.x old-loc))
-            y (or y (.y old-loc))]
-        (doto this (.setLocation x y))))
-    (move-by! [this dx dy]
-      (let [old-loc (.getLocation this)
-            x (.x old-loc)
-            y (.y old-loc)]
-        (doto this (.setLocation (+ x dx) (+ y dy)))))
+    (move-to! [this x y]   (move-component-to! this x y))
+    (move-by! [this dx dy] (move-component-by! this dx dy))
     (move-to-front! [this] 
       (do
         (doto (.getParent this)
@@ -436,12 +442,17 @@
         (doto parent 
           (.setComponentZOrder this (dec n))
           handle-structure-change)
-        this)))
+        this))
+  java.awt.Window
+    (move-to! [this x y]   (move-component-to! this x y))
+    (move-by! [this dx dy] (move-component-by! this dx dy))
+    (move-to-front! [this] (doto this .toFront))
+    (move-to-back! [this] (doto  this .toBack)))
     
 (defn move!
   "Move a widget relatively or absolutely. target is a 'to-widget'-able object,
   type is :by or :to, and loc is a two-element vector or instance of 
-  java.awt.Point. The type parameter has the following interpretation:
+  java.awt.Point. The how type parameter has the following interpretation:
 
     :to The absolute position of the widget is set to the given point
     :by The position of th widget is adjusted by the amount in the given point
@@ -463,7 +474,7 @@
     ; ... now x's position is [92, 23]
 
   Notes: 
-    This function will generally only have an affect on widget whose container
+    For widgets, this function will generally only have an affect on widgets whose container
     has a nil layout! This function has similar functionality to the :bounds
     and :location options, but is a little more flexible and readable.
 
@@ -471,16 +482,16 @@
     (seesaw.core/xyz-panel)
     http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation(int, int)
   "
-  [target adverb & [loc]]
-  (check-args (#{:by :to :to-front :to-back} adverb) "Expected :by, :to, :to-front, :to-back in move!")
-  (case adverb
+  [target how & [loc]]
+  (check-args (#{:by :to :to-front :to-back} how) "Expected :by, :to, :to-front, :to-back in move!")
+  (case how
     (:to :by)
       (let [[x y] (cond 
                     (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
                     (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
-                    (= adverb :to) (replace {:* nil} loc)
+                    (= how :to) (replace {:* nil} loc)
                     :else loc)]
-        (case adverb
+        (case how
           :to      (move-to! target x y)
           :by      (move-by! target x y)))
     :to-front
