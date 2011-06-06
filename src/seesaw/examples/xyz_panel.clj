@@ -12,17 +12,50 @@
   (:use [seesaw core border])
   (:import [javax.swing SwingUtilities]))
 
+(defn when-mouse-dragged 
+  "A helper for handling mouse dragging on a widget. This isn't that complicated,
+  but the default mouse dragged event provided with Swing doesn't give the delta
+  since the last drag event so you end up having to keep track of it. This function
+  takes three options:
+
+    :start event handler called when the drag is started (mouse pressed).
+    :drag  A function that takes a mouse event and a [dx dy] vector which is
+           the change in x and y since the last drag event.
+    :finish event handler called when the drag is finished (mouse released).
+
+  Like (seesaw.core/listen) returns a function which will remove all event handlers
+  when called.
+
+  Examples:
+    
+
+  See:
+
+  "
+  [w & opts]
+  (let [{:keys [start drag finish] 
+         :or   { start (fn [e]) drag (fn [e]) finish (fn [e]) }} opts
+        last-point (java.awt.Point.)]
+    (listen w
+      :mouse-pressed 
+        (fn [e] 
+          (.setLocation last-point (.getPoint e))
+          (start e))
+      :mouse-dragged 
+        (fn [e]
+          (let [p (.getPoint e)]
+            (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])))
+      :mouse-released
+        finish)))
+
 ; Put in some basic dragging support.
 (defn draggable [w]
-  (listen w
+  (when-mouse-dragged w
     ; When the mouse is pressed, move the widget to the front of the z order
-    :mouse-pressed 
-      (fn [e] (move! w :to-front))
+    :start (fn [e] (move! w :to-front))
     ; When the mouse is dragged move the widget
-    :mouse-dragged 
-      (fn [e] 
-        (let [w (to-widget e)]
-        (move! w :to (SwingUtilities/convertPoint w (.getPoint e) (.getParent w))))))
+    :drag
+      (fn [e delta] (move! w :by delta)))
   w)
 
 (defn make-label
