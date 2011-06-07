@@ -13,6 +13,7 @@
         [clojure.string :only (capitalize split)])
   (:require [seesaw.invoke]
             [seesaw.event :as sse]
+            [seesaw.selector :as selector]
             [seesaw.timer :as sst]
             [seesaw.selection :as sss]
             [seesaw.icon :as ssi]
@@ -468,8 +469,6 @@
     (add-widget c w))
   (handle-structure-change c))
 
-(def ^{:private true} id-property ::seesaw-widget-id)
-
 (defn id-for 
   "Returns the id of the given widget if the :id property was specified at
    creation. The widget parameter is passed through (to-widget) first so
@@ -482,14 +481,7 @@
     (seesaw.core/select).
   "
   [w] 
-  (get-meta (to-widget w) id-property))
-
-(defn- id-option-handler [w id]
-  (let [id-key (name id)
-        existing-id (get-meta w id-property)]
-    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
-    ; TODO should we enforce unique ids?
-    (put-meta! w id-property id-key)))
+  (selector/id-of (to-widget w)))
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -622,7 +614,7 @@
 ;*******************************************************************************
 ; Default options
 (def ^{:private true} default-options {
-  :id          id-option-handler
+  :id          selector/id-of!
   :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
   :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
@@ -1755,7 +1747,7 @@
 })
 
 (def ^{:private true} frame-options {
-  :id           id-option-handler
+  :id           selector/id-of!
   :title        #(.setTitle %1 (str %2))
   :resizable?   #(.setResizable %1 (boolean %2))
   :content      #(.setContentPane %1 (to-widget %2 true))
@@ -2377,17 +2369,10 @@
   "
   ([root selector]
     (check-args (vector? selector) "selector must be vector")
-    ; TODO NASTY
-    (let [root (to-widget root)]
-      (if-let [[_ id] (re-find id-regex (name (first selector)))]
-        (select-by-id root id)
-        (if-let [[_ type-name] (re-find strict-type-regex (name (first selector)))]
-          (select-by-type-strict root type-name)
-          (if-let [[_ type-name] (re-find loose-type-regex (name (first selector)))]
-            (select-by-type-loose root type-name)
-            (cond
-              (= (first selector) :*) (collect root)
-              :else (throw (IllegalArgumentException. (str "Unsupported selector " selector))))))))))
+    (let [root (to-widget root)
+          result (selector/select root selector)
+          id? (and (nil? (second selector)) (.startsWith (name (first selector)) "#"))]
+      (if id? (first result) result))))
 
 ;*******************************************************************************
 ; Widget layout manipulation

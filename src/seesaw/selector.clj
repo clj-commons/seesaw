@@ -9,10 +9,24 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.selector
-  "enlive-html is a selector-based transformation and extraction engine."
-  (:require [seesaw.core :as ssc]
-            [seesaw.util :as ssu])
+  "Seesaw selector support, based largely upon enlive-html.
+  https://github.com/cgrand/enlive"
+  (:require [seesaw.util :as ssu])
+  (:require [seesaw.meta :as ss-meta])
   (:require [clojure.zip :as z]))
+
+(def ^{:private true} id-property ::seesaw-widget-id)
+
+(defn id-of 
+  [w] 
+  (ss-meta/get-meta w id-property))
+
+(defn id-of! [w id]
+  (let [id-key (name id)
+        existing-id (ss-meta/get-meta w id-property)]
+    (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
+    ; TODO should we enforce unique ids?
+    (ss-meta/put-meta! w id-property id-key)))
 
 (defn- mapknit 
  ([f coll]
@@ -53,10 +67,10 @@
             (lazy-seq (flat* x stack)))]
     (flat x ())))
 
-(defn flatmap [f node-or-nodes]
+(defn- flatmap [f node-or-nodes]
   (flatten-nodes-coll (map f (as-nodes node-or-nodes))))
 
-(defn attr-values 
+(defn- attr-values 
  "Returns the whitespace-separated values of the specified attr as a set or nil."
  [node attr]
   (when-let [v (-> node :attrs (get attr))]
@@ -67,61 +81,61 @@
   (z/zipper (constantly true) ssu/children identity root))
 
 ;; predicates utils
-(defn zip-pred 
+(defn- zip-pred 
  "Turns a predicate function on elements locs into a predicate-step usable in selectors."
  [f]
   #(and (z/branch? %) (f %)))
 
-(defn pred 
+(defn- pred 
  "Turns a predicate function on elements into a predicate-step usable in selectors."
  [f]
   (zip-pred #(f (z/node %))))
 
-(defn text-pred 
+(defn- text-pred 
  "Turns a predicate function on strings (text nodes) into a predicate-step usable in selectors."
  [f]
   #(let [n (z/node %)] (and (string? n) (f n))))
 
-(defn re-pred 
+(defn- re-pred 
  "Turns a predicate function on strings (text nodes) into a predicate-step usable in selectors."
  [re]
   (text-pred #(re-matches re %)))
 
-(def whitespace (re-pred #"\s*"))
+(def ^{:private true} whitespace (re-pred #"\s*"))
 
 ;; core predicates
-(def any (pred (constantly true)))
+(def ^{:private true} any (pred (constantly true)))
 
-(defn tag= 
+(defn- tag= 
  "Selector predicate, :foo is as short-hand for (tag= :foo)."
  [tag-name]
   (pred #(= (:tag %) tag-name)))
 
-(defn id=
+(defn- id=
  "Selector predicate, :#foo is as short-hand for (id= \"foo\")."
  [id]
-  (pred #(= (-> % ssc/id-for) id)))
+  (pred #(= (-> % id-of) id)))
 
-(defn exact-type=
+(defn- exact-type=
   [cls]
   (pred #(do (= (class %) cls) )))
 
-(defn loose-type=
+(defn- loose-type=
   [cls]
   (pred #(.isInstance cls %)))
 
-(defn attr-has
+(defn- attr-has
  "Selector predicate, tests if the specified whitespace-seperated attribute contains the specified values. See CSS ~="
  [attr & values]
   (pred #(when-let [v (attr-values % attr)] (every? v values))))
  
-(defn has-class 
+(defn- has-class 
  "Selector predicate, :.foo.bar is as short-hand for (has-class \"foo\" \"bar\")."
  [& classes]
   (apply attr-has :class classes))
    
 ;; selector syntax
-(defn intersection [preds]
+(defn- intersection [preds]
   (condp = (count preds)
     1 (first preds)
     2 (let [[f g] preds] #(and (f %) (g %)))
@@ -129,7 +143,7 @@
     4 (let [[f g h k] preds] #(and (f %) (g %) (h %) (k %)))
     (fn [x] (every? #(% x) preds))))
 
-(defn union [preds]
+(defn- union [preds]
   (condp = (count preds)
     1 (first preds)
     2 (let [[f g] preds] #(or (f %) (g %)))
@@ -161,6 +175,7 @@
     
 (defn- compile-step [step]
   (cond
+    (string? step) (compile-keyword (keyword step))
     (keyword? step) (compile-keyword step)  
     (set? step) (union (map compile-step step))
     (vector? step) (intersection (map compile-step step))
