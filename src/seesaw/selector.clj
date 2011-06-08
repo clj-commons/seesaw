@@ -109,7 +109,7 @@
 (defn- tag= 
  "Selector predicate, :foo is as short-hand for (tag= :foo)."
  [tag-name]
-  (pred #(= (:tag %) tag-name)))
+  (pred #(= (.getSimpleName (class %)) tag-name)))
 
 (defn- id=
  "Selector predicate, :#foo is as short-hand for (id= \"foo\")."
@@ -117,12 +117,14 @@
   (pred #(= (-> % id-of) id)))
 
 (defn- exact-type=
-  [cls]
-  (pred #(do (= (class %) cls) )))
+  [class-name]
+  (let [cls (Class/forName class-name)]
+    (pred #(do (= (class %) cls) ))))
 
 (defn- loose-type=
-  [cls]
-  (pred #(.isInstance cls %)))
+  [class-name]
+  (let [cls (Class/forName class-name)]
+    (pred #(.isInstance cls %))))
 
 (defn- attr-has
  "Selector predicate, tests if the specified whitespace-seperated attribute contains the specified values. See CSS ~="
@@ -166,20 +168,19 @@
     (fn [kw]
       (if (= :> kw)
         :>
-        (let [[[first-letter :as tag-name] :as segments] (split-segments (name kw)) ;(.split (name kw) "(?=[#.])")
-              _ (println segments)
+        (let [[[first-letter :as tag-name] :as segments] (split-segments (name kw))
               classes (for [s segments :when (= \. (first s))] (subs s 1))
               preds (when (seq classes) (list (apply has-class classes)))
               preds (if (contains? #{nil \* \# \. \+} first-letter)
                       preds
-                      (conj preds (tag= (keyword tag-name))))
+                      (conj preds (tag= tag-name)))
               preds (reduce (fn [preds [x :as segment]]
                               (if (= \# x)
                                 (conj preds (id= (subs segment 1)))
                                 (if (= \+ x)
-                                  (conj preds (exact-type= (Class/forName (subs segment 1))))
+                                  (conj preds (exact-type= (subs segment 1)))
                                   (if (and (= \* x) (> (count segment) 1))
-                                    (conj preds (loose-type= (Class/forName (subs segment 1))))
+                                    (conj preds (loose-type= (subs segment 1)))
                                     preds)))) preds segments)]
          (if (seq preds) (intersection preds) any))))))
     
@@ -263,10 +264,10 @@
 (defn- accept-key [s] (nth s 0))
 (defn- step [s x] (when-let [f (and s (nth s 1))] (f x)))
 
-(defn fragment-selector? [selector]
+(defn- fragment-selector? [selector]
   (map? selector))
 
-(defn node-selector? [selector]
+(defn- node-selector? [selector]
   (not (fragment-selector? selector)))
 
 (defn- static-selector? [selector]
@@ -278,18 +279,18 @@
 (defn- children-locs [loc]
   (iterate-while z/right (z/down loc)))
 
-(defn zip-select-nodes* [locs state]
+(defn- zip-select-nodes* [locs state]
   (letfn [(select1 [loc previous-state] 
             (when-let [state (step previous-state loc)]
               (let [descendants (mapcat #(select1 % state) (children-locs loc))]
                 (if (accept-key state) (cons loc descendants) descendants))))]
     (mapcat #(select1 % state) locs)))
       
-(defn select-nodes* [nodes selector]
+(defn- select-nodes* [nodes selector]
   (let [state (automaton selector)]
     (map z/node (zip-select-nodes* (map swing-zipper nodes) state)))) 
       
-(defn zip-select-fragments* [locs state-from state-to]
+(defn- zip-select-fragments* [locs state-from state-to]
   (letfn [(select1 [locs previous-state-from previous-state-to] 
             (when (and previous-state-from previous-state-to)
               (let [states-from (map #(step previous-state-from %) locs)
@@ -314,7 +315,7 @@
                     fragments)))))]
     (select1 locs state-from state-to)))
       
-(defn select-fragments* [nodes selector]
+(defn- select-fragments* [nodes selector]
   (let [[selector-from selector-to] (first selector) 
         state-from (automaton selector-from)
         state-to (automaton selector-to)]
@@ -322,14 +323,15 @@
       (zip-select-fragments* (map swing-zipper nodes) state-from state-to)))) 
 
 (defn select
- "Returns the seq of nodes or fragments matched by the specified selector."
+ "*USE seesaw.core/select*
+  Returns the seq of nodes or fragments matched by the specified selector."
  [node-or-nodes selector]
   (let [nodes (as-nodes node-or-nodes)]
     (if (node-selector? selector)
       (select-nodes* nodes selector) 
       (select-fragments* nodes selector))))
   
-(defn zip-select 
+(defn- zip-select 
  "Returns the seq of locs matched by the specified selector."
  [locs selector]
   (if (node-selector? selector)

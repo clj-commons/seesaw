@@ -965,6 +965,34 @@
           f (frame :title "select by type" :content p)]
       (expect (= [d] (select f [:<javax.swing.JLabel!>])))
       (expect (= nil (seq (select f ["<javax.swing.AbstractButton!>"]))))))
+
+  (it "should find a widget by class name"
+    (let [c (proxy [JLabel] [])
+          d (label)
+          b (toggle) 
+          p (flow-panel :items [c d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= [d] (select f [:JLabel])))
+      (expect (= nil (seq (select f ["JRadioButton"]))))))
+
+  (it "should find all descendants of a widget"
+    (let [c (proxy [JLabel] []) 
+          d (label)
+          b (toggle)
+          p2 (flow-panel :items [c])
+          p (flow-panel :id :p :items [p2 d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= #{c d b p2} (apply hash-set (select f [:#p :*]))))))
+
+  (it "should find direct children of a widget"
+    (let [c (proxy [JLabel] []) 
+          d (label)
+          b (toggle)
+          p2 (flow-panel :items [c])
+          p (flow-panel :id :p :items [p2 d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= #{d b p2} (apply hash-set (select f [:#p :> :*]))))))
+
   (it "should find a frame by #id and return it"
     (let [f (frame :id :my-frame)]
       (expect (= f (select f [:#my-frame])))))
