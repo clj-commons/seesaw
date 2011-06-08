@@ -2342,11 +2342,16 @@
    expressed as a vector. root is the root of the widget hierarchy to select
    from, usually either a (frame) or other container.
 
-    (select root [:#id])   Look up widget by id. A single widget is returned
-    (select root [:+type]) Look up widgets by fully-qualified class name. The class
-                           must match exactly. Always returns a sequence of widgets.
-    (select root [:*type]) Same as :+, but includes sub-classes.
-    (select root [:*])     root and all the widgets under it
+    (select root [:#id])          Look up widget by id. A single widget is 
+                                  always returned.
+
+    (select root [:<class-name>]) Look up widgets by fully-qualified clas name. 
+                                  Matches sub-classes as well. Always returns a
+                                  sequence of widgets.
+
+    (select root [:<class-name!>]) Same as above, but class must match exactly.
+
+    (select root [:*])             Root and all the widgets under it
 
   Examples:
 

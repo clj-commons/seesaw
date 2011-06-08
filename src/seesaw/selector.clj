@@ -151,13 +151,23 @@
     4 (let [[f g h k] preds] #(or (f %) (g %) (h %) (k %)))
     (fn [x] (some #(% x) preds))))
 
+
+(def ^{:private true} segment-regex #"^<([\w.!]+)>(.*)")
+(defn- split-segments 
+  [s] 
+  (if-let [[_ class-name & more]  (re-matches segment-regex s)] 
+    (if (.endsWith class-name "!")
+      (cons (str "+" (subs class-name 0 (dec (count class-name)))) (remove empty? more))
+      (cons (str "*" class-name) (remove empty? more)))
+    (seq (.split s "(?=[#.])"))))
+
 (def ^{:private true} compile-keyword 
   (memoize 
     (fn [kw]
       (if (= :> kw)
         :>
-        (let [[[first-letter :as tag-name] :as segments] 
-                (.split (name kw) "(?=[#.])")
+        (let [[[first-letter :as tag-name] :as segments] (split-segments (name kw)) ;(.split (name kw) "(?=[#.])")
+              _ (println segments)
               classes (for [s segments :when (= \. (first s))] (subs s 1))
               preds (when (seq classes) (list (apply has-class classes)))
               preds (if (contains? #{nil \* \# \. \+} first-letter)
@@ -167,9 +177,9 @@
                               (if (= \# x)
                                 (conj preds (id= (subs segment 1)))
                                 (if (= \+ x)
-                                  (conj preds (exact-type= (Class/forName (.replaceAll (subs segment 1) ":" "."))))
+                                  (conj preds (exact-type= (Class/forName (subs segment 1))))
                                   (if (and (= \* x) (> (count segment) 1))
-                                    (conj preds (loose-type= (Class/forName (.replaceAll (subs segment 1) ":" "."))))
+                                    (conj preds (loose-type= (Class/forName (subs segment 1))))
                                     preds)))) preds segments)]
          (if (seq preds) (intersection preds) any))))))
     
