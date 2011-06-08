@@ -2393,7 +2393,7 @@
     (check-args (vector? selector) "selector must be vector")
     (let [root (to-widget root)
           result (selector/select root selector)
-          id? (and (nil? (second selector)) (.startsWith (name (first selector)) "#"))]
+          id? (and (nil? (second selector)) (selector/id-selector? (first selector)))]
       (if id? (first result) result))))
 
 ;*******************************************************************************

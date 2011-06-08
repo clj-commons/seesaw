@@ -49,6 +49,9 @@
   "Retrieve the classes of a widget as a set of strings"
   (ss-meta/get-meta w class-property))
 
+(defn id-selector? [s]
+  (.startsWith (name s) "#"))
+
 (defn- mapknit 
  ([f coll]
    (mapknit f coll nil))

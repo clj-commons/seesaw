@@ -958,78 +958,18 @@
 (describe select
   (it "should throw an exception if selector is not a vector"
     (try (do (select nil 99) false) (catch IllegalArgumentException e true)))
-  (it "should find a widget by type, loosely allowing for sub-classing"
-    (let [c (label)
-          d (label)
-          b (toggle)
-          p (flow-panel :items [c d b])
-          f (frame :title "select by type" :content p)]
-      (expect (= [c d] (select f [:<javax.swing.JLabel>])))
-      (expect (= [b] (select f ["<javax.swing.AbstractButton>"])))))
 
-  (it "should find a widget by type, strictly"
-    (let [c (proxy [JLabel] []) ; should be ignored
-          d (label)
-          b (toggle) ; should be ignored
-          p (flow-panel :items [c d b])
-          f (frame :title "select by type" :content p)]
-      (expect (= [d] (select f [:<javax.swing.JLabel!>])))
-      (expect (= nil (seq (select f ["<javax.swing.AbstractButton!>"]))))))
+  (testing "when performing an #id query"
+    (it "should return a single widget"
+      (let [f (frame :id :my-frame)]
+        (expect (= f (select f [:#my-frame])))))
 
-  (it "should find a widget by Java class name"
-    (let [c (proxy [JLabel] [])
-          d (label)
-          b (toggle) 
-          p (flow-panel :items [c d b])
-          f (frame :title "select by type" :content p)]
-      (expect (= [d] (select f [:JLabel])))
-      (expect (= nil (seq (select f ["JRadioButton"]))))))
-
-  (it "should find a widget by class name"
-    (let [c (proxy [JLabel] [])
-          d (label :class :foo)
-          b (toggle :class #{:foo :bar}) 
-          p (flow-panel :items [c d b])
-          f (frame :title "select by class" :content p)]
-      (expect (= [d b] (select f [:.foo])))
-      (expect (= [b] (seq (select f [".bar"]))))))
-
-  (it "should find all descendants of a widget"
-    (let [c (proxy [JLabel] []) 
-          d (label)
-          b (toggle)
-          p2 (flow-panel :items [c])
-          p (flow-panel :id :p :items [p2 d b])
-          f (frame :title "select by type" :content p)]
-      (expect (= #{c d b p2} (apply hash-set (select f [:#p :*]))))))
-
-  (it "should find direct children of a widget"
-    (let [c (proxy [JLabel] []) 
-          d (label)
-          b (toggle)
-          p2 (flow-panel :items [c])
-          p (flow-panel :id :p :items [p2 d b])
-          f (frame :title "select by type" :content p)]
-      (expect (= #{d b p2} (apply hash-set (select f [:#p :> :*]))))))
-
-  (it "should find a frame by #id and return it"
-    (let [f (frame :id :my-frame)]
-      (expect (= f (select f [:#my-frame])))))
-  (it "should find a widget by #id and returns it"
-    (let [c (label :id "hi")
-          p (flow-panel :id :panel :items [c])
-          f (frame :title "select by id" :content p)]
-      (expect (= c (select f [:#hi])))
-      (expect (= p (select f ["#panel"])))))
-  (it "should find menu items by id in a frame's menubar"
-    (let [m (menu-item :id :my-menu)
-          f (frame :title "select menu item"
-                   :menubar (menubar :items [(menu :text "File" :items [(menu :text "Nested" :items [m])])]))]
-      (expect (= m (select f [:#my-menu]))))) 
-  (it "should select all of the components in a tree with :*"
-    (let [a (label) b (text) c (label)
-          p (flow-panel :items [a b c])]
-      (expect (= [p a b c] (select p [:*]))))))
+    (it "should return a single widget"
+      (let [c (label :id "hi")
+            p (flow-panel :id :panel :items [c])
+            f (frame :title "select by id" :content p)]
+        (expect (= c (select f [:#hi])))
+        (expect (= p (select f ["#panel"])))))))
 
 (describe add!
   (testing "When called on a panel with a FlowLayout"

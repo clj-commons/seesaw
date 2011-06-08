@@ -135,12 +135,10 @@
   (seq 
     ; TODO PROTOCOL!
     (cond
-      (instance? javax.swing.JFrame c) (if-let [mb (.getJMenuBar c)] 
-                                         (cons mb (.getComponents c)) 
-                                         (.getComponents c))
+      (instance? javax.swing.JFrame c)   (.getComponents c)
       (instance? javax.swing.JMenuBar c) (.getSubElements c)
       (instance? javax.swing.JMenu c)    (.getSubElements c)
-      (isa? (type c) java.awt.Container)    (.getComponents c)
+      (isa? (type c) java.awt.Container) (.getComponents c)
       :else nil)))
 
 (defn collect
