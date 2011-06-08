@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.core
+  (:require [seesaw.selector :as selector])
   (:use seesaw.core
         seesaw.font
         seesaw.graphics
@@ -73,6 +74,15 @@
       (try 
         (do (config! (label :id :foo) :id :bar) false)
         (catch IllegalStateException e true))))
+
+  (testing "the :class option"
+    (it "does nothing when omitted"
+      (expect (nil? (-> (JPanel.) apply-default-opts selector/class-of))))
+    (it "sets the class of the widget"
+      (expect (= #{"foo"} (selector/class-of (flow-panel :class :foo)))))
+    (it "sets the classes of a widget"
+      (expect (= #{"foo" "bar"} (selector/class-of (flow-panel :class #{:foo :bar}))))))
+
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
@@ -954,16 +964,54 @@
           b (toggle)
           p (flow-panel :items [c d b])
           f (frame :title "select by type" :content p)]
-      (expect (= [c d] (select f [:*javax.swing.JLabel])))
-      (expect (= [b] (select f ["*javax.swing.AbstractButton"])))))
+      (expect (= [c d] (select f [:<javax.swing.JLabel>])))
+      (expect (= [b] (select f ["<javax.swing.AbstractButton>"])))))
+
   (it "should find a widget by type, strictly"
     (let [c (proxy [JLabel] []) ; should be ignored
           d (label)
           b (toggle) ; should be ignored
           p (flow-panel :items [c d b])
           f (frame :title "select by type" :content p)]
-      (expect (= [d] (select f [:+javax.swing.JLabel])))
-      (expect (= nil (seq (select f ["+javax.swing.AbstractButton"]))))))
+      (expect (= [d] (select f [:<javax.swing.JLabel!>])))
+      (expect (= nil (seq (select f ["<javax.swing.AbstractButton!>"]))))))
+
+  (it "should find a widget by Java class name"
+    (let [c (proxy [JLabel] [])
+          d (label)
+          b (toggle) 
+          p (flow-panel :items [c d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= [d] (select f [:JLabel])))
+      (expect (= nil (seq (select f ["JRadioButton"]))))))
+
+  (it "should find a widget by class name"
+    (let [c (proxy [JLabel] [])
+          d (label :class :foo)
+          b (toggle :class #{:foo :bar}) 
+          p (flow-panel :items [c d b])
+          f (frame :title "select by class" :content p)]
+      (expect (= [d b] (select f [:.foo])))
+      (expect (= [b] (seq (select f [".bar"]))))))
+
+  (it "should find all descendants of a widget"
+    (let [c (proxy [JLabel] []) 
+          d (label)
+          b (toggle)
+          p2 (flow-panel :items [c])
+          p (flow-panel :id :p :items [p2 d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= #{c d b p2} (apply hash-set (select f [:#p :*]))))))
+
+  (it "should find direct children of a widget"
+    (let [c (proxy [JLabel] []) 
+          d (label)
+          b (toggle)
+          p2 (flow-panel :items [c])
+          p (flow-panel :id :p :items [p2 d b])
+          f (frame :title "select by type" :content p)]
+      (expect (= #{d b p2} (apply hash-set (select f [:#p :> :*]))))))
+
   (it "should find a frame by #id and return it"
     (let [f (frame :id :my-frame)]
       (expect (= f (select f [:#my-frame])))))
