@@ -469,7 +469,7 @@
     (add-widget c w))
   (handle-structure-change c))
 
-(defn id-for 
+(defn id-of 
   "Returns the id of the given widget if the :id property was specified at
    creation. The widget parameter is passed through (to-widget) first so
    events and other objects can also be used. The id is always returned as
@@ -482,6 +482,8 @@
   "
   [w] 
   (selector/id-of (to-widget w)))
+
+(def ^{:doc "Deprecated. See (seesaw.core/id-of)"} id-for id-of)
 
 (def ^{:private true} h-alignment-table 
   (constant-map SwingConstants :left :right :leading :trailing :center ))
@@ -2319,25 +2321,6 @@
 
 ;*******************************************************************************
 ; Selectors
-(def ^{:private true} id-regex #"^#(.+)$")
-(def ^{:private true} strict-type-regex #"^\+(.+)$")
-(def ^{:private true} loose-type-regex #"^\*(.+)$")
-
-; TODO do some memoization of this rather than always searching the
-; entire tree.
-
-(declare select)
-
-(defn- select-by-id [root id]
-  (some #(when (= id (id-for %)) %) (select root [:*])))
-
-(defn- select-by-type-strict [root type-name]
-  (let [type (Class/forName type-name)]
-    (filter #(= type (class %)) (select root [:*]))))
-
-(defn- select-by-type-loose [root type-name]
-  (let [type (Class/forName type-name)]
-    (filter #(.isInstance type %) (select root [:*]))))
 
 (defn select
   "Select a widget using the given selector expression. Selectors are *always*
@@ -2347,13 +2330,25 @@
     (select root [:#id])          Look up widget by id. A single widget is 
                                   always returned.
 
-    (select root [:<class-name>]) Look up widgets by fully-qualified clas name. 
+    (select root [:tag])          Look up widgets by \"tag\". In Seesaw tag is
+                                  treated as the exact simple class name of a
+                                  widget, so :JLabel would match both 
+                                  javax.swing.JLabel *and* com.me.JLabel.
+                                  Be careful!
+
+    (select root [:<class-name>]) Look up widgets by *fully-qualified* class name. 
                                   Matches sub-classes as well. Always returns a
                                   sequence of widgets.
 
     (select root [:<class-name!>]) Same as above, but class must match exactly.
 
     (select root [:*])             Root and all the widgets under it
+
+  Notes:
+    This function will return a single widget *only* in the case where the selector
+    is a single identifier, e.g. [:#my-id]. In *all* other cases, a sequence of
+    widgets is returned. This is for convenience. Select-by-id is the common case
+    where a single widget is almost always desired.
 
   Examples:
 
@@ -2366,12 +2361,32 @@
 
     Disable all JButtons (excluding subclasses) in a hierarchy:
 
-      (config! (select root [:+javax.swing.JButton]) :enabled? false)
+      (config! (select root [:<javax.swing.JButton>]) :enabled? false)
 
-  Notes:
-    Someday more selectors will be supported :)
+    More:
+
+      ; All JLabels, no sub-classes allowed
+      (select root [:<javax.swing.JLabel!>])
+
+      ; All JSliders that are descendants of a JPanel with id foo
+      (select root [:JPanel#foo :JSlider])
+
+      ; All JSliders (and sub-classes) that are immediate children of a JPanel with id foo
+      (select root [:JPanel#foo :> :<javax.swing.JSlider>])
+
+      ; All widgets with class foo. Set the class of a widget with the :class option
+      (flow-panel :class :my-class) or (flow-panel :class #{:class1 :class2})
+      (select root [:.my-class])
+      (select root [:.class1.class2])
+
+      ; Select all text components with class input
+      (select root [:<javax.swing.text.JTextComponent>.input])
+
+      ; Select all descendants of all panels with class container
+      (select root [:JPanel.container :*])
 
   See:
+    (seesaw.selector/select)
     https://github.com/cgrand/enlive
   "
   ([root selector]
