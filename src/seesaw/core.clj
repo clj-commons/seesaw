@@ -615,6 +615,7 @@
 ; Default options
 (def ^{:private true} default-options {
   :id          selector/id-of!
+  :class       selector/class-of!
   :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
   :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
@@ -1748,6 +1749,7 @@
 
 (def ^{:private true} frame-options {
   :id           selector/id-of!
+  :class        selector/class-of!
   :title        #(.setTitle %1 (str %2))
   :resizable?   #(.setResizable %1 (boolean %2))
   :content      #(.setContentPane %1 (to-widget %2 true))

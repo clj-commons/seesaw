@@ -16,6 +16,7 @@
   (:require [clojure.zip :as z]))
 
 (def ^{:private true} id-property ::seesaw-widget-id)
+(def ^{:private true} class-property ::seesaw-widget-class)
 
 (defn id-of 
   [w] 
@@ -27,6 +28,13 @@
     (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
     ; TODO should we enforce unique ids?
     (ss-meta/put-meta! w id-property id-key)))
+
+(defn class-of! [w classes]
+  (ss-meta/put-meta! w class-property 
+      (set (map name (if (coll? classes) classes [classes])))))
+
+(defn class-of [w]
+  (ss-meta/get-meta w class-property))
 
 (defn- mapknit 
  ([f coll]
@@ -132,9 +140,9 @@
   (pred #(when-let [v (attr-values % attr)] (every? v values))))
  
 (defn- has-class 
- "Selector predicate, :.foo.bar is as short-hand for (has-class \"foo\" \"bar\")."
+ "Selector predicate, :.foo.bar. Looks for widgets with (:class #{:foo :bar})"
  [& classes]
-  (apply attr-has :class classes))
+ (pred #(when-let [v (class-of %)] (every? v classes))))
    
 ;; selector syntax
 (defn- intersection [preds]
@@ -339,7 +347,7 @@
     (apply zip-select-fragments* locs selector)))
       
 ;; other predicates
-(defn attr? 
+(defn- attr? 
  "Selector predicate, tests if the specified attributes are present."
  [& kws]
   (pred #(every? (-> % :attrs keys set) kws)))
@@ -355,7 +363,8 @@
       (pred #(when-let [attrs (:attrs %)]
                (every?+ single-attr-pred (map attrs ks) vs))))))           
 
-(def ^{:doc "Selector predicate, tests if the specified attributes have the specified values."} 
+(def ^{:private true
+       :doc "Selector predicate, tests if the specified attributes have the specified values."} 
  attr= 
   (multi-attr-pred =))
 
@@ -368,15 +377,18 @@
 (defn- contains-substring? [^String s ^String substring]
   (and s (<= 0 (.indexOf s substring))))
 
-(def ^{:doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS ^= ."} 
+(def ^{:private true
+       :doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS ^= ."} 
  attr-starts
   (multi-attr-pred starts-with?))
 
-(def ^{:doc "Selector predicate, tests if the specified attributes end with the specified values. See CSS $= ."} 
+(def ^{:private true
+       :doc "Selector predicate, tests if the specified attributes end with the specified values. See CSS $= ."} 
  attr-ends
   (multi-attr-pred ends-with?))
 
-(def ^{:doc "Selector predicate, tests if the specified attributes contain the specified values. See CSS *= ."} 
+(def ^{:private true
+       :doc "Selector predicate, tests if the specified attributes contain the specified values. See CSS *= ."} 
  attr-contains
   (multi-attr-pred contains-substring?))
 
@@ -385,11 +397,12 @@
     (.startsWith s segment)
     (= \- (.charAt s (count segment)))))
              
-(def ^{:doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS |= ."}
+(def ^{:private true
+       :doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS |= ."}
  attr|=           
   (multi-attr-pred is-first-segment?))
 
-(def root 
+(def ^{:private true} root 
   (zip-pred #(-> % z/up nil?)))
 
 (defn- nth? 
@@ -402,12 +415,12 @@
            an (- an+b b)]
        (and (zero? (rem an a)) (<= 0 (quot an a))))))
 
-(defn nth-child
+(defn- nth-child
  "Selector step, tests if the node has an+b-1 siblings on its left. See CSS :nth-child."
  ([b] (nth-child 0 b))
  ([a b] (zip-pred (nth? z/lefts a b))))
 
-(defn nth-last-child
+(defn- nth-last-child
  "Selector step, tests if the node has an+b-1 siblings on its right. See CSS :nth-last-child."
  ([b] (nth-last-child 0 b))
  ([a b] (zip-pred (nth? z/rights a b))))
@@ -418,85 +431,83 @@
           pred #(= (:tag %) tag)]
       (filter pred (f loc)))))
 
-(defn nth-of-type
+(defn- nth-of-type
  "Selector step, tests if the node has an+b-1 siblings of the same type (tag name) on its left. See CSS :nth-of-type."
  ([b] (nth-of-type 0 b))
  ([a b] (zip-pred (nth? (filter-of-type z/lefts) a b))))
  
-(defn nth-last-of-type
+(defn- nth-last-of-type
  "Selector step, tests if the node has an+b-1 siblings of the same type (tag name) on its right. See CSS :nth-last-of-type."
  ([b] (nth-last-of-type 0 b))
  ([a b] (zip-pred (nth? (filter-of-type z/rights) a b))))
 
-(def first-child (nth-child 1))      
+(def ^{:private true} first-child (nth-child 1))      
       
-(def last-child (nth-last-child 1))      
+(def ^{:private true} last-child (nth-last-child 1))      
       
-(def first-of-type (nth-of-type 1))      
+(def ^{:private true} first-of-type (nth-of-type 1))      
       
-(def last-of-type (nth-last-of-type 1))      
+(def ^{:private true} last-of-type (nth-last-of-type 1))      
 
-(def only-child (intersection [first-child last-child]))  
+(def ^{:private true} only-child (intersection [first-child last-child]))  
 
-(def only-of-type (intersection [first-of-type last-of-type]))
+(def ^{:private true} only-of-type (intersection [first-of-type last-of-type]))
 
-(def void (pred #(empty? (remove empty? (:content %)))))
+(def ^{:private true} void (pred #(empty? (remove empty? (:content %)))))
 
-(def odd (nth-child 2 1))
+(def ^{:private true} odd (nth-child 2 1))
 
-(def even (nth-child 2 0))
+(def ^{:private true} even (nth-child 2 0))
 
 (defn- select? [node-or-nodes selector]
   (-> node-or-nodes as-nodes (select selector) seq boolean))
 
-(defn has 
+(defn- has 
  "Selector predicate, matches elements which contain at least one element that 
   matches the specified selector. See jQuery's :has" 
  [selector]
   (pred #(select? (:content %) selector)))
   
-(defn but-node
+(defn- but-node
  "Selector predicate, matches nodes which are rejected by the specified selector-step. See CSS :not" 
  [selector-step]
   (complement (compile-step selector-step)))
 
-(defn but
+(defn- but
  "Selector predicate, matches elements which are rejected by the specified selector-step. See CSS :not" 
  [selector-step]
   (intersection [any (but-node selector-step)]))
 
-(defn left [selector-step]
+(defn- left [selector-step]
   (let [selector [:> selector-step]]
     ;#(when-let [sibling (first (filter xml/tag? (reverse (z/lefts %))))]
     #(when-let [sibling (first (filter (constantly true) (reverse (z/lefts %))))]
        (select? sibling selector))))
 
-(defn lefts [selector-step]
+(defn- lefts [selector-step]
   (let [selector [:> selector-step]]
     ;#(select? (filter xml/tag? (z/lefts %)) selector)))
     #(select? (filter (constantly true) (z/lefts %)) selector)))
   
-(defn right [selector-step]
+(defn- right [selector-step]
   (let [selector [:> selector-step]]
     ;#(when-let [sibling (first (filter xml/tag? (z/rights %)))]
     #(when-let [sibling (first (filter (constantly true) (z/rights %)))]
        (select? sibling selector))))
 
-(defn rights [selector-step]
+(defn- rights [selector-step]
   (let [selector [:> selector-step]]
     ;#(select? (filter xml/tag? (z/rights %)) selector)))
     #(select? (filter (constantly true) (z/rights %)) selector)))
   
-(def any-node (constantly true))
+(def ^{:private true} any-node (constantly true))
 
-(def this-node [:> any-node])
+(def ^{:private true} this-node [:> any-node])
 
-(def text-node #(string? (z/node %)))
-
-(def comment-node (constantly false)) ;#(xml/comment? (z/node %)))
+(def ^{:private true} text-node #(string? (z/node %)))
 
 ;; screen-scraping utils
-(defn text
+(defn- text
  "Returns the text value of a node." 
  {:tag String}
  [node]
@@ -505,32 +516,23 @@
     ;(xml/tag? node) (apply str (map text (:content node))) 
     :else ""))
     
-(defn texts
+(defn- texts
  "Returns the text value of a nodes collection." 
  {:tag String}
  [nodes]
   (map text nodes))
 
-(defmacro let-select
- "For each node or fragment, performs a subselect and bind it to a local, 
-  then evaluates body.
-  bindings is a vector of binding forms and selectors." 
- [nodes-or-fragments bindings & body]
-  (let [node-or-fragment (gensym "node-or-fragment__")
-        bindings 
-          (map (fn [f x] (f x)) 
-            (cycle [identity (fn [spec] `(select ~node-or-fragment ~spec))])
-            bindings)] 
-    `(map (fn [~node-or-fragment] 
-            (let [~@bindings]
-              ~@body)) ~nodes-or-fragments)))
- 
- ;; repl-utils
-;(defn sniptest* [nodes f]
-  ;(apply str (emit* (flatmap f nodes))))
-    
-;(defmacro sniptest
- ;"A handy macro for experimenting at the repl" 
- ;[source-string & forms]
-  ;`(sniptest* (html-snippet ~source-string) (transformation ~@forms))) 
+;(defmacro let-select
+ ;"For each node or fragment, performs a subselect and bind it to a local, 
+  ;then evaluates body.
+  ;bindings is a vector of binding forms and selectors." 
+ ;[nodes-or-fragments bindings & body]
+  ;(let [node-or-fragment (gensym "node-or-fragment__")
+        ;bindings 
+          ;(map (fn [f x] (f x)) 
+            ;(cycle [identity (fn [spec] `(select ~node-or-fragment ~spec))])
+            ;bindings)] 
+    ;`(map (fn [~node-or-fragment] 
+            ;(let [~@bindings]
+              ;~@body)) ~nodes-or-fragments)))
 
