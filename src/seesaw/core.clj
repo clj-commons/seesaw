@@ -8,7 +8,12 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.core
+(ns ^{:doc "Core functions and macros for Seesaw. Although there are many more 
+            Seesaw namespaces, usually what you want is in here. Most functions 
+            in other namespaces have a core wrapper which adds additional 
+            capability or makes them easier to use."
+      :author "Dave Ray"}
+  seesaw.core
   (:use [seesaw util font border color meta to-widget]
         [clojure.string :only (capitalize split)])
   (:require [seesaw.invoke]

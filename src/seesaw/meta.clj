@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.meta
+(ns ^{:doc "Functions for associating metadata with frames and widgets, etc."
+      :author "Dave Ray"}
+  seesaw.meta
   (:import [java.lang.ref WeakReference]))
 
 (defprotocol Meta

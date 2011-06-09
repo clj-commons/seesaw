@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.graphics
+(ns ^{:doc "Basic graphics functions to simplify use of Graphics2D."
+      :author "Dave Ray"}
+  seesaw.graphics
   (:use [seesaw util color font])
   (:import [java.awt Graphics2D RenderingHints]
            [java.awt.image BufferedImage]))

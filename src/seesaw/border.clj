@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.border
+(ns ^{:doc "Functions for creating widget borders."
+      :author "Dave Ray"}
+  seesaw.border
   (:use seesaw.color)
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]

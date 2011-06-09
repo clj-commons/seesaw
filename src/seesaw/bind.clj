@@ -8,7 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.bind
+(ns ^{:doc "Some functions for binding atoms to various mutable Swing objects
+            like models."
+      :author "Dave Ray"}
+  seesaw.bind
   (:use [seesaw.event]))
 
 (defn bind-atom-to-range-model

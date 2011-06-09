@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.action
+(ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
+      :author "Dave Ray"}
+  seesaw.action
   (:use [seesaw util icon keystroke meta])
   (:import [javax.swing Action AbstractAction]))
 
