@@ -43,7 +43,6 @@ namespace."
       (reset! v)
       (add-watch (keyword (gensym "pref-atom-watcher"))
                  (fn [k r o n]
-                   (println k r o n ns)
                    (when (not= o n) 
                      (.put node key (serialize-value n))))))))
 

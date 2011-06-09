@@ -1803,13 +1803,13 @@
     (seesaw.core/move!)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
-  [& {:keys [width height visible?] 
+  [& {:keys [width height visible? size] 
       :or {width 100 height 100}
       :as opts}]
   (cond-doto (apply-options (construct JFrame) 
                (dissoc opts :width :height :visible?) frame-options)
-    true     (.setSize width height)
-    true     (.setVisible (boolean visible?))))
+    (not size) (.setSize width height)
+    true       (.setVisible (boolean visible?))))
 
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 
@@ -1939,13 +1939,13 @@
     (seesaw.core/return-from-dialog)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html
 "
-  [& {:keys [width height visible? modal? on-close] 
+  [& {:keys [width height visible? modal? on-close size] 
       :or {width 100 height 100 visible? false}
       :as opts}]
   (let [dlg (apply-options (construct JDialog) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge custom-dialog-options frame-options))]
-    (.setSize dlg width height)
+    (when-not size (.setSize dlg width height))
     (if visible?
       (show! dlg)
       dlg)))
