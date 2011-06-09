@@ -1089,8 +1089,9 @@
             (reset! a (.isSelected component)))))
 
 (def ^{:private true} button-options {
-  :selected?   #(.setSelected %1 (boolean (ensure-sync-when-atom %1 :selected? %2)))
-  :group       #(.add %2 %1)
+  :selected? #(.setSelected %1 (boolean (ensure-sync-when-atom %1 :selected? %2)))
+  :group     #(.add %2 %1)
+  :margin    #(.setMargin %1 (to-insets %2))
 })
 
 (defn- apply-button-defaults

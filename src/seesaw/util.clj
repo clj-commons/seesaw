@@ -131,6 +131,15 @@
       (let [[w by h] v] (java.awt.Dimension. w h))
     :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
 
+(defn to-insets
+  [v]
+  (cond
+    (instance? java.awt.Insets v) v
+    (number? v) (java.awt.Insets. v v v v)
+    (vector? v) (let [[top left bottom right] v]
+                  (java.awt.Insets. top left (or bottom top) (or right left)))
+    :else (throw (IllegalArgumentException. (str "Don't know how to create insets from " v)))))
+
 (defprotocol Children 
   "A protocol for retrieving the children of a widget as a seq. 
   This takes care of idiosyncracies of frame vs. menus, etc."

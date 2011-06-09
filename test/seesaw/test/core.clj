@@ -92,16 +92,19 @@
       (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getPreferredSize p)))))
     (test-option :preferred-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+
   (testing "the :minimum-size option"
     (it "set the component's minimum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:minimum-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getMinimumSize p)))))
     (test-option :minimum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+
   (testing "the :maximum-size option"
     (it "set the component's maximum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:maximum-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getMaximumSize p)))))
     (test-option :maximum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+
   (testing "the :size option"
     (it "set the component's min, max, and preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:size [11 :by 21]})
@@ -109,6 +112,7 @@
         (expect (= d (.getPreferredSize p)))
         (expect (= d (.getMinimumSize p)))
         (expect (= d (.getMaximumSize p))))))
+
   (testing "the :location option"
     (it "sets the component's location with a two-element vector"
       (let [p (apply-default-opts (JPanel.) {:location [23 45]})
@@ -560,6 +564,11 @@
     (let [b (button :text "HI")]
       (expect (= JButton (class b)))
       (expect (= "HI" (.getText b)))))
+  (it "should handle the :margin option with to-insets"
+    (let [b (button :margin 1)
+          i   (.getMargin b)]
+      (expect (= [1 1 1 1] [(.top i) (.left i) (.bottom i) (.right i)]))))
+
 
   (it "should add the button to a button group specified with the :group option"
     (let [bg (button-group)
