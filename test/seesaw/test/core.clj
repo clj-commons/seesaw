@@ -805,14 +805,21 @@
       (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
       (expect (= 1 @called)))))
 
-
 (describe frame
   (it "should create a frame with an id"
     (= "my-frame" (id-for (frame :id :my-frame))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))
-      (expect (= "Hello" (.getTitle f)))))
+      (expect (= "Hello" (.getTitle f)))
+      (expect (= 99 (.getWidth f)))
+      (expect (= 88 (.getHeight f)))))
+  (it "should set the frame's size with the :size option"
+    (let [f (frame :title "Hello" :size [123 :by 456])]
+      (expect (= javax.swing.JFrame (class f)))
+      (expect (= "Hello" (.getTitle f)))
+      (expect (= 123 (.getWidth f)))
+      (expect (= 456 (.getHeight f)))))
   (it "should set the frame's default close operation"
     (let [f (frame :on-close :dispose)]
       (= javax.swing.JFrame/DISPOSE_ON_CLOSE (.getDefaultCloseOperation f))))

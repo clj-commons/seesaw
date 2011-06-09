@@ -36,7 +36,7 @@
                           (.. % getEditor getEditorComponent) %)
         targets (map #(-> % to-widget to-text) (to-seq w))]
     (listen targets :focus-gained
-      #(do (println "HERE")(.selectAll (to-widget %))))))
+      #(.selectAll (to-widget %)))))
 
 (defn when-mouse-dragged 
   "A helper for handling mouse dragging on a widget. This isn't that complicated,
