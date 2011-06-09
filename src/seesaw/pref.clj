@@ -24,6 +24,9 @@ namespace."
   ([ns]
      `(preferences-node* ~ns)))
 
+(defn- serialize-value [v]
+  (binding [*print-dup* true] (pr-str v)))
+
 (defn bind-preference-to-atom*
   "Bind atom to preference by syncing it
   with (java.util.prefs.Preferences/userRoot) for the specified
@@ -33,16 +36,17 @@ namespace."
   key must be printable per PRINT-DUP and readable per READ-STRING for
   it to be used with the preferences store."
   [ns key atom]
-  (let [v (read-string (.get (preferences-node ns) (pr-str key) (binding [*print-dup* true] (pr-str @atom))))]
-    (when (not= @atom v)
-      (reset! atom v))
+  (let [key (serialize-value key)
+        node (preferences-node ns)
+        v   (read-string (.get node key (serialize-value @atom)))]
     (doto atom
+      (reset! v)
       (add-watch (keyword (gensym "pref-atom-watcher"))
                  (fn [k r o n]
+                   (println k r o n ns)
                    (when (not= o n) 
-                     (.put (preferences-node ns)
-                           (binding [*print-dup* true] (pr-str key))
-                           (binding [*print-dup* true] (pr-str n)))))))))
+                     (.put node key (serialize-value n))
+                     (.sync node)))))))
 
 (defmacro bind-preference-to-atom
   "Bind atom to preference by syncing it

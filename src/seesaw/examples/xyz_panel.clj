@@ -56,5 +56,5 @@
             :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
             :center (make-panel))
         :width 600 :height 600))))
-(-main)
+;(-main)
 

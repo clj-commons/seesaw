@@ -17,7 +17,7 @@
   (it "should return an atom with nil as its default value"
     (do (.remove (preferences-node) (pr-str "key"))
      (let [atom (preference-atom "key")]
-       (expect (= @atom nil)))))
+       (expect (nil? @atom)))))
   (it "should return an atom with the specified default value"
     (do (.remove (preferences-node) (pr-str "key"))
         (let [atom (preference-atom "key" 'some-value)]
@@ -26,4 +26,4 @@
     (do (.remove (preferences-node) (pr-str "key"))
         (let [atom (preference-atom "key")]
           (reset! atom 'new-value)
-          (expect (= (read-string (.get (preferences-node) "key" "nil")) 'new-value))))))
+          (expect (= (read-string (.get (preferences-node) (pr-str "key") "nil")) 'new-value))))))
