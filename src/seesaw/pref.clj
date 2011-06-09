@@ -45,8 +45,7 @@ namespace."
                  (fn [k r o n]
                    (println k r o n ns)
                    (when (not= o n) 
-                     (.put node key (serialize-value n))
-                     (.sync node)))))))
+                     (.put node key (serialize-value n))))))))
 
 (defmacro bind-preference-to-atom
   "Bind atom to preference by syncing it
