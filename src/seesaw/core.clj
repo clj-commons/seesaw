@@ -1694,25 +1694,63 @@
 
 (def ^{:private true} paint-property "seesaw-paint")
 
-(defn- canvas-paint-option-handler [c v]
+(defn- paint-option-handler [c v]
   (cond 
-    (nil? v) (canvas-paint-option-handler c {:before nil :after nil :super? true})
-    (fn? v)  (canvas-paint-option-handler c {:after v})
+    (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
+    (fn? v)  (paint-option-handler c {:after v})
     (map? v) (do (put-meta! c paint-property v) (.repaint c))
     :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
 
-(def ^{:private true} canvas-options {
-  :paint canvas-paint-option-handler
-})
+(defmacro ^{:private true} paintable-proxy [class]
+  `(proxy [~class] []
+    (paintComponent [g#]
+      (let [{:keys [~'before ~'after ~'super?] :or {~'super? true}} (get-meta ~'this paint-property)]
+        (ssg/anti-alias g#)
+        (when ~'before (ssg/push g# (~'before ~'this g#)))
+        (when ~'super? (proxy-super paintComponent g#))
+        (when ~'after  (ssg/push g# (~'after ~'this g#)))))))
 
-(defn- create-paintable []
-  (proxy [javax.swing.JPanel] []
-    (paintComponent [g]
-      (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
-        (ssg/anti-alias g)
-        (when before (ssg/push g (before this g)))
-        (when super? (proxy-super paintComponent g))
-        (when after  (ssg/push g (after this g)))))))
+(defmacro paintable 
+  "Macro that generates a paintable widget, i.e. a widget that can be drawn on
+  by client code. class is a Swing class literal indicating the type that will
+  be constructed. handler can be one of the following:
+
+    nil - disables painting. The widget will be filled with its background
+      color unless it is not opaque.
+
+    (fn [c g]) - a paint function that takes the canvas and a Graphics2D as 
+      arguments. Called after super.paintComponent.
+
+    {:before fn :after fn} - a map with :before and :after functions which
+      are called before and after super.paintComponent respectively.
+
+  Notes:
+    If you just want a panel to draw on, use (seesaw.core/canvas). This macro is
+    intended for customizing the appearance of existing widget types.
+
+    Also note that some customizations are also possible and maybe easier with
+    the creative use of borders on widgets.
+    
+  Examples:
+
+    Typically, you'd use this macro in conjunction with (seesaw.core/with-widget):
+
+    (with-widget
+      (paintable javax.swing.JLabel (fn [c g] (.fillRect g 0 0 20 20)))
+      (label :text \"Hello\", ....))
+
+  See:
+    (seesaw.core/with-widget)
+    (seesaw.core/canvas)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
+  "
+  [class handler]
+  `(doto (paintable-proxy ~class)
+     (paint-option-handler ~handler)))
+
+(def ^{:private true} canvas-options {
+  :paint paint-option-handler
+})
 
 (defn canvas
   [& opts]
@@ -1720,7 +1758,7 @@
   Painting is configured with the :paint property which can be:
 
     nil - disables painting. The canvas' will be filled with its background
-      color
+      color unless :opaque? is false.
 
     (fn [c g]) - a paint function that takes the canvas and a Graphics2D as 
       arguments. Called after super.paintComponent.
@@ -1728,18 +1766,27 @@
     {:before fn :after fn} - a map with :before and :after functions which
       are called before and after super.paintComponent respectively.
   
-  Note that (config!) can be used to change the :paint property at any time.
+  Notes:
+
+    (seesaw.core/config!) can be used to change the :paint property at any time.
+
+    :paint is equivalent to the second argument to the (seesaw.core/paintable)
+    macro.
   
-  Here's an example:
+  Examples:
   
     (canvas :paint #(.drawString %2 \"I'm a canvas\" 10 10))
 
   See:
+    (seesaw.core/paintable)
+    (seesaw.graphics)
+    (seesaw.examples.canvas)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
   "
-  (let [p (create-paintable)]
+  (let [{:keys [paint] :as opts} opts
+        p (paintable javax.swing.JPanel paint)]
     (.setLayout p nil)
-    (apply-options p opts (merge default-options canvas-options))))
+    (apply-options p (dissoc opts :paint) (merge default-options canvas-options))))
 
 ;*******************************************************************************
 ; Frame
