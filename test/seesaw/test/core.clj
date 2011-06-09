@@ -83,6 +83,10 @@
     (it "sets the classes of a widget"
       (expect (= #{"foo" "bar"} (selector/class-of (flow-panel :class #{:foo :bar}))))))
 
+  (testing "the :focusable? option"
+    (it "makes a widget focusable"
+      (.isFocusable (label :text "focusable" :focusable? true))))
+
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]

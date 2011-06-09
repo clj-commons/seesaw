@@ -621,6 +621,7 @@
   :listen      #(apply sse/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
   :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
+  :focusable?  #(.setFocusable %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
   :background  #(do
                   (let [v (ensure-sync-when-atom %1 :background %2)]
                     (.setBackground %1 (to-color v))
