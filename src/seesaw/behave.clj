@@ -8,10 +8,11 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.behave
-  "A collection of basic behaviors that can be dynamically added to widgets.
-  Most cover basic functionality that's missing from swing or just a pain
-  to implement."
+(ns ^{:doc "A collection of basic behaviors that can be dynamically added to 
+           widgets. Most cover basic functionality that's missing from Swing 
+           or just a pain to implement."
+      :author "Dave Ray"}
+  seesaw.behave
   (:use [seesaw core util]))
 
 (defn when-focused-select-all

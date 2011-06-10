@@ -8,7 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.event
+(ns ^{:doc "Functions for handling events. Do not use these functions directly.
+            Use (seesaw.core/listen) instead."
+      :author "Dave Ray"}
+  seesaw.event
   (:use [seesaw util meta])
   (:import [javax.swing.event ChangeListener DocumentListener 
             ListSelectionListener TreeSelectionListener]
