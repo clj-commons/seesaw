@@ -33,6 +33,6 @@
         )))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (-> (app) pack! show!)))
 ;(-main)
 

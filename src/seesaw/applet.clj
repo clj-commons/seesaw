@@ -8,7 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.applet
+(ns ^{:doc "Macros and functions that make creating an applet with Seesaw a
+            little less painful."
+      :author "Dave Ray"}
+  seesaw.applet
   (:use [seesaw core])
   (:import [javax.swing JApplet]))
 

@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.icon
+(ns ^{:doc "Functions for loading and creating icons."
+      :author "Dave Ray"}
+  seesaw.icon
   (:use [seesaw util])
   (:import [javax.swing ImageIcon]))
 

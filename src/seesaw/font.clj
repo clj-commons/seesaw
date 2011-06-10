@@ -8,7 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.font
+(ns ^{:doc "Functions for handling fonts. Note that most core widget functions
+            use these implicitly through the :font option."
+      :author "Dave Ray"}
+  seesaw.font
   (:use [seesaw util])
   (:import [java.awt Font]))
 

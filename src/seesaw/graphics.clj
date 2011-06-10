@@ -8,7 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.graphics
+(ns ^{:doc "Basic graphics functions to simplify use of Graphics2D."
+      :author "Dave Ray"}
+  seesaw.graphics
   (:use [seesaw util color font])
   (:import [java.awt Graphics2D RenderingHints]
            [java.awt.image BufferedImage]))
@@ -197,7 +199,8 @@
    Throws IllegalArgumentException if it can't figure out what to do.
    "
   (cond
-    (nil? v) nil
+    (nil? v)    nil
+    (number? v) (stroke :width v)
     (instance? java.awt.Stroke v) v
     :else (throw (IllegalArgumentException. (str "Don't know how to make a stroke from " v)))))
 

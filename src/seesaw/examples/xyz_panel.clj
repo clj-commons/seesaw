@@ -9,55 +9,60 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.xyz-panel
-  (:use [seesaw core border])
+  (:use [seesaw core border behave graphics])
   (:import [javax.swing SwingUtilities]))
 
-; Put in some basic dragging support.
-(defn draggable [w]
-  (listen w
+
+; Put in some basic support for moving w around using behave/when-mouse-dragged.
+(defn movable [w]
+  (when-mouse-dragged w
     ; When the mouse is pressed, move the widget to the front of the z order
-    :mouse-pressed 
-      (fn [e] (move! w :to-front))
+    :start #(move! % :to-front)
     ; When the mouse is dragged move the widget
-    :mouse-dragged 
-      (fn [e] 
-        (let [w (to-widget e)]
-        (move! w :to (SwingUtilities/convertPoint w (.getPoint e) (.getParent w))))))
+    :drag  #(move! %1 :by %2))
   w)
 
 (defn make-label
   [text]
-  (config!
-    (label 
-      :text       text 
-      :location   [(rand-int 300) (rand-int 300)]
-      :border     (line-border :thickness 2 :color "#FFFFFF")
-      :background "#DDDDDD") 
-    ; Set the bounds to its preferred size. Note that this has to be
-    ; done after the label is fully constructed.
-    :bounds :preferred))
+  (doto (with-widget
+          ; Instead of a boring label, make the label rounded with
+          ; some custom drawing. Use the before paint hook to draw
+          ; under the label's text.
+          (paintable label 
+            { :before (fn [c g]
+                        (draw g (rounded-rect 3 3 (- (.getWidth c) 6) (- (.getHeight c) 6) 9)
+                                (style :foreground "#FFFFaa"
+                                       :background "#aaFFFF"
+                                       :stroke 2)))})
+          (label :border   5
+                 :text     text 
+                 :location [(rand-int 300) (rand-int 300)]))
+      ; Set the bounds to its preferred size. Note that this has to be
+      ; done after the label is fully constructed.
+      (config! :bounds :preferred)))
 
 (defn make-panel []
   (xyz-panel 
     :id :xyz 
-    :background "#000000"
+    :background "#222222"
     :items (conj 
-             (map (comp draggable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
-             (draggable 
-               (config! (border-panel
-                          :border (line-border :top 15 :color "#0000BB")
-                          :north (label "I'm a draggable label with a text box!")
-                          :center (text :text "Hey type some stuff here"))
-                :bounds :preferred)))))
+             (map (comp movable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
+             (doto (border-panel
+                       :border (line-border :top 15 :color "#AAFFFF")
+                       :north (label "I'm a draggable label with a text box!")
+                       :center (text :text "Hey type some stuff here"))
+                   (config! :bounds :preferred)
+                   movable))))
 
 (defn -main [& args]
   (invoke-later
-    (frame 
-      :title "Seesaw xyz-panel example" 
-      :content 
-        (border-panel
-          :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
-          :center (make-panel))
-      :on-close :exit
-      :width 600 :height 600 :pack? false)))
+    (show!
+      (frame 
+        :title   "Seesaw xyz-panel example" 
+        :content (border-panel
+                   :vgap 5
+                   :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
+                   :center (make-panel))
+        :size    [600 :by 600]))))
+;(-main)
 

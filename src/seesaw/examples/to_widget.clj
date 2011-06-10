@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.to-widget
-  (:use [seesaw core border]))
+  (:use [seesaw core border to-widget]))
 
 ; This example shows how to implement the ToWidget protocol for a new type.
 ; Is this cute? Yes. Useful? Hell if I know.
@@ -47,6 +47,6 @@
     :content (scrollable (vertical-panel :items people))))
 
 (defn -main [& args]
-  (invoke-later app))
+  (invoke-later (show! (pack! (app)))))
 ;(-main)
 

@@ -8,7 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.color
+(ns ^{:doc "Functions for creating Swing colors. Note that these are implicit
+            in the core color options."
+      :author "Dave Ray"}
+  seesaw.color
   (:import [java.awt Color]))
 
 (defn get-rgba 

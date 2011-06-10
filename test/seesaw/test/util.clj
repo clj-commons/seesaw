@@ -77,6 +77,10 @@
       (catch IllegalArgumentException e true))))
 
 (describe to-dimension
+  (it "should throw an exception if it doesn't know what to do"
+    (try
+      (do (to-dimension {:a :map}) false)
+      (catch IllegalArgumentException e true)))
   (it "should return its input if its already a Dimension"
     (let [d (java.awt.Dimension. 10 20)]
       (expect (= d (to-dimension d)))))
@@ -85,6 +89,21 @@
       (expect (= java.awt.Dimension (class d)))
       (expect (= 1 (.getWidth d)))
       (expect (= 2 (.getHeight d))))))
+
+(describe to-insets
+  (it "should throw an exception if it doesn't know what to do"
+    (try
+      (do (to-insets "a random string") false)
+      (catch IllegalArgumentException e true)))
+  (it "should return its input if its already an Insets"
+    (let [i (java.awt.Insets. 1 2 3 4)]
+      (expect (= i (to-insets i)))))
+  (it "should return uniform insets from a number"
+    (= (java.awt.Insets. 9 9 9 9) (to-insets 9)))
+  (it "should return insets from a 4-element [top, left, bottom, right] vector"
+    (= (java.awt.Insets. 1 2 3 4) (to-insets [1 2 3 4])))
+  (it "should return insets from a 2-element [top/bottom, left/right] vector"
+    (= (java.awt.Insets. 5 6 5 6) (to-insets [5 6]))))
 
 (describe atom?
   (it "should return true for an atom"

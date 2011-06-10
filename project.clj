@@ -1,5 +1,5 @@
-(defproject seesaw "1.0.5"
-  :description "A Swing wrapper/DSL for Clojure. See http://seesaw-clj.org for more info."
+(defproject seesaw "1.0.6"
+  :description "A Swing wrapper/DSL for Clojure. You want seesaw.core, FYI. See http://seesaw-clj.org for more info."
   :url "http://seesaw-clj.org"
   :mailing-list {:name "seesaw-clj"
                  :achive "https://groups.google.com/group/seesaw-clj"
@@ -12,6 +12,12 @@
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [com.miglayout/miglayout "3.7.4"]]
   :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
-                     [lein-clojars "0.6.0"]]
-  :repositories {"stuartsierra-releases" "http://stuartsierra.com/maven2"})
+                     [lein-clojars "0.6.0"]
+                     [org.clojars.rayne/autodoc "0.8.0-SNAPSHOT"]]
+  :repositories {"stuartsierra-releases" "http://stuartsierra.com/maven2"}
+  :autodoc {
+    :name "Seesaw", 
+    :page-title "Seesaw API Documentation"
+    :copyright "Copyright 2011, Dave Ray"
+    :load-except-list [#"seesaw/examples"]})
 

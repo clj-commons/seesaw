@@ -131,17 +131,28 @@
       (let [[w by h] v] (java.awt.Dimension. w h))
     :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
 
-(defn children [c]
-  (seq 
-    ; TODO PROTOCOL!
-    (cond
-      (instance? javax.swing.JFrame c) (if-let [mb (.getJMenuBar c)] 
-                                         (cons mb (.getComponents c)) 
-                                         (.getComponents c))
-      (instance? javax.swing.JMenuBar c) (.getSubElements c)
-      (instance? javax.swing.JMenu c)    (.getSubElements c)
-      (isa? (type c) java.awt.Container)    (.getComponents c)
-      :else nil)))
+(defn to-insets
+  [v]
+  (cond
+    (instance? java.awt.Insets v) v
+    (number? v) (java.awt.Insets. v v v v)
+    (vector? v) (let [[top left bottom right] v]
+                  (java.awt.Insets. top left (or bottom top) (or right left)))
+    :else (throw (IllegalArgumentException. (str "Don't know how to create insets from " v)))))
+
+(defprotocol Children 
+  "A protocol for retrieving the children of a widget as a seq. 
+  This takes care of idiosyncracies of frame vs. menus, etc."
+
+  (children [c] "Returns a seq of the children of the given widget"))
+
+(extend-protocol Children
+  ; Thankfully container covers JComponent, JFrame, dialogs, applets, etc.
+  java.awt.Container    (children [this] (seq (.getComponents this)))
+  ; Special case for menus. We want the logical menu items, not whatever
+  ; junk is used to build them.
+  javax.swing.JMenuBar  (children [this] (seq (.getSubElements this)))
+  javax.swing.JMenu     (children [this] (seq (.getSubElements this))))
 
 (defn collect
   "Given a root widget or frame, returns a depth-fist seq of all the widgets

@@ -80,11 +80,11 @@
         t (timer (fn [e] (repaint! cvs)) :delay 1000)]
     (frame 
       :title "Seesaw Canvas Clock" 
-      :width 400 :height 400 :pack? false
+      :width 400 :height 400
       :content cvs)))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 
 ;(-main)
 

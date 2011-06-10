@@ -31,7 +31,7 @@
 
 ; The rest is boilerplate ...
 (defn make-frame []
-  (frame :title "JTree Example" :width 400 :height 400 :pack? false :content
+  (frame :title "JTree Example" :width 400 :height 400 :content
     (border-panel
       :north  (str "From: " source)
       :center (scrollable (tree :id :tree
@@ -45,10 +45,11 @@
     (listen (select f [:#tree]) :selection 
       (fn [e] 
         (config! (select f [:#sel]) 
-          :text (str "Selection: " (-> e selection first last)))))))
+          :text (str "Selection: " (-> e selection first last)))))
+    f))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 
 ;(-main)
 

@@ -8,7 +8,11 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.cells
+(ns ^{:doc "Functions for implementing custom cell renderers. Note that on
+            many core functions (listbox, tree, combobox, etc) a render function
+            can be given directly to the :renderer option."
+      :author "Dave Ray"}
+  seesaw.cells
   (:use [seesaw util]))
 
 (def ^{:private true} nil-fn (constantly nil))

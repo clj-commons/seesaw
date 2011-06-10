@@ -10,25 +10,60 @@
 
 (ns seesaw.pref)
 
+(defn preferences-node*
+  "Return the java.util.prefs.Preferences/userRoot for the specified
+namespace."
+  ([ns]
+     (.node (java.util.prefs.Preferences/userRoot) (str (ns-name ns)))))
+
 (defmacro preferences-node
   "Return the java.util.prefs.Preferences/userRoot for the current
-  namespace."
-  []
-  `(.node (java.util.prefs.Preferences/userRoot) ~(str (ns-name *ns*))))
+  or the specified namespace."
+  ([]
+     `(preferences-node* ~*ns*))
+  ([ns]
+     `(preferences-node* ~ns)))
 
-(defn bind-preference-to-atom
-  "Generate and return an atom, which will automatically be synced
+(defn- serialize-value [v]
+  (binding [*print-dup* true] (pr-str v)))
+
+(defn bind-preference-to-atom*
+  "Bind atom to preference by syncing it
+  with (java.util.prefs.Preferences/userRoot) for the specified
+  namespace and a given KEY. If no preference has been set yet the
+  atom will stay untouched, otherwise it will be set to the stored
+  preference value. Note that any value of the atom and the preference
+  key must be printable per PRINT-DUP and readable per READ-STRING for
+  it to be used with the preferences store."
+  [ns key atom]
+  (let [key (serialize-value key)
+        node (preferences-node ns)
+        v   (read-string (.get node key (serialize-value @atom)))]
+    (doto atom
+      (reset! v)
+      (add-watch (keyword (gensym "pref-atom-watcher"))
+                 (fn [k r o n]
+                   (when (not= o n) 
+                     (.put node key (serialize-value n))))))))
+
+(defmacro bind-preference-to-atom
+  "Bind atom to preference by syncing it
   with (java.util.prefs.Preferences/userRoot) for the current
-  namespace and a given string KEY. If not yet set, the atom will have
-  INITIAL-VALUE as its value, or the value which has already been set
-  inside the preferences. Note that the value must be printable per
-  PRINT-DUP and readable per READ-STRING for it to be used with the
-  preferences store."  
-  [key initial-value]
-  ; TODO This doesn't work because preferences-node will store in the seesaw.pref
-  ; namespace, not the namespace of the caller!
-  (let [v (atom (read-string (.get (preferences-node) key (binding [*print-dup* true] (pr-str initial-value)))))]
-    (add-watch v (keyword (gensym "pref-atom-watcher"))
-               (fn [k r o n] (when (not= o n) 
-                               (.put (preferences-node) key (binding [*print-dup* true] (pr-str n))))))))
+  namespace and a given KEY. If no preference has been set yet the
+  atom will stay untouched, otherwise it will be set to the stored
+  preference value. Note that any value of the atom and the preference
+  key must be printable per PRINT-DUP and readable per READ-STRING for
+  it to be used with the preferences store."
+  [key atom]
+  `(bind-preference-to-atom* ~*ns* ~key ~atom))
+
+(defmacro preference-atom
+  "Create and return an atom which has been bound using
+  bind-preference-to-atom for the current namespace."
+  ([key]
+     `(let [atom# (atom nil)]
+        (bind-preference-to-atom ~key atom#)))
+  ([key initial-value]
+     `(let [atom# (atom ~initial-value)]
+        (bind-preference-to-atom ~key atom#))))
 

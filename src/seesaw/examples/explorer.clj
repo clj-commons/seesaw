@@ -30,7 +30,8 @@
 
 (defn make-frame []
   ; Put all the widgets together
-  (frame :title "File Explorer" :width 500 :height 500 :pack? false :content
+  (frame :title "File Explorer" :width 500 :height 500 
+    :content
     (border-panel :border 5 :hgap 5 :vgap 5
       :north  (label :id :current-dir :text "Location")
 
@@ -49,10 +50,11 @@
           (let [files (.listFiles dir)]
             (config! (select f [:#current-dir]) :text (.getAbsolutePath dir))
             (config! (select f [:#status]) :text (format "Ready (%d items)" (count files)))
-            (config! (select f [:#list]) :model files)))))))
+            (config! (select f [:#list]) :model files)))))
+    f))
 
 (defn -main [& args]
-  (invoke-later (app)))
+  (invoke-later (show! (app))))
 
 ;(-main)
 

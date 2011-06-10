@@ -108,8 +108,14 @@
       (expect (= java.awt.BasicStroke/JOIN_BEVEL (.getLineJoin s))))))
 
 (describe to-stroke
+  (it "throws IllegalArgumentException if it doesn't know what to do"
+    (try
+      (do (to-stroke #"what?") false)
+      (catch IllegalArgumentException e true)))
   (it "returns nil for nil input"
     (nil? (to-stroke nil)))
+  (it "returns a stroke of a given width if input is a number"
+    (= 10 (.getLineWidth (to-stroke 10))))
   (it "returns input if it's a stroke"
     (let [s (stroke)]
       (expect (= s (to-stroke s))))))
