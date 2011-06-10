@@ -14,23 +14,11 @@
             capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util font border color meta to-widget]
+  (:use [seesaw util meta to-widget]
         [clojure.string :only (capitalize split)])
-  (:require [seesaw.invoke]
-            [seesaw.event :as sse]
-            [seesaw.selector :as selector]
-            [seesaw.timer :as sst]
-            [seesaw.selection :as sss]
-            [seesaw.icon :as ssi]
-            [seesaw.action :as ssa]
-            [seesaw.table :as ss-table]
-            [seesaw.cells :as cells]
-            [seesaw.bind :as ssb]
-            [seesaw.graphics :as ssg])
-  (:import [java.util EventObject]
-           [javax.swing 
-             SwingUtilities SwingConstants UIManager ScrollPaneConstants
-             Action
+  (:require [seesaw color font border invoke timer selection event selector icon action cells])
+  (:import [javax.swing 
+             SwingConstants UIManager ScrollPaneConstants
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea 
@@ -76,7 +64,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#isEventDispatchThread%28%29
   "
   [message]
-  (when-not (SwingUtilities/isEventDispatchThread)
+  (when-not (javax.swing.SwingUtilities/isEventDispatchThread)
     (throw (IllegalStateException. 
              (str "Expected UI thread, but got '"
                   (.. (Thread/currentThread) getName)
@@ -86,13 +74,13 @@
 ; TODO make a macro for this. There's one in contrib I think, but I don't trust contrib.
 
 ; alias timer/timer for convenience
-(def ^{:doc (str "Alias of seesaw.timer/timer:\n" (:doc (meta #'sst/timer)))} timer sst/timer)
+(def ^{:doc (str "Alias of seesaw.timer/timer:\n" (:doc (meta #'seesaw.timer/timer)))} timer seesaw.timer/timer)
 
 ; alias event/listen for convenience
-(def ^{:doc (str "Alias of seesaw.event/listen:\n" (:doc (meta #'sse/listen)))} listen sse/listen)
+(def ^{:doc (str "Alias of seesaw.event/listen:\n" (:doc (meta #'seesaw.event/listen)))} listen seesaw.event/listen)
 
 ; alias action/action for convenience
-(def ^{:doc (str "Alias of seesaw.action/action:\n" (:doc (meta #'ssa/action)))} action ssa/action)
+(def ^{:doc (str "Alias of seesaw.action/action:\n" (:doc (meta #'seesaw.action/action)))} action seesaw.action/action)
 
 
 ; TODO protocol or whatever when needed
@@ -126,7 +114,7 @@
     (seesaw.selection/selection)
   "
   ([target] (selection target {}))
-  ([target options] (sss/selection (to-selectable target) options)))
+  ([target options] (seesaw.selection/selection (to-selectable target) options)))
 
 (defn selection!
   "Sets the selection on a widget. target is passed through (to-widget)
@@ -146,9 +134,9 @@
     (seesaw.selection/selection!)
   "
   ([target new-selection] (selection! target {} new-selection))
-  ([target opts new-selection] (sss/selection! (to-selectable target) opts new-selection)))
+  ([target opts new-selection] (seesaw.selection/selection! (to-selectable target) opts new-selection)))
 
-(def icon ssi/icon)
+(def icon seesaw.icon/icon)
 (def ^{:private true} make-icon icon)
 
 ;*******************************************************************************
@@ -476,7 +464,7 @@
   (case how
     (:to :by)
       (let [[x y] (cond 
-                    (instance? java.awt.Point loc) [(.x loc) (.y loc)] 
+                    (instance? java.awt.Point loc)     [(.x loc) (.y loc)] 
                     (instance? java.awt.Rectangle loc) [(.x loc) (.y loc)] 
                     (= how :to) (replace {:* nil} loc)
                     :else loc)]
@@ -516,7 +504,7 @@
     (seesaw.core/select).
   "
   [w] 
-  (selector/id-of (to-widget w)))
+  (seesaw.selector/id-of (to-widget w)))
 
 (def ^{:doc "Deprecated. See (seesaw.core/id-of)"} id-for id-of)
 
@@ -651,19 +639,19 @@
 ;*******************************************************************************
 ; Default options
 (def ^{:private true} default-options {
-  :id          selector/id-of!
-  :class       selector/class-of!
-  :listen      #(apply sse/listen %1 %2)
+  :id          seesaw.selector/id-of!
+  :class       seesaw.selector/class-of!
+  :listen      #(apply seesaw.event/listen %1 %2)
   :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
   :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
   :focusable?  #(.setFocusable %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
   :background  #(do
                   (let [v (ensure-sync-when-atom %1 :background %2)]
-                    (.setBackground %1 (to-color v))
+                    (.setBackground %1 (seesaw.color/to-color v))
                     (.setOpaque %1 true)))
-  :foreground  #(.setForeground %1 (to-color (ensure-sync-when-atom %1 :foreground %2)))
-  :border      #(.setBorder %1 (to-border (ensure-sync-when-atom %1 :border %2)))
-  :font        #(.setFont %1 (to-font (ensure-sync-when-atom %1 :font %2)))
+  :foreground  #(.setForeground %1 (seesaw.color/to-color (ensure-sync-when-atom %1 :foreground %2)))
+  :border      #(.setBorder %1 (seesaw.border/to-border (ensure-sync-when-atom %1 :border %2)))
+  :font        #(.setFont %1 (seesaw.font/to-font (ensure-sync-when-atom %1 :font %2)))
   :tip         #(.setToolTipText %1 (str (ensure-sync-when-atom %1 :tip %2)))
   :text        #(.setText %1 (str (ensure-sync-when-atom %1 :text %2)))
   :icon        #(.setIcon %1 (make-icon (ensure-sync-when-atom %1 :icon %2)))
@@ -688,24 +676,21 @@
   :popup      #(popup-option-handler %1 %2)
 })
 
-(extend-type java.util.EventObject ConfigureWidget 
-  (config* [target args] (config* (to-widget target false) args)))
+(extend-protocol ConfigureWidget
+  java.util.EventObject
+    (config* [target args] (config* (to-widget target false) args))
 
-(extend-type java.awt.Component ConfigureWidget 
-  (config* [target args] 
-    (reapply-options target args default-options)))
+  java.awt.Component
+    (config* [target args] (reapply-options target args default-options))
 
-(extend-type javax.swing.JComponent ConfigureWidget 
-  (config* [target args] 
-    (reapply-options target args default-options)))
+  javax.swing.JComponent
+    (config* [target args] (reapply-options target args default-options))
 
-(extend-type Action ConfigureWidget 
-  (config* [target args] 
-    (reapply-options target args default-options)))
+  javax.swing.Action
+    (config* [target args] (reapply-options target args default-options))
 
-(extend-type java.awt.Window ConfigureWidget 
-  (config* [target args] 
-    (reapply-options target args default-options)))
+  java.awt.Window
+    (config* [target args] (reapply-options target args default-options)))
 
 (defn apply-default-opts
   "only used in tests!"
@@ -1321,7 +1306,7 @@
 
 (def ^{:private true} listbox-options {
   :model    (fn [lb m] ((:model default-options) lb (to-list-model m)))
-  :renderer #(.setCellRenderer %1 (cells/to-cell-renderer %1 %2))
+  :renderer #(.setCellRenderer %1 (seesaw.cells/to-cell-renderer %1 %2))
 })
 
 (defn listbox
@@ -1386,7 +1371,7 @@
 ; JTree
 
 (def ^{:private true} tree-options {
-  :renderer #(.setCellRenderer %1 (cells/to-cell-renderer %1 %2))
+  :renderer #(.setCellRenderer %1 (seesaw.cells/to-cell-renderer %1 %2))
   :expands-selected-paths? #(.setExpandsSelectedPaths %1 (boolean %2))
   :large-model?            #(.setLargeModel %1 (boolean %2))
   :root-visible?           #(.setRootVisible %1 (boolean %2))
@@ -1425,7 +1410,7 @@
 
 (def ^{:private true} combobox-options {
   :model    (fn [lb m] ((:model default-options) lb (to-combobox-model m)))
-  :renderer #(.setRenderer %1 (cells/to-cell-renderer %1 %2))
+  :renderer #(.setRenderer %1 (seesaw.cells/to-cell-renderer %1 %2))
 })
 
 (defn combobox
@@ -1738,10 +1723,10 @@
 
 (defn- paint-component-impl [this g]
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
-    (ssg/anti-alias g)
-    (when before (ssg/push g (before this g)))
+    (seesaw.graphics/anti-alias g)
+    (when before (seesaw.graphics/push g (before this g)))
     (when super? (proxy-super paintComponent g))
-    (when after  (ssg/push g (after this g)))))
+    (when after  (seesaw.graphics/push g (after this g)))))
 
 
 (defmacro ^{:doc "*INTERNAL USE ONLY* See (seesaw.core/paintable)"} 
@@ -1842,8 +1827,8 @@
 })
 
 (def ^{:private true} frame-options {
-  :id           selector/id-of!
-  :class        selector/class-of!
+  :id           seesaw.selector/id-of!
+  :class        seesaw.selector/class-of!
   :title        #(.setTitle %1 (str %2))
   :resizable?   #(.setResizable %1 (boolean %2))
   :content      #(.setContentPane %1 (to-widget %2 true))
@@ -2359,7 +2344,7 @@
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(cond (atom? %2)
-                  (ssb/bind-atom-to-range-model %2 (.getModel %1))
+                  (seesaw.bind/bind-atom-to-range-model %2 (.getModel %1))
                 (number? %2)
                   (.setValue %1 %2)
                 :else
@@ -2484,8 +2469,8 @@
   ([root selector]
     (check-args (vector? selector) "selector must be vector")
     (let [root (to-widget root)
-          result (selector/select root selector)
-          id? (and (nil? (second selector)) (selector/id-selector? (first selector)))]
+          result (seesaw.selector/select root selector)
+          id? (and (nil? (second selector)) (seesaw.selector/id-selector? (first selector)))]
       (if id? (first result) result))))
 
 ;*******************************************************************************
