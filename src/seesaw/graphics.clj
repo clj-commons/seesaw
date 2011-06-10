@@ -199,7 +199,8 @@
    Throws IllegalArgumentException if it can't figure out what to do.
    "
   (cond
-    (nil? v) nil
+    (nil? v)    nil
+    (number? v) (stroke :width v)
     (instance? java.awt.Stroke v) v
     :else (throw (IllegalArgumentException. (str "Don't know how to make a stroke from " v)))))
 

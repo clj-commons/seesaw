@@ -122,8 +122,8 @@
         (println \"Currently selected rows: \" selected-rows))))
   
   See:
-
-    seesaw.selection/selection.
+    (seesaw.core/selection!)
+    (seesaw.selection/selection)
   "
   ([target] (selection target {}))
   ([target options] (sss/selection (to-selectable target) options)))
@@ -141,7 +141,9 @@
 
   Always returns target.
 
-  See also seesaw.selection/selection!.
+  See: 
+    (seesaw.core/selection)
+    (seesaw.selection/selection!)
   "
   ([target new-selection] (selection! target {} new-selection))
   ([target opts new-selection] (sss/selection! (to-selectable target) opts new-selection)))
@@ -208,7 +210,9 @@
   'progress-bar 'javax.swing.JProgressBar
 })
 
-(def ^{:private true :dynamic true} *with-widget* nil)
+(def ^{:doc "binding var used by (seesaw.core/with-widget)"
+       :private true 
+       :dynamic true} *with-widget* nil)
 
 (defmacro with-widget
   "This macro allows a Seesaw widget 'constructor' function to be applied to
@@ -1725,14 +1729,14 @@
 
 (def ^{:private true} paint-property "seesaw-paint")
 
-(defn paint-option-handler [c v]
+(defn- paint-option-handler [c v]
   (cond 
     (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (paint-option-handler c {:after v})
     (map? v) (do (put-meta! c paint-property v) (.repaint c))
     :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
 
-(defn paint-component-impl [this g]
+(defn- paint-component-impl [this g]
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
     (ssg/anti-alias g)
     (when before (ssg/push g (before this g)))
@@ -1740,12 +1744,16 @@
     (when after  (ssg/push g (after this g)))))
 
 
-(defmacro ^{:doc "INTERNAL USE ONLY"} paintable-proxy [class]
+(defmacro ^{:doc "*INTERNAL USE ONLY* See (seesaw.core/paintable)"} 
+  paintable-proxy 
+  [class]
   `(proxy [~class] []
-    (paintComponent [g#] (paint-component-impl ~'this g#))))
+    (paintComponent [g#] (@#'seesaw.core/paint-component-impl ~'this g#))))
 
 (defmacro paintable 
-  "Macro that generates a paintable widget, i.e. a widget that can be drawn on
+  "*Experimental. Subject to change*
+
+  Macro that generates a paintable widget, i.e. a widget that can be drawn on
   by client code. class is a Swing class literal indicating the type that will
   be constructed. handler can be one of the following:
 
@@ -1755,8 +1763,9 @@
     (fn [c g]) - a paint function that takes the canvas and a Graphics2D as 
       arguments. Called after super.paintComponent.
 
-    {:before fn :after fn} - a map with :before and :after functions which
-      are called before and after super.paintComponent respectively.
+    {:before fn :after fn :super? bool} - a map with :before and :after functions which
+      are called before and after super.paintComponent respectively. If super?
+      is false, the super.paintComponent is not called.
 
   Notes:
     If you just want a panel to draw on, use (seesaw.core/canvas). This macro is
@@ -1780,7 +1789,7 @@
   "
   [class handler]
   `(doto (paintable-proxy ~(get widget-types class class))
-     (paint-option-handler ~handler)))
+     (@#'seesaw.core/paint-option-handler ~handler)))
 
 (def ^{:private true} canvas-options {
   :paint paint-option-handler
