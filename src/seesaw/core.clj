@@ -177,6 +177,32 @@
 ;*******************************************************************************
 ; Widget construction stuff
 
+(def ^{:private true} widget-types {
+  'panel        'javax.swing.JPanel
+  'label        'javax.swing.JLabel
+  'button       'javax.swing.JButton
+  'toggle       'javax.swing.JToggleButton
+  'checkbox     'javax.swing.JCheckBox
+  'radio        'javax.swing.JRadioButton
+  'text         'javax.swing.JTextField
+  'password     'javax.swing.JPasswordField
+  'editor-pane  'javax.swing.JEditorPane
+  'listbox      'javax.swing.JList
+  'table        'javax.swing.JTable
+  'tree         'javax.swing.JTree
+  'combobox     'javax.swing.JComboBox
+  'scrollable   'javax.swing.JScrollPane
+  'splitter     'javax.swing.splitter
+  'separator    'javax.swing.JSeparator
+  'menu         'javax.swing.JMenu
+  'popup        'javax.swing.JPopupMenu
+  'menubar      'javax.swing.JMenuBar
+  'toolbar      'javax.swing.JToolBar
+  'tabbed-panel 'javax.swing.JTabbedPane
+  'slider       'javax.swing.JSlider
+  'progress-bar 'javax.swing.JProgressBar
+})
+
 (def ^{:private true :dynamic true} *with-widget* nil)
 
 (defmacro with-widget
@@ -1694,21 +1720,24 @@
 
 (def ^{:private true} paint-property "seesaw-paint")
 
-(defn- paint-option-handler [c v]
+(defn paint-option-handler [c v]
   (cond 
     (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (paint-option-handler c {:after v})
     (map? v) (do (put-meta! c paint-property v) (.repaint c))
     :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
 
-(defmacro ^{:private true} paintable-proxy [class]
+(defn paint-component-impl [this g]
+  (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
+    (ssg/anti-alias g)
+    (when before (ssg/push g (before this g)))
+    (when super? (proxy-super paintComponent g))
+    (when after  (ssg/push g (after this g)))))
+
+
+(defmacro ^{:doc "INTERNAL USE ONLY"} paintable-proxy [class]
   `(proxy [~class] []
-    (paintComponent [g#]
-      (let [{:keys [~'before ~'after ~'super?] :or {~'super? true}} (get-meta ~'this paint-property)]
-        (ssg/anti-alias g#)
-        (when ~'before (ssg/push g# (~'before ~'this g#)))
-        (when ~'super? (proxy-super paintComponent g#))
-        (when ~'after  (ssg/push g# (~'after ~'this g#)))))))
+    (paintComponent [g#] (paint-component-impl ~'this g#))))
 
 (defmacro paintable 
   "Macro that generates a paintable widget, i.e. a widget that can be drawn on
@@ -1745,7 +1774,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
   "
   [class handler]
-  `(doto (paintable-proxy ~class)
+  `(doto (paintable-proxy ~(get widget-types class class))
      (paint-option-handler ~handler)))
 
 (def ^{:private true} canvas-options {
@@ -1784,7 +1813,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
   "
   (let [{:keys [paint] :as opts} opts
-        p (paintable javax.swing.JPanel paint)]
+        p (paintable panel paint)]
     (.setLayout p nil)
     (apply-options p (dissoc opts :paint) (merge default-options canvas-options))))
 

@@ -1183,3 +1183,9 @@
           new-loc (.getLocation lbl)]
       (expect (= (java.awt.Point. 104 140) new-loc)))))
 
+(describe paintable
+  (it "creates a label subclass"
+    (instance? javax.swing.JLabel (paintable label nil)))
+  (it "creates a button subclass"
+    (instance? javax.swing.JButton (paintable button nil))))
+
