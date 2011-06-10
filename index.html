@@ -1,0 +1,499 @@
+<html>
+  <head>
+    <title>Overview - Seesaw nil API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
+    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
+    <script src="file/view/clojure.js" type="text/javascript"></script>
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">Seesaw API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">Seesaw</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <span class="toc-header">Namespaces</span>
+    <ul id="left-sidebar-list">
+      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li>
+    </ul>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.action">seesaw.action</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.applet">seesaw.applet</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.behave">seesaw.behave</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.bind">seesaw.bind</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.border">seesaw.border</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.cells">seesaw.cells</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.chooser">seesaw.chooser</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.color">seesaw.color</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.core">seesaw.core</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.event">seesaw.event</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.font">seesaw.font</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.graphics">seesaw.graphics</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.icon">seesaw.icon</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.invoke">seesaw.invoke</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.keystroke">seesaw.keystroke</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.meta">seesaw.meta</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.pref">seesaw.pref</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.selection">seesaw.selection</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.selector">seesaw.selector</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.table">seesaw.table</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.timer">seesaw.timer</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.to-widget">seesaw.to-widget</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.tree">seesaw.tree</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#seesaw.util">seesaw.util</a>
+    
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="toc0">API Overview - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)</h1>
+<br />
+<div id="project-description">A Swing wrapper/DSL for Clojure. You want seesaw.core, FYI. See http://seesaw-clj.org for more info.</div>
+<br />
+<div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.action">seesaw.action</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.action-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for dealing with Swing Actions. Prefer (seesaw.core/action).</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.action-api.html#seesaw.action/action" id="var-tag">action</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.applet">seesaw.applet</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.applet-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Macros and functions that make creating an applet with Seesaw a
+little less painful.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.applet-api.html#seesaw.applet/defapplet" id="var-tag">defapplet</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.behave">seesaw.behave</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.behave-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">A collection of basic behaviors that can be dynamically added to 
+widgets. Most cover basic functionality that's missing from Swing 
+or just a pain to implement.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.behave-api.html#seesaw.behave/when-focused-select-all" id="var-tag">when-focused-select-all</a> </span><span id="var-link"><a href="seesaw.behave-api.html#seesaw.behave/when-mouse-dragged" id="var-tag">when-mouse-dragged</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.bind">seesaw.bind</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.bind-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Some functions for binding atoms to various mutable Swing objects
+like models.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.bind-api.html#seesaw.bind/bind-atom-to-range-model" id="var-tag">bind-atom-to-range-model</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.border">seesaw.border</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.border-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for creating widget borders.</pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.cells">seesaw.cells</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.cells-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for implementing custom cell renderers. Note that on
+many core functions (listbox, tree, combobox, etc) a render function
+can be given directly to the :renderer option.</pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.chooser">seesaw.chooser</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.chooser-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">File chooser and other common dialogs.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.chooser-api.html#seesaw.chooser/choose-file" id="var-tag">choose-file</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.color">seesaw.color</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.color-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for creating Swing colors. Note that these are implicit
+in the core color options.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.color-api.html#seesaw.color/default-color" id="var-tag">default-color</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core">seesaw.core</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.core-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Core functions and macros for Seesaw. Although there are many more 
+Seesaw namespaces, usually what you want is in here. Most functions 
+in other namespaces have a core wrapper which adds additional 
+capability or makes them easier to use.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.core-api.html#seesaw.core/action" id="var-tag">action</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/alert" id="var-tag">alert</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/apply-default-opts" id="var-tag">apply-default-opts</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/assert-ui-thread" id="var-tag">assert-ui-thread</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/border-panel" id="var-tag">border-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/button-group" id="var-tag">button-group</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/combobox" id="var-tag">combobox</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/config!" id="var-tag">config!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/custom-dialog" id="var-tag">custom-dialog</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/dialog" id="var-tag">dialog</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/dispose!" id="var-tag">dispose!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/editor-pane" id="var-tag">editor-pane</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/flow-panel" id="var-tag">flow-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/form-panel" id="var-tag">form-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/frame" id="var-tag">frame</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/grid-panel" id="var-tag">grid-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/hide!" id="var-tag">hide!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/horizontal-panel" id="var-tag">horizontal-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/id-for" id="var-tag">id-for</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/id-of" id="var-tag">id-of</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/input" id="var-tag">input</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/invoke-later" id="var-tag">invoke-later</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/invoke-now" id="var-tag">invoke-now</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/label" id="var-tag">label</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/left-right-split" id="var-tag">left-right-split</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/listbox" id="var-tag">listbox</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/listen" id="var-tag">listen</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/menu" id="var-tag">menu</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/menubar" id="var-tag">menubar</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/mig-panel" id="var-tag">mig-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/move!" id="var-tag">move!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/native!" id="var-tag">native!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/pack!" id="var-tag">pack!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/paintable" id="var-tag">paintable</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/paintable-proxy" id="var-tag">paintable-proxy</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/password" id="var-tag">password</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/popup" id="var-tag">popup</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/progress-bar" id="var-tag">progress-bar</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/property-kw-&gt;java-method" id="var-tag">property-kw-&gt;java-method</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/property-kw-&gt;java-name" id="var-tag">property-kw-&gt;java-name</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/realize-grid-bag-constraints" id="var-tag">realize-grid-bag-constraints</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/remove!" id="var-tag">remove!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/repaint!" id="var-tag">repaint!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/replace!" id="var-tag">replace!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/return-from-dialog" id="var-tag">return-from-dialog</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/scrollable" id="var-tag">scrollable</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/select" id="var-tag">select</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/selection" id="var-tag">selection</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/selection!" id="var-tag">selection!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/separator" id="var-tag">separator</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/show!" id="var-tag">show!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/slider" id="var-tag">slider</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/tabbed-panel" id="var-tag">tabbed-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/table" id="var-tag">table</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/text" id="var-tag">text</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/text!" id="var-tag">text!</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/timer" id="var-tag">timer</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/to-root" id="var-tag">to-root</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/to-widget" id="var-tag">to-widget</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/toolbar" id="var-tag">toolbar</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/top-bottom-split" id="var-tag">top-bottom-split</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/tree" id="var-tag">tree</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/vertical-panel" id="var-tag">vertical-panel</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/with-password*" id="var-tag">with-password*</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/with-widget" id="var-tag">with-widget</a> </span><span id="var-link"><a href="seesaw.core-api.html#seesaw.core/xyz-panel" id="var-tag">xyz-panel</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.event">seesaw.event</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.event-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for handling events. Do not use these functions directly.
+Use (seesaw.core/listen) instead.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.event-api.html#seesaw.event/listen" id="var-tag">listen</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.font">seesaw.font</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.font-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for handling fonts. Note that most core widget functions
+use these implicitly through the :font option.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.font-api.html#seesaw.font/default-font" id="var-tag">default-font</a> </span><span id="var-link"><a href="seesaw.font-api.html#seesaw.font/font" id="var-tag">font</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.graphics">seesaw.graphics</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.graphics-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Basic graphics functions to simplify use of Graphics2D.</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/anti-alias" id="var-tag">anti-alias</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/circle" id="var-tag">circle</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/draw" id="var-tag">draw</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/ellipse" id="var-tag">ellipse</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/polygon" id="var-tag">polygon</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/push" id="var-tag">push</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/rect" id="var-tag">rect</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/rotate" id="var-tag">rotate</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/rounded-rect" id="var-tag">rounded-rect</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/scale" id="var-tag">scale</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/stroke" id="var-tag">stroke</a> </span><span id="var-link"><a href="seesaw.graphics-api.html#seesaw.graphics/translate" id="var-tag">translate</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.icon">seesaw.icon</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.icon-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for loading and creating icons.</pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.invoke">seesaw.invoke</h2>
+  
+  <a href="seesaw.invoke-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.invoke-api.html#seesaw.invoke/invoke-later" id="var-tag">invoke-later</a> </span><span id="var-link"><a href="seesaw.invoke-api.html#seesaw.invoke/invoke-now" id="var-tag">invoke-now</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.keystroke">seesaw.keystroke</h2>
+  
+  <a href="seesaw.keystroke-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.keystroke-api.html#seesaw.keystroke/keystroke" id="var-tag">keystroke</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.meta">seesaw.meta</h2>
+  <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+  <a href="seesaw.meta-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Functions for associating metadata with frames and widgets, etc.</pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.pref">seesaw.pref</h2>
+  
+  <a href="seesaw.pref-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.pref-api.html#seesaw.pref/bind-preference-to-atom" id="var-tag">bind-preference-to-atom</a> </span><span id="var-link"><a href="seesaw.pref-api.html#seesaw.pref/bind-preference-to-atom*" id="var-tag">bind-preference-to-atom*</a> </span><span id="var-link"><a href="seesaw.pref-api.html#seesaw.pref/preference-atom" id="var-tag">preference-atom</a> </span><span id="var-link"><a href="seesaw.pref-api.html#seesaw.pref/preferences-node" id="var-tag">preferences-node</a> </span><span id="var-link"><a href="seesaw.pref-api.html#seesaw.pref/preferences-node*" id="var-tag">preferences-node*</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.selection">seesaw.selection</h2>
+  
+  <a href="seesaw.selection-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.selector">seesaw.selector</h2>
+  
+  <a href="seesaw.selector-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Seesaw selector support, based largely upon enlive-html.
+<a href="https://github.com/cgrand/enlive">https://github.com/cgrand/enlive</a>
+
+There's no need to ever directly require this namespace. Use (seesaw.core/select)!</pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.selector-api.html#seesaw.selector/class-of!" id="var-tag">class-of!</a> </span><span id="var-link"><a href="seesaw.selector-api.html#seesaw.selector/id-of" id="var-tag">id-of</a> </span><span id="var-link"><a href="seesaw.selector-api.html#seesaw.selector/id-of!" id="var-tag">id-of!</a> </span><span id="var-link"><a href="seesaw.selector-api.html#seesaw.selector/select" id="var-tag">select</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.table">seesaw.table</h2>
+  
+  <a href="seesaw.table-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.table-api.html#seesaw.table/clear!" id="var-tag">clear!</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/column-count" id="var-tag">column-count</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/insert-at!" id="var-tag">insert-at!</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/remove-at!" id="var-tag">remove-at!</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/row-count" id="var-tag">row-count</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/table-model" id="var-tag">table-model</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/update-at!" id="var-tag">update-at!</a> </span><span id="var-link"><a href="seesaw.table-api.html#seesaw.table/value-at" id="var-tag">value-at</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.timer">seesaw.timer</h2>
+  
+  <a href="seesaw.timer-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.timer-api.html#seesaw.timer/timer" id="var-tag">timer</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.to-widget">seesaw.to-widget</h2>
+  
+  <a href="seesaw.to-widget-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.tree">seesaw.tree</h2>
+  
+  <a href="seesaw.tree-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.tree-api.html#seesaw.tree/simple-tree-model" id="var-tag">simple-tree-model</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.util">seesaw.util</h2>
+  
+  <a href="seesaw.util-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  
+  
+  
+  Public variables and functions:
+  <span id="var-link"><a href="seesaw.util-api.html#seesaw.util/Children" id="var-tag">Children</a> </span><span id="var-link"><a href="seesaw.util-api.html#seesaw.util/camelize" id="var-tag">camelize</a> </span><span id="var-link"><a href="seesaw.util-api.html#seesaw.util/children" id="var-tag">children</a> </span><span id="var-link"><a href="seesaw.util-api.html#seesaw.util/collect" id="var-tag">collect</a> </span><span id="var-link"><a href="seesaw.util-api.html#seesaw.util/cond-doto" id="var-tag">cond-doto</a> </span><span id="var-link"><a href="seesaw.util-api.html#seesaw.util/constant-map" id="var-tag">constant-map</a> </span><br />
+  
+</div>
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">Copyright 2011, Dave Ray</div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>

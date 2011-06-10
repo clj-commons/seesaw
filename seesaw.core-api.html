@@ -1,0 +1,2020 @@
+<html>
+  <head>
+    <title>seesaw.core - Seesaw nil API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
+    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
+    <script src="file/view/clojure.js" type="text/javascript"></script>
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">Seesaw API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">Seesaw</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <span class="toc-header">Namespaces</span>
+    <ul id="left-sidebar-list">
+      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li>
+    </ul>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/action">action</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/alert">alert</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/apply-default-opts">apply-default-opts</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/assert-ui-thread">assert-ui-thread</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/border-panel">border-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/button-group">button-group</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/combobox">combobox</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/config!">config!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/custom-dialog">custom-dialog</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/dialog">dialog</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/dispose!">dispose!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/editor-pane">editor-pane</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/flow-panel">flow-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/form-panel">form-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/frame">frame</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/grid-panel">grid-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/hide!">hide!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/horizontal-panel">horizontal-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/id-for">id-for</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/id-of">id-of</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/input">input</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/invoke-later">invoke-later</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/invoke-now">invoke-now</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/label">label</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/left-right-split">left-right-split</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/listbox">listbox</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/listen">listen</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/menu">menu</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/menubar">menubar</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/mig-panel">mig-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/move!">move!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/native!">native!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/pack!">pack!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/paintable">paintable</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/paintable-proxy">paintable-proxy</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/password">password</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/popup">popup</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/progress-bar">progress-bar</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/property-kw-&gt;java-method">property-kw-&gt;java-method</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/property-kw-&gt;java-name">property-kw-&gt;java-name</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/realize-grid-bag-constraints">realize-grid-bag-constraints</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/remove!">remove!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/repaint!">repaint!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/replace!">replace!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/return-from-dialog">return-from-dialog</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/scrollable">scrollable</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/select">select</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/selection">selection</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/selection!">selection!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/separator">separator</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/show!">show!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/slider">slider</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/tabbed-panel">tabbed-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/table">table</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/text">text</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/text!">text!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/timer">timer</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/to-root">to-root</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/to-widget">to-widget</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/toolbar">toolbar</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/top-bottom-split">top-bottom-split</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/tree">tree</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/vertical-panel">vertical-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/with-password*">with-password*</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/with-widget">with-widget</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.core/xyz-panel">xyz-panel</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.core</span>
+  - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
+  </h1>
+<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+<br />Usage:
+<pre>
+(ns your-namespace
+  (:require <span id="long-name">seesaw.core</span>))
+</pre><pre>
+</pre><h2>Overview</h2>
+<pre id="namespace-docstr">Core functions and macros for Seesaw. Although there are many more 
+Seesaw namespaces, usually what you want is in here. Most functions 
+in other namespaces have a core wrapper which adds additional 
+capability or makes them easier to use.</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/action">action</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Alias of seesaw.action/action:
+Construct a new Action object. Supports the following properties:
+
+    :enabled? Whether the action is enabled
+    :selected? Whether the action is selected (for use with radio buttons, 
+               toggle buttons, etc.
+    :name      The name of the action, i.e. the text that will be displayed
+               in whatever widget it's associated with
+    :command   The action command key. An arbitrary string identifier associated
+               with the action.
+    :tip       The action's tooltip
+    :icon      The action's icon. See (seesaw.core/icon)
+    :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
+    :handler   A single-argument function that performs whatever operations are
+               associated with the action. The argument is a ActionEvent instance.
+
+  Instances of action can be passed to the :action option of most buttons, menu items,
+  etc.
+
+  Actions can be later configured with the same properties above with (seesaw.core/config!).
+
+  Returns an instance of javax.swing.Action.
+
+  See:
+    <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/Action.html">http://download.oracle.com/javase/6/docs/api/javax/swing/Action.html</a>
+  </pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/alert">alert</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (alert source message)
+       (alert message)
+</pre>
+  <pre id="var-docstr">Show a simple message alert dialog. Take an optional parent component, source,
+used for dialog placement, and a message which is passed through (str).
+
+Examples:
+
+  (alert "Hello!")
+  (alert e "Hello!")
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29">http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/apply-default-opts">apply-default-opts</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (apply-default-opts p)
+       (apply-default-opts p {:as opts})
+</pre>
+  <pre id="var-docstr">only used in tests!</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/assert-ui-thread">assert-ui-thread</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (assert-ui-thread message)
+</pre>
+  <pre id="var-docstr">Verify that the current thread is the Swing UI thread and throw
+IllegalStateException if it's not. message is included in the exception
+message.
+
+Returns nil.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#isEventDispatchThread%28%29">http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#isEventDispatchThread%28%29</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/border-panel">border-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (border-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a panel with a border layout. In addition to the usual options, 
+ supports:
+   
+   :north  widget for north position (passed through to-widget)
+   :south  widget for south position (passed through to-widget)
+   :east   widget for east position (passed through to-widget)
+   :west   widget for west position (passed through to-widget)
+   :center widget for center position (passed through to-widget)
+
+   :hgap   horizontal gap between widgets
+   :vgap   vertical gap between widgets
+
+ The :items option is a list of widget/direction pairs which can be used
+ if you don't want to use the direction options directly. For example, both
+ of these are equivalent:
+
+   (border-panel :north "North" :south "South")
+
+ is the same as:
+
+   (border-panel :items [["North" :north] ["South" :south]])
+
+ This is for consistency with other containers.
+
+ See:
+ 
+   <a href="http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html">http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html</a>
+ </pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/button-group">button-group</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (button-group &amp; opts)
+</pre>
+  <pre id="var-docstr">Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
+radio buttons, toggle-able menus, etc. Takes the following options:
+
+  :buttons A sequence of buttons to include in the group. They are *not*
+           passed through (to-widget), i.e. they must be button or menu 
+           instances.
+
+The mutual exclusion of the buttons in the group will be maintained automatically.
+The currently "selected" button can be retrieved and set with (selection) and
+(selection!) as usual.
+
+Note that a button can be added to a group when the button is created using the
+:group option of the various button and menu creation functions.
+
+Examples:
+
+  (let [bg (button-group)]
+    (flow-panel :items [(radio :id :a :text "A" :group bg)
+                        (radio :id :b :text "B" :group bg)]))
+
+  ; now A and B are mutually exclusive
+
+  ; Check A
+  (selection bg (select root [:#a]))
+
+Returns an instance of javax.swing.ButtonGroup
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html">http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/combobox">combobox</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (combobox &amp; args)
+</pre>
+  <pre id="var-docstr">Create a combo box (JComboBox). Additional options:
+
+  :model Instance of ComboBoxModel, or sequence of values used to construct
+         a default model.
+  :renderer Cell renderer used for display. See (seesaw.cells/to-cell-renderer).
+
+Note that the current selection can be retrieved and set with the (selection) and
+(selection!) functions.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/config!">config!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (config! targets &amp; args)
+</pre>
+  <pre id="var-docstr">Applies properties in the argument list to one or more targets. For example:
+
+   (config! button1 :enabled? false :text "I' disabled")
+
+ or:
+
+   (config! [button1 button2] :enabled? false :text "We're disabled")
+
+ Targets may be actual widgets, or convertible to widgets with (to-widget).
+ For example, the target can be an event object.
+
+ Returns the input targets.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/custom-dialog">custom-dialog</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (custom-dialog &amp; {:keys [width height visible? modal? on-close size], :or {width 100, height 100, visible? false}, :as opts})
+</pre>
+  <pre id="var-docstr">Create a dialog and display it.
+
+     (custom-dialog ... options ...)
+
+ Besides the default &amp; frame options, options can also be one of:
+
+   :parent  The window which the new dialog should be positioned relatively to.
+   :modal?  A boolean value indicating whether this dialog is to be a
+             modal dialog.  If :modal? *and* :visible? are set to
+             true (:visible? is true per default), the function will
+             block with a dialog. The function will return once the user:
+             a) Closes the window by using the system window
+                manager (e.g. by pressing the "X" icon in many OS's)
+             b) A function from within an event calls (dispose!) on the dialog
+             c) A function from within an event calls RETURN-FROM-DIALOG
+                 with a return value.
+             In the case of a) and b), this function returns nil. In the
+             case of c), this function returns the value passed to
+             RETURN-FROM-DIALOG. Default: true.
+
+
+ Returns a JDialog. Use (seesaw.core/show!) to display the dialog.
+
+ Notes:
+   This function is compatible with (seesaw.core/with-widget).
+
+ See:
+   (seesaw.core/show!)
+   (seesaw.core/return-from-dialog)
+   <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JDialog.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/dialog">dialog</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (dialog &amp; {:as opts})
+</pre>
+  <pre id="var-docstr">Display a JOptionPane. This is a dialog which displays some
+ input/question to the user, which may be answered using several
+ standard button configurations or entirely custom ones.
+
+     (dialog ... options ...)
+
+ Options can be any of:
+
+   :content      May be a string or a component (or a panel with even more 
+                 components) which is to be displayed.
+
+   :option-type  In case :options is *not* specified, this may be one of 
+                 :default, :yes-no, :yes-no-cancel, :ok-cancel to specify 
+                 which standard button set is to be used in the dialog.
+
+   :type        The type of the dialog. One of :warning, :error, :info, :plain, or :question.
+
+   :options     Custom buttons/options can be provided using this argument. 
+                It must be a seq of "to-widget"'able objects which will be 
+                displayed as options the user can choose from. Note that in this
+                case, :success-fn, :cancel-fn &amp; :no-fn will *not* be called. 
+                Use the handlers on those buttons &amp; RETURN-FROM-DIALOG to close 
+                the dialog.
+
+   :default-option  The default option instance which is to be selected. This should be an element
+                    from the :options seq.
+
+   :success-fn  A function taking the JOptionPane as its only
+                argument. It will be called when no :options argument
+                has been specified and the user has pressed any of the "Yes" or "Ok" buttons.
+                Default: a function returning :success.
+
+   :cancel-fn   A function taking the JOptionPane as its only
+                argument. It will be called when no :options argument
+                has been specified and the user has pressed the "Cancel" button.
+                Default: a function returning nil.
+
+   :no-fn       A function taking the JOptionPane as its only
+                argument. It will be called when no :options argument
+                has been specified and the user has pressed the "No" button.
+                Default: a function returning :no.
+
+ Any remaining options will be passed to dialog.
+
+ Examples:
+
+   ; display a dialog with only an "Ok" button.
+   (dialog :content "You may now press Ok")
+
+   ; display a dialog to enter a users name and return the entered name.
+   (dialog :content
+    (flow-panel :items ["Enter your name" (text :id :name :text "Your name here")])
+                :options-type :ok-cancel
+                :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
+
+ The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
+ If the dialog is model this will return the result of :success-fn, :cancel-fn or 
+ :no-fn depending on what button the user pressed. 
+ 
+ Alternatively if :options has been specified, returns the value which has been 
+ passed to (seesaw.core/return-from-dialog).
+
+ See:
+   (seesaw.core/show!)
+   (seesaw.core/return-from-dialog)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/dispose!">dispose!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (dispose! targets)
+</pre>
+  <pre id="var-docstr">Dispose the given frame, dialog or window. target can be anything that can
+be converted to a root-level object with (to-root).
+
+Returns its input. 
+
+See:
+ <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29">http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#dispose%28%29</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/editor-pane">editor-pane</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (editor-pane &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a JEditorPane. Custom options:
+
+  :page         A URL (string or java.net.URL) with the contents of the editor
+  :content-type The content-type, for example "text/html" for some crappy
+                HTML rendering.
+  :editor-kit   The EditorKit. See Javadoc.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/flow-panel">flow-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (flow-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a panel with a flow layout. Options:
+
+  :items  List of widgets (passed through to-widget)
+  :hgap   horizontal gap between widgets
+  :vgap   vertical gap between widgets
+  :align  :left, :right, :leading, :trailing, :center
+  :align-on-baseline? 
+
+See <a href="http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html">http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/form-panel">form-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (form-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">*Don't use this. GridBagLaout is an abomination*
+
+A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
+want to be reminded of GridBagLayout. The :items property should be a list
+of vectors of the form:
+
+    [widget &amp; options]
+
+where widget is something widgetable and options are key/value pairs
+corresponding to GridBagConstraints fields. For example:
+
+  [["Name"         :weightx 0]
+   [(text :id :name) :weightx 1 :fill :horizontal]]
+
+This creates a label/field pair where the field expands.
+
+See <a href="http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html">http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/frame">frame</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (frame &amp; {:keys [width height visible? size], :or {width 100, height 100}, :as opts})
+</pre>
+  <pre id="var-docstr">Create a JFrame. Options:
+
+  :id       id of the window, used by (select).
+  :title    the title of the window
+  :width    initial width. Note that calling (pack!) will negate this setting
+  :height   initial height. Note that calling (pack!) will negate this setting
+  :size     initial size. Note that calling (pack!) will negate this setting
+  :minimum-size minimum size of frame, e.g. [640 :by 480]
+  :content  passed through (to-widget) and used as the frame's content-pane
+  :visible?  whether frame should be initially visible (default false)
+  :resizable? whether the frame can be resized (default true)
+  :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
+
+returns the new frame.
+
+Examples:
+
+  ; Create a frame, pack it and show it.
+  (-&gt; (frame :title "HI!" :content "I'm a label!")
+    pack!
+    show!)
+    
+  ; Create a frame with an initial size (note that pack! isn't called)
+  (show! (frame :title "HI!" :content "I'm a label!" :width 500 :height 600))
+
+Notes:
+  Unless :visible? is set to true, the frame will not be displayed until (show!)
+  is called on it.
+
+  Call (pack!) on the frame if you'd like the frame to resize itself to fit its
+  contents. Sometimes this doesn't look like crap.
+
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  (seesaw.core/show!)
+  (seesaw.core/hide!)
+  (seesaw.core/move!)
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/grid-panel">grid-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (grid-panel &amp; {:keys [rows columns], :as opts})
+</pre>
+  <pre id="var-docstr">Create a panel where widgets are arranged horizontally. Options:
+  
+  :rows    Number of rows, defaults to 0, i.e. unspecified.
+  :columns Number of columns.
+  :items   List of widgets (passed through to-widget)
+  :hgap    horizontal gap between widgets
+  :vgap    vertical gap between widgets
+
+Note that it's usually sufficient to just give :columns and ignore :rows.
+
+See <a href="http://download.oracle.com/javase/6/docs/api/java/awt/GridLayout.html">http://download.oracle.com/javase/6/docs/api/java/awt/GridLayout.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/hide!">hide!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (hide! targets)
+</pre>
+  <pre id="var-docstr">Hide a frame, dialog or widget.
+ 
+ Returns its input.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29">http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/horizontal-panel">horizontal-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (horizontal-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a panel where widgets are arranged horizontally. Options:
+
+  :items List of widgets (passed through to-widget)
+
+See <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html">http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/id-for">id-for</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Deprecated. See (seesaw.core/id-of)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/id-of">id-of</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (id-of w)
+</pre>
+  <pre id="var-docstr">Returns the id of the given widget if the :id property was specified at
+ creation. The widget parameter is passed through (to-widget) first so
+ events and other objects can also be used. The id is always returned as
+ a string, even it if was originally given as a keyword.
+
+Returns the id as a string, or nil.
+
+See:
+  (seesaw.core/select).
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/input">input</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (input &amp; args)
+</pre>
+  <pre id="var-docstr">Show an input dialog:
+  
+  (input [source] message &amp; options)
+
+source  - optional parent component
+message - The message to show the user. May be a string, or list of strings, widgets, etc.
+options - additional options
+
+Additional options:
+
+  :title     The dialog title
+  :value     The initial, default value to show in the dialog
+  :choices   List of values to choose from rather than freeform entry
+  :type      :warning, :error, :info, :plain, or :question
+  :icon      Icon to display (Icon, URL, etc)
+  :to-string A function which creates the string representation of the values 
+             in :choices. This let's you choose arbitrary clojure data structures
+             without while keeping things looking nice. Defaults to str.
+
+Examples:
+
+  ; Ask for a string input
+  (input "Bang the keyboard like a monkey")
+
+  ; Ask for a choice from a set
+  (input "Pick a color" :choices ["RED" "YELLO" "GREEN"])
+
+  ; Choose from a list of maps using a custom string function for the display.
+  ; This will display only the city names, but the return value will be one of
+  ; maps in the :choices list. Yay!
+  (input "Pick a city" 
+    :choices [{ :name "New York"  :population 8000000 }
+              { :name "Ann Arbor" :population 100000 }
+              { :name "Twin Peaks" :population 5201 }]
+    :to-string :name)
+
+Returns the user input or nil if they hit cancel.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/invoke-later">invoke-later</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Alias for seesaw.invoke/invoke-later</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/invoke-now">invoke-now</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Alias for seesaw.invoke/invoke-now</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/label">label</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (label &amp; args)
+</pre>
+  <pre id="var-docstr">Create a label. Supports all default properties. Can take two forms:
+
+    (label "My Label")  ; Single text argument for the label
+
+or with full options:
+
+    (label :id :my-label :text "My Label" ...)
+
+Additional options:
+
+  :h-text-position Horizontal text position, :left, :right, :center, etc.
+  :v-text-position Horizontal text position, :top, :center, :bottom, etc.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/left-right-split">left-right-split</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (left-right-split left right &amp; args)
+</pre>
+  <pre id="var-docstr">Create a left/right (horizontal) splitpane with the given widgets.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/listbox">listbox</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (listbox &amp; args)
+</pre>
+  <pre id="var-docstr">Create a list box (JList). Additional options:
+
+  :model A ListModel, or a sequence of values with which a DefaultListModel
+         will be constructed.
+  :renderer A cell renderer to use. See (seesaw.cells/to-cell-renderer).
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+  Retrieving and setting the current selection of the list box is fully 
+  supported by the (selection) and (selection!) functions.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/listen">listen</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Alias of seesaw.event/listen:
+
+*note: use seesaw.core/listen rather than calling this directly*
+
+Install listeners for one or more events on the given target. For example:
+
+  (listen (button "foo")
+    :mouse-entered     (fn [e] ...)
+    :focus-gained      (fn [e] ...)
+    :key-pressed       (fn [e] ...)
+    :mouse-wheel-moved (fn [e] ...))
+
+one function can be registered for multiple events by using a set 
+of event names instead of one:
+
+  (listen (text)
+    #{:remove-update insert-update} (fn [e] ...))
+
+Note in this case that it's smart enough to add a document listener
+to the JTextFields document.
+
+Similarly, an event can be registered for all events in a particular swing
+listener interface by just using the keyword-ized prefix of the interface
+name. For example, to get all callbacks in the MouseListener interface:
+
+  (listen my-widget :mouse (fn [e] ...))
+
+Returns a function which, when called, removes all listeners registered
+with this call.
+
+When the target is a JTable and listener type is :selection, only
+row selection events are reported. Also note that the source table is
+*not* retrievable from the event object.
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/menu">menu</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (menu &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a new menu. Additional options:
+
+  :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/menubar">menubar</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (menubar &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a new menu bar, suitable for the :menubar property of (frame). 
+Additional options:
+
+  :items Sequence of menus, see (menu).
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  (seesaw.core/frame)
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/mig-panel">mig-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (mig-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Construct a panel with a MigLayout. Takes one special property:
+
+    :constraints ["layout constraints" "column constraints" "row constraints"]
+
+These correspond to the three constructor arguments to MigLayout.
+A vector of 0, 1, 2, or 3 constraints can be given.
+
+The format of the :items property is a vector of [widget, constraint] pairs.
+For example:
+
+  :items [[ "Propeller"        "split, span, gaptop 10"]]
+
+See <a href="http://www.miglayout.com">http://www.miglayout.com</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/move!">move!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (move! target how &amp; [loc])
+</pre>
+  <pre id="var-docstr">Move a widget relatively or absolutely. target is a 'to-widget'-able object,
+type is :by or :to, and loc is a two-element vector or instance of 
+java.awt.Point. The how type parameter has the following interpretation:
+
+  :to The absolute position of the widget is set to the given point
+  :by The position of th widget is adjusted by the amount in the given point
+      relative to its current position.
+  :to-front Move the widget to the top of the z-order in its parent.
+
+Returns target.
+
+Examples:
+
+  ; Move x to the point (42, 43)
+  (move! x :to [42, 43])
+
+  ; Move x to y position 43 while keeping x unchanged
+  (move! x :to [:*, 43])
+
+  ; Move x relative to its current position. Assume initial position is (42, 43).
+  (move! x :by [50, -20])
+  ; ... now x's position is [92, 23]
+
+Notes: 
+  For widgets, this function will generally only have an affect on widgets whose container
+  has a nil layout! This function has similar functionality to the :bounds
+  and :location options, but is a little more flexible and readable.
+
+See:
+  (seesaw.core/xyz-panel)
+  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation">http://download.oracle.com/javase/6/docs/api/java/awt/Component.html#setLocation</a>(int, int)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/native!">native!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (native!)
+</pre>
+  <pre id="var-docstr">Set native look and feel and other options to try to make things look right.
+This function must be called very early, like before any other Seesaw or Swing
+calls!
+
+Note that on OSX, you can set the application name in the menu bar (usually
+displayed as the main class name) by setting the -Xdock:&lt;name-of-your-app&gt;
+parameter to the JVM at startup. Sorry, I don't know of a way to do it 
+dynamically.
+
+See:
+
+<a href="http://developer.apple.com/library/mac/#documentation/Java/Conceptual/Java14Development/07-NativePlatformIntegration/NativePlatformIntegration.html">http://developer.apple.com/library/mac/#documentation/Java/Conceptual/Java14Development/07-NativePlatformIntegration/NativePlatformIntegration.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/pack!">pack!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (pack! targets)
+</pre>
+  <pre id="var-docstr">Pack a frame or window, causing it to resize to accommodate the preferred
+size of its contents.
+
+Returns its input.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29">http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#pack%28%29</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/paintable">paintable</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (paintable class handler)
+</pre>
+  <pre id="var-docstr">*Experimental. Subject to change*
+
+Macro that generates a paintable widget, i.e. a widget that can be drawn on
+by client code. class is a Swing class literal indicating the type that will
+be constructed. handler can be one of the following:
+
+  nil - disables painting. The widget will be filled with its background
+    color unless it is not opaque.
+
+  (fn [c g]) - a paint function that takes the canvas and a Graphics2D as 
+    arguments. Called after super.paintComponent.
+
+  {:before fn :after fn :super? bool} - a map with :before and :after functions which
+    are called before and after super.paintComponent respectively. If super?
+    is false, the super.paintComponent is not called.
+
+Notes:
+  If you just want a panel to draw on, use (seesaw.core/canvas). This macro is
+  intended for customizing the appearance of existing widget types.
+
+  Also note that some customizations are also possible and maybe easier with
+  the creative use of borders on widgets.
+  
+Examples:
+
+  Typically, you'd use this macro in conjunction with (seesaw.core/with-widget):
+
+  (with-widget
+    (paintable javax.swing.JLabel (fn [c g] (.fillRect g 0 0 20 20)))
+    (label :text "Hello", ....))
+
+See:
+  (seesaw.core/with-widget)
+  (seesaw.core/canvas)
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29">http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/paintable-proxy">paintable-proxy</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (paintable-proxy class)
+</pre>
+  <pre id="var-docstr">*INTERNAL USE ONLY* See (seesaw.core/paintable)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/password">password</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (password &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a password field. Options are the same as single-line text fields with
+the following additions:
+
+  :echo-char The char displayed for the characters in the password field
+
+Returns an instance of JPasswordField.
+
+Example:
+
+  (password :echo-char \X)
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/popup">popup</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (popup &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a new popup menu. Additional options:
+
+  :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
+
+Note that in many cases, the :popup option is what you want if you want to
+show a context menu on a widget. It handles all the yucky mouse stuff and
+fixes various eccentricities of Swing.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/progress-bar">progress-bar</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (progress-bar &amp; {:keys [orientation value min max], :as kw})
+</pre>
+  <pre id="var-docstr">Show a progress-bar which can be used to display the progress of long running tasks.
+
+     (progress-bar ... options ...)
+
+ Besides the default options, options can also be one of:
+
+   :orientation   The orientation of the progress-bar. One of :horizontal, :vertical. Default: :horizontal.
+   :value         The initial numerical value that is to be set. This may be an
+                  atom, in which case the atom will be kept in sync with the slider. Default: 0.
+   :min           The minimum numerical value which can be set. Default: 0.
+   :max           The maximum numerical value which can be set. Default: 100.
+   :paint-string? A boolean value indicating whether to paint a string containing
+                  the progress' percentage. Default: false.
+   :indeterminate? A boolean value indicating whether the progress bar is to be in
+                   indeterminate mode (for when the exact state of the task is not
+                   yet known). Default: false.
+
+ Examples:
+
+   ; vertical progress bar from 0 to 100 starting with inital value at 15.
+   (progress-bar :orientation :vertical :min 0 :max 100 :value 15)
+
+ Returns a JProgressBar.
+
+ Notes:
+   This function is compatible with (seesaw.core/with-widget).
+
+ See:
+   <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/property-kw-&gt;java-method">property-kw-&gt;java-method</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (property-kw-&gt;java-method kw)
+</pre>
+  <pre id="var-docstr">USED ONLY BY TESTS. DO NOT USE.
+(property-kw-&gt;java-method :tip)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/property-kw-&gt;java-name">property-kw-&gt;java-name</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (property-kw-&gt;java-name kw)
+</pre>
+  <pre id="var-docstr">INTERNAL USE ONLY. DO NOT USE
+(property-kw-&gt;java-name :tip)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/realize-grid-bag-constraints">realize-grid-bag-constraints</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (realize-grid-bag-constraints items)
+</pre>
+  <pre id="var-docstr">*INTERNAL USE ONLY. DO NOT USE.*
+
+Turn item specs into [widget constraint] pairs by successively applying
+options to GridBagConstraints</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/remove!">remove!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (remove! container subject &amp; more)
+</pre>
+  <pre id="var-docstr">Remove one or more widgets from a container. container and each widget
+are passed through (to-widget) as usual, but no new widgets are created.
+
+The container is properly revalidated and repainted after removal.
+
+Examples:
+
+  (def lbl (label "HI"))
+  (def p (border-panel :north lbl))
+  (remove! p lbl)
+
+Returns the target container *after* it's been passed through (to-widget).
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/repaint!">repaint!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (repaint! targets)
+</pre>
+  <pre id="var-docstr">Request a repaint of one or a list of widget-able things.
+
+Example:
+
+  ; Repaint just one widget
+  (repaint! my-widget)
+
+  ; Repaint all widgets in a hierarcy
+  (repaint! (select [:*] root))
+
+Returns targets.
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/replace!">replace!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (replace! container old-widget new-widget)
+</pre>
+  <pre id="var-docstr">Replace old-widget with new-widget from container. container and each widget
+are passed through (to-widget) as usual. Note that the layout constraints of 
+old-widget are retained for the new widget. This is different from the behavior
+you'd get with just remove/add in Swing.
+
+The container is properly revalidated and repainted after replacement.
+
+Examples:
+
+  ; Replace a label with a new label.
+  (def lbl (label "HI"))
+  (def p (border-panel :north lbl))
+  (replace! p lbl "Goodbye")
+
+Returns the target container *after* it's been passed through (to-widget).
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/return-from-dialog">return-from-dialog</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (return-from-dialog dlg result)
+</pre>
+  <pre id="var-docstr">Return from the given dialog with the specified value. dlg may be anything
+that can be converted into a dialog as with (to-root). For example, an
+event, or a child widget of the dialog. Result is the value that will
+be returned from the blocking (dialog), (custom-dialog), or (show!)
+call.
+
+Examples:
+
+  ; A button with an action listener that will cause the dialog to close
+  ; and return :ok to the invoker.
+  (button 
+    :text "OK" 
+    :listen [:action (fn [e] (return-from-dialog e :ok))])
+
+Notes:
+  The dialog must be modal and created from within the DIALOG fn with
+  :modal? set to true.
+
+See:
+  (seesaw.core/dialog)
+  (seesaw.core/custom-dialog)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/scrollable">scrollable</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (scrollable target &amp; opts)
+</pre>
+  <pre id="var-docstr">Wrap target in a JScrollPane and return the scroll pane.
+
+The first argument is always the widget that should be scrolled. It's followed
+by zero or more options *for the scroll pane*.
+
+Additional Options:
+
+  :hscroll - Controls appearance of horizontal scroll bar. 
+             One of :as-needed (default), :never, :always
+  :vscroll - Controls appearance of vertical scroll bar.
+             One of :as-needed (default), :never, :always
+
+Examples:
+
+  ; Vanilla scrollable
+  (scrollable (listbox :model ["Foo" "Bar" "Yum"]))
+
+  ; Scrollable with some options on the JScrollPane
+  (scrollable (listbox :model ["Foo" "Bar" "Yum"]) :id :#scrollable :border 5)
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/select">select</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (select root selector)
+</pre>
+  <pre id="var-docstr">Select a widget using the given selector expression. Selectors are *always*
+ expressed as a vector. root is the root of the widget hierarchy to select
+ from, usually either a (frame) or other container.
+
+  (select root [:#id])          Look up widget by id. A single widget is 
+                                always returned.
+
+  (select root [:tag])          Look up widgets by "tag". In Seesaw tag is
+                                treated as the exact simple class name of a
+                                widget, so :JLabel would match both 
+                                javax.swing.JLabel *and* com.me.JLabel.
+                                Be careful!
+
+  (select root [:&lt;class-name&gt;]) Look up widgets by *fully-qualified* class name. 
+                                Matches sub-classes as well. Always returns a
+                                sequence of widgets.
+
+  (select root [:&lt;class-name!&gt;]) Same as above, but class must match exactly.
+
+  (select root [:*])             Root and all the widgets under it
+
+Notes:
+  This function will return a single widget *only* in the case where the selector
+  is a single identifier, e.g. [:#my-id]. In *all* other cases, a sequence of
+  widgets is returned. This is for convenience. Select-by-id is the common case
+  where a single widget is almost always desired.
+
+Examples:
+
+  To find a widget by id from an event handler, use (to-root) on the event to get 
+  the root and then select on the id:
+
+    (fn [e]
+      (let [my-widget (select (to-root e) [:#my-widget])]
+        ...))
+
+  Disable all JButtons (excluding subclasses) in a hierarchy:
+
+    (config! (select root [:&lt;javax.swing.JButton&gt;]) :enabled? false)
+
+  More:
+
+    ; All JLabels, no sub-classes allowed
+    (select root [:&lt;javax.swing.JLabel!&gt;])
+
+    ; All JSliders that are descendants of a JPanel with id foo
+    (select root [:JPanel#foo :JSlider])
+
+    ; All JSliders (and sub-classes) that are immediate children of a JPanel with id foo
+    (select root [:JPanel#foo :&gt; :&lt;javax.swing.JSlider&gt;])
+
+    ; All widgets with class foo. Set the class of a widget with the :class option
+    (flow-panel :class :my-class) or (flow-panel :class #{:class1 :class2})
+    (select root [:.my-class])
+    (select root [:.class1.class2])
+
+    ; Select all text components with class input
+    (select root [:&lt;javax.swing.text.JTextComponent&gt;.input])
+
+    ; Select all descendants of all panels with class container
+    (select root [:JPanel.container :*])
+
+See:
+  (seesaw.selector/select)
+  <a href="https://github.com/cgrand/enlive">https://github.com/cgrand/enlive</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/selection">selection</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (selection target)
+       (selection target options)
+</pre>
+  <pre id="var-docstr">Gets the selection of a widget. target is passed through (to-widget)
+so event objects can also be used. The default behavior is to return
+a *single* selection value, even if the widget supports multiple selection.
+If there is no selection, returns nil.
+
+options is an option map which supports the following flags:
+
+  multi? - If true the return value is a seq of selected values rather than
+    a single value.
+
+Examples:
+
+(def t (table))
+(listen t :selection 
+  (fn [e]
+    (let [selected-rows (selection t {:multi? true})]
+      (println "Currently selected rows: " selected-rows))))
+
+See:
+  (seesaw.core/selection!)
+  (seesaw.selection/selection)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/selection!">selection!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (selection! target new-selection)
+       (selection! target opts new-selection)
+</pre>
+  <pre id="var-docstr">Sets the selection on a widget. target is passed through (to-widget)
+so event objects can also be used. The arguments are the same as
+(selection). By default, new-selection is a single new selection value.
+If new-selection is nil, the selection is cleared.
+
+options is an option map which supports the following flags:
+
+  multi? - if true new-expression is a list of values to selection,
+    the same as the list returned by (selection).
+
+Always returns target.
+
+See: 
+  (seesaw.core/selection)
+  (seesaw.selection/selection!)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/separator">separator</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (separator &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a separator.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/show!">show!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (show! targets)
+</pre>
+  <pre id="var-docstr">Show a frame, dialog or widget.
+ 
+ If target is a modal dialog, the call will block and show! will return the
+ dialog's result. See (seesaw.core/return-from-dialog).
+
+ Returns its input.
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29">http://download.oracle.com/javase/6/docs/api/java/awt/Window.html#setVisible%28boolean%29</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/slider">slider</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (slider &amp; {:keys [orientation value min max minor-tick-spacing major-tick-spacing snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?], :as kw})
+</pre>
+  <pre id="var-docstr">Show a slider which can be used to modify a value.
+
+     (slider ... options ...)
+
+ Besides the default options, options can also be one of:
+
+   :orientation   The orientation of the slider. One of :horizontal, :vertical.
+   :value         The initial numerical value that is to be set. This may be an
+                  atom, in which case the atom will be kept in sync with the slider.
+   :min           The minimum numerical value which can be set.
+   :max           The maximum numerical value which can be set.
+   :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
+   :major-tick-spacing  The spacing between major ticks. If set, will also set :paint-ticks? to true.
+   :snap-to-ticks?  A boolean value indicating whether the slider should snap to ticks.
+   :paint-ticks?    A boolean value indicating whether to paint ticks.
+   :paint-labels?   A boolean value indicating whether to paint labels for ticks.
+   :paint-track?    A boolean value indicating whether to paint the track.
+   :inverted?       A boolean value indicating whether to invert the slider (to go from high to low).
+
+ Returns a JSlider.
+
+ Examples:
+
+   ; ask &amp; return single file
+   (slider :value 10 :min -50 :max 50)
+
+ Notes:
+   This function is compatible with (seesaw.core/with-widget).
+
+ See:
+   <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/tabbed-panel">tabbed-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (tabbed-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a JTabbedPane. Supports the following properties:
+
+  :placement Tab placement, one of :bottom, :top, :left, :right.
+  :overflow  Tab overflow behavior, one of :wrap, :scroll.
+  :tabs      A list of tab descriptors. See below
+
+A tab descriptor is a map with the following properties:
+
+  :title     Title of the tab or a component to be displayed.
+  :tip       Tab's tooltip text
+  :icon      Tab's icon, passed through (icon)
+  :content   The content of the tab, passed through (to-widget) as usual.
+
+Returns the new JTabbedPane.
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/table">table</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (table &amp; args)
+</pre>
+  <pre id="var-docstr">Create a table (JTable). Additional options:
+
+  :model A TableModel, or a vector. If a vector, then it is used as
+         arguments to (seesaw.table/table-model).
+
+Example:
+
+  (table 
+    :model [:columns [:age :height]
+            :rows    [{:age 13 :height 45}
+                      {:age 45 :height 13}]])
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  seesaw.table/table-model 
+  seesaw.examples.table
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/text">text</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (text &amp; args)
+</pre>
+  <pre id="var-docstr">Create a text field or area. Given a single argument, creates a JTextField 
+using the argument as the initial text value. Otherwise, supports the 
+following additional properties:
+
+  :text         Initial text content
+  :multi-line?  If true, a JTextArea is created (default false)
+  :editable?    If false, the text is read-only (default true)
+  :wrap-lines?  If true (and :multi-line? is true) lines are wrapped. 
+                (default false)
+  :tab-size     Tab size in spaces. Defaults to 8.
+  :rows         Number of rows if :multi-line? is true (default 0).
+
+To listen for document changes, use the :listen option:
+
+  (text :listen [:document #(... handler ...)])
+
+or attach a listener later with (listen):
+  
+  (text :id :my-text ...)
+      ...
+  (listen (select root [:#my-text]) :document #(... handler ...))
+
+Given a single widget or document (or event) argument, retrieves the
+text of the argument. For example:
+
+    user=&gt; (def t (text "HI"))
+    user=&gt; (text t)
+    "HI"
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html</a> 
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/text!">text!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (text! targets value)
+</pre>
+  <pre id="var-docstr">Set the text of widget(s) or document(s). targets is an object that can be
+turned into a widget or document, or a list of such things. value is the new
+text value to be applied. Returns targets.
+
+Example:
+
+    user=&gt; (def t (text "HI"))
+    user=&gt; (text! t "BYE")
+    user=&gt; (text t)
+    "BYE"
+
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/timer">timer</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Alias of seesaw.timer/timer:
+Creates a new Swing timer that periodically executes the single-argument
+  function f. The argument is a "state" of the timer. Each time the function
+  is called its previous return value is passed to it. Kind of like (reduce)
+  but spread out over time :) The following options are supported:
+
+    :initial-value The first value passed to the handler function. Defaults to nil.
+    :initial-delay Delay, in milliseconds, of first call. Defaults to 0.
+    :delay         Delay, in milliseconds, between calls. Defaults to 1000.
+    :repeats?      If true, the timer runs forever, otherwise, it's a 
+                  "one-shot" timer. Defaults to true.
+    :start?        Whether to start the timer immediately. Defaults to true.
+
+  See <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/Timer.html">http://download.oracle.com/javase/6/docs/api/javax/swing/Timer.html</a> 
+  </pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/to-root">to-root</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to-root w)
+</pre>
+  <pre id="var-docstr">Get the frame or window that contains the given widget. Useful for APIs
+like JDialog that want a JFrame, when all you have is a widget or event.
+Note that w is run through (to-widget) first, so you can pass event object
+directly to this.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/to-widget">to-widget</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to-widget v)
+       (to-widget v create?)
+</pre>
+  <pre id="var-docstr">Try to convert the input argument to a widget based on the following rules:
+
+  nil -&gt; nil
+  java.awt.Component -&gt; return argument unchanged
+  java.util.EventObject -&gt; return the event source
+  java.awt.Dimension -&gt; return Box/createRigidArea
+  java.swing.Action    -&gt; return a button using the action
+  :separator -&gt; create a horizontal JSeparator
+  :fill-h -&gt; Box/createHorizontalGlue
+  :fill-v -&gt; Box/createVerticalGlue
+  [:fill-h n] -&gt; Box/createHorizontalStrut with width n
+  [:fill-v n] -&gt; Box/createVerticalStrut with height n
+  [width :by height] -&gt; create rigid area with given dimensions
+  A java.net.URL -&gt; a label with the image located at the url
+  Anything else -&gt; a label with the text from passing the object through str
+
+ If create? is false, will return nil for all rules (see above) that
+ would create a new widget. The default value for create? is false
+ to avoid inadvertently creating widgets all over the place.
+
+See:
+  (seeseaw.to-widget)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/toolbar">toolbar</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (toolbar &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a JToolBar. The following properties are supported:
+
+   :floatable?  Whether the toolbar is floatable.
+   :orientation Toolbar orientation, :horizontal or :vertical
+   :items       Normal list of widgets to add to the toolbar. :separator
+                creates a toolbar separator.
+
+ Notes:
+   This function is compatible with (seesaw.core/with-widget).
+ 
+ See:
+   <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html</a>
+ </pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/top-bottom-split">top-bottom-split</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (top-bottom-split top bottom &amp; args)
+</pre>
+  <pre id="var-docstr">Create a top/bottom (vertical) split pane with the given widgets
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/tree">tree</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (tree &amp; args)
+</pre>
+  <pre id="var-docstr">Create a tree (JTree). Additional options:
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/vertical-panel">vertical-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (vertical-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Create a panel where widgets are arranged vertically Options:
+
+  :items List of widgets (passed through to-widget)
+
+See <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html">http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html</a> 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/with-password*">with-password*</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (with-password* field handler)
+</pre>
+  <pre id="var-docstr">Retrieve the password of a password field and passes it to the given handler
+function as an array or characters. Upon completion, the array is zero'd out
+and the value returned by the handler is returned.
+
+This is the 'safe' way to access the password. The (text) function will work too
+but that method is discouraged, at least by the JPasswordField docs.
+
+Example:
+
+  (with-password* my-password-field
+    (fn [password-chars]
+      (... do something with chars ...)))
+
+See:
+  (seesaw.core/password)
+  (seesaw.core/text)
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html">http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/with-widget">with-widget</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (with-widget factory form)
+</pre>
+  <pre id="var-docstr">This macro allows a Seesaw widget 'constructor' function to be applied to
+a sub-class of the widget type it usually produces. For example (listbox)
+always returns an instance of exactly JList. Suppose you're using SwingX
+and want to use the Seesaw goodness of (listbox), but want to get a 
+JXList. That's what this macro is for:
+
+  (with-widget org.jdesktop.swingx.JXList
+    (listbox :id :my-list :model ...))
+
+This will return a new instance of JXList, with the usual Seesaw listbox
+options applied.
+
+The factory argument can be one of the following:
+
+  A class literal - .newInstance is used to create a new instance of
+                    the class.
+
+  A function - The function is called with no arguments. It should
+               return a sub-class of the expected class.
+
+  An existing instance - The instance is modified and returned.
+
+If the instance in any of these cases is not a sub-class of the
+type usually created by the constructor function, an IllegalArgumentException
+is thrown. For example:
+
+  (with-widget JLabel (listbox ...)) ==&gt; IllegalArgumentException
+
+Returns a fully initialized instance of the class created by the
+provided factory.
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.core/xyz-panel">xyz-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (xyz-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Creates a JPanel on which widgets can be positioned arbitrarily by client
+code. No layout manager is installed. 
+
+Initial widget positions can be given with their :bounds property. After
+construction they can be moved with the (seesaw.core/move!) function.
+
+Examples:
+
+  ; Create a panel with a label positions at (10, 10) with width 200 and height 40.
+  (xyz-panel :items [(label :text "The Black Lodge" :bounds [10 10 200 40]))
+
+  ; Move a widget up 50 pixels and right 25 pixels
+  (move! my-label :by [25 -50])
+
+Notes:
+  This function is compatible with (seesaw.core/with-widget).
+
+See:
+  (seesaw.core/move!)
+</pre>
+  
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">Copyright 2011, Dave Ray</div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>
