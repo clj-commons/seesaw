@@ -17,7 +17,8 @@
   seesaw.core
   (:use [seesaw util meta to-widget]
         [clojure.string :only (capitalize split)])
-  (:require [seesaw color font border invoke timer selection event selector icon action cells])
+  (:require [seesaw color font border invoke timer selection 
+             event selector icon action cells table graphics bind])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
