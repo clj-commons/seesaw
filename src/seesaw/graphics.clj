@@ -16,9 +16,12 @@
            [java.awt.image BufferedImage]))
 
 (defn anti-alias 
-  "Enable anti-aliasing on the given Graphics2D object"
+  "Enable anti-aliasing on the given Graphics2D object.
+  
+  Returns g2d."
   [g2d]
-  (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON))
+  (doto g2d 
+    (.setRenderingHint RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)))
 
 (defn buffered-image 
   ([width height]   (buffered-image width height BufferedImage/TYPE_INT_ARGB))
