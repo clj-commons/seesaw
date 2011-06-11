@@ -42,18 +42,29 @@
     ; done after the label is fully constructed.
     (config! :bounds :preferred)))
 
+(defn draw-grid [c g]
+  (let [w (.getWidth c) 
+        h (.getHeight c)]
+    (doseq [x (range 0 w 10)]
+      (.drawLine g x 0 x h))
+    (doseq [y (range 0 h 10)]
+      (.drawLine g 0 y w y))))
+
 (defn make-panel []
-  (xyz-panel 
-    :id :xyz 
-    :background "#222222"
-    :items (conj 
+  (let [items (conj 
              (map (comp movable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
              (doto (border-panel
                        :border (line-border :top 15 :color "#AAFFFF")
                        :north (label "I'm a draggable label with a text box!")
                        :center (text :text "Hey type some stuff here"))
                    (config! :bounds :preferred)
-                   movable))))
+                   movable))]
+  (paintable
+    xyz-panel 
+    :paint draw-grid
+    :id :xyz 
+    :background "#222222"
+    :items items)))
 
 (defn -main [& args]
   (invoke-later
