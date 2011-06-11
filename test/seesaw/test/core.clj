@@ -1235,3 +1235,11 @@
   (it "creates a button subclass"
     (instance? javax.swing.JButton (paintable button :paint nil))))
 
+(describe width
+  (it "returns the width of a widget"
+    (= 100 (width (xyz-panel :bounds [0 0 100 101])))))
+
+(describe height
+  (it "returns the height of a widget"
+    (= 101 (height (xyz-panel :bounds [0 0 100 101])))))
+

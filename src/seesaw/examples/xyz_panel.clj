@@ -34,7 +34,7 @@
       :location [(rand-int 300) (rand-int 300)]
       :paint { 
         :before (fn [c g]
-                  (draw g (rounded-rect 3 3 (- (.getWidth c) 6) (- (.getHeight c) 6) 9)
+                  (draw g (rounded-rect 3 3 (- (width c) 6) (- (height c) 6) 9)
                           (style :foreground "#FFFFaa"
                                   :background "#aaFFFF"
                                   :stroke 2)))})
@@ -43,8 +43,7 @@
     (config! :bounds :preferred)))
 
 (defn draw-grid [c g]
-  (let [w (.getWidth c) 
-        h (.getHeight c)]
+  (let [w (width c) h (height c)]
     (doseq [x (range 0 w 10)]
       (.drawLine g x 0 x h))
     (doseq [y (range 0 h 10)]
@@ -74,5 +73,5 @@
                    :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
                    :center (make-panel))
         :size    [600 :by 600]))))
-(-main)
+;(-main)
 

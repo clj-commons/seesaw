@@ -457,6 +457,13 @@
     :to-back
       (move-to-back! target)))
 
+(defn width [w]
+  "Returns the width of the given widget in pixels"
+  (.getWidth (to-widget w)))
+
+(defn height [w]
+  "Returns the height of the given widget in pixels"
+  (.getHeight (to-widget w)))
 
 (defn- add-widget 
   ([c w] (add-widget c w nil))
