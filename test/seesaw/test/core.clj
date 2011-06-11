@@ -14,7 +14,7 @@
         seesaw.font
         seesaw.graphics
         seesaw.cells
-        [seesaw.util :only (to-dimension)]
+        [seesaw.util :only (to-dimension children)]
         [seesaw.color :only (color)])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
@@ -1097,6 +1097,14 @@
           result   (with-widget (fn [] expected) (text :id "hi"))]
       (expect (= expected result))
       (expect (= "hi" (id-for result)))))
+
+  (it "can handle a form with nested widget creation functions"
+    (let [p (javax.swing.JPanel.)
+          result (with-widget p (flow-panel :id "hi" :items [(label :text "Nested")]))]
+      (expect (= p result))
+      (expect (instance? javax.swing.JLabel (first (children p))))
+      (expect (= "hi" (id-for result)))))
+
   (it "uses a class literal as a factory and applies a constructor function to it"
     (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
       (expect (instance? javax.swing.JPasswordField result))

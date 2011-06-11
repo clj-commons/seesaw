@@ -174,10 +174,6 @@
 ;*******************************************************************************
 ; Widget construction stuff
 
-(def ^{:doc "binding var used by (seesaw.core/with-widget)"
-       :private true 
-       :dynamic true} *with-widget* nil)
-
 (defmacro with-widget
   "This macro allows a Seesaw widget 'constructor' function to be applied to
   a sub-class of the widget type it usually produces. For example (listbox)
@@ -211,25 +207,34 @@
   provided factory.
   "
   [factory form]
-  `(binding [*with-widget* ~factory]
-     ~form))
+  ; Just tack on an additional ::with parameter, used by (construct)
+  ; and otherwise ignored. Originally this was a thread binding, but
+  ; that failed when there were more widget constructors embedded in 
+  ; the form.
+  `~(concat form [::with factory]))
 
+(declare construct-impl)
 (defn- construct 
-  "Use the current *with-widget* binding to create a new widget, ensuring the
+  "Use the ::with option to create a new widget, ensuring the
    result is consistent with the given expected class. If there's no 
-   *with-widget* binding, just fallback to a default instance of the expected
+   ::with option, just fallback to a default instance of the expected
    class.
   
   Returns an instance of the expected class, or throws IllegalArgumentException
-  if the result using *with-widget* isn't consistent with expected-class."
-  ([factory-class] (construct (or *with-widget* factory-class) factory-class))
+  if the result using ::with isn't consistent with expected-class."
+  ([factory-class opts] 
+    (construct-impl 
+      (or (::with (if (map? opts) opts (apply hash-map opts))) factory-class)
+      factory-class)))
+
+(defn- construct-impl
   ([factory expected-class]
     (cond
       (instance? expected-class factory) 
         factory
 
       (class? factory) 
-        (construct #(.newInstance factory) expected-class)
+        (construct-impl #(.newInstance factory) expected-class)
 
       (fn? factory)
         (let [result (factory)]
@@ -616,6 +621,7 @@
 ; Default options
 (declare paint-option-handler)
 (def ^{:private true} default-options {
+  ::with       (fn [c v]) ; ignore ::with option inserted by (with-widget)
   :id          seesaw.selector/id-of!
   :class       seesaw.selector/class-of!
   :listen      #(apply seesaw.event/listen %1 %2)
@@ -714,7 +720,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel)]
+  (let [p (construct JPanel opts)]
     (doto p
       (.setLayout nil)
       (apply-default-opts opts))))
@@ -771,7 +777,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel)]
+  (let [p (construct JPanel opts)]
     (.setLayout p (BorderLayout.))
     (apply-options p opts (merge default-options border-layout-options))))
 
@@ -801,7 +807,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel)]
+  (let [p (construct JPanel opts)]
     (.setLayout p (FlowLayout.))
     (apply-options p opts (merge default-options flow-panel-options))))
 
@@ -816,7 +822,7 @@
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel }}
   [dir & opts]
-  (let [panel  (construct JPanel)
+  (let [panel  (construct JPanel opts)
         layout (BoxLayout. panel (dir box-layout-dir-table))]
     (.setLayout panel layout)
     (apply-options panel opts default-options)))
@@ -867,7 +873,7 @@
       :as opts}]
   (let [columns* (or columns (if rows 0 1))
         layout   (GridLayout. (or rows 0) columns* 0 0)
-        panel    (construct JPanel)]
+        panel    (construct JPanel opts)]
     (.setLayout panel layout)
     (apply-options panel 
       (dissoc opts :rows :columns) (merge default-options grid-panel-options))))
@@ -967,7 +973,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [^java.awt.Container p (construct JPanel)]
+  (let [^java.awt.Container p (construct JPanel opts)]
     (.setLayout p (GridBagLayout.))
     (apply-options p opts (merge default-options form-panel-options))))
 
@@ -1011,7 +1017,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel)]
+  (let [p (construct JPanel opts)]
     (.setLayout p (net.miginfocom.swing.MigLayout.))
     (apply-options p opts (merge default-options mig-panel-options))))
 
@@ -1045,7 +1051,7 @@
   (case (count args) 
     0 (label :text "")
     1 (label :text (first args))
-    (apply-options (construct JLabel) args (merge default-options label-options))))
+    (apply-options (construct JLabel args) args (merge default-options label-options))))
 
 
 ;*******************************************************************************
@@ -1111,22 +1117,22 @@
 (defn button 
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 
-  (apply-button-defaults (construct javax.swing.JButton) args))
+  (apply-button-defaults (construct javax.swing.JButton args) args))
 
 (defn toggle   
   { :seesaw {:class 'javax.swing.JToggleButton }} 
   [& args] 
-  (apply-button-defaults (construct javax.swing.JToggleButton) args))
+  (apply-button-defaults (construct javax.swing.JToggleButton args) args))
 
 (defn checkbox 
   { :seesaw {:class 'javax.swing.JCheckBox }} 
   [& args] 
-  (apply-button-defaults (construct javax.swing.JCheckBox) args))
+  (apply-button-defaults (construct javax.swing.JCheckBox args) args))
 
 (defn radio    
   { :seesaw {:class 'javax.swing.JRadioButton }} 
   [& args] 
-  (apply-button-defaults (construct javax.swing.JRadioButton) args))
+  (apply-button-defaults (construct javax.swing.JRadioButton args) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -1189,7 +1195,7 @@
       one?                   (text :text arg0)
 
       :else (let [{:keys [multi-line?] :as opts} args
-                  t (if multi-line? (construct JTextArea) (construct JTextField))]
+                  t (if multi-line? (construct JTextArea opts) (construct JTextField opts))]
               (apply-options t 
                 (dissoc opts :multi-line?)
                 (merge default-options text-options))))))
@@ -1244,7 +1250,7 @@
   "
   { :seesaw {:class 'javax.swing.JPasswordField }}
   [& opts]
-  (let [pw (construct javax.swing.JPasswordField)]
+  (let [pw (construct javax.swing.JPasswordField opts)]
     (apply-options pw opts (merge password-options default-options))))
 
 (defn with-password*
@@ -1299,7 +1305,7 @@
   { :seesaw {:class 'javax.swing.JEditorPane }}
   [& opts]
   (apply-options 
-    (construct javax.swing.JEditorPane) 
+    (construct javax.swing.JEditorPane opts) 
     opts 
     (merge default-options text-options)))
 
@@ -1337,7 +1343,7 @@
   "
   { :seesaw {:class 'javax.swing.JList }}
   [& args]
-  (apply-options (construct javax.swing.JList) args (merge default-options listbox-options)))
+  (apply-options (construct javax.swing.JList args) args (merge default-options listbox-options)))
 
 ;*******************************************************************************
 ; JTable
@@ -1376,7 +1382,7 @@
   { :seesaw {:class 'javax.swing.JTable }}
   [& args]
   (apply-options 
-    (doto (construct javax.swing.JTable)
+    (doto (construct javax.swing.JTable args)
       (.setFillsViewportHeight true)) args (merge default-options table-options)))
 
 ;*******************************************************************************
@@ -1406,7 +1412,7 @@
   "
   { :seesaw {:class 'javax.swing.JTree }}
   [& args]
-  (apply-options (construct javax.swing.JTree) args (merge default-options tree-options)))
+  (apply-options (construct javax.swing.JTree args) args (merge default-options tree-options)))
 
 ;*******************************************************************************
 ; Combobox
@@ -1444,7 +1450,7 @@
   "
   { :seesaw {:class 'javax.swing.JComboBox }}
   [& args]
-  (apply-options (construct javax.swing.JComboBox) args (merge default-options combobox-options)))
+  (apply-options (construct javax.swing.JComboBox args) args (merge default-options combobox-options)))
 
 ;*******************************************************************************
 ; Scrolling
@@ -1493,7 +1499,7 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
   [target & opts]
-  (let [sp (construct JScrollPane)]
+  (let [sp (construct JScrollPane opts)]
     (.setViewportView sp (to-widget target true))
     (apply-options sp opts (merge default-options scrollable-options))))
 
@@ -1507,7 +1513,7 @@
   { :seesaw {:class 'javax.swing.JSplitPane }}
   [dir left right & opts]
   (apply-options
-    (doto (construct JSplitPane)
+    (doto (construct JSplitPane opts)
       (.setOrientation (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
                              :top-bottom JSplitPane/VERTICAL_SPLIT}))
       (.setLeftComponent (to-widget left true))
@@ -1555,7 +1561,7 @@
   "
   { :seesaw {:class 'javax.swing.JSeparator }}
   [& opts]
-  (apply-options (construct javax.swing.JSeparator) opts default-options))
+  (apply-options (construct javax.swing.JSeparator opts) opts default-options))
 
 ;*******************************************************************************
 ; Menus
@@ -1596,7 +1602,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
-  (apply-button-defaults (construct javax.swing.JMenu) opts menu-options))
+  (apply-button-defaults (construct javax.swing.JMenu opts) opts menu-options))
 
 (defn popup 
   "Create a new popup menu. Additional options:
@@ -1614,7 +1620,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   { :seesaw {:class 'javax.swing.JPopupMenu }}
   [& opts]
-  (apply-options (construct javax.swing.JPopupMenu) opts (merge default-options menu-options)))
+  (apply-options (construct javax.swing.JPopupMenu opts) opts (merge default-options menu-options)))
 
 
 (defn- make-popup [target arg event]
@@ -1651,7 +1657,7 @@
   "
   { :seesaw {:class 'javax.swing.JMenuBar }}
   [& opts]
-  (apply-options (construct javax.swing.JMenuBar) opts default-options))
+  (apply-options (construct javax.swing.JMenuBar opts) opts default-options))
 
 ;*******************************************************************************
 ; Toolbars
@@ -1684,7 +1690,7 @@
   "
   { :seesaw {:class 'javax.swing.JToolBar }}
   [& opts]
-  (apply-options (construct javax.swing.JToolBar) opts (merge default-options toolbar-options)))
+  (apply-options (construct javax.swing.JToolBar opts) opts (merge default-options toolbar-options)))
 
 ;*******************************************************************************
 ; Tabs
@@ -1737,7 +1743,7 @@
   "
   { :seesaw {:class 'javax.swing.JTabbedPane }}
   [& opts]
-  (apply-options (construct javax.swing.JTabbedPane) opts (merge default-options tabbed-panel-options)))
+  (apply-options (construct javax.swing.JTabbedPane opts) opts (merge default-options tabbed-panel-options)))
 
 ;*******************************************************************************
 ; Canvas
@@ -1861,6 +1867,7 @@
 })
 
 (def ^{:private true} frame-options {
+  ::with       (fn [c v]) ; ignore ::with option inserted by (with-widget)
   :id           seesaw.selector/id-of!
   :class        seesaw.selector/class-of!
   :title        #(.setTitle %1 (str %2))
@@ -1917,7 +1924,7 @@
   [& {:keys [width height visible? size] 
       :or {width 100 height 100}
       :as opts}]
-  (cond-doto (apply-options (construct JFrame) 
+  (cond-doto (apply-options (construct JFrame opts) 
                (dissoc opts :width :height :visible?) frame-options)
     (not size) (.setSize width height)
     true       (.setVisible (boolean visible?))))
@@ -2053,7 +2060,7 @@
   [& {:keys [width height visible? modal? on-close size] 
       :or {width 100 height 100 visible? false}
       :as opts}]
-  (let [dlg (apply-options (construct JDialog) 
+  (let [dlg (apply-options (construct JDialog opts) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge custom-dialog-options frame-options))]
     (when-not size (.setSize dlg width height))
@@ -2369,7 +2376,7 @@
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}] 
-  (let [sl (construct javax.swing.JSlider)]
+  (let [sl (construct javax.swing.JSlider kw)]
     (apply-options sl kw (merge default-options slider-options))))
 
 
@@ -2426,9 +2433,9 @@
 
 "
   { :seesaw {:class 'javax.swing.JProgressBar }}
-  [& {:keys [orientation value min max] :as kw}]
-  (let [sl (construct javax.swing.JProgressBar)]
-    (apply-options sl kw (merge default-options progress-bar-options))))
+  [& {:keys [orientation value min max] :as opts}]
+  (let [sl (construct javax.swing.JProgressBar opts)]
+    (apply-options sl opts (merge default-options progress-bar-options))))
 
 
 

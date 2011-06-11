@@ -51,20 +51,18 @@
       (.drawLine g 0 y w y))))
 
 (defn make-panel []
-  (let [items (conj 
+  (paintable xyz-panel 
+    :paint draw-grid
+    :id :xyz 
+    :background "#222222"
+    :items (conj 
              (map (comp movable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
              (doto (border-panel
                        :border (line-border :top 15 :color "#AAFFFF")
                        :north (label "I'm a draggable label with a text box!")
                        :center (text :text "Hey type some stuff here"))
                    (config! :bounds :preferred)
-                   movable))]
-  (paintable
-    xyz-panel 
-    :paint draw-grid
-    :id :xyz 
-    :background "#222222"
-    :items items)))
+                   movable))))
 
 (defn -main [& args]
   (invoke-later
@@ -76,5 +74,5 @@
                    :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
                    :center (make-panel))
         :size    [600 :by 600]))))
-;(-main)
+(-main)
 
