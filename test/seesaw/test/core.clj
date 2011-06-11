@@ -1183,9 +1183,47 @@
           new-loc (.getLocation lbl)]
       (expect (= (java.awt.Point. 104 140) new-loc)))))
 
+(defmacro test-paintable [func expected-class]
+  `(it ~(str "creates a paintable " expected-class " for (paintable " func " :paint nil)")
+      (let [p# (paintable ~func :paint nil :id :test)]
+        (expect (instance? ~expected-class p#))
+        (expect (= "test" (id-of p#)))
+        (expect (= p# (config! p# :paint (fn [~'g ~'c] nil)))))))
+
 (describe paintable
-  (it "creates a label subclass"
-    (instance? javax.swing.JLabel (paintable label nil)))
+  ; exercise paintable on all the widget types
+  (test-paintable flow-panel   javax.swing.JPanel)
+  (test-paintable label        javax.swing.JLabel)
+  (test-paintable button       javax.swing.JButton)
+  (test-paintable toggle       javax.swing.JToggleButton)
+  (test-paintable checkbox     javax.swing.JCheckBox)
+  (test-paintable radio        javax.swing.JRadioButton)
+  (test-paintable text         javax.swing.JTextField)
+  (test-paintable password     javax.swing.JPasswordField)
+  (test-paintable editor-pane  javax.swing.JEditorPane)
+  (test-paintable listbox      javax.swing.JList)
+  (test-paintable table        javax.swing.JTable)
+  (test-paintable tree         javax.swing.JTree)
+  (test-paintable combobox     javax.swing.JComboBox)
+  (test-paintable separator    javax.swing.JSeparator)
+  (test-paintable menu         javax.swing.JMenu)
+  (test-paintable popup        javax.swing.JPopupMenu)
+  (test-paintable menubar      javax.swing.JMenuBar)
+  (test-paintable toolbar      javax.swing.JToolBar)
+  (test-paintable tabbed-panel javax.swing.JTabbedPane)
+  (test-paintable slider       javax.swing.JSlider)
+  (test-paintable progress-bar javax.swing.JProgressBar)
+
+  (it "creates a paintable subclass given a class name"
+    (let [lbl (paintable javax.swing.JLabel :paint nil :id :foo)]
+      (expect (instance? javax.swing.JLabel lbl))
+      (expect (= "foo" (id-of lbl)))))
+
+  (it "creates a label subclass given the label function and args."
+    (let [lbl (paintable label :paint nil :id :foo)]
+      (expect (instance? javax.swing.JLabel lbl))
+      (expect (= "foo" (id-of lbl)))))
+
   (it "creates a button subclass"
-    (instance? javax.swing.JButton (paintable button nil))))
+    (instance? javax.swing.JButton (paintable button :paint nil))))
 

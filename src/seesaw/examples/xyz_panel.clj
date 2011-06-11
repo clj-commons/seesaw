@@ -24,22 +24,23 @@
 
 (defn make-label
   [text]
-  (doto (with-widget
-          ; Instead of a boring label, make the label rounded with
-          ; some custom drawing. Use the before paint hook to draw
-          ; under the label's text.
-          (paintable label 
-            { :before (fn [c g]
-                        (draw g (rounded-rect 3 3 (- (.getWidth c) 6) (- (.getHeight c) 6) 9)
-                                (style :foreground "#FFFFaa"
-                                       :background "#aaFFFF"
-                                       :stroke 2)))})
-          (label :border   5
-                 :text     text 
-                 :location [(rand-int 300) (rand-int 300)]))
-      ; Set the bounds to its preferred size. Note that this has to be
-      ; done after the label is fully constructed.
-      (config! :bounds :preferred)))
+  (doto 
+    ; Instead of a boring label, make the label rounded with
+    ; some custom drawing. Use the before paint hook to draw
+    ; under the label's text.
+    (paintable label 
+      :border   5
+      :text     text 
+      :location [(rand-int 300) (rand-int 300)]
+      :paint { 
+        :before (fn [c g]
+                  (draw g (rounded-rect 3 3 (- (.getWidth c) 6) (- (.getHeight c) 6) 9)
+                          (style :foreground "#FFFFaa"
+                                  :background "#aaFFFF"
+                                  :stroke 2)))})
+    ; Set the bounds to its preferred size. Note that this has to be
+    ; done after the label is fully constructed.
+    (config! :bounds :preferred)))
 
 (defn make-panel []
   (xyz-panel 
