@@ -1538,7 +1538,7 @@
   [^javax.swing.JSplitPane splitter value]
   (cond
     (integer? value) (.setDividerLocation splitter value)
-    (ratio?   value) (divider-location! splitter (float value))
+    (ratio?   value) (divider-location! splitter (double value))
     (float?   value) (if (.isDisplayable splitter)
                        (.setDividerLocation splitter value)
                        (invoke-later (divider-location! splitter value)))
