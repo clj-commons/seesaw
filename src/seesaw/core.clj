@@ -1513,10 +1513,55 @@
 
 ;*******************************************************************************
 ; Splitter
+
+(defn- divider-location! 
+  "Sets the divider location of a splitter. Value can be one of cases:
+
+    integer - Treated as an absolute pixel size
+    double or rational - Treated as a percentage of the splitter's size
+
+  Use the :divider-location property to set this at creation time of a
+  splitter.
+
+  Returns the splitter.
+
+  Notes:
+
+    This function fixes the well known limitation of JSplitPane that it will
+    basically ignore proportional sizes if the splitter isn't visible yet.
+    It does so by continually scheduling the adjustment for the future until
+    the splitter has been realized on the screen. Sigh.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html#setDividerLocation%28double%29
+  "
+  [^javax.swing.JSplitPane splitter value]
+  (cond
+    (integer? value) (.setDividerLocation splitter value)
+    (ratio?   value) (divider-location! splitter (float value))
+    (float?   value) (if (.isDisplayable splitter)
+                       (.setDividerLocation splitter value)
+                       (invoke-later (divider-location! splitter value)))
+    :else (throw (IllegalArgumentException. (str "Expected integer or float, got " value))))
+  splitter)
+
+(def ^{:private true} splitter-options {
+  :divider-location divider-location!
+})
+
 (defn splitter
   "
+  Create a new JSplitPane. This is a lower-level function. Usually you want
+  (seesaw.core/top-bottom-split) or (seesaw.core/left-right-split). But here's
+  the additional options any three of these functions can take:
+
+    :divider-location The initial divider location. See (seesaw.core/divider-location!).
+
   Notes:
     This function is not compatible with (seesaw.core/paintable). TODO.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
   { :seesaw {:class 'javax.swing.JSplitPane }}
   [dir left right & opts]
@@ -1527,29 +1572,35 @@
       (.setLeftComponent (to-widget left true))
       (.setRightComponent (to-widget right true)))
     opts
-    default-options))
+    (merge default-options splitter-options)))
 
 (defn left-right-split 
-  "Create a left/right (horizontal) splitpane with the given widgets.
+  "Create a left/right (horizontal) splitpane with the given widgets. See
+  (seesaw.core/splitter) for additional options. Options are given after
+  the two widgets.
   
   Notes:
     This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
+    (seesaw.core/splitter)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
   { :seesaw {:class 'javax.swing.JSplitPane }}
   [left right & args] (apply splitter :left-right left right args))
 
 (defn top-bottom-split 
-  "Create a top/bottom (vertical) split pane with the given widgets
+  "Create a top/bottom (vertical) split pane with the given widgets. See
+  (seesaw.core/splitter) for additional options. Options are given after
+  the two widgets.
   
   Notes:
     This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
+    (seesaw.core/splitter)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
   { :seesaw {:class 'javax.swing.JSplitPane }}

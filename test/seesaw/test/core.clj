@@ -698,7 +698,22 @@
           s (splitter :left-right left right)]
       (expect (= javax.swing.JSplitPane (class s)))
       (expect (= left (.getLeftComponent s)))
-      (expect (= right (.getRightComponent s))))))
+      (expect (= right (.getRightComponent s)))))
+  (it "should set the divider location to an absolute pixel location with an int"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 99)]
+      (expect (= 99 (.getDividerLocation s)))))
+  (it "should set the divider location to a percentage location with a double (eventually)"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 0.5)]
+      ; We can't really test this since the expected divider location (in pixels)
+      ; is pretty hard to predict and because of the JSplitPane visibility hack
+      ; that's required, it won't actually happen until it's displayed in a frame :(
+      (expect true)))
+  (it "should set the divider location to a percentage location with a rational (eventually)"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 1/2)]
+      ; We can't really test this since the expected divider location (in pixels)
+      ; is pretty hard to predict and because of the JSplitPane visibility hack
+      ; that's required, it won't actually happen until it's displayed in a frame :(
+      (expect true))))
 
 (describe menu-item
   (it "should create a JMenuItem"
