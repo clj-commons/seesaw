@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.core
-  (:require [seesaw.selector :as selector])
+  (:require [seesaw.selector :as selector]
+            [seesaw.cursor :as cursor])
   (:use seesaw.core
         seesaw.font
         seesaw.graphics
@@ -155,6 +156,15 @@
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)])))))
+
+  (testing "the :cursor option"
+    (it "sets the widget's cursor when given a cursor"
+      (let [c (cursor/cursor :hand)
+            p (apply-default-opts (JPanel.) {:cursor c})]
+        (expect (= c (.getCursor p)))))
+    (it "sets the widget's cursor when given a cursor type keyword"
+      (let [p (apply-default-opts (JPanel.) {:cursor :hand})]
+        (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor p)))))))
 
   (test-option :foreground (color 255 0 0) (color 0 0 0))
   (test-option :background (color 255 0 0) (color 0 0 0))

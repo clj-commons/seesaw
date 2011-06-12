@@ -64,6 +64,9 @@
 
     Same for setting the cursor with (seesaw.core/config!).
 
+    Also, the size of a cursor is platform dependent, so some experimentation
+    will be required with creating custom cursors from images.
+
   See:
 
     http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html 
@@ -73,6 +76,7 @@
   (cond
     ; TODO protocol if this gets any more nasty
     (keyword? type) (Cursor. (built-in-cursor-map type))
+    (instance? Cursor type) type
     (instance? java.awt.Image type) (apply custom-cursor type args)
     (instance? javax.swing.ImageIcon type) (apply cursor (.getImage type) args)
     :else (throw (IllegalArgumentException. (str "Don't know how to make cursor from " type)))))

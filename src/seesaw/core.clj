@@ -18,7 +18,7 @@
   (:use [seesaw util meta to-widget]
         [clojure.string :only (capitalize split)])
   (:require [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics bind])
+             event selector icon action cells table graphics bind cursor])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
@@ -645,6 +645,7 @@
   :tip         #(.setToolTipText %1 (str (ensure-sync-when-atom %1 :tip %2)))
   :text        #(.setText %1 (str (ensure-sync-when-atom %1 :text %2)))
   :icon        #(.setIcon %1 (make-icon (ensure-sync-when-atom %1 :icon %2)))
+  :cursor      #(.setCursor %1 (apply seesaw.cursor/cursor (to-seq %2)))
   :action      #(.setAction %1 (ensure-sync-when-atom %1 :action %2))
   :editable?   #(.setEditable %1 (boolean (ensure-sync-when-atom %1 :editable? %2)))
   :visible?    #(.setVisible %1 (boolean (ensure-sync-when-atom %1 :visible? %2)))

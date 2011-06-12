@@ -23,6 +23,9 @@
 
 (describe cursor
   (test-built-ins)
+  (it "should return its input if given a cursor"
+    (let [c (cursor :hand)]
+      (expect (= c (cursor c)))))
   (it "should create a custom cursor from an image with hotspot (0, 0)"
     (let [img (buffered-image 16 16)
           cur (cursor img)]
