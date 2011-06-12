@@ -61,12 +61,14 @@
    supertype.
   "
   [klass & fields]
-  (reduce
-    (fn [m [k v]] (assoc m k v))
-    {}
-    (map 
-      #(vector %1 (.. klass (getDeclaredField (constantize-keyword %1)) (get nil)))
-      fields)))
+  (let [[options fields] (if (map? (first fields)) [(first fields) (rest fields)] [{} fields])
+        {:keys [suffix] :or {suffix ""}} options]
+    (reduce
+      (fn [m [k v]] (assoc m k v))
+      {}
+      (map 
+        #(vector %1 (.. klass (getDeclaredField (str (constantize-keyword %1) suffix)) (get nil)))
+        fields))))
     
   
 (defn camelize
