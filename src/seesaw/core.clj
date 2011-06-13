@@ -1514,6 +1514,24 @@
 ;*******************************************************************************
 ; Splitter
 
+(defn- divider-location-proportional!
+  [^javax.swing.JSplitPane splitter value]
+  (if (.isShowing splitter)
+    (if (and (> (.getWidth splitter) 0) (> (.getHeight splitter) 0))
+      (.setDividerLocation splitter value)
+      (.addComponentListener splitter
+        (proxy [java.awt.event.ComponentAdapter] []
+          (componentResized [e]
+            (.removeComponentListener splitter this)
+            (divider-location-proportional! splitter value)))))
+    (.addHierarchyListener splitter
+      (reify java.awt.event.HierarchyListener
+        (hierarchyChanged [this e]
+          (when (and (not= 0 (bit-and (.getChangeFlags e) java.awt.event.HierarchyEvent/SHOWING_CHANGED))
+                   (.isShowing splitter))
+            (.removeHierarchyListener splitter this)
+            (divider-location-proportional! splitter value)))))))
+
 (defn- divider-location! 
   "Sets the divider location of a splitter. Value can be one of cases:
 
@@ -1529,19 +1547,16 @@
 
     This function fixes the well known limitation of JSplitPane that it will
     basically ignore proportional sizes if the splitter isn't visible yet.
-    It does so by continually scheduling the adjustment for the future until
-    the splitter has been realized on the screen. Sigh.
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html#setDividerLocation%28double%29
+    http://blog.darevay.com/2011/06/jsplitpainintheass-a-less-abominable-fix-for-setdividerlocation/
   "
   [^javax.swing.JSplitPane splitter value]
   (cond
     (integer? value) (.setDividerLocation splitter value)
     (ratio?   value) (divider-location! splitter (double value))
-    (float?   value) (if (.isDisplayable splitter)
-                       (.setDividerLocation splitter value)
-                       (invoke-later (divider-location! splitter value)))
+    (float?   value) (divider-location-proportional! splitter value)
     :else (throw (IllegalArgumentException. (str "Expected integer or float, got " value))))
   splitter)
 
