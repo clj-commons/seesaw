@@ -2562,13 +2562,7 @@
     (add!* [layout target widget constraint]
       (add-widget target widget (border-layout-dirs constraint)))
     (get-constraint [layout container widget]
-      (.getConstraints layout widget))
-
-  net.miginfocom.swing.MigLayout
-    (add!* [layout target widget constraint]
-      (add-widget target widget))
-    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
-
+      (.getConstraints layout widget)))
 
 (defn- add!-impl 
   [container subject & more]

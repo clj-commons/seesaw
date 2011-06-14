@@ -1,6 +1,7 @@
 (ns seesaw.examples.text-editor
   (:use seesaw.core
         seesaw.chooser
+        seesaw.mig
         [clojure.java.io :only [file]]))
 
 (native!)

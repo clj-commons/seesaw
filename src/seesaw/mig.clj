@@ -53,3 +53,9 @@
   [& opts]
   (abstract-panel (net.miginfocom.swing.MigLayout.) mig-panel-options opts))
 
+(extend-protocol LayoutManipulation
+  net.miginfocom.swing.MigLayout
+    (add!* [layout target widget constraint]
+      (@#'seesaw.core/add-widget target widget))
+    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+

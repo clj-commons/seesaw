@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.custom-dialog
-  (:use [seesaw core font border]))
+  (:use [seesaw core font border mig]))
 
 (defn open-more-options-dlg
   []

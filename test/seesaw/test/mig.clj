@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.mig
-  (:use seesaw.mig)
+  (:use seesaw.mig seesaw.core)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
@@ -22,4 +22,16 @@
       (expect (= "wrap 4" (.getLayoutConstraints l)))
       (expect (= "[fill]" (.getColumnConstraints l)))
       (expect (= "[nogrid]" (.getRowConstraints l))))))
+
+(describe replace!
+  (testing "when called on a panel with a mid layout"
+    (it "replaces the given widget with a new widget and maintains constraints"
+      (let [l0 (label "l0")
+            l1 (label "l1")
+            l2 (label "l2")
+            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
+            result (replace! p l1 l2)]
+        (expect (= p result))
+        (expect (= [l0 l2] (vec (.getComponents p))))
+        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
 

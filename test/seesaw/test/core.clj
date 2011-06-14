@@ -1066,17 +1066,7 @@
             result (replace! p l1 l2)]
         (expect (= p result))
         (expect (= [l0 l2] (vec (.getComponents p))))
-        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2)))))))
-  (testing "when called on a panel with a mid layout"
-    (it "replaces the given widget with a new widget and maintains constraints"
-      (let [l0 (label "l0")
-            l1 (label "l1")
-            l2 (label "l2")
-            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
-            result (replace! p l1 l2)]
-        (expect (= p result))
-        (expect (= [l0 l2] (vec (.getComponents p))))
-        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
+        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2))))))))
 
 (describe selection
   (it "should get the selection from a button-group"
