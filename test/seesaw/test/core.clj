@@ -799,16 +799,6 @@
       (expect (= javax.swing.JSeparator (class s)))
       (expect (= SwingConstants/VERTICAL (.getOrientation s))))))
 
-(describe mig-panel
-  (it "should create a panel with a MigLayout"
-    (expect (= net.miginfocom.swing.MigLayout (class (.getLayout (mig-panel))))))
-  (it "should set MigLayout layout constraints"
-    (let [p (mig-panel :constraints ["wrap 4", "[fill]", "[nogrid]"])
-          l (.getLayout p)]
-      (expect (= "wrap 4" (.getLayoutConstraints l)))
-      (expect (= "[fill]" (.getColumnConstraints l)))
-      (expect (= "[nogrid]" (.getRowConstraints l))))))
-
 (describe tabbed-panel
   (it "should create a JTabbedPane with desired tab placement and layout"
     (let [tp (tabbed-panel :placement :bottom :overflow :wrap)]

@@ -985,46 +985,6 @@
 (def grid-bag-panel form-panel)
 
 ;*******************************************************************************
-; MigLayout
-(defn- apply-mig-constraints [widget constraints]
-  (let [layout (.getLayout widget)
-        [lc cc rc] constraints]
-    (cond-doto layout
-      lc (.setLayoutConstraints lc)
-      cc (.setColumnConstraints cc)
-      rc (.setRowConstraints rc))))
-
-(defn- add-mig-items [parent items]
-  (.removeAll parent)
-  (doseq [[widget constraint] items]
-    (add-widget parent widget constraint))
-  (handle-structure-change parent))
-
-(def ^{:private true} mig-panel-options {
-  :constraints apply-mig-constraints
-  :items       add-mig-items
-})
-
-(defn mig-panel
-  "Construct a panel with a MigLayout. Takes one special property:
-
-      :constraints [\"layout constraints\" \"column constraints\" \"row constraints\"]
-
-  These correspond to the three constructor arguments to MigLayout.
-  A vector of 0, 1, 2, or 3 constraints can be given.
-
-  The format of the :items property is a vector of [widget, constraint] pairs.
-  For example:
-
-    :items [[ \"Propeller\"        \"split, span, gaptop 10\"]]
-
-  See http://www.miglayout.com
-  "
-  { :seesaw {:class 'javax.swing.JPanel }}
-  [& opts]
-  (abstract-panel (net.miginfocom.swing.MigLayout.) mig-panel-options opts))
-
-;*******************************************************************************
 ; Labels
 
 (def ^{:private true} label-options {

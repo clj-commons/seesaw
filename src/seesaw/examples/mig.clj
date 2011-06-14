@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.mig
-  (:use [seesaw core]))
+  (:use [seesaw core mig]))
 
 ; http://www.devx.com/Java/Article/38017/1954
 
