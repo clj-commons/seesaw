@@ -703,6 +703,16 @@
       (instance? JTextComponent w)                  (.getDocument w))))
 
 ;*******************************************************************************
+; Abstract Panel
+(defn abstract-panel
+  [layout custom-opts opts]
+  (let [p (construct JPanel opts)
+        layout (if (fn? layout) (layout p) layout)]
+    (doto p
+      (.setLayout layout)
+      (apply-options opts (merge default-options custom-opts)))))
+
+;*******************************************************************************
 ; Null Layout
 
 (defn xyz-panel
@@ -728,10 +738,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel opts)]
-    (doto p
-      (.setLayout nil)
-      (apply-default-opts opts))))
+  (abstract-panel nil {} opts))
 
 ;*******************************************************************************
 ; Border Layout
@@ -785,9 +792,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel opts)]
-    (.setLayout p (BorderLayout.))
-    (apply-options p opts (merge default-options border-layout-options))))
+  (abstract-panel (BorderLayout.) border-layout-options opts))
 
 ;*******************************************************************************
 ; Flow
@@ -815,9 +820,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel opts)]
-    (.setLayout p (FlowLayout.))
-    (apply-options p opts (merge default-options flow-panel-options))))
+  (abstract-panel (FlowLayout.) flow-panel-options opts))
 
 ;*******************************************************************************
 ; Boxes
@@ -830,10 +833,7 @@
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel }}
   [dir & opts]
-  (let [panel  (construct JPanel opts)
-        layout (BoxLayout. panel (dir box-layout-dir-table))]
-    (.setLayout panel layout)
-    (apply-options panel opts default-options)))
+  (abstract-panel #(BoxLayout. % (dir box-layout-dir-table)) {} opts))
 
 (defn horizontal-panel 
   "Create a panel where widgets are arranged horizontally. Options:
@@ -879,12 +879,11 @@
   { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns] 
       :as opts}]
-  (let [columns* (or columns (if rows 0 1))
-        layout   (GridLayout. (or rows 0) columns* 0 0)
-        panel    (construct JPanel opts)]
-    (.setLayout panel layout)
-    (apply-options panel 
-      (dissoc opts :rows :columns) (merge default-options grid-panel-options))))
+  (let [columns (or columns (if rows 0 1))
+        layout  (GridLayout. (or rows 0) columns 0 0)]
+    (abstract-panel layout 
+                    (merge default-options grid-panel-options)
+                    (dissoc opts :rows :columns))))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout
@@ -981,9 +980,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [^java.awt.Container p (construct JPanel opts)]
-    (.setLayout p (GridBagLayout.))
-    (apply-options p opts (merge default-options form-panel-options))))
+  (abstract-panel (GridBagLayout.) form-panel-options opts))
 
 (def grid-bag-panel form-panel)
 
@@ -1025,9 +1022,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (let [p (construct JPanel opts)]
-    (.setLayout p (net.miginfocom.swing.MigLayout.))
-    (apply-options p opts (merge default-options mig-panel-options))))
+  (abstract-panel (net.miginfocom.swing.MigLayout.) mig-panel-options opts))
 
 ;*******************************************************************************
 ; Labels
