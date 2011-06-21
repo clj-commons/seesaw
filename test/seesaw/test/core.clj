@@ -9,12 +9,13 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.core
-  (:require [seesaw.selector :as selector])
+  (:require [seesaw.selector :as selector]
+            [seesaw.cursor :as cursor])
   (:use seesaw.core
         seesaw.font
         seesaw.graphics
         seesaw.cells
-        [seesaw.util :only (to-dimension)]
+        [seesaw.util :only (to-dimension children)]
         [seesaw.color :only (color)])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
@@ -155,6 +156,15 @@
       (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)])))))
+
+  (testing "the :cursor option"
+    (it "sets the widget's cursor when given a cursor"
+      (let [c (cursor/cursor :hand)
+            p (apply-default-opts (JPanel.) {:cursor c})]
+        (expect (= c (.getCursor p)))))
+    (it "sets the widget's cursor when given a cursor type keyword"
+      (let [p (apply-default-opts (JPanel.) {:cursor :hand})]
+        (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor p)))))))
 
   (test-option :foreground (color 255 0 0) (color 0 0 0))
   (test-option :background (color 255 0 0) (color 0 0 0))
@@ -688,7 +698,22 @@
           s (splitter :left-right left right)]
       (expect (= javax.swing.JSplitPane (class s)))
       (expect (= left (.getLeftComponent s)))
-      (expect (= right (.getRightComponent s))))))
+      (expect (= right (.getRightComponent s)))))
+  (it "should set the divider location to an absolute pixel location with an int"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 99)]
+      (expect (= 99 (.getDividerLocation s)))))
+  (it "should set the divider location to a percentage location with a double (eventually)"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 0.5)]
+      ; We can't really test this since the expected divider location (in pixels)
+      ; is pretty hard to predict and because of the JSplitPane visibility hack
+      ; that's required, it won't actually happen until it's displayed in a frame :(
+      (expect true)))
+  (it "should set the divider location to a percentage location with a rational (eventually)"
+    (let [s (splitter :top-bottom "top" "bottom" :divider-location 1/2)]
+      ; We can't really test this since the expected divider location (in pixels)
+      ; is pretty hard to predict and because of the JSplitPane visibility hack
+      ; that's required, it won't actually happen until it's displayed in a frame :(
+      (expect true))))
 
 (describe menu-item
   (it "should create a JMenuItem"
@@ -773,16 +798,6 @@
     (let [s (separator :orientation :vertical)]
       (expect (= javax.swing.JSeparator (class s)))
       (expect (= SwingConstants/VERTICAL (.getOrientation s))))))
-
-(describe mig-panel
-  (it "should create a panel with a MigLayout"
-    (expect (= net.miginfocom.swing.MigLayout (class (.getLayout (mig-panel))))))
-  (it "should set MigLayout layout constraints"
-    (let [p (mig-panel :constraints ["wrap 4", "[fill]", "[nogrid]"])
-          l (.getLayout p)]
-      (expect (= "wrap 4" (.getLayoutConstraints l)))
-      (expect (= "[fill]" (.getColumnConstraints l)))
-      (expect (= "[nogrid]" (.getRowConstraints l))))))
 
 (describe tabbed-panel
   (it "should create a JTabbedPane with desired tab placement and layout"
@@ -1051,17 +1066,7 @@
             result (replace! p l1 l2)]
         (expect (= p result))
         (expect (= [l0 l2] (vec (.getComponents p))))
-        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2)))))))
-  (testing "when called on a panel with a mid layout"
-    (it "replaces the given widget with a new widget and maintains constraints"
-      (let [l0 (label "l0")
-            l1 (label "l1")
-            l2 (label "l2")
-            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
-            result (replace! p l1 l2)]
-        (expect (= p result))
-        (expect (= [l0 l2] (vec (.getComponents p))))
-        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
+        (expect (= BorderLayout/SOUTH (-> p .getLayout (.getConstraints l2))))))))
 
 (describe selection
   (it "should get the selection from a button-group"
@@ -1097,6 +1102,14 @@
           result   (with-widget (fn [] expected) (text :id "hi"))]
       (expect (= expected result))
       (expect (= "hi" (id-for result)))))
+
+  (it "can handle a form with nested widget creation functions"
+    (let [p (javax.swing.JPanel.)
+          result (with-widget p (flow-panel :id "hi" :items [(label :text "Nested")]))]
+      (expect (= p result))
+      (expect (instance? javax.swing.JLabel (first (children p))))
+      (expect (= "hi" (id-for result)))))
+
   (it "uses a class literal as a factory and applies a constructor function to it"
     (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
       (expect (instance? javax.swing.JPasswordField result))
@@ -1183,9 +1196,55 @@
           new-loc (.getLocation lbl)]
       (expect (= (java.awt.Point. 104 140) new-loc)))))
 
+(defmacro test-paintable [func expected-class]
+  `(it ~(str "creates a paintable " expected-class " for (paintable " func " :paint nil)")
+      (let [p# (paintable ~func :paint nil :id :test)]
+        (expect (instance? ~expected-class p#))
+        (expect (= "test" (id-of p#)))
+        (expect (= p# (config! p# :paint (fn [~'g ~'c] nil)))))))
+
 (describe paintable
-  (it "creates a label subclass"
-    (instance? javax.swing.JLabel (paintable label nil)))
+  ; exercise paintable on all the widget types
+  (test-paintable flow-panel   javax.swing.JPanel)
+  (test-paintable label        javax.swing.JLabel)
+  (test-paintable button       javax.swing.JButton)
+  (test-paintable toggle       javax.swing.JToggleButton)
+  (test-paintable checkbox     javax.swing.JCheckBox)
+  (test-paintable radio        javax.swing.JRadioButton)
+  (test-paintable text         javax.swing.JTextField)
+  (test-paintable password     javax.swing.JPasswordField)
+  (test-paintable editor-pane  javax.swing.JEditorPane)
+  (test-paintable listbox      javax.swing.JList)
+  (test-paintable table        javax.swing.JTable)
+  (test-paintable tree         javax.swing.JTree)
+  (test-paintable combobox     javax.swing.JComboBox)
+  (test-paintable separator    javax.swing.JSeparator)
+  (test-paintable menu         javax.swing.JMenu)
+  (test-paintable popup        javax.swing.JPopupMenu)
+  (test-paintable menubar      javax.swing.JMenuBar)
+  (test-paintable toolbar      javax.swing.JToolBar)
+  (test-paintable tabbed-panel javax.swing.JTabbedPane)
+  (test-paintable slider       javax.swing.JSlider)
+  (test-paintable progress-bar javax.swing.JProgressBar)
+
+  (it "creates a paintable subclass given a class name"
+    (let [lbl (paintable javax.swing.JLabel :paint nil :id :foo)]
+      (expect (instance? javax.swing.JLabel lbl))
+      (expect (= "foo" (id-of lbl)))))
+
+  (it "creates a label subclass given the label function and args."
+    (let [lbl (paintable label :paint nil :id :foo)]
+      (expect (instance? javax.swing.JLabel lbl))
+      (expect (= "foo" (id-of lbl)))))
+
   (it "creates a button subclass"
-    (instance? javax.swing.JButton (paintable button nil))))
+    (instance? javax.swing.JButton (paintable button :paint nil))))
+
+(describe width
+  (it "returns the width of a widget"
+    (= 100 (width (xyz-panel :bounds [0 0 100 101])))))
+
+(describe height
+  (it "returns the height of a widget"
+    (= 101 (height (xyz-panel :bounds [0 0 100 101])))))
 

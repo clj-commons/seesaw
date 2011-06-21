@@ -37,7 +37,8 @@
 
       :center (left-right-split
                 (scrollable (tree    :id :tree :model tree-model :renderer render-file-item))
-                (scrollable (listbox :id :list :renderer render-file-item)))
+                (scrollable (listbox :id :list :renderer render-file-item))
+                :divider-location 1/3)
 
       :south  (label :id :status :text "Ready"))))
 

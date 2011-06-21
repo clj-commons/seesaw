@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.dialog
-  (:use [seesaw core font border util color pref]
+  (:use [seesaw core font border util color pref mig]
         [clojure.pprint :only (cl-format)]))
 
 (defmethod print-dup java.awt.Color [x writer]

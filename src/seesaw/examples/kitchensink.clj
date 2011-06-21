@@ -50,7 +50,8 @@
                     :items [(label 
                               :border (line-border) 
                               :text "This label acts like a link" 
-                              :id :link)
+                              :id :link
+                              :cursor :hand)
                             (text 
                               :text "HI"
                               :listen [:action :handler (fn [e] (println (.. (to-widget e) (getText))))])

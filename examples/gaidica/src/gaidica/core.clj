@@ -12,7 +12,7 @@
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
             [clojure.contrib.zip-filter.xml :as zfx])
-  (:use [seesaw core border table]))
+  (:use [seesaw core border table mig]))
 
 (native!)
 
@@ -81,6 +81,13 @@
          {:key :updated :text "Last Updated"}
          {:key :image :text "Image"}]]))
 
+(defn set-divider-location [w v]
+  (if (.isDisplayable w)
+    (.setDividerLocation w v)
+    (invoke-later
+      (set-divider-location w v)))
+  w)
+
 (defn make-webcam-panel []
   (let [webcam-table (make-webcam-table)
         image-label  (label :text "")]
@@ -92,9 +99,10 @@
       :id :webcam
       :border 5
       :center
-        (top-bottom-split
+        (-> (top-bottom-split
           (scrollable webcam-table)
-          (scrollable image-label)))))
+          (scrollable image-label))
+          (set-divider-location 0.5)))))
 
 (defn update-webcams [webcam-panel webcams]
   (let [t (select webcam-panel [:#webcam-table])]
@@ -135,8 +143,7 @@
 (defn app []
   (frame
     :title "Gaidica"
-    :width  600
-    :height 600
+    :size  [600 :by 600]
     :on-close :exit
     :menubar (menubar :items [(menu :text "View" :items [refresh-action])])
     :content (border-panel

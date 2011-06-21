@@ -33,7 +33,8 @@
 
         (label :text "<html>No, Right Click Me!<br>(dynamically popuplated menu)</html>" 
                :border [5 (line-border)]
-               :popup dynamic-popup))))
+               :popup dynamic-popup)
+        :divider-location 1/2)))
 
 (defn -main [& args]
   (invoke-later (show! (app))))
