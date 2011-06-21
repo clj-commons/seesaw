@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.to-widget - Seesaw nil API documentation</title>
+    <title>seesaw.mig - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,27 +52,53 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.mig/mig-panel">mig-panel</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.to-widget</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.mig</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
-
+<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.to-widget</span>))
+  (:require <span id="long-name">seesaw.mig</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr"></pre>
+<pre id="namespace-docstr">MigLayout support for Seesaw</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.mig/mig-panel">mig-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (mig-panel &amp; opts)
+</pre>
+  <pre id="var-docstr">Construct a panel with a MigLayout. Takes one special property:
 
+    :constraints ["layout constraints" "column constraints" "row constraints"]
+
+These correspond to the three constructor arguments to MigLayout.
+A vector of 0, 1, 2, or 3 constraints can be given.
+
+The format of the :items property is a vector of [widget, constraint] pairs.
+For example:
+
+  :items [[ "Propeller"        "split, span, gaptop 10"]]
+
+See <a href="http://www.miglayout.com">http://www.miglayout.com</a>
+</pre>
+  
+  
+  
+</div>
 
 
 </div>
