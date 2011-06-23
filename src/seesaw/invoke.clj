@@ -11,11 +11,11 @@
 (ns seesaw.invoke
   (:import [javax.swing SwingUtilities]))
 
-(defn invoke-later* [f] (SwingUtilities/invokeLater f))
+(defn invoke-later* [f & args] (SwingUtilities/invokeLater (apply f args)))
 
-(defn invoke-now* [f]
+(defn invoke-now* [f & args]
   (let [result (atom nil)]
-   (letfn [(invoker [] (reset! result (f)))]
+   (letfn [(invoker [] (reset! result (apply f args)))]
      (if (SwingUtilities/isEventDispatchThread)
        (invoker)
        (SwingUtilities/invokeAndWait invoker))
