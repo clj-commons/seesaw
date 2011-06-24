@@ -1,48 +1,93 @@
+;  Copyright (c) Dave Ray, 2011. All rights reserved.
+
+;   The use and distribution terms for this software are covered by the
+;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;   which can be found in the file epl-v10.html at the root of this 
+;   distribution.
+;   By using this software in any fashion, you are agreeing to be bound by
+;   the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
 (ns pi.core
   (:use seesaw.core)
-  (:require seesaw.invoke))
+  (:require seesaw.invoke)
+  (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
 
 (native!)
 
-
-(defn calculate-pi-for [start num-elements]
+(defn calculate-pi-for 
+  "Calculate a sliver of pi"
+  [start step-size]
   (reduce 
     (fn [acc i]
       (+ acc (/ (* 4.0 (- 1 (* (mod i 2) 2))) (+ (* 2 i) 1))))
     0.0
-    (range (* start num-elements) (- (* (inc start) num-elements) 1))))
+    (range (* start step-size) (- (* (inc start) step-size) 1))))
 
-(defn calculate [report-fn num-elements num-messages]
-  (map 
-    #(future (report-fn (calculate-pi-for % num-elements)))
-    (range num-messages)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Agent Actions
 
+(defn agent-calculate [{:keys [queue result] :as state}]
+  (when (:running state)
+    (if-let [{:keys [start step-size]} (.poll queue 1 TimeUnit/SECONDS)]
+      (swap! result
+        (fn [{:keys [value count]} new-value]
+          {:value (+ value new-value) 
+           :count (inc count)})
+        (calculate-pi-for start step-size)))
+    (send *agent* agent-calculate))
+  state)
+
+(defn agent-start [state] 
+  (send *agent* agent-calculate) 
+  (assoc state :running true))
+
+(defn agent-stop [state] 
+  (assoc state :running false))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Task setup
+
+(defn init-task [step-size steps result]
+  (let [queue  (LinkedBlockingQueue. (for [i (range steps)] {:start i :step-size step-size}))
+        agents (for [i (range 4)]
+                  (agent {:running false
+                          :queue  queue 
+                          :result result}))]
+    (doseq [a agents] (send a agent-start))
+    { :agents agents
+      :queue  queue
+      :result result}))
 
 (def current-task (atom nil))
 
-    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Event handlers
+
 (defn go [e]
   (let [root         (to-root e)
         steps        (-> (select root [:#steps])     text Integer/parseInt)
         step-size    (-> (select root [:#step-size]) text Integer/parseInt)
         result-label (select root [:#result])
         progress     (config! (select root [:#progress]) :max steps :value 0)
-        result-atom  (atom {:value 0.0 :count 0})
-        update-fn    (seesaw.invoke/signaller (fn [value count] 
-                                  (config! progress :value count)
-                                  (text! result-label (format "\u03C0 = %.20f" value))))
-        report-fn #(swap! result-atom 
-                          (fn [{:keys [value count]} new-value] 
-                            {:value (+ value new-value) :count (inc count)}) 
-                          %)]
-    (add-watch result-atom (gensym) (fn [k r o {:keys [value count]}] (update-fn value count)))
-    (future (doall (reset! current-task (calculate report-fn step-size steps))))))
+        result       (atom {:value 0.0 :count 0})]
+    (add-watch result (gensym) 
+      (seesaw.invoke/signaller 
+        (fn [k r o {:keys [value count]}] 
+          (config! progress :value count)
+          (text! result-label (format "\u03C0 = %.20f" value)))))
+    (reset! current-task (init-task step-size steps result))))
 
 (defn cancel [e]
-  (future 
-    (doseq [f @current-task]
-      (future-cancel f))
-    (reset! current-task nil)))
+  (if-let [{:keys [agents queue result]} @current-task]
+    (do
+      (.clear queue)
+      (doseq [a agents]
+        (send a agent-stop))
+      (reset! current-task nil))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; User Interface
 
 (def gap [:fill-h 5])
 
