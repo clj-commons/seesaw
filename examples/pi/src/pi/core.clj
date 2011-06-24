@@ -13,8 +13,6 @@
   (:require seesaw.invoke)
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
 
-(native!)
-
 (defn calculate-pi-for 
   "Calculate a sliver of pi"
   [start step-size]
@@ -46,23 +44,27 @@
   (assoc state :running false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Task setup
+; Task management
 
-(defn init-task [step-size steps result]
-  (let [queue  (LinkedBlockingQueue. (for [i (range steps)] {:start i :step-size step-size}))
-        agents (for [i (range 4)]
+(defn init-task [num-agents step-size steps]
+  (let [result (atom {:value 0.0 :count 0})
+        queue  (LinkedBlockingQueue. (for [i (range steps)] {:start i :step-size step-size}))
+        agents (for [i (range num-agents)]
                   (agent {:running false
                           :queue  queue 
                           :result result}))]
-    (doseq [a agents] (send a agent-start))
     { :agents agents
       :queue  queue
       :result result}))
 
-(def current-task (atom nil))
+(defn start-task [task]
+  (doseq [a (:agents task)] (send a agent-start))
+  task)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Event handlers
+; UI Event handlers
+
+(def current-task (atom nil))
 
 (defn go [e]
   (let [root         (to-root e)
@@ -70,13 +72,13 @@
         step-size    (-> (select root [:#step-size]) text Integer/parseInt)
         result-label (select root [:#result])
         progress     (config! (select root [:#progress]) :max steps :value 0)
-        result       (atom {:value 0.0 :count 0})]
-    (add-watch result (gensym) 
+        task         (init-task 4 step-size steps)]
+    (add-watch (:result task) (gensym)
       (seesaw.invoke/signaller 
         (fn [k r o {:keys [value count]}] 
           (config! progress :value count)
           (text! result-label (format "\u03C0 = %.20f" value)))))
-    (reset! current-task (init-task step-size steps result))))
+    (reset! current-task (start-task task))))
 
 (defn cancel [e]
   (if-let [{:keys [agents queue result]} @current-task]
@@ -88,6 +90,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; User Interface
+
+(native!)
 
 (def gap [:fill-h 5])
 
