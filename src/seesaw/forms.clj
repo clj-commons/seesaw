@@ -56,6 +56,16 @@
      (append [this builder]
        (.appendSeparator builder this)))))
 
+(defn group
+  "Group the rows of the contained items into a row group."
+  [& items]
+  (reify
+    ComponentSpec
+    (append [this builder]
+      (.setRowGroupingEnabled builder true)
+      (doseq [item items] (append item builder))
+      (.setRowGroupingEnabled builder false))))
+
 (def ^{:private true} builder-options
   {:items                  #(doseq [item %2] (append item %1))
    :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1))
