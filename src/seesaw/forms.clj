@@ -28,3 +28,24 @@
     ComponentSpec
     (append [this builder]
       (.nextLine builder))))
+
+(defn title
+  "Adds the given titel to the form."
+  [title]
+  (reify
+    ComponentSpec
+    (append [this builder]
+      (.appendTitle builder this))))
+
+(defn separator
+  "Adds a separator with an optional label to the form."
+  ([]
+   (reify
+     ComponentSpec
+     (append [this builder]
+       (.appendSeparator builder))))
+  ([label]
+   (reify
+     ComponentSpec
+     (append [this builder]
+       (.appendSeparator builder this)))))
