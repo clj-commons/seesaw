@@ -28,8 +28,9 @@
     (append [this builder]
       (.append builder component column-span))))
 
-(def next-line
-  "Continue with the next line in the builder."
+(def
+  ^{:doc "Continue with the next line in the builder."}
+  next-line
   (reify
     ComponentSpec
     (append [this builder]
