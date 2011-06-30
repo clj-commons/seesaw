@@ -21,3 +21,10 @@
     ComponentSpec
     (append [this builder]
       (.append builder component column-span))))
+
+(def next-line
+  "Continue with the next line in the builder."
+  (reify
+    ComponentSpec
+    (append [this builder]
+      (.nextLine builder))))
