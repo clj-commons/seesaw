@@ -13,3 +13,11 @@
   String
   (append [this builder]
     (.append builder this)))
+
+(defn span
+  "Add the given component spanning several columns."
+  [component column-span]
+  (reify
+    ComponentSpec
+    (append [this builder]
+      (.append builder component column-span))))
