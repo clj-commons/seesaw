@@ -13,3 +13,8 @@
   continuation."
   [f & args]
   #(% (apply f args)))
+
+(defmacro doasync
+  "Runs the block asynchronuously and passes on the result to the continuation."
+  [& body]
+  `(call-async (fn [] ~@body)))
