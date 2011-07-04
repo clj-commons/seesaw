@@ -1,4 +1,6 @@
-(ns seesaw.async)
+(ns seesaw.async
+  (:use
+    [seesaw.core :only (listen)]))
 
 (defn run-async
   "Run an asynchronuous workflow. Returns a promise which may be dereferenced
@@ -46,3 +48,12 @@
           reverse
           (partition 2)
           (reduce step `(~global-continue (do ~@body)))))))
+
+(defn await-event-async
+  "Awaits the given event on the given target asynchronuously. Passes on the
+  event to the continuation."
+  [target event]
+  (fn [continue]
+    (let [remove-fn (promise)
+          handler   (fn [evt] (@remove-fn) (continue evt))]
+      (deliver (listen target event handler)))))
