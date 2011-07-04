@@ -1,6 +1,7 @@
 (ns seesaw.async
   (:use
-    [seesaw.core :only (listen)]))
+    [seesaw.core :only (listen)]
+    [seesaw.timer :only (timer)]))
 
 (defn run-async
   "Run an asynchronuous workflow. Returns a promise which may be dereferenced
@@ -57,3 +58,11 @@
     (let [remove-fn (promise)
           handler   (fn [evt] (@remove-fn) (continue evt))]
       (deliver (listen target event handler)))))
+
+(defn wait-async
+  "Wait asynchronuously for t milliseconds. Passes on nil to the continuation."
+  [t]
+  (fn [continue]
+    (timer (fn [_] (continue nil))
+           :initial-delay millis
+           :repeats?      false)))
