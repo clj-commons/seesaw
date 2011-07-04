@@ -1,6 +1,6 @@
 (ns seesaw.async
   (:use
-    [seesaw.core :only (listen)]
+    [seesaw.core :only (listen invoke-now)]
     [seesaw.timer :only (timer)]))
 
 (defn run-async
@@ -66,3 +66,22 @@
     (timer (fn [_] (continue nil))
            :initial-delay millis
            :repeats?      false)))
+
+(defn await-future-async*
+  "Call the function with any additional arguments in a background thread and
+  wait asynchronuously for its completion. Passes on the result to the
+  continuation.
+  See also: await-future-async*"
+  [f & args]
+  (fn [continue]
+    (future
+      (let [result (apply f args)]
+        (invoke-now
+          (continue result))))))
+
+(defmacro await-future-async
+  "Execute the code block in a background thread and wait asynchronuously
+  for its completion. Passes on the result to the continuation.
+  See also: await-future-async*"
+  [& body]
+  `(await-future-async* (fn [] ~@body)))
