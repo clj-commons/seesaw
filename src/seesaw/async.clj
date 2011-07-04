@@ -85,3 +85,38 @@
   See also: await-future-async*"
   [& body]
   `(await-future-async* (fn [] ~@body)))
+
+(defmacro async-workflow
+  "Create an asynchronuous workflow. Each step is execute asynchronuously
+  and hence must be an asynchronuous call. If a step is a vector, it will
+  be interpreted as a one binding let binding the result of the async call
+  to the given local in the subsequent steps. Passes on the result of the
+  last step to the continuation.
+
+  Example:
+
+      (defn some-workflow
+        [button-a button-b status]
+        (async-workflow
+          (doasync
+            (config! button-b :enabled? false))
+          [evt (await-event-async button-a :action-performed)]
+          (doasync
+            (config! evt :enabled? false)
+            (config! button-b :enabled? false)
+            (text! status \"Now click B.\"))
+          (wait-async 3000)
+          (await-event-async button-b :action-performed)
+          (doasync
+             (config! button-a :enabled? true)
+             (config! button-b :enabled? false)
+             (text! status \"Done!\")
+             :done)))
+  "
+  [& steps]
+  (let [local    (gensym "local")
+        step     (fn [s] (if (vector? s) s [local s]))
+        bindings (vec (mapcat step steps))
+        result   (second (rseq bindings))] ; Last local.
+    `(let-async ~bindings
+       ~result)))
