@@ -50,7 +50,7 @@
           (partition 2)
           (reduce step `(~global-continue (do ~@body)))))))
 
-(defn await-event-async
+(defn await-event
   "Awaits the given event on the given target asynchronuously. Passes on the
   event to the continuation."
   [target event]
@@ -59,7 +59,7 @@
           handler   (fn [evt] (@remove-fn) (continue evt))]
       (deliver (listen target event handler)))))
 
-(defn wait-async
+(defn wait
   "Wait asynchronuously for t milliseconds. Passes on nil to the continuation."
   [t]
   (fn [continue]
@@ -67,7 +67,7 @@
            :initial-delay millis
            :repeats?      false)))
 
-(defn await-future-async*
+(defn await-future*
   "Call the function with any additional arguments in a background thread and
   wait asynchronuously for its completion. Passes on the result to the
   continuation.
@@ -79,12 +79,12 @@
         (invoke-now
           (continue result))))))
 
-(defmacro await-future-async
+(defmacro await-future
   "Execute the code block in a background thread and wait asynchronuously
   for its completion. Passes on the result to the continuation.
   See also: await-future-async*"
   [& body]
-  `(await-future-async* (fn [] ~@body)))
+  `(await-future* (fn [] ~@body)))
 
 (defmacro async-workflow
   "Create an asynchronuous workflow. Each step is execute asynchronuously
