@@ -131,3 +131,19 @@
                            (when (compare-and-set! guard false true)
                              (global-continue result)))]
       (doseq [event events] (event inner-continue)))))
+
+(defn await-all
+  "Wait asynchronuously until all of the given events happened. Passes on
+  the sequence of results to the continuation."
+  [& events]
+  (fn [global-continue]
+    (let [n              (count events)
+          guard          (atom n)
+          promises       (repeatedly n promise)
+          inner-continue (fn [p]
+                           (fn [result]
+                             (deliver p result)
+                             (when (zero? (swap! guard dec))
+                               (global-continue (map deref promises)))))]
+      (doseq [[event p] (map vector events promises)]
+        (event (inner-continue p))))))
