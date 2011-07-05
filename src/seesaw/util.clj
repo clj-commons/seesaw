@@ -168,3 +168,7 @@
     children
     root))
 
+(defn ignore
+  "Might be used to explicitly ignore the default behaviour of options."
+  [x _]
+  x)

@@ -6,7 +6,7 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.util :only (apply-options)]))
+    [seesaw.util :only (apply-options ignore)]))
 
 (defprotocol ComponentSpec
   (append [this builder] "Add the given component to the form builder"))
@@ -101,4 +101,4 @@
     (apply-options builder opts builder-options)
     (doto (.getPanel builder)
       (apply-options opts (merge @#'seesaw.core/default-options
-                                 {:items (fn [x _] x)})))))
+                                 {:items ignore})))))
