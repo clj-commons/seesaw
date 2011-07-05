@@ -64,7 +64,7 @@
    (reify
      ComponentSpec
      (append [this builder]
-       (.appendSeparator builder this)))))
+       (.appendSeparator builder label)))))
 
 (defn group
   "Group the rows of the contained items into a row group."
