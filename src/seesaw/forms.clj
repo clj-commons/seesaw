@@ -74,6 +74,9 @@
    :line-gap-size          #(.setLineGapSize %1 %2)
    :paragraph-gap-size     #(.setParagraphGapSize %1 %2)})
 
+(def ^{:private true} ignore-builder-options
+  (zipmap (keys builder-options) (repeat ignore)))
+
 (defn ^JPanel forms-panel
   "Construct a panel with a FormLayout. The column spec is
   expected to be a FormLayout column spec in string form.
@@ -97,8 +100,9 @@
   {:seesaw {:class `JPanel}}
   [column-spec & opts]
   (let [layout  (FormLayout. column-spec "")
-        builder (DefaultFormBuilder. layout)]
+        panel   (#'seesaw.core/construct JPanel opts)
+        builder (DefaultFormBuilder. layout panel)]
     (apply-options builder opts builder-options)
     (doto (.getPanel builder)
       (apply-options opts (merge @#'seesaw.core/default-options
-                                 {:items ignore})))))
+                                 ignore-builder-options)))))
