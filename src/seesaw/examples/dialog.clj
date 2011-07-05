@@ -65,13 +65,13 @@
                                  ["Display mode"]
                                  [(combobox :id :mode :model ["Triangulated Mesh" "Lines"]) "wrap"]
                                  ["Angle"]
-                                 [(slider :id :angle :value (bind-preference-to-atom "LAST_ANGLE" 150) :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]
+                                 [(slider :id :angle :value (bind-preference-to-atom "LAST_ANGLE" (atom 150)) :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]
                                  ["KNN"]
-                                 [(slider :id :knn :value (bind-preference-to-atom "LAST_KNN" 150) :min 0 :max 300
+                                 [(slider :id :knn :value (bind-preference-to-atom "LAST_KNN" (atom 150)) :min 0 :max 300
                                           :minor-tick-spacing 10 :major-tick-spacing 100 :paint-labels? true)
                                   "wrap"] 
                                  ["Color"]
-                                 [(label :id :colorbtn :text "      " :background (bind-preference-to-atom "LAST_BACKGROUND" (color 255 255 0))
+                                 [(label :id :colorbtn :text "      " :background (bind-preference-to-atom "LAST_BACKGROUND" (atom (color 255 255 0)))
                                          :listen [:mouse-clicked
                                                   (fn [e]
                                                     (if-let [clr (javax.swing.JColorChooser/showDialog nil "Choose a color" (.getBackground (.getSource e)))]

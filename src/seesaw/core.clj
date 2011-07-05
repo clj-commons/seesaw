@@ -2315,7 +2315,7 @@
               )]
     (let [dispatch-fns   {:yes-no        [success-fn no-fn]
                           :yes-no-cancel [success-fn no-fn cancel-fn]
-                          :ok-cancel     [success-fn cancel-fn]
+                          :ok-cancel     [success-fn nil cancel-fn]
                           :default       [success-fn]}
           visible?       (get opts :visible? false) 
           remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
