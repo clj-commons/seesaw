@@ -172,3 +172,9 @@
   "Might be used to explicitly ignore the default behaviour of options."
   [x _]
   x)
+
+(defn ignore-options
+  "Create a ignore-map for options, which should be ignored. Ready to
+  be merged into default option maps."
+  [source-options]
+  (zipmap (keys source-options) (repeat ignore)))
