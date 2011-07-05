@@ -37,13 +37,23 @@
     (append [this builder]
       (.append builder component column-span))))
 
-(def
-  ^{:doc "Continue with the next line in the builder."}
-  next-line
-  (reify
-    ComponentSpec
-    (append [this builder]
-      (.nextLine builder))))
+(defn next-line
+  "Continue with the nth next line in the builder."
+  ([] (next-line 1))
+  ([n]
+   (reify
+     ComponentSpec
+     (append [this builder]
+       (.nextLine builder n)))))
+
+(defn next-column
+  "Continue with the nth next column in the builder."
+  ([] (next-column 1))
+  ([n]
+   (reify
+     ComponentSpec
+     (append [this builder]
+       (.nextLine builder n)))))
 
 (defn title
   "Adds the given titel to the form."
@@ -94,7 +104,7 @@
   The items are a list of strings, components or any of the
   combinators. For example:
 
-      :items [\"Login\" (text) next-line
+      :items [\"Login\" (text) (next-line)
               \"Password\" (span (text) 3)]
 
   Takes the following special properties. They correspond
