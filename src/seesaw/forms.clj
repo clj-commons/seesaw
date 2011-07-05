@@ -1,6 +1,5 @@
 (ns seesaw.forms
   (:import
-    java.awt.Component
     javax.swing.JPanel
     com.jgoodies.forms.builder.DefaultFormBuilder
     com.jgoodies.forms.layout.FormLayout)
@@ -13,9 +12,9 @@
   (append [this builder] "Add the given component to the form builder"))
 
 (extend-protocol ComponentSpec
-  Component
+  Object
   (append [this builder]
-    (.append builder this))
+    (.append builder (seesaw.core/to-widget this true)))
   String
   (append [this builder]
     (.append builder this)))
