@@ -120,3 +120,14 @@
   See also: await-future*"
   [& body]
   `(await-future* (fn [] ~@body)))
+
+(defn await-any
+  "Wait asynchronuously until one of the given events happens. Passes on
+  the result of the triggering event to the continuation."
+  [& events]
+  (fn [global-continue]
+    (let [guard          (atom false)
+          inner-continue (fn [result]
+                           (when (compare-and-set! guard false true)
+                             (global-continue result)))]
+      (doseq [event events] (event inner-continue)))))
