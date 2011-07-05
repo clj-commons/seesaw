@@ -86,6 +86,12 @@
       (doseq [item items] (append item builder))
       (.setRowGroupingEnabled builder false))))
 
+(def ^{:private true} layout-options
+  {:column-groups #(.setColumnGroups %1 (into-array (map int-array %2)))})
+
+(def ^{:private true} ignore-layout-options
+  (ignore-options layout-options))
+
 (def ^{:private true} builder-options
   {:items                  #(doseq [item %2] (append item %1))
    :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1))
@@ -93,6 +99,9 @@
    :leading-column-offset  #(.setLeadingColumnOffset %1 %2)
    :line-gap-size          #(.setLineGapSize %1 %2)
    :paragraph-gap-size     #(.setParagraphGapSize %1 %2)})
+
+(def ^{:private true} ignore-builder-options
+  (ignore-options builder-options))
 
 (defn ^JPanel forms-panel
   "Construct a panel with a FormLayout. The column spec is
@@ -119,7 +128,11 @@
   (let [layout  (FormLayout. column-spec "")
         panel   (#'seesaw.core/construct JPanel opts)
         builder (DefaultFormBuilder. layout panel)]
-    (apply-options builder opts builder-options)
+    (apply-options layout opts
+                   (merge layout-options ignore-builder-options))
+    (apply-options builder opts
+                   (merge builder-options ignore-layout-options))
     (doto (.getPanel builder)
       (apply-options opts (merge @#'seesaw.core/default-options
-                                 (ignore-options builder-options))))))
+                                 ignore-layout-options
+                                 ignore-builder-options)))))

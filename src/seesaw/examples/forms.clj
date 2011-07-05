@@ -17,6 +17,7 @@
   []
   (forms-panel
     "pref,4dlu,80dlu,8dlu,pref,4dlu,80dlu"
+    :column-groups [[1 5]]
     :items [(separator "General")
             "Company" (span (text) 5)
             "Contact" (span (text) 5)
