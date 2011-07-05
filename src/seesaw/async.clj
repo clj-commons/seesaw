@@ -106,7 +106,7 @@
   "Call the function with any additional arguments in a background thread and
   wait asynchronuously for its completion. Passes on the result to the
   continuation.
-  See also: await-future-async*"
+  See also: await-future"
   [f & args]
   (fn [continue]
     (future
@@ -117,6 +117,6 @@
 (defmacro await-future
   "Execute the code block in a background thread and wait asynchronuously
   for its completion. Passes on the result to the continuation.
-  See also: await-future-async*"
+  See also: await-future*"
   [& body]
   `(await-future* (fn [] ~@body)))
