@@ -437,7 +437,7 @@
   (it "should create a JPanel with a GridBagLayout"
     (= java.awt.GridBagLayout (class (.getLayout (form-panel)))))
   (it "should add an item with grid bag constraints"
-    (let [p (form-panel :items [["hi" :weighty 999]])
+    (let [p (form-panel :items [["hi" :weighty 999 :gridwidth 1]])
           w (first (.getComponents p))
           gbcs (.getConstraints (.getLayout p) w)]
       (expect (instance? JLabel w))

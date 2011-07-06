@@ -922,7 +922,7 @@
   :grid       gbc-grid-handler
   :gridx      #(set! (. %1 gridx)      (get gbc-grid-xy %2 %2))
   :gridy      #(set! (. %1 gridy)      (get gbc-grid-xy %2 %2))
-  :gridwidth  #(set! (. %1 gridwidget) (get gbc-grid-wh %2 %2))
+  :gridwidth  #(set! (. %1 gridwidth) (get gbc-grid-wh %2 %2))
   :gridheight #(set! (. %1 gridheight) (get gbc-grid-wh %2 %2))
   :fill       #(set! (. %1 fill)       (get gbc-fill %2 %2))
   :ipadx      #(set! (. %1 ipadx)      %2)
@@ -960,7 +960,8 @@
 })
 
 (defn form-panel
-  "*Don't use this. GridBagLaout is an abomination*
+  "*Don't use this. GridBagLaout is an abomination* I suggest using Seesaw's
+  MigLayout (seesaw.mig) or JGoogies Forms (seesaw.forms) support instead.
 
   A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
   want to be reminded of GridBagLayout. The :items property should be a list

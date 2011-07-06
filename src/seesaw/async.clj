@@ -1,151 +1,150 @@
 (ns seesaw.async
-  (:use [seesaw core]))
+  (:use
+    [seesaw.core :only (listen invoke-now)]
+    [seesaw.timer :only (timer)]))
 
+(defn run-async
+  "Run an asynchronuous workflow. Returns a promise which may be dereferenced
+  for the workflow result if there is any."
+  [continue]
+  (let [result (promise)]
+    (continue #(deliver result %))
+    result))
 
-; Wait for an event
-;   result is event
-; Wait for a specific time
-;   no result
-; Wait for a future to complete
-;   result is value of future
-; Wait for an ordered set of events (&&)
-;   result is list of results
-; Wait for all of a set of events, in any order (&&)
-;   result is set of values (or unordered list)
-; Wait for any of a set of events (||)
-;   result is value of first event
-; Wait for an event with timeout -> (wait event || wait time)
-;   result is value or nil
+(defn call-async
+  "Calls the given function asynchronuously and passes on the result to the
+  continuation."
+  [f & args]
+  #(% (apply f args)))
 
-;(await-event a :action-performed (fn [e] 
-  ;(text! status "Now wait just 3 seconds!")
-  ;(config! e :enabled? false)
-  ;(wait 3000 (fn []
-    ;(text! status "Now click B!")
-    ;(await-event b :action-performed (fn [e]
-      ;(text! status "Now click C!")
-      ;(config! e :enabled? false)
-      ;(await-event c :action-performed (fn [e]
-        ;(config! e :enabled? false)
-        ;(text! status "Done!")))))))))
+(defmacro doasync
+  "Runs the block asynchronuously and passes on the result to the continuation."
+  [& body]
+  `(call-async (fn [] ~@body)))
 
-(defmacro async
-  "Macro that executes an async call (the first form), ignores its result, and the 
-  executes the body normally."
-  [async-call & body]
-  `(~@(apply list (first async-call) `(fn [& args#] ~@body) (rest async-call))))
+(defmacro let-async
+  "Create a binding of locals similar to let. However on the right hand side
+  of the bindings are asynchronuous functions. Their results will be bound to
+  the locals.
 
-(defmacro async-let
-  "Macro that's similar to let, but executes bindings serially as async calls.
-  Once the bindings have completed, the body is executed normally"
-  [[b async-call & more] & body]
-  `(~@(apply list 
-        (first async-call) 
-        (if more `(fn [~b] (async-let ~more ~@body))
-                  `(fn [~b] ~@body))
-        (rest async-call))))
+  The locals may be used in later bindings and the body (just as in a let).
 
-(defn await-event 
-  "Wait for an event on a widget and call the continuation function with the
-  event object when it fires. Must be called inside async.
+  Example:
 
-  Examples:
-    (async 
-      (await-event my-button :action-performed)
-      ... do more stuff ...)
+      (let-async [is-even? (call-async even? 2)
+                  result   (doasync
+                             (if is-even?
+                               (+ 2 1)
+                               (- 2 1)))]
+        (* result 3))
+
+  Executes the steps and the body asynchronuously and passes on the result
+  to the continuation."
+  [steps & body]
+  (let [global-continue (gensym "global-continue")
+        step            (fn [inner [local local-continue]]
+                          `(~local-continue (fn [~local] ~inner)))]
+    `(fn [~global-continue]
+       ~(->> steps
+          (partition 2)
+          reverse
+          (reduce step `(~global-continue (do ~@body)))))))
+
+(defmacro async-workflow
+  "Create an asynchronuous workflow. Each step is execute asynchronuously
+  and hence must be an asynchronuous call. If a step is a vector, it will
+  be interpreted as a one binding let binding the result of the async call
+  to the given local in the subsequent steps. Passes on the result of the
+  last step to the continuation.
+
+  Example:
+
+      (defn some-workflow
+        [button-a button-b status]
+        (async-workflow
+          (doasync
+            (config! button-b :enabled? false))
+          [evt (await-event-async button-a :action-performed)]
+          (doasync
+            (config! evt :enabled? false)
+            (config! button-b :enabled? false)
+            (text! status \"Now click B.\"))
+          (wait-async 3000)
+          (await-event-async button-b :action-performed)
+          (doasync
+             (config! button-a :enabled? true)
+             (config! button-b :enabled? false)
+             (text! status \"Done!\")
+             :done)))
   "
-  [continue target event]
-  (let [remove-fn (atom nil)
-        handler (fn [e] (@remove-fn) (continue e))]
-    (reset! remove-fn (listen target event handler))))
+  [& steps]
+  (let [local    (gensym "local")
+        step     (fn [s] (if (vector? s) s [local s]))
+        bindings (vec (mapcat step steps))
+        result   (second (rseq bindings))] ; Last local.
+    `(let-async ~bindings
+       ~result)))
 
-(defn wait 
-  "Wait the given number of milliseconds and then call the continuation function.
-  Must be called inside async.
-  
-  Examples:
-    ; Wait 5 seconds
-    (async
-      (wait 5000)
-      ... do more stuff ...)
-  "
-  [continue millis]
-  (timer 
-    (fn [_] (continue))
-    :initial-delay millis :repeats? false))
+(defn await-event
+  "Awaits the given event on the given target asynchronuously. Passes on the
+  event to the continuation."
+  [target event]
+  (fn [continue]
+    (let [remove-fn (promise)
+          handler   (fn [evt] (@remove-fn) (continue evt))]
+      (deliver remove-fn (listen target event handler)))))
 
-(defn await-future* [continue f]
-  (future
-    (let [result (f)]
-      (invoke-now (continue result)))))
+(defn wait
+  "Wait asynchronuously for t milliseconds. Passes on nil to the continuation."
+  [t]
+  (fn [continue]
+    (timer (fn [_] (continue nil))
+           :initial-delay t
+           :repeats?      false)))
 
-(defmacro await-future 
-  "Execute the body in the background and then pass the result to a continuation
-  function *in the UI thread*.
-  "
-  [continue & body]
-  `(await-future* ~continue (fn [] ~@body)))
+(defn await-future*
+  "Call the function with any additional arguments in a background thread and
+  wait asynchronuously for its completion. Passes on the result to the
+  continuation.
+  See also: await-future"
+  [f & args]
+  (fn [continue]
+    (future
+      (let [result (apply f args)]
+        (invoke-now
+          (continue result))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro await-future
+  "Execute the code block in a background thread and wait asynchronuously
+  for its completion. Passes on the result to the continuation.
+  See also: await-future*"
+  [& body]
+  `(await-future* (fn [] ~@body)))
 
-(def btn-a (button :text "A"))
-(def btn-b (button :text "B"))
-(def btn-c (button :text "C"))
-(def status (label "Start with A"))
-(def progress (progress-bar :min 0 :max 100))
+(defn await-any
+  "Wait asynchronuously until one of the given events happens. Passes on
+  the result of the triggering event to the continuation."
+  [& events]
+  (fn [global-continue]
+    (let [guard          (atom false)
+          inner-continue (fn [result]
+                           (when (compare-and-set! guard false true)
+                             (global-continue result)))]
+      (doseq [event events] (event inner-continue)))))
 
-(defn aa-wait-bc []
-  ; First collect two clicks on button A
-  (async-let [e (await-event btn-a :action-performed)
-              e (await-event btn-a :action-performed)]
-    (config! e :enabled? false)
-    (text! status "Now wait just 3 seconds!")
-    ; Now wait for a bit asynchronously
-    (async 
-      (wait 3000)
-      (text! status "Now click B!")
-      ; Collect a click from button B
-      (async-let [e (await-event btn-b :action-performed)]
-        (text! status "Now click C!")
-        (config! e :enabled? false)
-        ; Collect a click from button C
-        (async-let [e (await-event btn-c :action-performed)]
-          (config! [btn-a btn-b btn-c] :enabled? true)
-          (text! status "Done!"))))))
-
-(defn background-task []
-  (text! status "Click A to start background task")
-  (async 
-    ; Wait for button a to be clicked
-    (await-event btn-a :action-performed)
-    (text! status "Background task running")
-    ; Run some code in a background thread and collect the result when
-    ; it's done
-    (async-let [result (await-future 
-                         (loop [n 100]
-                           (Thread/sleep 50)
-                           (invoke-now (config! progress :value (- 100 n)))
-                           (if (> n 0) 
-                             (recur (dec n))
-                             "YES.")))]
-      (text! status (str "Background task complete with result " result)))))
-
-(defn n-clicks-on [btn n]
-  (text! btn (format "%d more clicks" n))
-  (when (> n 0)
-    (async
-      (await-event btn :action-performed)
-      (n-clicks-on btn (dec n)))))
-
-(invoke-later
-  (-> (frame :content (vertical-panel :items [btn-a btn-b btn-c status progress]))
-    pack! 
-    show!)
-  (background-task))
-
-;(aa-wait-bc)
-;(n-clicks-on a 5)
-;(background-task)
+(defn await-all
+  "Wait asynchronuously until all of the given events happened. Passes on
+  the sequence of results to the continuation."
+  [& events]
+  (fn [global-continue]
+    (let [n              (count events)
+          guard          (atom n)
+          promises       (repeatedly n promise)
+          inner-continue (fn [p]
+                           (fn [result]
+                             (deliver p result)
+                             (when (zero? (swap! guard dec))
+                               (global-continue (map deref promises)))))]
+      (doseq [[event p] (map vector events promises)]
+        (event (inner-continue p))))))
 
