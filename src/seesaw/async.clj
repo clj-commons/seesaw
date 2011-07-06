@@ -39,11 +39,32 @@
         (* result 3))
 
   Executes the steps and the body asynchronuously and passes on the result
-  to the continuation."
+  to the continuation.
+
+  Similar to clojure.core/for one may specify a test condition with :when.
+  If the condition is true, the let while be continued. Otherwise the
+  process will be stopped and nil will be passed on to the continuation.
+
+  Similar to clojure.core/for one may specify normal let bindings with :let.
+  This reliefs the need to wrap things in a doasync block. The above example
+  could be also written as:
+
+      (let-async [is-even? (call-async even? 2)
+                  :let     [result (if is-even?
+                                     (+ 2 1)
+                                     (- 2 1))]]
+        (* result 3))
+  "
   [steps & body]
   (let [global-continue (gensym "global-continue")
         step            (fn [inner [local local-continue]]
-                          `(~local-continue (fn [~local] ~inner)))]
+                          (condp = local
+                            :when `(if ~local-continue
+                                     ~inner
+                                     (~global-continue nil))
+                            :let  `(let ~local-continue
+                                     ~inner)
+                            `(~local-continue (fn [~local] ~inner))))]
     `(fn [~global-continue]
        ~(->> steps
           (partition 2)
@@ -53,29 +74,32 @@
 (defmacro async-workflow
   "Create an asynchronuous workflow. Each step is execute asynchronuously
   and hence must be an asynchronuous call. If a step is a vector, it will
-  be interpreted as a one binding let binding the result of the async call
-  to the given local in the subsequent steps. Passes on the result of the
-  last step to the continuation.
+  be interpreted as a binding step for let-async, eg. binding the result
+  of the async call to the given local in the subsequent steps. But :let
+  and :when work as well. Passes on the result of the last step to the
+  continuation.
 
   Example:
 
       (defn some-workflow
         [button-a button-b status]
         (async-workflow
-          (doasync
-            (config! button-b :enabled? false))
-          [evt (await-event-async button-a :action-performed)]
+          (call-async config! button-b :enabled? false)
+          [evt (await-any
+                 (await-event button-a :action-performed)
+                 (wait 5000))]
+          [:when evt]
           (doasync
             (config! evt :enabled? false)
             (config! button-b :enabled? false)
             (text! status \"Now click B.\"))
-          (wait-async 3000)
-          (await-event-async button-b :action-performed)
+          (wait 3000)
+          (await-event button-b :action-performed)
           (doasync
-             (config! button-a :enabled? true)
-             (config! button-b :enabled? false)
-             (text! status \"Done!\")
-             :done)))
+            (config! button-a :enabled? true)
+            (config! button-b :enabled? false)
+            (text! status \"Done!\")
+            :done)))
   "
   [& steps]
   (let [local    (gensym "local")
