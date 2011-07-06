@@ -148,3 +148,17 @@
       (doseq [[event p] (map vector events promises)]
         (event (inner-continue p))))))
 
+(defn await-valid
+  "Wait asynchronuously for the given event. Passes on the result to the
+  continuation if pred returns truethy for it. If the result does not
+  fulfil the predicate the optional invalid handler is called with the
+  continuation, the predicat, the event and the result. The default
+  behaviour for invalid is to cycle until a valid result is returned."
+  [pred event & {:keys [invalid]}]
+  (fn [global-continue]
+    (letfn [(inner-continue [result]
+              (cond
+                (pred result) (global-continue result)
+                invalid       (invalid global-continue pred event result)
+                :else         (event inner-continue)))]
+      (event inner-continue))))
