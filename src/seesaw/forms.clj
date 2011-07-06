@@ -35,7 +35,7 @@
   (reify
     ComponentSpec
     (append [this builder]
-      (.append builder component column-span))))
+      (.append builder (seesaw.core/to-widget component true) column-span))))
 
 (defn next-line
   "Continue with the nth next line in the builder."
@@ -56,12 +56,12 @@
        (.nextLine builder n)))))
 
 (defn title
-  "Adds the given titel to the form."
+  "Adds the given title to the form."
   [title]
   (reify
     ComponentSpec
     (append [this builder]
-      (.appendTitle builder this))))
+      (.appendTitle builder title))))
 
 (defn separator
   "Adds a separator with an optional label to the form."
