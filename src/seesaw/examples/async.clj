@@ -6,8 +6,10 @@
           :handler (fn [e] (run-async 
                              (async-workflow
                                (doasync (config! e :enabled? false))
-                               workflow
-                               (doasync (config! e :enabled? true))
+                               [result workflow]
+                               (doasync 
+                                 (alert e (str "Workflow completed with result: " result))
+                                 (config! e :enabled? true))
                                )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -116,14 +118,11 @@
       ; v will be either the text of the button, or nil for cancel
       [v (apply await-any (conj 
                             (map #(await-button % (text %)) digit-buttons)
-                            (await-button cancel-button nil)))]
-      (if v
-        (async-workflow 
-          (doasync (text! output v))
-          (passcode-workflow digit-buttons cancel-button more (conj result v)))
-        (doasync :canceled)))
+                            (await-button cancel-button nil)))
+       :when v]
+      (doasync (text! output v))
+      (passcode-workflow digit-buttons cancel-button more (conj result v)))
     (doasync 
-      (alert (str "Got " result))
       result)))
 
 (defn passcode-tab []
@@ -157,5 +156,5 @@
                                         {:title "N Clicks" :content (n-clicks-on-tab)}]))
       show!)))
 
-;(-main)
+(-main)
 
