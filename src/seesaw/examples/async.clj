@@ -1,16 +1,23 @@
 (ns seesaw.examples.async
   (:use [seesaw core async]))
 
-(def btn-a (button :text "A"))
-(def btn-b (button :text "B"))
-(def btn-c (button :text "C"))
-(def status (label "Start with A"))
-(def progress (progress-bar :min 0 :max 100))
+(defn start-button [workflow]
+  (action :name "Start Workflow"
+          :handler (fn [e] (run-async 
+                             (async-workflow
+                               (doasync (config! e :enabled? false))
+                               workflow
+                               (doasync (config! e :enabled? true))
+                               )))))
 
-(defn aa-wait-bc []
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn a-wait-bc-workflow [btn-a btn-b btn-c status]
   ; First collect two clicks on button A
   (async-workflow
-    [e (await-event btn-a :action-performed)]
+    (doasync
+      (text! status "Start by clicking A"))
     [e (await-event btn-a :action-performed)]
     (doasync
       (config! e :enabled? false)
@@ -31,12 +38,25 @@
       (text! status "Done!")
       :done)))
 
-(defn background-task []
+(defn a-wait-bc-tab []
+  (let [btn-a (button :text "A")
+        btn-b (button :text "B")
+        btn-c (button :text "C")
+        status (label)]
+    (vertical-panel 
+      :items [(start-button (a-wait-bc-workflow  btn-a btn-b btn-c status))
+              :separator
+              btn-a btn-b btn-c status])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn background-task [start-btn status progress]
   (async-workflow
     (doasync
-      (text! status "Click A to start background task"))
+      (text! status (str "Click '" (text start-btn) "' to start background task")))
     ; Wait for button a to be clicked
-    (await-event btn-a :action-performed)
+    (await-event start-btn :action-performed)
     (doasync
       (text! status "Background task running"))
     ; Run some code in a background thread and collect the result when
@@ -51,6 +71,18 @@
     (doasync
       (text! status (str "Background task complete with result " result)))))
 
+(defn background-task-tab []
+  (let [start-btn (button :text "Start Task")
+        status    (label)
+        progress  (progress-bar)]
+    (vertical-panel :items [(start-button (background-task start-btn status progress))
+                            :separator
+                            start-btn
+                            progress
+                            status])))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn n-clicks-on [btn n]
   (async-workflow
     (doasync
@@ -60,15 +92,70 @@
       (n-clicks-on btn (dec n))
       (doasync (text! btn (if e "Done" "Too Slow"))))))
 
+(defn n-clicks-on-tab []
+  (let [btn (button)]
+    (vertical-panel :items [(start-button (n-clicks-on btn 5))
+                            :separator
+                            btn])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn await-button 
+  "Wait for a button to be pressed and pass the given value to the
+  continuation"
+  [btn value]
+  (fn [continue] 
+    ((await-event btn :action-performed) (fn [_] (continue value)))))
+
+(defn passcode-workflow
+  [digit-buttons cancel-button [output & more] result]
+  (if output
+    (async-workflow
+      ; v will be either the text of the button, or nil for cancel
+      [v (apply await-any (conj 
+                            (map #(await-button % (text %)) digit-buttons)
+                            (await-button cancel-button nil)))]
+      (if v
+        (async-workflow 
+          (doasync (text! output v))
+          (passcode-workflow digit-buttons cancel-button more (conj result v)))
+        (doasync :canceled)))
+    (doasync 
+      (alert (str "Got " result))
+      result)))
+
+(defn passcode-tab []
+  (let [digit-buttons (map #(button :text %1) (range 0 9))
+        cancel-button (button :text "Cancel")
+        outputs (map (fn [_] (text :font "ARIAL-BOLD 24" :editable? false :halign :center)) (range 0 4))]
+    (vertical-panel 
+      :items ["4-digit passcode workflow"
+              (start-button 
+                (async-workflow
+                  (doasync (config! outputs :text ""))
+                  (passcode-workflow digit-buttons cancel-button outputs [])))
+              :separator
+              (border-panel
+                :north (grid-panel :border 10 :rows 1 :items outputs)
+                :center (grid-panel 
+                          :columns 3
+                          :items (concat digit-buttons ["" cancel-button ""])))])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn -main [& args]
   (invoke-later
-    (-> (frame :content (vertical-panel :items [btn-a btn-b btn-c status progress]))
-      pack! 
-      show!)
-    (run-async (n-clicks-on btn-a 5))
-    ;(run-async (background-task))
-    ;(run-async (aa-wait-bc))
-    ))
+    (-> (frame 
+          :size [300 :by 300]
+          :content (tabbed-panel :tabs [{:title "Passcode" :content (passcode-tab)}
+                                        {:title "Linear" :content (a-wait-bc-tab)}
+                                        {:title "Background Task" :content (background-task-tab)}
+                                        {:title "N Clicks" :content (n-clicks-on-tab)}]))
+      show!)))
 
 ;(-main)
 

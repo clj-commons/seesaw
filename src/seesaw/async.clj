@@ -42,7 +42,7 @@
   to the continuation.
 
   Similar to clojure.core/for one may specify a test condition with :when.
-  If the condition is true, the let while be continued. Otherwise the
+  If the condition is true, the let will be continued. Otherwise the
   process will be stopped and nil will be passed on to the continuation.
 
   Similar to clojure.core/for one may specify normal let bindings with :let.
@@ -176,7 +176,7 @@
   "Wait asynchronuously for the given event. Passes on the result to the
   continuation if pred returns truethy for it. If the result does not
   fulfil the predicate the optional invalid handler is called with the
-  continuation, the predicat, the event and the result. The default
+  continuation, the predicate, the event and the result. The default
   behaviour for invalid is to cycle until a valid result is returned."
   [pred event & {:keys [invalid]}]
   (fn [global-continue]
