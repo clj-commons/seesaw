@@ -24,14 +24,15 @@
       (expect (= "[nogrid]" (.getRowConstraints l))))))
 
 (describe replace!
-  (testing "when called on a panel with a mid layout"
+  (testing "when called on a panel with a mig layout"
     (it "replaces the given widget with a new widget and maintains constraints"
       (let [l0 (label "l0")
             l1 (label "l1")
             l2 (label "l2")
-            p (mig-panel :items [[l0 ""] [l1 "wrap"]])
-            result (replace! p l1 l2)]
+            l3 (label "l3")
+            p (mig-panel :items [[l0 ""] [l1 "wrap"] [l2 ""]])
+            result (replace! p l1 l3)]
         (expect (= p result))
-        (expect (= [l0 l2] (vec (.getComponents p))))
-        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l2))))))))
+        (expect (= [l0 l3 l2] (vec (.getComponents p))))
+        (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l3))))))))
 

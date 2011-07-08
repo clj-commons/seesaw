@@ -2221,15 +2221,15 @@
 })
 
 (def ^:private dialog-defaults {
-  :parent nil
-  :content "Please set the :content option."
-  :option-type :default
-  :type :plain
-  :options nil
+  :parent         nil
+  :content        "Please set the :content option."
+  :option-type    :default
+  :type           :plain
+  :options        nil
   :default-option nil
-  :success-fn (fn [_] :success)
-  :cancel-fn (fn [_])
-  :no-fn (fn [_] :no)
+  :success-fn     (fn [_] :success)
+  :cancel-fn      (fn [_])
+  :no-fn          (fn [_] :no)
 })
 
 (defn dialog
@@ -2286,10 +2286,10 @@
     (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
-                 :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
+                 :success-fn (fn [p] (text (select (to-root p) [:#name]))))
 
   The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
-  If the dialog is model this will return the result of :success-fn, :cancel-fn or 
+  If the dialog is modal this will return the result of :success-fn, :cancel-fn or 
   :no-fn depending on what button the user pressed. 
   
   Alternatively if :options has been specified, returns the value which has been 
@@ -2302,8 +2302,7 @@
   [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [{:keys [content option-type type
-                options default-option success-fn cancel-fn no-fn]}
-        (merge dialog-defaults opts) 
+                options default-option success-fn cancel-fn no-fn]} (merge dialog-defaults opts) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
@@ -2311,29 +2310,20 @@
               nil                       ;icon
               (when options
                 (into-array (map #(to-widget % true) options)))
-              (or default-option (first options)) ; default selection
-              )]
-    (let [dispatch-fns   {:yes-no        [success-fn no-fn]
-                          :yes-no-cancel [success-fn no-fn cancel-fn]
-                          :ok-cancel     [success-fn nil cancel-fn]
-                          :default       [success-fn]}
-          visible?       (get opts :visible? false) 
-          remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
-          dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
+              (or default-option (first options))) ; default selection
+        remaining-opts (apply dissoc opts :visible? (keys dialog-defaults))
+        dlg            (apply custom-dialog :visible? false :content pane (reduce concat remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
       (when-not options
-        (listen pane
-                :property-change
-                (fn [e] (when (and (.isVisible dlg)
-                                   (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
-                          (return-from-dialog e ((get-in dispatch-fns
-                                                       [option-type (.getValue pane)]
-                                                       (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
-                                               pane))))))
-      (if visible?
+        (.addPropertyChangeListener pane JOptionPane/VALUE_PROPERTY
+          (reify java.beans.PropertyChangeListener
+            (propertyChange [this e]
+              (return-from-dialog e 
+                (([success-fn no-fn cancel-fn] (.getNewValue e)) pane))))))
+      (if (:visible? opts)
         (show! dlg)
-        dlg))))
+        dlg)))
 
 
 ;*******************************************************************************
@@ -2634,7 +2624,7 @@
       (let [constraint (get-constraint (.getLayout container) container old-widget)]
         (doto container
           (.remove idx)
-          (.add    new-widget constraint))))
+          (.add    new-widget constraint idx))))
     container))
   
 (defn replace!
