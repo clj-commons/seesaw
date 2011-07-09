@@ -13,14 +13,16 @@
 
 ; Very basic example of connecting a text field to an atom.
 
-; A string atom
-(def value (atom "initial"))
-
 (defn app []
-  (let [input  (text :text @value :columns 20)
-        output (text :text @value :editable? false)]
-    (bind (.getDocument input) value)
-    (bind value (.getDocument output))
+  (let [input  (text :columns 20)
+        value  (atom "")
+        output (text :editable? false)]
+    ; Set up our binding chain
+    (bind (.getDocument input)          ; Take changes to input
+          (transform #(.toUpperCase %)) ; Pass through upper case transform
+          value                         ; Put the value in the atom 
+          (.getDocument output))        ; Show the final value in the output text doc
+    (text! input "Initial Value")
     (frame 
       :content 
         (vertical-panel 
@@ -29,7 +31,10 @@
                   input 
                   :separator
                   "Changed atom is reflected here:"
-                  output]))))
+                  output
+                  :separator
+                  (action :name "Print atom value to console"
+                          :handler (fn [e] (println "Current atom value is: " @value)))]))))
 
 (defn -main [& args]
   (invoke-later (show! (pack! (app)))))

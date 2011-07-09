@@ -43,7 +43,7 @@
     ; Bind the value of an atom to a label
     (let [a   (atom \"hi\")
           lbl (label)]
-      (bind a (transform #(.toUpperCase) (property lbl :text))))
+      (bind a (transform #(.toUpperCase %)) (property lbl :text))))
 
   Notes:
     Creating a binding does *not* automatically synchronize the values.
