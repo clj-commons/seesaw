@@ -18,9 +18,15 @@
 ;http://download.oracle.com/javase/6/docs/api/javax/swing/BoundedRangeModel.html
 
 (defprotocol Bindable
-  (listenable? [this])
-  (listen-to [this handler])
-  (set-value [this v]))
+  (subscribe [this handler])
+  (notify [this v]))
+
+(defn composite 
+  "Create a composite bindable from the start and end of a binding chain"
+  [start end]
+  (reify Bindable
+    (subscribe [this handler] (subscribe end handler))
+    (notify [this v] (notify start v))))
 
 (defn bind 
   "Creates a chain of listener bindings. When the value of source
@@ -50,41 +56,40 @@
 
     Circular bindings will usually work.
   "
-  [source target & more]
-  (check-args (listenable? source) (str "Don't know how to listen for changes from " source))
-  (listen-to source (fn [new-value] (set-value target new-value)))
-  (when-not (empty? more)
-    (apply bind target more)))
+  [first-source target & more]
+  (loop [source first-source target target more more]
+    (subscribe source #(notify target %))
+    (when (seq more)
+      (recur target (first more) (next more))))
+      (composite first-source target))
 
 (defn- get-document-text [^javax.swing.text.Document d]
   (.getText d 0 (.getLength d)))
 
 (extend-protocol Bindable
   clojure.lang.Atom
-    (listenable? [this] true)
-    (listen-to [this handler]
+    (subscribe [this handler]
       (add-watch this (keyword (gensym "bindable-atom-watcher"))
         (fn bindable-atom-watcher
           [k r o n] (when-not (= o n) (handler n)))))
-    (set-value [this v] (reset! this v))
+    (notify [this v] (reset! this v))
 
   javax.swing.text.Document
-    (listenable? [this] true)
-    (listen-to [this handler]
+    (subscribe [this handler]
       (listen this :document
         (fn [e] (handler (get-document-text this)))))
-    (set-value [this v] (invoke-now 
-                          (when-not (= v (get-document-text this))
-                            (do
-                              (.remove this 0 (.getLength this))
-                              (.insertString this 0 (str v) nil)))))
+    (notify [this v] 
+      (invoke-now 
+        (when-not (= v (get-document-text this))
+          (do
+            (.remove this 0 (.getLength this))
+            (.insertString this 0 (str v) nil)))))
 
   javax.swing.BoundedRangeModel
-    (listenable? [this] true)
-    (listen-to [this handler]
+    (subscribe [this handler]
       (listen this :change
         (fn [e] (handler (.getValue this)))))
-    (set-value [this v] (invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
+    (notify [this v] (invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
 
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum
@@ -111,13 +116,23 @@
   "Returns a bindable (suitable to pass to seesaw.bind/bind) that
   connects to a property of a widget, e.g. :foreground, :enabled?,
   etc.
- 
+
+  Examples:
+
+    ; Map the text in a text box to the foreground color of a label
+    ; Pass the text through Seesaw's color function first to get
+    ; a color value. Unnecessary, but illustrates (transform)
+    (let [t   (text :text \"white\")
+          lbl (label :text \"Color is shown here\" :opaque? true)]
+      (bind (.getDocument t) 
+            (transform color)
+            (property lbl :background)))
+    
   See:
     (seesaw.bind/bind)
   "
   (reify Bindable
-    (listenable? [this] true)
-    (listen-to [this handler] 
+    (subscribe [this handler] 
       (let [property-name (property-kw->java-name property-name)]
         (.addPropertyChangeListener target
           ; first letter of *some* property-names must be lower-case
@@ -126,23 +141,44 @@
               (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
           (reify java.beans.PropertyChangeListener 
             (propertyChange [this e] (handler (.getNewValue e)))))))
-    (set-value [this v] (config! target property-name v))))
+    (notify [this v] (config! target property-name v))))
 
 (defn transform 
   "Creates a bindable that takes an incoming value v, applies
   (f v args), and passes the result on. f should be side-effect
   free.
-  
+ 
   See:
     (seesaw.bind/bind)"
   [f & args]
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
-      (listenable? [this] true)
-      (listen-to [this handler]
+      (subscribe [this handler]
         (swap! state update-in [:handlers] conj handler))
-      (set-value [this v]
+      (notify [this v]
         (let [new-value (:value (swap! state assoc :value (apply f v args)))]
           (doseq [h (:handlers @state)]
             (h new-value)))))))
+
+(defn tee
+  "Create a tee junction in a bindable chain.
+  
+  Examples:
+  
+    ; Take the content of a text box and show it as upper and lower
+    ; case in two labels
+    (let [t (text)
+          upper (label)
+          lower (label)]
+      (bind (property t :text) 
+            (tee (bind (transform #(.toUpperCase %)) (property upper :text))
+                 (bind (transform #(.toLowerCase %)) (property lower :text)))))
+
+  See:
+    (seesaw.bind/bind)
+  "
+  [& bindables]
+  (reify Bindable
+    (subscribe [this handler] (throw (UnsupportedOperationException. "tee bindables don't support subscription")))
+    (notify [this v] (doseq [b bindables] (notify b v)))))
 

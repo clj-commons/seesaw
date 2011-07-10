@@ -5,12 +5,22 @@
         [lazytest.expect :only (expect)]))
 
 (describe bind
+  (it "returns a composite bindable"
+    (satisfies? Bindable (bind (atom 0) (atom 1) (atom 2) (atom 3))))
+
   (it "can chain bindables together"
     (let [a (atom 1)
           b (atom nil)]
       (bind a (transform + 5) b)
       (reset! a 5)
       (expect (= 10 @b))))
+  
+  (it "can chain bindables, including composites, together"
+    (let [a (atom 1)
+          b (atom nil)]
+      (bind a (bind (transform + 5) (transform * 2) (atom nil)) b)
+      (reset! a 2)
+      (expect (= 14 @b))))
 
   (it "should sync the enabled? property of a widget with an atom"
     (let [v (atom true)
@@ -77,3 +87,13 @@
         (reset! v 20)
         (expect (= (.getValue sl) 20))))))
 
+(describe tee
+  (it "creates a tee junction in a bind"
+    (let [start (atom 0)
+          end1  (atom 0)
+          end2  (atom 0)]
+      (bind start (tee (bind (transform * 2) end1)
+                       (bind (transform * 4) end2)))
+      (reset! start 5)
+      (expect (= 10 @end1))
+      (expect (= 20 @end2)))))
