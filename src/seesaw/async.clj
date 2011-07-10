@@ -179,10 +179,11 @@
   continuation, the predicate, the event and the result. The default
   behaviour for invalid is to cycle until a valid result is returned."
   [pred event & {:keys [invalid]}]
-  (fn [global-continue]
-    (letfn [(inner-continue [result]
-              (cond
-                (pred result) (global-continue result)
-                invalid       (invalid global-continue pred event result)
-                :else         (event inner-continue)))]
-      (event inner-continue))))
+  (let [invalid (or invalid (fn [g-c p e _r] ((await-valid p e) g-c)))]
+    (fn [global-continue]
+      (letfn [(inner-continue [result]
+                (cond
+                  (pred result) (global-continue result)
+                  invalid       (invalid global-continue pred event result)
+                  :else         (event inner-continue)))]
+        (event inner-continue)))))
