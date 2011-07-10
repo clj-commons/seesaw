@@ -121,11 +121,11 @@
 
     ; Map the text in a text box to the foreground color of a label
     ; Pass the text through Seesaw's color function first to get
-    ; a color value. Unnecessary, but illustrates (transform)
+    ; a color value.
     (let [t   (text :text \"white\")
           lbl (label :text \"Color is shown here\" :opaque? true)]
-      (bind (.getDocument t) 
-            (transform color)
+      (bind (.getDocument t)
+            (transform #(try (color %) (catch Exception (color 0 0 0))))
             (property lbl :background)))
     
   See:

@@ -170,11 +170,11 @@
 
 (defn- decode [s]
   (if (not= (first s) \#)
-    (throw (IllegalArgumentException. (str "Color code must start with #. Got " s)))
+    (throw (IllegalArgumentException. (str "Invalid color code '" s "'")))
     (case (count s)
       4 (Color/decode (apply str \# (interleave (next s) (next s))))
       7 (Color/decode s)
-      (throw (IllegalArgumentException. (str "Invalid color code " s))))))
+      (throw (IllegalArgumentException. (str "Invalid color code '" s "'"))))))
 
 (defn color
   "Create a java.awt.Color object from args.
