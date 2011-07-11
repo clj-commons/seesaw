@@ -1,7 +1,17 @@
 (ns seesaw.async
+  (:import
+    clojure.lang.IFn)
   (:use
     [seesaw.core :only (listen invoke-now)]
     [seesaw.timer :only (timer)]))
+
+(defprotocol Async
+  (cancel* [this] "Cancel this asynchronuous process."))
+
+(defn cancel
+  "Cancel the given asynchronuous event or process."
+  [this]
+  (cancel* this))
 
 (defn run-async
   "Run an asynchronuous workflow. Returns a promise which may be dereferenced
@@ -15,7 +25,8 @@
   "Calls the given function asynchronuously and passes on the result to the
   continuation."
   [f & args]
-  #(% (apply f args)))
+  (fn [continue]
+    (continue (apply f args))))
 
 (defmacro doasync
   "Runs the block asynchronuously and passes on the result to the continuation."
@@ -57,19 +68,32 @@
   "
   [steps & body]
   (let [global-continue (gensym "global-continue")
+        canceled?       (gensym "canceled?")
+        current         (gensym "current")
         step            (fn [inner [local local-continue]]
                           (condp = local
-                            :when `(if ~local-continue
-                                     ~inner
-                                     (~global-continue nil))
-                            :let  `(let ~local-continue
-                                     ~inner)
-                            `(~local-continue (fn [~local] ~inner))))]
-    `(fn [~global-continue]
-       ~(->> steps
-          (partition 2)
-          reverse
-          (reduce step `(~global-continue (do ~@body)))))))
+                            :when `(when-not @~canceled?
+                                     (if ~local-continue
+                                       ~inner
+                                       (~global-continue nil)))
+                            :let  `(when-not @~canceled?
+                                     (let ~local-continue
+                                       ~inner))
+                            `((reset! ~current ~local-continue) (fn [~local] ~inner))))]
+    `(let [~current   (atom nil)
+           ~canceled? (atom false)]
+       (reify
+         IFn
+         (invoke [this ~global-continue]
+           ~(->> steps
+              (partition 2)
+              reverse
+              (reduce step `(when-not @~canceled?
+                              (~global-continue (do ~@body))))))
+         Async
+         (cancel* [this]
+            (when @~current
+              (cancel @~current)))))))
 
 (defmacro async-workflow
   "Create an asynchronuous workflow. Each step is execute asynchronuously
@@ -113,18 +137,29 @@
   "Awaits the given event on the given target asynchronuously. Passes on the
   event to the continuation."
   [target event]
-  (fn [continue]
-    (let [remove-fn (promise)
-          handler   (fn [evt] (@remove-fn) (continue evt))]
-      (deliver remove-fn (listen target event handler)))))
+  (let [remove-fn (promise)]
+    (reify
+      IFn
+      (invoke [this continue]
+        (let [handler   (fn [evt] (@remove-fn) (continue evt))]
+          (deliver remove-fn (listen target event handler))))
+      Async
+      (cancel* [this]
+        (@remove-fn)))))
 
 (defn wait
   "Wait asynchronuously for t milliseconds. Passes on nil to the continuation."
   [t]
-  (fn [continue]
-    (timer (fn [_] (continue nil))
-           :initial-delay t
-           :repeats?      false)))
+  (let [tmr (promise)]
+    (reify
+      IFn
+      (invoke [this continue]
+        (deliver tmr (timer (fn [_] (continue nil))
+                            :initial-delay t
+                            :repeats?      false)))
+      Async
+      (cancel* [this]
+        (.stop ^javax.swing.Timer @tmr)))))
 
 (defn await-future*
   "Call the function with any additional arguments in a background thread and
@@ -132,11 +167,18 @@
   continuation.
   See also: await-future"
   [f & args]
-  (fn [continue]
-    (future
-      (let [result (apply f args)]
-        (invoke-now
-          (continue result))))))
+  (let [canceled? (atom false)]
+    (reify
+      IFn
+      (invoke [this continue]
+        (future
+          (let [result (apply f args)]
+            (when-not @canceled?
+              (invoke-now
+                (continue result))))))
+      Async
+      (cancel* [this]
+        (reset! canceled? true)))))
 
 (defmacro await-future
   "Execute the code block in a background thread and wait asynchronuously
@@ -149,28 +191,48 @@
   "Wait asynchronuously until one of the given events happens. Passes on
   the result of the triggering event to the continuation."
   [& events]
-  (fn [global-continue]
-    (let [guard          (atom false)
-          inner-continue (fn [result]
-                           (when (compare-and-set! guard false true)
-                             (global-continue result)))]
-      (doseq [event events] (event inner-continue)))))
+  (let [canceled? (atom false)]
+    (reify
+      IFn
+      (invoke [this global-continue]
+        (let [guard          (atom false)
+              inner-continue (fn [result]
+                               (when (and (not @canceled?)
+                                          (compare-and-set! guard false true))
+                                 (do
+                                  (doseq [event events] (cancel event)) ; cleanup
+                                  (global-continue result))))]
+          (doseq [event events] (event inner-continue))))
+      Async
+      (cancel* [this]
+        (reset! canceled? true)
+        (doseq [event events] (cancel event))))))
 
 (defn await-all
   "Wait asynchronuously until all of the given events happened. Passes on
   the sequence of results to the continuation."
   [& events]
-  (fn [global-continue]
-    (let [n              (count events)
-          guard          (atom n)
-          promises       (repeatedly n promise)
-          inner-continue (fn [p]
-                           (fn [result]
-                             (deliver p result)
-                             (when (zero? (swap! guard dec))
-                               (global-continue (map deref promises)))))]
-      (doseq [[event p] (map vector events promises)]
-        (event (inner-continue p))))))
+  (let [canceled? (atom false)]
+    (reify
+      IFn
+      (invoke [this global-continue]
+        (let [n              (count events)
+              guard          (atom n)
+              promises       (repeatedly n promise)
+              inner-continue (fn [p]
+                               (fn [result]
+                                 (deliver p result)
+                                 (when (and (not @canceled?)
+                                            (zero? (swap! guard dec)))
+                                   (do
+                                    (doseq [event events] (cancel event)) ; cleanup
+                                    (global-continue (map deref promises))))))]
+          (doseq [[event p] (map vector events promises)]
+            (event (inner-continue p)))))
+      Async
+      (cancel* [this]
+        (reset! canceled? true)
+        (doseq [event events] (cancel event))))))
 
 (defn await-valid
   "Wait asynchronuously for the given event. Passes on the result to the
@@ -179,11 +241,20 @@
   continuation, the predicate, the event and the result. The default
   behaviour for invalid is to cycle until a valid result is returned."
   [pred event & {:keys [invalid]}]
-  (let [invalid (or invalid (fn [g-c p e _r] ((await-valid p e) g-c)))]
-    (fn [global-continue]
-      (letfn [(inner-continue [result]
-                (cond
-                  (pred result) (global-continue result)
-                  invalid       (invalid global-continue pred event result)
-                  :else         (event inner-continue)))]
-        (event inner-continue)))))
+  (let [invalid (or invalid (fn [g-c p e _r] ((await-valid p e) g-c)))
+        canceled? (atom false)]
+    (reify
+      IFn
+      (invoke [this global-continue]
+        (letfn [(inner-continue [result]
+                  (cond
+                    (pred result) (when-not @canceled? (global-continue result))
+                    invalid       (when-not @canceled?
+                                    (invalid global-continue pred event result))
+                    :else         (event inner-continue)))]
+          (event inner-continue)))
+      Async
+      (cancel* [this]
+        (reset! canceled? true)
+        (cancel event)))))
+
