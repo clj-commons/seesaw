@@ -20,9 +20,16 @@
   :custom JFileChooser/CUSTOM_DIALOG
 })
 
+(def ^{:private true} file-selection-modes {
+  :files-only     JFileChooser/FILES_ONLY
+  :dirs-only      JFileChooser/DIRECTORIES_ONLY
+  :files-and-dirs JFileChooser/FILES_AND_DIRECTORIES
+})
+
 (def ^{:private true} file-chooser-options {
   :dir    #(.setCurrentDirectory %1 (if (isa? (type %2) java.io.File) %2 (java.io.File. %2)))
   :multi? #(.setMultiSelectionEnabled %1 (boolean %2))
+  :selection-mode #(.setFileSelectionMode %1 (get file-selection-modes %2))
   :filters #(doseq [[name exts] %2]
               (.setFileFilter %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
 })
@@ -62,6 +69,8 @@
     :dir  The initial working directory. If omitted, the previous directory chosen
           is remembered and used.
     :multi?  If true, multi-selection is enabled and a seq of files is returned.
+    :selection-mode The file selection mode: :files-only, :dirs-only and :files-and-dirs.
+                    Defaults to :files-only
     :filters A seq of lists where each list contains a filter name and a seq of
              extensions as strings for that filter. Default: [].
     :remember-directory? Flag specifying whether to remember the directory for future
