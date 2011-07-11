@@ -15,10 +15,9 @@
   capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util meta to-widget]
-        [clojure.string :only (capitalize split)])
+  (:use [seesaw util meta to-widget])
   (:require [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics bind cursor])
+             event selector icon action cells table graphics cursor])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
@@ -544,86 +543,6 @@
     (config* target args))
   targets)
 
-
-;*******************************************************************************
-; Property<->Atom syncing
-
-(def ^{:private true} short-property-keywords-to-long-map
-     {:min :minimum
-      :max :maximum
-      :tip :tool-tip-text})
-
-(defn- kw->java-name
-  "(kw->java-name :preferred-size)"
-  [kw]
-  (reduce str
-          (map capitalize (split (-> (name kw)
-                                     (.replace "?" ""))
-                                 #"\-"))))
-
-(defn property-kw->java-name
-  "INTERNAL USE ONLY. DO NOT USE
-  (property-kw->java-name :tip)"
-  [kw]
-  (apply str
-          (map capitalize (split (-> (short-property-keywords-to-long-map kw kw)
-                                     name
-                                     (.replace "?" ""))
-                                 #"\-"))))
-
-(defn- kw->java-method
-  "USED ONLY BY TESTS. DO NOT USE.
-  (kw->java-method :enabled?)"
-  [kw]
-  (str (if (.endsWith (str kw) "?")
-         "is"
-         "get") (kw->java-name kw)))
-
-(defn property-kw->java-method
-  "USED ONLY BY TESTS. DO NOT USE.
-  (property-kw->java-method :tip)"
-  [kw]
-  (kw->java-method (get short-property-keywords-to-long-map kw kw)))
-
-;; by default, property names' first character will be lowercased when
-;; added using a property change listener. For some however, the first
-;; character must stay uppercased. This map will specify those exceptions.
-(def ^{:private true} property-change-listener-name-overrides {
-  "ToolTipText" "ToolTipText"
-})
-
-(defmulti ^{:private true} setup-property-change-on-atom (fn [c k a] [(type c) k]))
-
-(defmethod ^{:private true} setup-property-change-on-atom :default
-  [component property a]
-  (let [property-name (property-kw->java-name property)]
-    (.addPropertyChangeListener
-     component
-     ; first letter of *some* property-names must be lower-case
-     (property-change-listener-name-overrides
-        property-name
-        (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
-     (proxy [java.beans.PropertyChangeListener] [] 
-       (propertyChange [e] (reset! a (.getNewValue e)))))))
-
-(defn- setup-property-syncing
-  [component property-name a]
-  (add-watch a
-             (keyword (gensym "property-syncing-watcher"))
-             (fn atom-watcher-fn
-               [k r o n] (when-not (= o n)
-                           (invoke-now (config! component
-                                                property-name
-                                                n)))))
-  (setup-property-change-on-atom component property-name a))
-
-(defn- ensure-sync-when-atom
-  [component property-name atom-or-other]
-  (if (atom? atom-or-other)
-    (do (setup-property-syncing component property-name atom-or-other) @atom-or-other)
-    atom-or-other))
-
-
 ;*******************************************************************************
 ; Default options
 (declare paint-option-handler)
@@ -632,31 +551,30 @@
   :id          seesaw.selector/id-of!
   :class       seesaw.selector/class-of!
   :listen      #(apply seesaw.event/listen %1 %2)
-  :opaque?     #(.setOpaque %1 (boolean (ensure-sync-when-atom %1 :opaque? %2)))
-  :enabled?    #(.setEnabled %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
-  :focusable?  #(.setFocusable %1 (boolean (ensure-sync-when-atom %1 :enabled? %2)))
+  :opaque?     #(.setOpaque %1 (boolean %2))
+  :enabled?    #(.setEnabled %1 (boolean %2))
+  :focusable?  #(.setFocusable %1 (boolean %2))
   :background  #(do
-                  (let [v (ensure-sync-when-atom %1 :background %2)]
-                    (.setBackground %1 (seesaw.color/to-color v))
-                    (.setOpaque %1 true)))
-  :foreground  #(.setForeground %1 (seesaw.color/to-color (ensure-sync-when-atom %1 :foreground %2)))
-  :border      #(.setBorder %1 (seesaw.border/to-border (ensure-sync-when-atom %1 :border %2)))
-  :font        #(.setFont %1 (seesaw.font/to-font (ensure-sync-when-atom %1 :font %2)))
-  :tip         #(.setToolTipText %1 (str (ensure-sync-when-atom %1 :tip %2)))
-  :text        #(.setText %1 (str (ensure-sync-when-atom %1 :text %2)))
-  :icon        #(.setIcon %1 (make-icon (ensure-sync-when-atom %1 :icon %2)))
+                  (.setBackground %1 (seesaw.color/to-color %2))
+                  (.setOpaque %1 true))
+  :foreground  #(.setForeground %1 (seesaw.color/to-color %2))
+  :border      #(.setBorder %1 (seesaw.border/to-border %2))
+  :font        #(.setFont %1 (seesaw.font/to-font %2))
+  :tip         #(.setToolTipText %1 (str %2))
+  :text        #(.setText %1 (str %2))
+  :icon        #(.setIcon %1 (make-icon %2))
   :cursor      #(.setCursor %1 (apply seesaw.cursor/cursor (to-seq %2)))
-  :action      #(.setAction %1 (ensure-sync-when-atom %1 :action %2))
-  :editable?   #(.setEditable %1 (boolean (ensure-sync-when-atom %1 :editable? %2)))
-  :visible?    #(.setVisible %1 (boolean (ensure-sync-when-atom %1 :visible? %2)))
+  :action      #(.setAction %1 %2)
+  :editable?   #(.setEditable %1 (boolean %2))
+  :visible?    #(.setVisible %1 (boolean %2))
   :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
   :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table (ensure-sync-when-atom %1 :orientation %2)))
+  :orientation #(.setOrientation %1 (orientation-table %2))
   :items       #(add-widgets %1 %2)
   :model       #(.setModel %1 %2)
-  :preferred-size #(.setPreferredSize %1 (to-dimension (ensure-sync-when-atom %1 :preferred-size %2)))
-  :minimum-size   #(.setMinimumSize %1 (to-dimension (ensure-sync-when-atom %1 :minimum-size %2)))
-  :maximum-size   #(.setMaximumSize %1 (to-dimension (ensure-sync-when-atom %1 :maximum-size %2)))
+  :preferred-size #(.setPreferredSize %1 (to-dimension %2))
+  :minimum-size   #(.setMinimumSize %1 (to-dimension %2))
+  :maximum-size   #(.setMaximumSize %1 (to-dimension %2))
   :size           #(let [d (to-dimension %2)]
                      (doto %1 
                        (.setPreferredSize d)
@@ -922,7 +840,7 @@
   :grid       gbc-grid-handler
   :gridx      #(set! (. %1 gridx)      (get gbc-grid-xy %2 %2))
   :gridy      #(set! (. %1 gridy)      (get gbc-grid-xy %2 %2))
-  :gridwidth  #(set! (. %1 gridwidget) (get gbc-grid-wh %2 %2))
+  :gridwidth  #(set! (. %1 gridwidth) (get gbc-grid-wh %2 %2))
   :gridheight #(set! (. %1 gridheight) (get gbc-grid-wh %2 %2))
   :fill       #(set! (. %1 fill)       (get gbc-fill %2 %2))
   :ipadx      #(set! (. %1 ipadx)      %2)
@@ -960,7 +878,8 @@
 })
 
 (defn form-panel
-  "*Don't use this. GridBagLaout is an abomination*
+  "*Don't use this. GridBagLaout is an abomination* I suggest using Seesaw's
+  MigLayout (seesaw.mig) or JGoogies Forms (seesaw.forms) support instead.
 
   A panel that uses a GridBagLayout. Also aliased as (grid-bag-panel) if you
   want to be reminded of GridBagLayout. The :items property should be a list
@@ -1058,15 +977,8 @@
   [& opts]
   (apply-options (ButtonGroup.) opts button-group-options))
 
-(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JToggleButton :selected?]
-  [component _ a]
-  (listen component
-          :change
-          (fn [e]
-            (reset! a (.isSelected component)))))
-
 (def ^{:private true} button-options {
-  :selected? #(.setSelected %1 (boolean (ensure-sync-when-atom %1 :selected? %2)))
+  :selected? #(.setSelected %1 (boolean %2))
   :group     #(.add %2 %1)
   :margin    #(.setMargin %1 (to-insets %2))
 })
@@ -2220,15 +2132,15 @@
 })
 
 (def ^:private dialog-defaults {
-  :parent nil
-  :content "Please set the :content option."
-  :option-type :default
-  :type :plain
-  :options nil
+  :parent         nil
+  :content        "Please set the :content option."
+  :option-type    :default
+  :type           :plain
+  :options        nil
   :default-option nil
-  :success-fn (fn [_] :success)
-  :cancel-fn (fn [_])
-  :no-fn (fn [_] :no)
+  :success-fn     (fn [_] :success)
+  :cancel-fn      (fn [_])
+  :no-fn          (fn [_] :no)
 })
 
 (defn dialog
@@ -2285,10 +2197,10 @@
     (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
                  :options-type :ok-cancel
-                 :success-fn (fn [p] (.getText (select (to-root p) [:#name]))))
+                 :success-fn (fn [p] (text (select (to-root p) [:#name]))))
 
   The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
-  If the dialog is model this will return the result of :success-fn, :cancel-fn or 
+  If the dialog is modal this will return the result of :success-fn, :cancel-fn or 
   :no-fn depending on what button the user pressed. 
   
   Alternatively if :options has been specified, returns the value which has been 
@@ -2301,8 +2213,7 @@
   [& {:as opts}]
   ;; (Object message, int messageType, int optionType, Icon icon, Object[] options, Object initialValue)
   (let [{:keys [content option-type type
-                options default-option success-fn cancel-fn no-fn]}
-        (merge dialog-defaults opts) 
+                options default-option success-fn cancel-fn no-fn]} (merge dialog-defaults opts) 
         pane (JOptionPane. 
               content 
               (input-type-map type)
@@ -2310,45 +2221,30 @@
               nil                       ;icon
               (when options
                 (into-array (map #(to-widget % true) options)))
-              (or default-option (first options)) ; default selection
-              )]
-    (let [dispatch-fns   {:yes-no        [success-fn no-fn]
-                          :yes-no-cancel [success-fn no-fn cancel-fn]
-                          :ok-cancel     [success-fn cancel-fn]
-                          :default       [success-fn]}
-          visible?       (get opts :visible? false) 
-          remaining-opts (reduce dissoc opts (conj (keys dialog-defaults) :visible?)) 
-          dlg            (apply custom-dialog (reduce concat [:visible? false :content pane] remaining-opts))]
+              (or default-option (first options))) ; default selection
+        remaining-opts (apply dissoc opts :visible? (keys dialog-defaults))
+        dlg            (apply custom-dialog :visible? false :content pane (reduce concat remaining-opts))]
       ;; when there was no options specified, default options will be
       ;; used, so the success-fn cancel-fn & no-fn must be called
       (when-not options
-        (listen pane
-                :property-change
-                (fn [e] (when (and (.isVisible dlg)
-                                   (= (.getPropertyName e) JOptionPane/VALUE_PROPERTY))
-                          (return-from-dialog e ((get-in dispatch-fns
-                                                       [option-type (.getValue pane)]
-                                                       (fn [_] (println "No fn found for option-type:" option-type "and button id:" (.getValue pane))))
-                                               pane))))))
-      (if visible?
+        (.addPropertyChangeListener pane JOptionPane/VALUE_PROPERTY
+          (reify java.beans.PropertyChangeListener
+            (propertyChange [this e]
+              (return-from-dialog e 
+                (([success-fn no-fn cancel-fn] (.getNewValue e)) pane))))))
+      (if (:visible? opts)
         (show! dlg)
-        dlg))))
+        dlg)))
 
 
 ;*******************************************************************************
 ; Slider
-(defmethod ^{:private true} setup-property-change-on-atom [javax.swing.JSlider :value]
-  [component _ a]
-  (listen component
-          :change
-          (fn [e]
-            (reset! a (.getValue component)))))
 
 (def ^{:private true} slider-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(let [v (ensure-sync-when-atom %1 :value %2)]
-            (check-args (number? v) ":value must be a number or an atom.")
+  :value #(let [v %2]
+            (check-args (number? v) ":value must be a number.")
             (.setValue %1 v))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
@@ -2376,8 +2272,7 @@
   Besides the default options, options can also be one of:
 
     :orientation   The orientation of the slider. One of :horizontal, :vertical.
-    :value         The initial numerical value that is to be set. This may be an
-                   atom, in which case the atom will be kept in sync with the slider.
+    :value         The initial numerical value that is to be set. 
     :min           The minimum numerical value which can be set.
     :max           The maximum numerical value which can be set.
     :minor-tick-spacing  The spacing between minor ticks. If set, will also set :paint-ticks? to true.
@@ -2414,12 +2309,7 @@
 (def ^{:private true} progress-bar-options {
   :orientation #(.setOrientation %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(cond (atom? %2)
-                  (seesaw.bind/bind-atom-to-range-model %2 (.getModel %1))
-                (number? %2)
-                  (.setValue %1 %2)
-                :else
-                  (throw (IllegalArgumentException. ":value must be a number or an atom.")))
+  :value #(do (check-args (number? %2)) (.setValue %1 %2))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
@@ -2437,8 +2327,7 @@
   Besides the default options, options can also be one of:
 
     :orientation   The orientation of the progress-bar. One of :horizontal, :vertical. Default: :horizontal.
-    :value         The initial numerical value that is to be set. This may be an
-                   atom, in which case the atom will be kept in sync with the slider. Default: 0.
+    :value         The initial numerical value that is to be set. Default: 0.
     :min           The minimum numerical value which can be set. Default: 0.
     :max           The maximum numerical value which can be set. Default: 100.
     :paint-string? A boolean value indicating whether to paint a string containing
@@ -2633,7 +2522,7 @@
       (let [constraint (get-constraint (.getLayout container) container old-widget)]
         (doto container
           (.remove idx)
-          (.add    new-widget constraint))))
+          (.add    new-widget constraint idx))))
     container))
   
 (defn replace!

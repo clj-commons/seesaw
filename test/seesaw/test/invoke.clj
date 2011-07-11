@@ -17,3 +17,14 @@
   (it "should execute code on the swing thread, wait, and return the result"
     (invoke-now (javax.swing.SwingUtilities/isEventDispatchThread))))
 
+(describe signaller
+  (it "should not invoke a call if one is already in flight"
+    (let [call-count (atom 0)
+          signal     (signaller #(swap! % inc))]
+      ; Schedule  some signals and check that only the first is queued.
+      (expect (= [true false false] (invoke-now [(signal call-count) (signal call-count) (signal call-count)])))
+      ; Now check the call count and make sure only one function was queued
+      ; Use invoke-now so we know the deref is executed *after* the functions
+      ; are processed.
+      (expect (= 1 (invoke-now @call-count))))))
+

@@ -9,12 +9,20 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.dialog
-  (:use [seesaw core font border util color pref mig]
+  (:use [seesaw core font border util color pref mig bind]
         [clojure.pprint :only (cl-format)]))
 
 (defmethod print-dup java.awt.Color [x writer]
            (binding [*print-dup* false]
              (cl-format writer "#=(java.awt.Color. ~a ~a ~a)" (.getRed x) (.getGreen x) (.getBlue x))))
+
+(defn bound-slider
+  [pref init & opts]
+  (let [s (apply slider :value init opts)
+        a (atom init)]
+    (bind (.getModel s) (bind-preference-to-atom pref a))
+    (config! s :value @a)
+    s))
 
 (let [common-opts
       [:content (mig-panel :items [[(label :font (font :from (default-font "Label.font")
@@ -65,17 +73,22 @@
                                  ["Display mode"]
                                  [(combobox :id :mode :model ["Triangulated Mesh" "Lines"]) "wrap"]
                                  ["Angle"]
-                                 [(slider :id :angle :value (bind-preference-to-atom "LAST_ANGLE" 150) :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]
+                                 [(bound-slider "LAST_ANGLE" 150 :id :angle :min 0 :max 20 :minor-tick-spacing 1 :major-tick-spacing 20 :paint-labels? true) "wrap"]
                                  ["KNN"]
-                                 [(slider :id :knn :value (bind-preference-to-atom "LAST_KNN" 150) :min 0 :max 300
+                                 [(bound-slider "LAST_KNN" 150 :id :knn  :min 0 :max 300
                                           :minor-tick-spacing 10 :major-tick-spacing 100 :paint-labels? true)
                                   "wrap"] 
                                  ["Color"]
-                                 [(label :id :colorbtn :text "      " :background (bind-preference-to-atom "LAST_BACKGROUND" (color 255 255 0))
+                                 [(let [lbl (label :id :colorbtn :text "      " :background (color 255 255 0)
                                          :listen [:mouse-clicked
                                                   (fn [e]
                                                     (if-let [clr (javax.swing.JColorChooser/showDialog nil "Choose a color" (.getBackground (.getSource e)))]
-                                                      (config! (.getSource e) :background clr)))]) "growx, wrap"]
+                                                      (config! e :background clr)))])
+                                        color-atom (atom (color 255 255 0))]
+                                    (bind-preference-to-atom "LAST_BACKGROUND" color-atom)
+                                    (bind (property lbl :background) color-atom)
+                                    (config! lbl :background @color-atom)
+                                    lbl) "growx, wrap"]
                                  ])) pack! show!)))
 
 (defn -main [& args]
@@ -89,3 +102,4 @@
                                             (action :name "Show Dialog with remembered values" 
                                                     :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])) pack! show!)))
 ;(-main)
+

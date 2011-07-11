@@ -11,11 +11,11 @@
 (ns seesaw.invoke
   (:import [javax.swing SwingUtilities]))
 
-(defn invoke-later* [f] (SwingUtilities/invokeLater f))
+(defn invoke-later* [f & args] (SwingUtilities/invokeLater #(apply f args)))
 
-(defn invoke-now* [f]
+(defn invoke-now* [f & args]
   (let [result (atom nil)]
-   (letfn [(invoker [] (reset! result (f)))]
+   (letfn [(invoker [] (reset! result (apply f args)))]
      (if (SwingUtilities/isEventDispatchThread)
        (invoker)
        (SwingUtilities/invokeAndWait invoker))
@@ -55,4 +55,49 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
   "
   [& body] `(invoke-now*   (fn [] ~@body)))
+
+(defn signaller 
+  "Returns a function that conditionally queues the given function (+ args) on 
+  the UI thread. The call is only queued if there is not already a pending call
+  queued. 
+  
+  Suppose you're performing some computation in the background and want
+  to signal some UI component to update. Normally you'd use (seesaw.core/invoke-later)
+  but that can easily flood the UI thread with unnecessary updates. That is,
+  only the \"last\" queued update really matters since it will overwrite any
+  preceding updates when the event queue is drained. Thus, this function takes
+  care of insuring that only one update call is \"in-flight\" at any given
+  time.
+
+  The returned function returns true if the action was queued, or false if
+  one was already active.
+
+  Examples:
+
+    ; Increment a number in a thread and signal the UI to update a label
+    ; with the current value. Without a signaller, the loop would send
+    ; updates way way way faster than the UI thread could handle.
+    (defn counting-text-box []
+      (let [display (label :text \"0\")
+            value   (atom 0)
+            signal  (signaller #(text! display (str @value)))]
+        (future
+          (loop []
+            (swap! value inc)
+            (signal)
+            (recur)))
+        label))
+
+  See:
+    (seesaw.invoke/invoke-later)
+  "
+  [f]
+  (let [active? (atom false)]
+    (fn [& args]
+      (let [do-it (compare-and-set! active? false true)]
+        (when do-it
+          (invoke-later 
+            (apply f args) 
+            (reset! active? false)))
+        do-it))))
 
