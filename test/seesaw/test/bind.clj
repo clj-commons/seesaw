@@ -97,3 +97,15 @@
       (reset! start 5)
       (expect (= 10 @end1))
       (expect (= 20 @end2)))))
+
+(describe to-bindable
+  (it "returns arg if it's already bindable"
+    (let [a (atom nil)]
+      (expect (= a (to-bindable a)))))
+  (it "converts a text component to its document"
+    (let [t (text)]
+      (expect (= (.getDocument t) (to-bindable t)))))
+  (it "converts a slider to its model"
+    (let [s (slider)]
+      (expect (= (.getModel s) (to-bindable s))))))
+

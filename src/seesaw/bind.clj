@@ -21,6 +21,14 @@
   (subscribe [this handler])
   (notify [this v]))
 
+(defprotocol ToBindable
+  (to-bindable* [this]))
+
+(defn to-bindable [target]
+  (if (satisfies? Bindable target)
+    target
+    (to-bindable* target)))
+
 (defn composite 
   "Create a composite bindable from the start and end of a binding chain"
   [start end]
@@ -57,10 +65,10 @@
     Circular bindings will usually work.
   "
   [first-source target & more]
-  (loop [source first-source target target more more]
+  (loop [source (to-bindable first-source) target (to-bindable target) more more]
     (subscribe source #(notify target %))
     (when (seq more)
-      (recur target (first more) (next more))))
+      (recur target (to-bindable (first more)) (next more))))
       (composite first-source target))
 
 (defn- get-document-text [^javax.swing.text.Document d]
@@ -181,4 +189,13 @@
   (reify Bindable
     (subscribe [this handler] (throw (UnsupportedOperationException. "tee bindables don't support subscription")))
     (notify [this v] (doseq [b bindables] (notify b v)))))
+
+(extend-protocol ToBindable
+  javax.swing.JSlider  
+    (to-bindable* [this] (.getModel this))
+  javax.swing.JProgressBar  
+    (to-bindable* [this] (.getModel this))
+  javax.swing.text.JTextComponent 
+    (to-bindable* [this] (.getDocument this)))
+
 

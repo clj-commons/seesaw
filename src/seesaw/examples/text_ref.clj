@@ -18,10 +18,10 @@
         value  (atom "")
         output (text :editable? false)]
     ; Set up our binding chain
-    (bind (.getDocument input)          ; Take changes to input
+    (bind input                         ; Take changes to input
           (transform #(.toUpperCase %)) ; Pass through upper case transform
           value                         ; Put the value in the atom 
-          (.getDocument output))        ; Show the final value in the output text doc
+          output)                       ; Show the final value in the output text doc
     (text! input "Initial Value")
     (frame 
       :content 
