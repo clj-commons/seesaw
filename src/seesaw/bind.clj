@@ -12,10 +12,10 @@
            synchronizing an atom with changes to a slider."
       :author "Dave Ray"}
   seesaw.bind
-  (:use [seesaw core util]
+  (:refer-clojure :exclude [some])
+  (:require [seesaw.core :as ssc])
+  (:use [seesaw util]
         [clojure.string :only (capitalize split)]))
-
-;http://download.oracle.com/javase/6/docs/api/javax/swing/BoundedRangeModel.html
 
 (defprotocol Bindable
   (subscribe [this handler])
@@ -84,10 +84,10 @@
 
   javax.swing.text.Document
     (subscribe [this handler]
-      (listen this :document
+      (ssc/listen this :document
         (fn [e] (handler (get-document-text this)))))
     (notify [this v] 
-      (invoke-now 
+      (ssc/invoke-now 
         (when-not (= v (get-document-text this))
           (do
             (.remove this 0 (.getLength this))
@@ -95,9 +95,9 @@
 
   javax.swing.BoundedRangeModel
     (subscribe [this handler]
-      (listen this :change
+      (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
-    (notify [this v] (invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
+    (notify [this v] (ssc/invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
 
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum
@@ -149,7 +149,36 @@
               (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
           (reify java.beans.PropertyChangeListener 
             (propertyChange [this e] (handler (.getNewValue e)))))))
-    (notify [this v] (config! target property-name v))))
+    (notify [this v] (ssc/config! target property-name v))))
+
+(defn selection
+  "Converts the selection of a widget into a bindable. Applies to listbox,
+  table, tree, combobox, checkbox, etc, etc. In short, anything to which
+  (seesaw.core/selection) applies.
+
+  options corresponds to the option map passed to (seesaw.core/selection)
+  and (seesaw.core/selection)
+  
+  Examples:
+    
+    ; Bind checkbox state to enabled state of a widget
+    (let [cb (checkbox :text \"Enable\")
+          t  (text)]
+      (bind (selection cb) (property t :enabled?)))
+
+  See:
+    (seesaw.bind/bind)
+    (seesaw.core/selection)
+    (seesaw.core/selection!)
+  "
+  ([widget options]
+    (reify Bindable
+      (subscribe [this handler]
+        (ssc/listen widget :selection (fn [_] (-> widget (ssc/selection options) handler))))
+      (notify [this v]
+        (ssc/selection! widget options v))))
+  ([widget]
+    (selection widget {})))
 
 (defn transform 
   "Creates a bindable that takes an incoming value v, applies
@@ -167,6 +196,36 @@
         (let [new-value (:value (swap! state assoc :value (apply f v args)))]
           (doseq [h (:handlers @state)]
             (h new-value)))))))
+
+(defn some
+  "Executes a preducate on incoming value. If the predicate returns a truthy
+  value, that value is passed on to the next bindable in the chain. Otherwise,
+  nothing is notified.
+  
+  Examples:
+    
+    ; Try to convert a text string to a number. Do nothing if the conversion
+    ; Fails
+    (let [input (text)
+          output (slider :min 0 :max 100)]
+      (bind input (gate #(try (Integer/parseInt %) (catch Exception nil))) output))
+
+  Notes:
+    This works a lot like (clojure.core/some)
+
+  See:
+    (clojure.core/some)
+  "
+  [pred]
+  (let [state (atom {:handlers [] :value nil})]
+    (reify Bindable
+      (subscribe [this handler]
+        (swap! state update-in [:handlers] conj handler))
+      (notify [this v]
+        (let [new-value (:value (swap! state assoc :value (pred v)))]
+          (when new-value
+            (doseq [h (:handlers @state)]
+              (h new-value))))))))
 
 (defn tee
   "Create a tee junction in a bindable chain.

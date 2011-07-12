@@ -1,6 +1,7 @@
 (ns seesaw.test.bind
-  (:use seesaw.core 
-        seesaw.bind)
+  (:refer-clojure :exclude [some])
+  (:require [seesaw.core :as ssc])
+  (:use seesaw.bind)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
@@ -24,22 +25,22 @@
 
   (it "should sync the enabled? property of a widget with an atom"
     (let [v (atom true)
-          b (button)]
+          b (ssc/button)]
       (bind (property b :enabled?) v)
-      (config! b :enabled? false)
+      (ssc/config! b :enabled? false)
       (expect (not @v))
       (reset! v true)))
 
   (it "should sync the enabled? property of a widget with an atom"
     (let [v (atom true)
-          b (button)]
+          b (ssc/button)]
       (bind (property b :enabled?) v)
-      (config! b :enabled? false)
+      (ssc/config! b :enabled? false)
       (expect (not @v))))
 
   (it "should sync an atom to the enabled? property of a widget"
     (let [v (atom true)
-          b (button)]
+          b (ssc/button)]
       (bind v (property b :enabled?))
       (reset! v false)
       (expect (not (.isEnabled b)))))
@@ -61,28 +62,28 @@
   (testing "given a text field"
     (it "should update an atom when the underlying document changes"
       (let [a (atom nil)
-            t (text "initial")]
+            t (ssc/text "initial")]
         (bind (.getDocument t) a)
-        (text! t "foo")
+        (ssc/text! t "foo")
         (expect (= "foo" @a))))
 
     (it "should update the underlying document when the atom changes"
       (let [a (atom "initial")
-            t (text "")]
+            t (ssc/text "")]
         (bind a (.getDocument t))
         (reset! a "foo")
-        (expect (= "foo" (text t))))))
+        (expect (= "foo" (ssc/text t))))))
 
   (testing "given a slider"
     (it "should sync the value of the atom with the slider value, if slider value changed"
       (let [v (atom 15)
-            sl (slider :value @v)]
+            sl (ssc/slider :value @v)]
         (bind (.getModel sl) v)
         (.setValue sl 20)
         (expect (= @v 20))))
     (it "should sync the value of the slider with the atom value, if atom value changed"
       (let [v (atom 15)
-            sl (slider :value @v)]
+            sl (ssc/slider :value @v)]
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20))))))
@@ -98,14 +99,42 @@
       (expect (= 10 @end1))
       (expect (= 20 @end2)))))
 
+(describe some
+  (it "doesn't pass along falsey values returned by the predicate"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (some (constantly nil)) end)
+      (reset! start :something)
+      (expect (= :bar @end))))
+  (it "doesn't passes along result of predicate when it returns truthy"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (some (constantly :yum)) end)
+      (reset! start :something)
+      (expect (= :yum @end)))))
+
+(describe selection
+  (it "sends out selection changes on a widget"
+    (let [lb (ssc/listbox :model [:a :b :c])
+          output (atom nil)]
+      (bind (selection lb) output)
+      (ssc/selection! lb :b)
+      (expect (= :b @output))))
+  (it "receives selection changes on a widget"
+    (let [input (atom nil)
+          lb (ssc/listbox :model [:a :b :c])]
+      (bind input (selection lb))
+      (reset! input :b)
+      (expect (= :b (ssc/selection lb))))))
+
 (describe to-bindable
   (it "returns arg if it's already bindable"
     (let [a (atom nil)]
       (expect (= a (to-bindable a)))))
   (it "converts a text component to its document"
-    (let [t (text)]
+    (let [t (ssc/text)]
       (expect (= (.getDocument t) (to-bindable t)))))
   (it "converts a slider to its model"
-    (let [s (slider)]
+    (let [s (ssc/slider)]
       (expect (= (.getModel s) (to-bindable s))))))
 
