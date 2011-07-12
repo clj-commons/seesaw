@@ -9,8 +9,9 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.dialog
-  (:use [seesaw core font border util color pref mig bind]
-        [clojure.pprint :only (cl-format)]))
+  (:use [seesaw core font border util color pref mig]
+        [clojure.pprint :only (cl-format)])
+  (:require [seesaw.bind :as bind])
 
 (defmethod print-dup java.awt.Color [x writer]
            (binding [*print-dup* false]
@@ -20,7 +21,7 @@
   [pref init & opts]
   (let [s (apply slider :value init opts)
         a (atom init)]
-    (bind (.getModel s) (bind-preference-to-atom pref a))
+    (bind/bind (.getModel s) (bind-preference-to-atom pref a))
     (config! s :value @a)
     s))
 
@@ -86,7 +87,7 @@
                                                       (config! e :background clr)))])
                                         color-atom (atom (color 255 255 0))]
                                     (bind-preference-to-atom "LAST_BACKGROUND" color-atom)
-                                    (bind (property lbl :background) color-atom)
+                                    (bind/bind (property lbl :background) color-atom)
                                     (config! lbl :background @color-atom)
                                     lbl) "growx, wrap"]
                                  ])) pack! show!)))

@@ -13,11 +13,11 @@
   (:require [seesaw.bind :as b]))
 
 (defn regex-box [& opts]
-  (let [t (text :id :search :columns 20 :border [5 (line-border)])
-        s (label :text "Ready" :h-text-position :left)]
+  (let [pattern (text :id :search :columns 20 :border [5 (line-border)])
+        status  (label :text "Ready" :h-text-position :left)]
     (b/bind 
       ; As the text of the textbox changes ...
-      t
+      pattern
       ; Convert it to a regex, or nil if it's invalid
       (b/transform #(try (re-pattern %) (catch Exception e nil)))
       ; Now split into two paths ...
@@ -26,15 +26,15 @@
         ; on whether the regex was valid
         (b/bind 
           (b/transform #(if % "white" "lightcoral")) 
-          (b/property t :background))
+          (b/property pattern :background))
         ; The second path sets the text of the status label
         (b/bind 
           (b/transform #(if % "Ready" "Invalid regex")) 
-          s)))
+          status)))
     (border-panel 
       :north "Enter a search string:" 
-      :center t 
-      :south s :vgap 5 :border 5)))
+      :center pattern
+      :south status :vgap 5 :border 5)))
 
 (defn app []
   (let [f (frame 
