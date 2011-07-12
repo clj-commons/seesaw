@@ -16,7 +16,7 @@
 (defn check-args 
   [condition message]
   (if-not condition
-    (throw (IllegalArgumentException. message))
+    (throw (IllegalArgumentException. ^String message))
     true))
   
 (defmacro cond-doto
@@ -60,21 +60,23 @@
    Note that the fields must be static and declared *in* the class, not a 
    supertype.
   "
-  [klass & fields]
+  [^Class klass & fields]
   (let [[options fields] (if (map? (first fields)) [(first fields) (rest fields)] [{} fields])
         {:keys [suffix] :or {suffix ""}} options]
     (reduce
       (fn [m [k v]] (assoc m k v))
       {}
       (map 
-        #(vector %1 (.. klass (getDeclaredField (str (constantize-keyword %1) suffix)) (get nil)))
+        #(vector %1 (.. klass 
+                      (getDeclaredField (str (constantize-keyword %1) suffix)) 
+                      (get nil)))
         fields))))
     
   
 (defn camelize
   "Convert input string to camelCase from hyphen-case"
   [s]
-  (clojure.string/replace s #"-(.)" #(.toUpperCase (%1 1))))
+  (clojure.string/replace s #"-(.)" #(.toUpperCase ^String (%1 1))))
 
 (defn boolean? [b]
   "Return true if b is exactly true or false. Useful for handling optional
