@@ -713,6 +713,32 @@
   (abstract-panel (BorderLayout.) border-layout-options opts))
 
 ;*******************************************************************************
+; Card
+
+(def ^{:private true} card-panel-options {
+  :items (fn [panel items]
+           (dorun (map (fn [[w id]] (.add panel (to-widget w) id)) items)))
+  :show #(.show (.getLayout %1) %1 %2)
+})
+
+(defn card-panel
+  "Create a panel with a card layout. Options:
+
+    :items A list of pairs with format [widget, identifier]
+           where identifier is a string.
+
+    :show  show a widget based on it's identifier. Only one
+           widget can be shown at a time.
+
+  See: 
+
+    http://download.oracle.com/javase/6/docs/api/java/awt/CardLayout.html
+  "
+  { :seesaw {:class 'javax.swing.JPanel }}
+  [& opts]
+  (abstract-panel (java.awt.CardLayout.) card-panel-options opts))
+
+;*******************************************************************************
 ; Flow
 
 (def ^{:private true} flow-align-table
