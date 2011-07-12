@@ -250,6 +250,8 @@
     (notify [this v] (doseq [b bindables] (notify b v)))))
 
 (extend-protocol ToBindable
+  javax.swing.JLabel
+    (to-bindable* [this] (property this :text))
   javax.swing.JSlider  
     (to-bindable* [this] (.getModel this))
   javax.swing.JProgressBar  
