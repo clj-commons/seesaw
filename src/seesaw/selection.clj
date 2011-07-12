@@ -26,10 +26,10 @@
     (set-selection [target [v]]  (doto target (.setSelected (boolean v))))
 
   javax.swing.ButtonGroup
-    (get-selection [target]      
-      (when-let [sel (some #(when (.isSelected %) %) (enumeration-seq (.getElements target)))]
+    (get-selection [^javax.swing.ButtonGroup target]      
+      (when-let [sel (some #(when (.isSelected ^javax.swing.AbstractButton %) %) (enumeration-seq (.getElements target)))]
         [sel]))
-    (set-selection [target [v]]  
+    (set-selection [^javax.swing.ButtonGroup target [^javax.swing.AbstractButton v]]  
       (if v
         (.setSelected target (.getModel v) true)
         (.clearSelection target))
@@ -44,7 +44,7 @@
     (set-selection [target [v]] (doto target (.setSelectedItem v))))
 
 (defn- list-model-to-seq
-  [model]
+  [^javax.swing.ListModel model]
   (map #(.getElementAt model %) (range 0 (.getSize model))))
 
 (defn- list-model-indices
@@ -56,7 +56,7 @@
       (map first))))
 
 (defn- jlist-set-selection
-  ([target values]
+  ([^javax.swing.JList target values]
     (if (seq values)
       (let [indices (list-model-indices (.getModel target) values)]
         (.setSelectedIndices target (int-array indices)))
@@ -80,7 +80,7 @@
 
 (extend-protocol Selection
   javax.swing.JTree
-    (get-selection [target] (seq (map #(seq (.getPath %)) (.getSelectionPaths target))))
+    (get-selection [target] (seq (map #(seq (.getPath ^javax.swing.tree.TreePath %)) (.getSelectionPaths target))))
     (set-selection [target args]
       (if (seq args)
         target
