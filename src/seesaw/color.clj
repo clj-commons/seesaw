@@ -165,7 +165,7 @@
 })
 
 (defn get-rgba 
-  [c] 
+  [^java.awt.Color c] 
   (vector (.getRed c) (.getGreen c) (.getBlue c) (.getAlpha c)))
 
 (defn- decode [s]
@@ -206,7 +206,7 @@
   "
   ([s] (or (color-names (.toLowerCase (name s))) (decode (name s))))
   ([s a] (apply color (assoc (get-rgba (color s)) 3 a)))
-  ([r g b a] (Color. r (or g 0) (or b 0) (or a 255)))
+  ([^Integer r ^Integer g ^Integer b ^Integer a] (Color. r (or g 0) (or b 0) (or a 255)))
   ([r g b] (color r g b nil)))
 
 (defn default-color
