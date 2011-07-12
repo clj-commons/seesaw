@@ -65,9 +65,9 @@
     Circular bindings will usually work.
   "
   [first-source target & more]
-  (loop [source (to-bindable first-source) target (to-bindable target) more more]
+  (loop [source (to-bindable first-source) target (to-bindable target) more (seq more)]
     (subscribe source #(notify target %))
-    (when (seq more)
+    (when more
       (recur target (to-bindable (first more)) (next more))))
       (composite first-source target))
 
