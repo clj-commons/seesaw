@@ -717,26 +717,39 @@
 
 (def ^{:private true} card-panel-options {
   :items (fn [panel items]
-           (dorun (map (fn [[w id]] (.add panel (to-widget w) id)) items)))
-  :show #(.show (.getLayout %1) %1 %2)
+           (doseq [[w id] items]
+             (add-widget panel w (name id))))
+  :hgap #(.setHgap (.getLayout %1) %2) 
+  :vgap #(.setVgap (.getLayout %1) %2) 
 })
 
 (defn card-panel
   "Create a panel with a card layout. Options:
 
     :items A list of pairs with format [widget, identifier]
-           where identifier is a string.
-
-    :show  show a widget based on it's identifier. Only one
-           widget can be shown at a time.
+           where identifier is a string or keyword.
 
   See: 
 
+    (seesaw.core/show-card!)
     http://download.oracle.com/javase/6/docs/api/java/awt/CardLayout.html
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
   (abstract-panel (java.awt.CardLayout.) card-panel-options opts))
+
+(defn show-card! 
+  "Show a particular card in a card layout. id can be a string or keyword.
+   panel is returned.
+
+  See:
+
+    (seesaw.core/card-panel)
+    http://download.oracle.com/javase/6/docs/api/java/awt/CardLayout.html
+  "
+  [panel id]
+  (.show (.getLayout panel) panel (name id))
+  panel)
 
 ;*******************************************************************************
 ; Flow

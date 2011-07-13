@@ -1205,3 +1205,23 @@
   (it "returns the height of a widget"
     (= 101 (height (xyz-panel :bounds [0 0 100 101])))))
 
+(describe card-panel
+  (it "creates a panel with a CardLayout"
+    (let [p (card-panel :hgap 4 :vgap 3 :items [["Label" :first] [(button) :second]])]
+      (expect (instance? javax.swing.JPanel p))
+      (expect (instance? java.awt.CardLayout (.getLayout p)))
+      (expect (= 4 (.. p getLayout getHgap)))
+      (expect (= 3 (.. p getLayout getVgap)))
+      (expect (= 2 (count (.getComponents p)))))))
+
+(describe show-card!
+  (it "sets the visible card in a card panel"
+    (let [a (label)
+          b (button)
+          c (checkbox)
+          p (card-panel :items [[a :first] [b :second] [c "third"]])]
+      (show-card! p :second)
+      (expect (visible? b))
+      (show-card! p "third")
+      (expect (visible? c)))))
+
