@@ -27,15 +27,18 @@
     (map? row) (unpack-row-map col-key-map row)
     :else      (object-array row)))
 
-(defn- proxy-table-model [column-names column-key-map]
-  (proxy [javax.swing.table.DefaultTableModel] [column-names 0]
+(defn- ^javax.swing.table.DefaultTableModel proxy-table-model [column-names column-key-map]
+  (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
     (isCellEditable [row col] false)
     (getValueAt [row col] 
       (if (= -1 row col)
         column-key-map
-        (proxy-super getValueAt row col)))))
+        ; trick to force proxy-super macro to see correct type
+        ; to avoid reflection.
+        (let [^javax.swing.table.DefaultTableModel this this]
+          (proxy-super getValueAt row col))))))
 
-(defn- get-column-key-map [model]
+(defn- get-column-key-map [^javax.swing.table.TableModel model]
   (try
     ; Try to grab the column to key map using proxy hack above
     (.getValueAt model -1 -1)
@@ -76,18 +79,19 @@
   "
   [& {:keys [columns rows] :as opts}]
   (let [norm-cols   (map normalize-column columns)
-        col-names   (object-array (map :text norm-cols))
+        col-names   (map :text norm-cols)
         col-key-map (reduce (fn [m [k v]] (assoc m k v)) {} (map-indexed #(vector (:key %2) %1) norm-cols))
-        model     (proxy-table-model col-names col-key-map)]
+        model (proxy-table-model col-names col-key-map)]
     (doseq [row rows]
-      (.addRow model (unpack-row col-key-map row)))
+      (.addRow model ^objects (unpack-row col-key-map row)))
     model))
 
-(defn- to-table-model [v]
+; TODO this is used in places that assume DefaultTableModel
+(defn- ^javax.swing.table.DefaultTableModel to-table-model [v]
   (cond
     (instance? javax.swing.table.TableModel v) v
     ; TODO replace with (to-widget) so (value-at) works with events and stuff
-    (instance? javax.swing.JTable v) (.getModel v)
+    (instance? javax.swing.JTable v) (.getModel ^javax.swing.JTable v)
     :else (throw (IllegalArgumentException. (str "Can't get table model from " v)))))
 
 (defn- single-value-at
@@ -148,7 +152,7 @@
   ([target row value]
     (let [target      (to-table-model target)
           col-key-map (get-column-key-map target)
-          row-values  (unpack-row col-key-map value)]
+          ^objects row-values  (unpack-row col-key-map value)]
       (doseq [i (range 0 (.getColumnCount target))]
         ; TODO this precludes setting a cell to nil. Do we care?
         (when-let [v (aget row-values i)]
@@ -179,10 +183,10 @@
                 3 {:name \"Big Ed\"       :likes \"Norma\"})
 
   "
-  ([target row value]
-    (let [target      (to-table-model target)
+  ([target ^Integer row value]
+    (let [target  (to-table-model target)
           col-key-map (get-column-key-map target)
-          row-values  (unpack-row col-key-map value)]
+          ^objects row-values  (unpack-row col-key-map value)]
       (.insertRow target row row-values))
    target)
   ([target row value & more]
