@@ -1051,6 +1051,7 @@
     :tab-size     Tab size in spaces. Defaults to 8.
     :rows         Number of rows if :multi-line? is true (default 0).
     :styled?      If true, a JTextPane is created (default false)
+                  This option overrides :multi-line?
     :styles       Define styles, used in conjunction with :styled?
                   A list of vectors of form:
                   [identifier & options]
