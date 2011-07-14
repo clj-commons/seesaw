@@ -117,6 +117,7 @@
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
     :install (fn [target listener]
+                ; TODO reflection - this could be several different types.
                 (.addListSelectionListener 
                   (cond
                     (instance? javax.swing.JTable target) (.getSelectionModel ^javax.swing.JTable target)
@@ -128,7 +129,7 @@
     :class   TreeSelectionListener
     :events  #{:value-changed}
     :named-events #{:tree-selection} ; Suppress reversed map entry
-    :install #(.addTreeSelectionListener %1 ^TreeSelectionListener %2)
+    :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)
   }
 })
 
