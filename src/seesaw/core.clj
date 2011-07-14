@@ -22,10 +22,10 @@
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
-             JLabel JTextField JTextArea 
+             JLabel JTextField JTextArea JTextPane 
              AbstractButton JButton ButtonGroup
              JOptionPane]
-           [javax.swing.text JTextComponent]
+           [javax.swing.text JTextComponent StyleConstants]
            [java.awt Component FlowLayout BorderLayout GridLayout 
               GridBagLayout GridBagConstraints
               Dimension]))
@@ -1011,6 +1011,21 @@
 
 ;*******************************************************************************
 ; Text widgets
+
+(defn- add-styles [text_pane styles]
+  (doseq [[id & options] styles]
+    (let [style (.addStyle text_pane (name id) nil)]
+      (doseq [[k v] (partition 2 options)]
+        (case k
+          :font       (.addAttribute style StyleConstants/FontFamily (seesaw.font/to-font v))
+          :size       (.addAttribute style StyleConstants/FontSize v)
+          :color      (.addAttribute style StyleConstants/Foreground (seesaw.color/to-color v))
+          :background (.addAttribute style StyleConstants/Background (seesaw.color/to-color v))
+          :bold       (.addAttribute style StyleConstants/Bold (boolean v))
+          :italic     (.addAttribute style StyleConstants/Italic (boolean v))
+          :underline  (.addAttribute style StyleConstants/Underline (boolean v))
+          (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
+
 (def ^{:private true} text-options {
   ; TODO split into single/multi options since some of these will fail if
   ; multi-line? is false  
@@ -1018,6 +1033,9 @@
   :rows        #(.setRows    %1 %2)
   :wrap-lines? #(doto %1 (.setLineWrap (boolean %2)) (.setWrapStyleWord (boolean %2)))
   :tab-size    #(.setTabSize %1 %2)
+  :styles      #(if (= (class %) javax.swing.JTextPane)
+                    (add-styles %1 %2)
+                    (throw (IllegalArgumentException. ":styles is only supported in conjunction with :styled?")))
 })
 
 (defn text
@@ -1032,6 +1050,18 @@
                   (default false)
     :tab-size     Tab size in spaces. Defaults to 8.
     :rows         Number of rows if :multi-line? is true (default 0).
+    :styled?      If true, a JTextPane is created (default false)
+    :styles       A list of vectors of form:
+                  [identifier & options]
+                  Where identifier is a string or keyword
+                  Options supported:
+                  :font        See (seesaw.font/to-font)
+                  :size        An integer.
+                  :color       See (seesaw.color/to-color)
+                  :background  See (seesaw.color/to-color)
+                  :bold        If truthy, bold style.
+                  :italic      If truthy, italic style.
+                  :underline   If truthy, underlines text.
 
   To listen for document changes, use the :listen option:
 
@@ -1069,10 +1099,12 @@
       (and one? multi?)      (map #(text %) arg0)
       one?                   (text :text arg0)
 
-      :else (let [{:keys [multi-line?] :as opts} args
-                  t (if multi-line? (construct JTextArea opts) (construct JTextField opts))]
+      :else (let [{:keys [multi-line? styled?] :as opts} args
+                  t (if styled?
+                      (construct javax.swing.JTextPane opts)
+                      (if multi-line? (construct JTextArea opts) (construct JTextField opts)))]
               (apply-options t 
-                (dissoc opts :multi-line?)
+                (dissoc opts :multi-line? :styled?)
                 (merge default-options text-options))))))
 
 (defn text!
@@ -1097,6 +1129,11 @@
       as-doc      (do (.replace as-doc 0 (.getLength as-doc) value nil) as-doc)
       as-widget   (do (.setText as-widget value) as-widget)
       multi?      (do (doseq [w targets] (text w value)) targets))))
+
+(defn style-text!
+  [target id start length]
+  (.setCharacterAttributes (.getStyledDocument target)
+                           start length (.getStyle target (name id)) true))
 
 ;*******************************************************************************
 ; JPasswordField

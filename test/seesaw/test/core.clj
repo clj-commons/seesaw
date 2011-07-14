@@ -24,12 +24,13 @@
                         Action
                         JFrame
                         JToolBar JTabbedPane
-                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
+                        JPanel JLabel JButton JTextField JTextArea JTextPane Box Box$Filler BoxLayout
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane]
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
-           [java.awt.event ActionEvent]))
+           [java.awt.event ActionEvent]
+           [javax.swing.text StyleConstants]))
 
 (describe id-for
   (it "returns nil if a widget doesn't have an id"
@@ -486,6 +487,16 @@
     (let [t (text :text "HI" :multi-line? true)]
       (expect (= JTextArea (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should create a text pane when styled? is true, add :styles"
+    (let [t (text :text "HI" :styled? true 
+                  :styles [[:big :size 30]
+                           [:small :size 3]])]
+      (expect (= JTextPane (class t)))
+      (expect (= "HI" (.getText t)))
+      (let [style (.getStyle t "big")]
+        (expect (isa? (class style) javax.swing.text.Style))
+        (expect (.containsAttribute style StyleConstants/FontSize 30)))
+      (expect (= nil (style-text! t :big 0 2)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
   (it "should enable line wrapping on words when :wrap-lines? is true"
