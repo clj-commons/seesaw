@@ -209,7 +209,7 @@
   ([^Integer r ^Integer g ^Integer b ^Integer a] (Color. r (or g 0) (or b 0) (or a 255)))
   ([r g b] (color r g b nil)))
 
-(defn default-color
+(defn ^Color default-color
   "Retrieve a default color from the UIManager.
 
   Examples:
@@ -225,7 +225,7 @@
   [name]
   (.getColor (javax.swing.UIManager/getDefaults) name))
 
-(defn to-color
+(defn ^Color to-color
   [c]
   (cond
     (nil? c)            nil
