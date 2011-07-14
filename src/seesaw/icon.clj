@@ -17,7 +17,7 @@
 ;*******************************************************************************
 ; Icons
 
-(defn icon [p]
+(defn ^javax.swing.Icon icon [p]
   (cond
     (nil? p) nil 
     (instance? javax.swing.Icon p) p
