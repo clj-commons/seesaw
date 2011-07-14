@@ -27,28 +27,30 @@
 })
 
 (def ^{:private true} file-chooser-options {
-  :dir    #(.setCurrentDirectory %1 (if (isa? (type %2) java.io.File) %2 (java.io.File. %2)))
-  :multi? #(.setMultiSelectionEnabled %1 (boolean %2))
-  :selection-mode #(.setFileSelectionMode %1 (get file-selection-modes %2))
+  :dir (fn [^JFileChooser chooser dir] 
+         (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
+                                            (java.io.File. (str dir)))))
+  :multi? #(.setMultiSelectionEnabled ^JFileChooser %1 (boolean %2))
+  :selection-mode #(.setFileSelectionMode ^JFileChooser %1 (get file-selection-modes %2))
   :filters #(doseq [[name exts] %2]
-              (.setFileFilter %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
+              (.setFileFilter ^JFileChooser %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
 })
 
 (def ^{:private true} last-dir (atom nil))
 
-(defn- show-file-chooser [chooser parent type]
+(defn- show-file-chooser [^JFileChooser chooser parent type]
   (case type
     :open (.showOpenDialog chooser parent) 
     :save (.showSaveDialog chooser parent)
           (.showDialog chooser parent (str type))))
 
-(defn- configure-file-chooser [chooser opts]
+(defn- configure-file-chooser [^JFileChooser chooser opts]
   (apply-options chooser opts file-chooser-options)
   (when (and @last-dir (not (:dir opts)))
     (.setCurrentDirectory chooser @last-dir))
   chooser)
 
-(defn- remember-chooser-dir [chooser]
+(defn- remember-chooser-dir [^JFileChooser chooser]
   (reset! last-dir (.getCurrentDirectory chooser))
   chooser)
 
@@ -106,7 +108,7 @@
                         cancel-fn (fn [fc])}
                    :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn :cancel-fn))
+        ^JFileChooser chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn :cancel-fn))
         multi?  (.isMultiSelectionEnabled chooser)
         result  (show-file-chooser chooser parent type)]
     (cond 
