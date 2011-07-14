@@ -1051,7 +1051,8 @@
     :tab-size     Tab size in spaces. Defaults to 8.
     :rows         Number of rows if :multi-line? is true (default 0).
     :styled?      If true, a JTextPane is created (default false)
-    :styles       A list of vectors of form:
+    :styles       Define styles, used in conjunction with :styled?
+                  A list of vectors of form:
                   [identifier & options]
                   Where identifier is a string or keyword
                   Options supported:
@@ -1059,9 +1060,9 @@
                   :size        An integer.
                   :color       See (seesaw.color/to-color)
                   :background  See (seesaw.color/to-color)
-                  :bold        If truthy, bold style.
-                  :italic      If truthy, italic style.
-                  :underline   If truthy, underlines text.
+                  :bold        bold if true.
+                  :italic      italic if true.
+                  :underline   underline if true.
 
   To listen for document changes, use the :listen option:
 
@@ -1081,8 +1082,10 @@
       \"HI\"
 
   See:
+    (seesaw.core/style-text!)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html 
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html 
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTextPane.html
   " 
   { :seesaw {:class 'javax.swing.JTextField }} ;TODO!
   [& args]
@@ -1131,9 +1134,21 @@
       multi?      (do (doseq [w targets] (text w value)) targets))))
 
 (defn style-text!
+  "Style a JTextPane
+  id identifies a style that has been added to the text pane. 
+  
+  See:
+    
+    (seesaw.core/text)
+    http://download.oracle.com/javase/tutorial/uiswing/components/editorpane.html
+  "
   [target id start length]
-  (.setCharacterAttributes (.getStyledDocument target)
-                           start length (.getStyle target (name id)) true))
+  (if (= (class target) JTextPane)
+    (.setCharacterAttributes (.getStyledDocument target)
+                             start length (.getStyle target (name id)) true)
+    (throw (IllegalArgumentException. 
+             "style-text! only supports JTextPane targets, see (seesaw.core/text)")))
+  target)
 
 ;*******************************************************************************
 ; JPasswordField

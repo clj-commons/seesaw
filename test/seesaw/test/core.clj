@@ -496,7 +496,7 @@
       (let [style (.getStyle t "big")]
         (expect (isa? (class style) javax.swing.text.Style))
         (expect (.containsAttribute style StyleConstants/FontSize 30)))
-      (expect (= nil (style-text! t :big 0 2)))))
+      (expect (= t (style-text! t :big 0 2)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
   (it "should enable line wrapping on words when :wrap-lines? is true"
