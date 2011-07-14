@@ -143,7 +143,7 @@
 ;*******************************************************************************
 ; Widget coercion prototcol
 
-(defn to-widget 
+(defn ^java.awt.Component to-widget 
   "Try to convert the input argument to a widget based on the following rules:
 
     nil -> nil
@@ -1904,7 +1904,7 @@
   [& {:keys [width height visible? size] 
       :or {width 100 height 100}
       :as opts}]
-  (cond-doto (apply-options (construct JFrame opts) 
+  (cond-doto ^JFrame (apply-options (construct JFrame opts) 
                (dissoc opts :width :height :visible?) frame-options)
     (not size) (.setSize width height)
     true       (.setVisible (boolean visible?))))
@@ -1922,10 +1922,11 @@
     (instance? java.awt.Window w) w
     (instance? java.applet.Applet w) w
     (instance? javax.swing.JPopupMenu w) 
+      (let [^javax.swing.JPopupMenu w w]
       (if-let [p (.getParent w)] 
         (get-root p) 
-        (get-root (.getInvoker w)))
-    :else (get-root (.getParent w))))
+        (get-root (.getInvoker w))))
+    :else (get-root (.getParent ^java.awt.Component w))))
 
 (defn to-root
   "Get the frame or window that contains the given widget. Useful for APIs
@@ -1951,15 +1952,15 @@
 })
 
 (def ^{:private true} custom-dialog-options {
-  :modal? #(.setModalityType %1 (or (dialog-modality-table %2) (dialog-modality-table (boolean %2))))
-  :parent #(.setLocationRelativeTo %1 %2)
+  :modal? #(.setModalityType ^java.awt.Dialog %1 (or (dialog-modality-table %2) (dialog-modality-table (boolean %2))))
+  :parent #(.setLocationRelativeTo ^java.awt.Dialog%1 %2)
 })
 
 (def ^{:private true} dialog-result-property ::dialog-result)
 
 (defn- is-modal-dialog? [dlg] 
   (and (instance? java.awt.Dialog dlg) 
-       (not= (.getModalityType dlg) java.awt.Dialog$ModalityType/MODELESS)))
+       (not= (.getModalityType ^java.awt.Dialog dlg) java.awt.Dialog$ModalityType/MODELESS)))
 
 (defn- show-modal-dialog [dlg]
   {:pre [(is-modal-dialog? dlg)]}
@@ -2040,7 +2041,7 @@
   [& {:keys [width height visible? modal? on-close size] 
       :or {width 100 height 100 visible? false}
       :as opts}]
-  (let [dlg (apply-options (construct JDialog opts) 
+  (let [^JDialog dlg (apply-options (construct JDialog opts) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge custom-dialog-options frame-options))]
     (when-not size (.setSize dlg width height))
@@ -2103,7 +2104,7 @@
                                  (make-icon icon)
                                  choices value)]
     (if (and result choices)
-      (.value result)
+      (:value result)
       result)))
 
 (defn input
@@ -2280,26 +2281,26 @@
 ; Slider
 
 (def ^{:private true} slider-options {
-  :orientation #(.setOrientation %1 (or (orientation-table %2)
+  :orientation #(.setOrientation ^javax.swing.JSlider %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
   :value #(let [v %2]
             (check-args (number? v) ":value must be a number.")
-            (.setValue %1 v))
+            (.setValue ^javax.swing.JSlider %1 v))
   :min #(do (check-args (number? %2) ":min must be a number.")
-            (.setMinimum %1 %2))
+            (.setMinimum ^javax.swing.JSlider %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
-            (.setMaximum %1 %2))
+            (.setMaximum ^javax.swing.JSlider %1 %2))
   :minor-tick-spacing #(do (check-args (number? %2) ":minor-tick-spacing must be a number.")
-                           (.setPaintTicks %1 true)
-                           (.setMinorTickSpacing %1 %2))
+                           (.setPaintTicks ^javax.swing.JSlider %1 true)
+                           (.setMinorTickSpacing ^javax.swing.JSlider %1 %2))
   :major-tick-spacing #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
-                           (.setPaintTicks %1 true)
-                           (.setMajorTickSpacing %1 %2))
-  :snap-to-ticks? #(.setSnapToTicks %1 (boolean %2))
-  :paint-ticks? #(.setPaintTicks %1 (boolean %2))
-  :paint-labels? #(.setPaintLabels %1 (boolean %2))
-  :paint-track? #(.setPaintTrack %1 (boolean %2))
-  :inverted? #(.setInverted %1 (boolean %2))
+                           (.setPaintTicks ^javax.swing.JSlider %1 true)
+                           (.setMajorTickSpacing ^javax.swing.JSlider %1 %2))
+  :snap-to-ticks? #(.setSnapToTicks ^javax.swing.JSlider %1 (boolean %2))
+  :paint-ticks? #(.setPaintTicks ^javax.swing.JSlider %1 (boolean %2))
+  :paint-labels? #(.setPaintLabels ^javax.swing.JSlider %1 (boolean %2))
+  :paint-track? #(.setPaintTrack ^javax.swing.JSlider %1 (boolean %2))
+  :inverted? #(.setInverted ^javax.swing.JSlider %1 (boolean %2))
  
 })
 
@@ -2346,16 +2347,15 @@
 ;*******************************************************************************
 ; Progress Bar
 (def ^{:private true} progress-bar-options {
-  :orientation #(.setOrientation %1 (or (orientation-table %2)
+  :orientation #(.setOrientation ^javax.swing.JProgressBar %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(do (check-args (number? %2)) (.setValue %1 %2))
+  :value #(do (check-args (number? %2)) (.setValue ^javax.swing.JProgressBar %1 %2))
   :min #(do (check-args (number? %2) ":min must be a number.")
-            (.setMinimum %1 %2))
+            (.setMinimum ^javax.swing.JProgressBar %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
-            (.setMaximum %1 %2))
-  :visible? #(.setVisible %1 (boolean %2))
-  :paint-string? #(.setStringPainted %1 (boolean %2))
-  :indeterminate? #(.setIndeterminate %1 (boolean %2))
+            (.setMaximum ^javax.swing.JProgressBar %1 %2))
+  :paint-string? #(.setStringPainted ^javax.swing.JProgressBar %1 (boolean %2))
+  :indeterminate? #(.setIndeterminate ^javax.swing.JProgressBar %1 (boolean %2))
 })
 
 (defn progress-bar
@@ -2494,7 +2494,7 @@
 
 (defn- add!-impl 
   [container subject & more]
-  (let [container (to-widget container)
+  (let [^java.awt.Container container (to-widget container)
         [widget constraint] (if (vector? subject) subject [subject nil])
         layout (.getLayout container)]
     (add!* layout container widget constraint)
@@ -2523,8 +2523,8 @@
 
 (defn- remove!-impl
   [container subject & more]
-  (let [container (to-widget container)]
-    (.remove (to-widget container) (to-widget subject))
+  (let [^java.awt.Container container (to-widget container)]
+    (.remove container (to-widget subject))
     (when more
       (apply remove!-impl container more))
     container))
@@ -2546,8 +2546,8 @@
   [container subject & more]
   (handle-structure-change (apply remove!-impl container subject more)))
 
-(defn- index-of-component
-  [container widget]
+(defn- ^Integer index-of-component
+  [^java.awt.Container container widget]
   (loop [comps (.getComponents container) idx 0]
     (cond
       (not comps)              nil
@@ -2555,7 +2555,7 @@
       :else (recur (next comps) (inc idx)))))
 
 (defn- replace!-impl
-  [container old-widget new-widget]
+  [^java.awt.Container container old-widget new-widget]
   (let [idx        (index-of-component container old-widget)]
     (when idx
       (let [constraint (get-constraint (.getLayout container) container old-widget)]
