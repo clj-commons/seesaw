@@ -25,7 +25,7 @@
       :north (toolbar 
                :floatable? false 
                :items [(button :id :button :text "This") :separator "is a toolbar" :separator
-                       (action :handler #(.dispose (to-frame %)) :name "Close this frame")
+                       (action :handler #(.dispose (to-frame %)) :name "Close this frame" :mnemonic \C)
                        (combobox :id :combo :model ["First" "Second" "Third"])])
       :center (top-bottom-split 
       (left-right-split 
