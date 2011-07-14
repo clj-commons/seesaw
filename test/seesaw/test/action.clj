@@ -16,13 +16,14 @@
 
 (describe action
   (it "sets the name and tooltip"
-    (let [a (action :name "Test" :tip "This is a tip" :command "Go!")]
+    (let [a (action :name "Test" :tip "This is a tip" :command "Go!" :mnemonic \T)]
       (expect (instance? Action a))
       (expect (.isEnabled a))
       (expect (= "Test" (.getValue a Action/NAME)))
       (expect (= "Go!" (.getValue a Action/ACTION_COMMAND_KEY)))
       (expect (not (.getValue a Action/SELECTED_KEY)))
-      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))))
+      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))
+      (expect (= (int \T) (.getValue a Action/MNEMONIC_KEY)))))
   (it "calls the handler when actionPerformed is called"
     (let [called (atom false)
           f (fn [e] (reset! called true))
