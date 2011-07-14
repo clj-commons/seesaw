@@ -15,15 +15,15 @@
 
 ;*******************************************************************************
 ; MigLayout
-(defn- apply-mig-constraints [widget constraints]
-  (let [layout (.getLayout widget)
+(defn- apply-mig-constraints [^java.awt.Container widget constraints]
+  (let [^net.miginfocom.swing.MigLayout layout (.getLayout widget)
         [lc cc rc] constraints]
     (cond-doto layout
       lc (.setLayoutConstraints lc)
       cc (.setColumnConstraints cc)
       rc (.setRowConstraints rc))))
 
-(defn- add-mig-items [parent items]
+(defn- add-mig-items [^java.awt.Container parent items]
   (.removeAll parent)
   (doseq [[widget constraint] items]
     (@#'seesaw.core/add-widget parent widget constraint))
