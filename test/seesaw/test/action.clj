@@ -15,7 +15,7 @@
   (:import [javax.swing Action]))
 
 (describe action
-  (it "sets the name and tooltip"
+  (it "sets the name, tooltip, command and mnemonic"
     (let [a (action :name "Test" :tip "This is a tip" :command "Go!" :mnemonic \T)]
       (expect (instance? Action a))
       (expect (.isEnabled a))
