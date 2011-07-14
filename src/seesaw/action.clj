@@ -27,6 +27,7 @@
   :tip       #(.putValue ^Action %1 Action/SHORT_DESCRIPTION (str %2))
   :icon      #(.putValue ^Action %1 Action/SMALL_ICON (icon %2))
   :key       #(.putValue ^Action %1 Action/ACCELERATOR_KEY (keystroke %2))
+  :mnemonic  #(.putValue ^Action %1 Action/MNEMONIC_KEY (int %2))
   :handler   #(put-meta! %1 action-handler-property %2)
 })
 
@@ -43,6 +44,7 @@
     :tip       The action's tooltip
     :icon      The action's icon. See (seesaw.core/icon)
     :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
+    :mnemonic  A character associated with the action.
     :handler   A single-argument function that performs whatever operations are
                associated with the action. The argument is a ActionEvent instance.
 
