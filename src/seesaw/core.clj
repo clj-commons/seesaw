@@ -1137,6 +1137,80 @@
       as-widget   (do (.setText as-widget value) as-widget)
       multi?      (do (doseq [w targets] (text w value)) targets))))
 
+(defn- add-styles [text_pane styles]
+  (doseq [[id & options] styles]
+    (let [style (.addStyle text_pane (name id) nil)]
+      (doseq [[k v] (partition 2 options)]
+        (case k
+          :font       (.addAttribute style StyleConstants/FontFamily (seesaw.font/to-font v))
+          :size       (.addAttribute style StyleConstants/FontSize v)
+          :color      (.addAttribute style StyleConstants/Foreground (seesaw.color/to-color v))
+          :background (.addAttribute style StyleConstants/Background (seesaw.color/to-color v))
+          :bold       (.addAttribute style StyleConstants/Bold (boolean v))
+          :italic     (.addAttribute style StyleConstants/Italic (boolean v))
+          :underline  (.addAttribute style StyleConstants/Underline (boolean v))
+          (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
+
+(def ^{:private true} styled-text-options {
+  :text        #(.setText %1 %2)
+  :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2))
+  :styles      #(add-styles %1 %2)
+})
+
+(defn styled-text 
+  "Create a text pane. 
+  Supports the following options:
+
+    :text         text content.
+    :wrap-lines?  If true wraps lines.
+                  This only works if the styled text is wrapped
+                  in (seesaw.core/scrollable). Doing so will cause
+                  a grey area to appear to the right of the text.
+                  This can be avoided by calling 
+                    (.setBackground (.getViewport s) java.awt.Color/white)
+                  on the scrollable s.
+    :styles       Define styles, should be a list of vectors of form:
+                  [identifier & options]
+                  Where identifier is a string or keyword
+                  Options supported:
+                    :font        See (seesaw.font/to-font)
+                    :size        An integer.
+                    :color       See (seesaw.color/to-color)
+                    :background  See (seesaw.color/to-color)
+                    :bold        bold if true.
+                    :italic      italic if true.
+                    :underline   underline if true.
+
+  See:
+    (seesaw.core/style-text!) 
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTextPane.html
+  "
+  { :seesaw {:class 'javax.swing.JTextField}
+    :arglists '([& args]) }
+  [& {:as opts}]
+  (let [pane (proxy [JTextPane] []
+               (getScrollableTracksViewportWidth []
+                 (get-meta this :wrap-lines?)))]
+    (apply-options pane 
+      opts (merge default-options styled-text-options))))
+
+(defn style-text!
+  "Style a JTextPane
+  id identifies a style that has been added to the text pane. 
+  
+  See:
+    
+    (seesaw.core/text)
+    http://download.oracle.com/javase/tutorial/uiswing/components/editorpane.html
+  "
+  [target id start length]
+  (if (isa? (class target) JTextPane)
+    (.setCharacterAttributes (.getStyledDocument target)
+                             start length (.getStyle target (name id)) true)
+    (throw (IllegalArgumentException. 
+             "style-text! only supports JTextPane targets, see (seesaw.core/text)")))
+  target)
+
 ;*******************************************************************************
 ; JPasswordField
 
