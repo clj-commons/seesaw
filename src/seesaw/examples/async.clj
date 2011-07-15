@@ -1,16 +1,30 @@
 (ns seesaw.examples.async
   (:use [seesaw core async]))
 
-(defn start-button [workflow]
-  (action :name "Start Workflow"
-          :handler (fn [e] (run-async 
+
+(defn controls [workflow]
+  (let [active (atom nil)
+        stop (action :name "Cancel Workflow"
+                     :enabled? false
+                     :handler (fn [e]
+                                (when-let [a @active] 
+                                  (cancel a) 
+                                  (reset! active nil))))
+        start (action :name "Start Workflow"
+          :handler (fn [e] (reset! active (run-async 
                              (async-workflow
-                               (doasync (config! e :enabled? false))
+                               (doasync (config! e :enabled? false)
+                                        (config! stop :enabled? true))
                                [result workflow]
                                (doasync 
                                  (alert e (str "Workflow completed with result: " result))
-                                 (config! e :enabled? true))
-                               )))))
+                                 (config! e :enabled? true)
+                                 (config! stop :enabled? false))
+                               ) :canceled (fn [_]
+                                             (config! e :enabled? true)
+                                             (config! stop :enabled? false)
+                                             (alert e "Workflow canceled"))))))]
+    (horizontal-panel :border 5 :items [start stop]))) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,7 +60,7 @@
         btn-c (button :text "C")
         status (label)]
     (vertical-panel 
-      :items [(start-button (a-wait-bc-workflow  btn-a btn-b btn-c status))
+      :items [(controls (a-wait-bc-workflow  btn-a btn-b btn-c status))
               :separator
               btn-a btn-b btn-c status])))
 
@@ -65,11 +79,14 @@
     ; it's done
     [result (await-future 
               (loop [n 100]
+                (if-not (.. (Thread/currentThread) isInterrupted)
+                  (do
                 (Thread/sleep 50)
                 (invoke-now (config! progress :value (- 100 n)))
                 (if (> n 0) 
                   (recur (dec n))
-                  "YES.")))]
+                  "YES."))
+                  "Canceled")))]
     (doasync
       (text! status (str "Background task complete with result " result)))))
 
@@ -77,7 +94,7 @@
   (let [start-btn (button :text "Start Task")
         status    (label)
         progress  (progress-bar)]
-    (vertical-panel :items [(start-button (background-task start-btn status progress))
+    (vertical-panel :items [(controls (background-task start-btn status progress))
                             :separator
                             start-btn
                             progress
@@ -96,7 +113,7 @@
 
 (defn n-clicks-on-tab []
   (let [btn (button)]
-    (vertical-panel :items [(start-button (n-clicks-on btn 5))
+    (vertical-panel :items [(controls (n-clicks-on btn 5))
                             :separator
                             btn])))
 
@@ -109,7 +126,7 @@
   continuation"
   [btn value]
   (fn [continue] 
-    ((await-event btn :action-performed) (fn [_] (continue value)))))
+    ((await-event btn :action-performed) (async-fn [_] (continue value)))))
 
 (defn passcode-workflow
   [digit-buttons cancel-button [output & more] result]
@@ -131,7 +148,7 @@
         outputs (map (fn [_] (text :font "ARIAL-BOLD 24" :editable? false :halign :center)) (range 0 4))]
     (vertical-panel 
       :items ["4-digit passcode workflow"
-              (start-button 
+              (controls
                 (async-workflow
                   (doasync (config! outputs :text ""))
                   (passcode-workflow digit-buttons cancel-button outputs [])))
@@ -149,7 +166,7 @@
 (defn -main [& args]
   (invoke-later
     (-> (frame 
-          :size [300 :by 300]
+          :size [450 :by 450]
           :content (tabbed-panel :tabs [{:title "Passcode" :content (passcode-tab)}
                                         {:title "Linear" :content (a-wait-bc-tab)}
                                         {:title "Background Task" :content (background-task-tab)}

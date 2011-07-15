@@ -25,9 +25,9 @@
   (wait-for* this))
 
 (defmacro async-fn
-  "Create an anonymous function, which is one can cancel, and which thusly
+  "Create an anonymous function, which one can cancel, and which thusly
   can act as a continuation for an async process. The function might call
-  itself be this, which is captured. The is only one arity possible."
+  itself by this, which is captured. There is only one arity possible."
   [args & body]
   `(let [canceled?# (atom false)]
      (reify
@@ -40,9 +40,22 @@
          (reset! canceled?# true)))))
 
 (defn run-async
-  "Run an asynchronuous workflow. Returns a promise which may be dereferenced
-  for the workflow result if there is any."
-  [continue]
+  "Run an asynchronuous workflow. 
+  
+  continue returns a single argument function that takes a continuation
+  function and returns an object that satisfiels AsyncEventSource and Async. 
+  
+  Returns a promise which may be dereferenced for the workflow result if 
+  there is any. If the workflow is canceled, the result is ::canceled.
+
+  Takes a sequence of key/value option pairs:
+
+    :canceled A one argument function which is called when the workflow
+        is canceled with (seesaw.async/cancel). It is called on whatever
+        thread the cancel is made from. The workflow is passed to the
+        function.
+  "
+  [continue & {:keys [canceled]}]
   (let [result (promise)
         cont   (continue (async-fn [r] (deliver result r)))]
     (wait-for cont)
@@ -50,14 +63,16 @@
       Async
       (cancel* [this]
         (deliver result ::canceled)
-        (cancel cont))
+        (cancel cont)
+        (when canceled
+          (canceled this)))
       IDeref
       (deref [this]
         @result))))
 
 (defn call-async
-  "Calls the given function asynchronuously and passes on the result to the
-  continuation."
+  "Returns a constructor function for an async workflow that called the given
+  function on the given args and passes the result onto a continuation function."
   [f & args]
   (fn [continue]
     (reify
@@ -69,7 +84,8 @@
         (cancel continue)))))
 
 (defmacro doasync
-  "Runs the block asynchronuously and passes on the result to the continuation."
+  "Returns a constructor function that runs the block asynchronuously and passes 
+  on the result to a continuation function."
   [& body]
   `(call-async (fn [] ~@body)))
 
@@ -105,6 +121,10 @@
                                      (+ 2 1)
                                      (- 2 1))]]
         (* result 3))
+
+  Returns a constructor function that creates an async workflow that executes
+  the steps in the let and its body and then passes the value of the let
+  onto a continuation function.
   "
   [steps & body]
   (let [global-continue (gensym "global-continue")
@@ -177,7 +197,16 @@
 
 (defn await-event
   "Awaits the given event on the given target asynchronuously. Passes on the
-  event to the continuation."
+  event to the continuation. target and event are passed to (seesaw.core/listen).
+  
+  Notes:
+
+    To wait for multiple events wrap in (await-any or await-some).
+ 
+  Examples:
+  
+    (async-workflow
+      [event (await-event button :action-performed)])"
   [target event]
   (fn [continue]
     (let [remove-fn (promise)]
@@ -192,7 +221,8 @@
           (cancel continue))))))
 
 (defn wait
-  "Wait asynchronuously for t milliseconds. Passes on nil to the continuation."
+  "Wait asynchronuously for t milliseconds and pass nil to the continuation.
+  That is, if used within (let-async), the bound value will be nil."
   [t]
   (fn [continue]
     (let [tmr (promise)]
@@ -210,33 +240,55 @@
 (defn await-future*
   "Call the function with any additional arguments in a background thread and
   wait asynchronuously for its completion. Passes on the result to the
-  continuation.
-  See also: await-future"
+  continuation. 
+
+  Notes:
+    You probably want the (seesaw.async/await-future) macro. 
+  
+    The continuation function with the result is always called on the UI thread.
+
+  See:
+    (seesaw.async/await-future)
+  "
   [f & args]
   (fn [continue]
     (let [inner-continue (async-fn [result]
                            (invoke-now
-                             (continue result)))]
+                             (continue result)))
+          fut (atom nil)]
       (reify
         AsyncEventSource
         (wait-for* [this]
-          (future
-            (inner-continue (apply f args))))
+          (reset! fut (future
+            (inner-continue (apply f args)))))
         Async
         (cancel* [this]
+          (when-let [fut @fut]
+            (future-cancel fut))
           (cancel inner-continue)
           (cancel continue))))))
 
 (defmacro await-future
   "Execute the code block in a background thread and wait asynchronuously
   for its completion. Passes on the result to the continuation.
-  See also: await-future*"
+
+  See:
+    (seesaw.async/await-future*)
+  "
   [& body]
   `(await-future* (fn [] ~@body)))
 
 (defn await-any
   "Wait asynchronuously until one of the given events happens. Passes on
-  the result of the triggering event to the continuation."
+  the result of the triggering event to the continuation.
+  
+  events is one or more async processes, e.g. (await-event).
+ 
+  Examples:
+
+    ; Wait for one of a set of buttons to be pushed
+    (apply await-any (map #(await-event % :action-performed) buttons))
+  "
   [& events]
   (fn [global-continue]
     (let [guard  (atom false)
@@ -281,7 +333,7 @@
   "Wait asynchronuously for the given event. Passes on the result to the
   continuation if pred returns truethy for it. If the result does not
   fulfil the predicate the optional invalid handler is called with the
-  continuation and the result. If the invalid handler returns a
+  continuation and the result. If the invalid handler returns an
   AsyncEventSource, the await-valid will wait again for the new source.
   Otherwise the invalid-handler should return nil and handle the result
   and continuation on its own. The default behaviour for invalid is to
