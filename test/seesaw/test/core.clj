@@ -500,6 +500,27 @@
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
 
+(describe styled-text
+  (let [t (styled-text :text "HI" 
+                       :styles [[:big :size 30]
+                                [:small :size 3]])]
+    (it "should create a text pane"
+        (expect (= JTextPane (class t)))
+        (expect (= "HI" (.getText t))))
+    (it "should add styles"
+        (let [style (.getStyle t "big")] 
+          (expect (isa? (class style) javax.swing.text.Style))
+          (expect (.containsAttribute style StyleConstants/FontSize 30))))))
+
+(describe style-text!
+  (let [t (styled-text :text "HI"
+                       :styles [[:big :size 30]
+                                [:small :size 3]])]
+    (it "should style the text"
+        (expect (= t (style-text! t :big 0 2)))
+        (expect (.containsAttribute (.getCharacterAttributes t) 
+                                    StyleConstants/FontSize 30)))))
+
 (describe password
   (it "should create a JPasswordField"
     (= javax.swing.JPasswordField (class (password))))
