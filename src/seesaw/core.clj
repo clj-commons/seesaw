@@ -22,10 +22,10 @@
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
-             JLabel JTextField JTextArea 
+             JLabel JTextField JTextArea JTextPane
              AbstractButton JButton ButtonGroup
              JOptionPane]
-           [javax.swing.text JTextComponent]
+           [javax.swing.text JTextComponent StyleConstants]
            [java.awt Component FlowLayout BorderLayout GridLayout 
               GridBagLayout GridBagConstraints
               Dimension]))
@@ -1137,9 +1137,9 @@
       as-widget   (do (.setText as-widget value) as-widget)
       multi?      (do (doseq [w targets] (text w value)) targets))))
 
-(defn- add-styles [text_pane styles]
+(defn- add-styles [text-pane styles]
   (doseq [[id & options] styles]
-    (let [style (.addStyle text_pane (name id) nil)]
+    (let [style (.addStyle text-pane (name id) nil)]
       (doseq [[k v] (partition 2 options)]
         (case k
           :font       (.addAttribute style StyleConstants/FontFamily (seesaw.font/to-font v))
@@ -1185,7 +1185,7 @@
     (seesaw.core/style-text!) 
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextPane.html
   "
-  { :seesaw {:class 'javax.swing.JTextField}
+  { :seesaw {:class 'javax.swing.JTextPane}
     :arglists '([& args]) }
   [& {:as opts}]
   (let [pane (proxy [JTextPane] []
@@ -1203,12 +1203,10 @@
     (seesaw.core/text)
     http://download.oracle.com/javase/tutorial/uiswing/components/editorpane.html
   "
-  [target id start length]
-  (if (isa? (class target) JTextPane)
-    (.setCharacterAttributes (.getStyledDocument target)
-                             start length (.getStyle target (name id)) true)
-    (throw (IllegalArgumentException. 
-             "style-text! only supports JTextPane targets, see (seesaw.core/text)")))
+  [^JTextPane target id ^Integer start ^Integer length]
+  (check-args (instance? JTextPane target) "style-text! only applied to styled-text widgets")
+  (.setCharacterAttributes (.getStyledDocument target)
+                            start length (.getStyle target (name id)) true)
   target)
 
 ;*******************************************************************************

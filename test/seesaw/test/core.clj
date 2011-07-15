@@ -24,10 +24,11 @@
                         Action
                         JFrame
                         JToolBar JTabbedPane
-                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
+                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout JTextPane
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane]
+           [javax.swing.text StyleConstants]
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
@@ -506,7 +507,7 @@
                                 [:small :size 3]])]
     (it "should create a text pane"
         (expect (= JTextPane (class t)))
-        (expect (= "HI" (.getText t))))
+        (expect (= "HI" (text t))))
     (it "should add styles"
         (let [style (.getStyle t "big")] 
           (expect (isa? (class style) javax.swing.text.Style))
