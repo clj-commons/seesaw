@@ -125,8 +125,7 @@
   "Wait for a button to be pressed and pass the given value to the
   continuation"
   [btn value]
-  (fn [continue] 
-    ((await-event btn :action-performed) (async-fn [_] (continue value)))))
+  (async-workflow (await-event btn :action-performed) (doasync value)))
 
 (defn passcode-workflow
   [digit-buttons cancel-button [output & more] result]
