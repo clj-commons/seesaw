@@ -19,13 +19,16 @@
       :columns [ { :key :name :text "Name" } 
                  { :key :town :text "Town" } 
                  { :key :interest :text "Interest" }]
-      :rows [{ :name "Kupzog" :town "Cologne" :interest "programming"}
-             { :name "Hansson" :town "Ystadt" :interest "Hunting"}
-             { :name "Walter" :town "London" :interest "Rafting"}]]))
+      :rows [{ :name "Kupzog" :town "Cologne" :interest "programming" :id 1234}
+             { :name "Hansson" :town "Ystadt" :interest "Hunting" :id 2234}
+             { :name "Walter" :town "London" :interest "Rafting" :id 12345}]]))
+
+; Note that the :id key isn't in the :columns spec, but it is still retained
+; behind the scenes by the table model.
 
 ; The rest is boilerplate ...
 (defn make-frame []
-  (frame :title "JTable Example" :width 400 :height 400 :content
+  (frame :title "JTable Example" :width 500 :height 400 :content
     (border-panel
       :center (scrollable (make-table))
       :south  (label :id :sel :text "Selection: "))))
