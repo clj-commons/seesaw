@@ -59,7 +59,11 @@
   (it "gets the value of a single row index as a map"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
       (expect (= {:a "a0" :b "b0" } (value-at t 0)))))
-  (it "gets the value of a row as a map (indexed by integers) if model was not
+  (it "returns non-column values originally inserted in the map"
+    (let [t (table-model :columns [:a :b] :rows [{:a 0 :b 1 :c 2} {:a 3 :b 4 :d 5}])]
+      (expect (= {:a 0 :b 1 :c 2} (value-at t 0)))
+      (expect (= {:a 3 :b 4 :d 5} (value-at t 1)))))
+  (it "gets the value of a row as a map (indexed by column names) if model was not
       created with (table-model)"
     (let [t (javax.swing.table.DefaultTableModel. 2 3)]
       (expect (= {"A" nil "B" nil "C" nil } (value-at t 0)))))
