@@ -10,7 +10,7 @@
 
 (ns seesaw.examples.text-ref
   (:use [seesaw.core])
-  (:require [seesaw.bind :as bind])
+  (:require [seesaw.bind :as bind]))
 
 ; Very basic example of connecting a text field to an atom.
 

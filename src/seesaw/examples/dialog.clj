@@ -11,7 +11,7 @@
 (ns seesaw.examples.dialog
   (:use [seesaw core font border util color pref mig]
         [clojure.pprint :only (cl-format)])
-  (:require [seesaw.bind :as bind])
+  (:require [seesaw.bind :as bind]))
 
 (defmethod print-dup java.awt.Color [x writer]
            (binding [*print-dup* false]
@@ -87,7 +87,7 @@
                                                       (config! e :background clr)))])
                                         color-atom (atom (color 255 255 0))]
                                     (bind-preference-to-atom "LAST_BACKGROUND" color-atom)
-                                    (bind/bind (property lbl :background) color-atom)
+                                    (bind/bind (bind/property lbl :background) color-atom)
                                     (config! lbl :background @color-atom)
                                     lbl) "growx, wrap"]
                                  ])) pack! show!)))

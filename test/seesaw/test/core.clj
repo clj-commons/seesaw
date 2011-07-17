@@ -967,7 +967,12 @@
 
 (describe progress-bar
   (it "should create a JProgressBar"
-    (expect (= javax.swing.JProgressBar (class (progress-bar))))))
+    (expect (= javax.swing.JProgressBar (class (progress-bar)))))
+  (it "should set the progress bars min, max and initial value"
+    (let [pb (progress-bar :value 5 :min 1 :max 6)]
+      (expect (= 5 (.getValue pb)))
+      (expect (= 1 (.getMinimum pb))) 
+      (expect (= 6 (.getMaximum pb))))))
 
 (describe select
   (it "should throw an exception if selector is not a vector"
