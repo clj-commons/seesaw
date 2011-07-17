@@ -16,7 +16,7 @@
 (defn check-args 
   [condition message]
   (if-not condition
-    (throw (IllegalArgumentException. message))
+    (throw (IllegalArgumentException. ^String message))
     true))
   
 (defmacro cond-doto
@@ -60,21 +60,23 @@
    Note that the fields must be static and declared *in* the class, not a 
    supertype.
   "
-  [klass & fields]
+  [^Class klass & fields]
   (let [[options fields] (if (map? (first fields)) [(first fields) (rest fields)] [{} fields])
         {:keys [suffix] :or {suffix ""}} options]
     (reduce
       (fn [m [k v]] (assoc m k v))
       {}
       (map 
-        #(vector %1 (.. klass (getDeclaredField (str (constantize-keyword %1) suffix)) (get nil)))
+        #(vector %1 (.. klass 
+                      (getDeclaredField (str (constantize-keyword %1) suffix)) 
+                      (get nil)))
         fields))))
     
   
 (defn camelize
   "Convert input string to camelCase from hyphen-case"
   [s]
-  (clojure.string/replace s #"-(.)" #(.toUpperCase (%1 1))))
+  (clojure.string/replace s #"-(.)" #(.toUpperCase ^String (%1 1))))
 
 (defn boolean? [b]
   "Return true if b is exactly true or false. Useful for handling optional
@@ -92,7 +94,7 @@
     (cast c x)
     (catch ClassCastException e nil)))
 
-(defn to-url [s]
+(defn ^URL to-url [s]
   "Try to parse (str s) as a URL. Returns new java.net.URL on success, nil 
   otherwise. This is different from clojure.java.io/as-url in that it doesn't
   throw an exception and it uses (str) on the input."
@@ -168,3 +170,13 @@
     children
     root))
 
+(defn ignore
+  "Might be used to explicitly ignore the default behaviour of options."
+  [x _]
+  x)
+
+(defn ignore-options
+  "Create a ignore-map for options, which should be ignored. Ready to
+  be merged into default option maps."
+  [source-options]
+  (zipmap (keys source-options) (repeat ignore)))

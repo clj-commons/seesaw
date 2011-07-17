@@ -72,13 +72,14 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html 
     http://download.oracle.com/javase/6/docs/api/java/awt/Toolkit.html#createCustomCursor%28java.awt.Image,%20java.awt.Point,%20java.lang.String%29
   "
+  ^Cursor
   [type & args]
   (cond
     ; TODO protocol if this gets any more nasty
     (keyword? type) (Cursor. (built-in-cursor-map type))
     (instance? Cursor type) type
     (instance? java.awt.Image type) (apply custom-cursor type args)
-    (instance? javax.swing.ImageIcon type) (apply cursor (.getImage type) args)
+    (instance? javax.swing.ImageIcon type) (apply cursor (.getImage ^javax.swing.ImageIcon type) args)
     :else (throw (IllegalArgumentException. (str "Don't know how to make cursor from " type)))))
 
 

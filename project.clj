@@ -1,4 +1,4 @@
-(defproject seesaw "1.0.7"
+(defproject seesaw "1.0.8"
   :description "A Swing wrapper/DSL for Clojure. You want seesaw.core, FYI. See http://seesaw-clj.org for more info."
   :url "http://seesaw-clj.org"
   :mailing-list {:name "seesaw-clj"
@@ -10,7 +10,8 @@
             :comments "same as Clojure"}
   :warn-on-reflection true
   :dependencies [[org.clojure/clojure "1.2.0"]
-                 [com.miglayout/miglayout "3.7.4"]]
+                 [com.miglayout/miglayout "3.7.4"]
+                 [com.jgoodies/forms "1.2.1"]]
   :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
                      [lein-clojars "0.6.0"]
                      [org.clojars.rayne/autodoc "0.8.0-SNAPSHOT"]]

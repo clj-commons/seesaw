@@ -9,29 +9,21 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.text-ref
-  (:use [seesaw core]))
+  (:use [seesaw.core])
+  (:require [seesaw.bind :as bind])
 
-; Very basic example of connecting a text field to a ref.
-
-; A string ref
-(def value (ref "initial"))
-
-; document event handler that copies text to ref
-(defn document-change-handler [e]
-  (dosync
-    (ref-set value (text e))))
-
-; watch the ref and reflect changes in output component 
-(defn watch-value [output]
-  (add-watch value nil 
-    (fn [_ r old-state new-state] 
-      (text! output new-state))))
+; Very basic example of connecting a text field to an atom.
 
 (defn app []
-  (let [input  (text :text @value :columns 20)
-        output (text :text @value :editable? false)]
-    (listen input :document document-change-handler)
-    (watch-value output)
+  (let [input  (text :columns 20)
+        value  (atom "")
+        output (text :editable? false)]
+    ; Set up our binding chain
+    (bind/bind input                         ; Take changes to input
+          (bind/transform #(.toUpperCase %)) ; Pass through upper case transform
+          value                         ; Put the value in the atom 
+          output)                       ; Show the final value in the output text doc
+    (text! input "Initial Value")
     (frame 
       :content 
         (vertical-panel 
@@ -39,8 +31,11 @@
           :items ["Enter text here:" 
                   input 
                   :separator
-                  "Changed ref is reflected here:"
-                  output]))))
+                  "Changed atom is reflected here:"
+                  output
+                  :separator
+                  (action :name "Print atom value to console"
+                          :handler (fn [e] (println "Current atom value is: " @value)))]))))
 
 (defn -main [& args]
   (invoke-later (show! (pack! (app)))))

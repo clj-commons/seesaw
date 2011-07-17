@@ -34,10 +34,12 @@
   "
   [w]
   (let [to-text #(if (instance? javax.swing.JComboBox %) 
-                          (.. % getEditor getEditorComponent) %)
+                          (.. ^javax.swing.JComboBox % getEditor getEditorComponent) %)
         targets (map #(-> % to-widget to-text) (to-seq w))]
     (listen targets :focus-gained
-      #(.selectAll (to-widget %)))))
+      ; TODO is it safe to assume JTextComponent here? Other option is
+      ; to extend selection stuff to text widgets
+      #(.selectAll ^javax.swing.text.JTextComponent (to-widget %)))))
 
 (defn when-mouse-dragged 
   "A helper for handling mouse dragging on a widget. This isn't that complicated,
@@ -62,11 +64,11 @@
         last-point (java.awt.Point.)]
     (listen w
       :mouse-pressed 
-        (fn [e] 
+        (fn [^java.awt.event.MouseEvent e] 
           (.setLocation last-point (.getPoint e))
           (start e))
       :mouse-dragged 
-        (fn [e]
+        (fn [^java.awt.event.MouseEvent e]
           (let [p (.getPoint e)]
             (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])))
       :mouse-released

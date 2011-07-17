@@ -33,20 +33,20 @@
                :component-moved
                :component-resized
                :component-shown}
-    :install #(.addComponentListener %1 %2)
+    :install #(.addComponentListener ^java.awt.Component %1 ^ComponentListener %2)
   }
                                     
   :property-change {
     :name    :property-change
     :class   PropertyChangeListener
     :events  #{:property-change}
-    :install #(.addPropertyChangeListener %1 %2)
+    :install #(.addPropertyChangeListener ^java.awt.Component %1 ^PropertyChangeListener %2)
   }
   :key {
     :name    :key
     :class   KeyListener
     :events  #{:key-pressed :key-released :key-typed}
-    :install #(.addKeyListener %1 %2)
+    :install #(.addKeyListener ^java.awt.Component %1 ^KeyListener %2)
   }
   :window {
     :name    :window
@@ -54,13 +54,13 @@
     :events  #{:window-activated :window-deactivated 
               :window-closed :window-closing :window-opened
               :window-deiconified :window-iconified}
-    :install  #(.addWindowListener %1 %2)
+    :install  #(.addWindowListener ^java.awt.Window %1 ^WindowListener %2)
   }
   :focus {
     :name    :focus
     :class   FocusListener
     :events  #{:focus-gained :focus-lost}
-    :install #(.addFocusListener %1 %2)
+    :install #(.addFocusListener ^java.awt.Component %1 ^FocusListener %2)
   }
   :document {
     :name    :document
@@ -69,45 +69,47 @@
     :install (fn [target listener] 
                (.addDocumentListener 
                  (if (instance? Document target) 
-                   target
-                   (.getDocument target))
-                 listener))
+                    ^Document target
+                    (.getDocument ^javax.swing.text.JTextComponent target))
+                 ^DocumentListener listener))
   }
   :action {
     :name    :action
     :class   ActionListener
     :events  #{:action-performed}
-    :install #(.addActionListener %1 %2)
+    ; TODO %1 can be button, combobox, textfield, etc.
+    :install #(.addActionListener %1 ^ActionListener %2)
   }
   :change {
     :name    :change
     :class   ChangeListener
     :events  #{:state-changed}
-    :install #(.addChangeListener %1 %2)
+    ; TODO %1 can be AbstractButton, BoundedRangeModel, others?
+    :install #(.addChangeListener %1 ^ChangeListener %2)
   }
   :item {
     :name    :item
     :class   ItemListener
     :events  #{:item-state-changed}
-    :install #(.addItemListener %1 %2)
+    :install #(.addItemListener ^java.awt.ItemSelectable %1 ^ItemListener %2)
   }
   :mouse { 
     :name    :mouse
     :class   MouseListener
     :events  #{:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released}
-    :install #(.addMouseListener %1 %2)
+    :install #(.addMouseListener ^java.awt.Component %1 ^MouseListener %2)
   }
   :mouse-motion { 
     :name    :mouse-motion
     :class   MouseMotionListener
     :events  #{:mouse-moved :mouse-dragged}
-    :install #(.addMouseMotionListener %1 %2)
+    :install #(.addMouseMotionListener ^java.awt.Component %1 ^MouseMotionListener %2)
   }
   :mouse-wheel { 
     :name    :mouse-wheel
     :class   MouseWheelListener
     :events  #{:mouse-wheel-moved}
-    :install #(.addMouseWheelListener %1 %2)
+    :install #(.addMouseWheelListener ^java.awt.Component %1 ^MouseWheelListener %2)
   }
   :list-selection { 
     :name    :list-selection
@@ -115,18 +117,19 @@
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
     :install (fn [target listener]
+                ; TODO reflection - this could be several different types.
                 (.addListSelectionListener 
                   (cond
-                    (instance? javax.swing.JTable target) (.getSelectionModel target)
+                    (instance? javax.swing.JTable target) (.getSelectionModel ^javax.swing.JTable target)
                     :else target)
-                  listener))
+                  ^ListSelectionListener listener))
   }
   :tree-selection { 
     :name    :tree-selection
     :class   TreeSelectionListener
     :events  #{:value-changed}
     :named-events #{:tree-selection} ; Suppress reversed map entry
-    :install #(.addTreeSelectionListener %1 %2)
+    :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)
   }
 })
 
@@ -161,7 +164,7 @@
 (defmacro ^{:private true} reify-all-event-groups
   []
   `(do
-    ~@(for [[_ {klass :class events :events}] event-groups]
+    ~@(for [[_ {^Class klass :class events :events}] event-groups]
       ; the symbol is very important here since the def-reify-listener
       ; macro is expecting a symbol NOT a class instance! So many hours 
       ; wasted...
@@ -262,7 +265,7 @@
   (reduce
     (fn [result target]
       (cond
-        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements target)))
+        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements ^javax.swing.ButtonGroup target)))
         :else (conj result target)))  
     []
     targets))

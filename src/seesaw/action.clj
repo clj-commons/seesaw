@@ -20,13 +20,14 @@
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
 (def ^{:private true} action-options {
-  :enabled?  #(.setEnabled %1 (boolean %2))
-  :selected? #(.putValue %1 Action/SELECTED_KEY (boolean %2))
-  :name      #(.putValue %1 Action/NAME (str %2))
-  :command   #(.putValue %1 Action/ACTION_COMMAND_KEY (str %2))
-  :tip       #(.putValue %1 Action/SHORT_DESCRIPTION (str %2))
-  :icon      #(.putValue %1 Action/SMALL_ICON (icon %2))
-  :key       #(.putValue %1 Action/ACCELERATOR_KEY (keystroke %2))
+  :enabled?  #(.setEnabled ^Action %1 (boolean %2))
+  :selected? #(.putValue ^Action %1 Action/SELECTED_KEY (boolean %2))
+  :name      #(.putValue ^Action %1 Action/NAME (str %2))
+  :command   #(.putValue ^Action %1 Action/ACTION_COMMAND_KEY (str %2))
+  :tip       #(.putValue ^Action %1 Action/SHORT_DESCRIPTION (str %2))
+  :icon      #(.putValue ^Action %1 Action/SMALL_ICON (icon %2))
+  :key       #(.putValue ^Action %1 Action/ACCELERATOR_KEY (keystroke %2))
+  :mnemonic  #(.putValue ^Action %1 Action/MNEMONIC_KEY (int (Character/toUpperCase %2)))
   :handler   #(put-meta! %1 action-handler-property %2)
 })
 
@@ -43,6 +44,7 @@
     :tip       The action's tooltip
     :icon      The action's icon. See (seesaw.core/icon)
     :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
+    :mnemonic  A character associated with the action.
     :handler   A single-argument function that performs whatever operations are
                associated with the action. The argument is a ActionEvent instance.
 

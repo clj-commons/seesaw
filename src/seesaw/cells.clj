@@ -23,14 +23,15 @@
     render-fn
     (proxy [javax.swing.DefaultListCellRenderer] []
       (getListCellRendererComponent [component value index selected? focus?]
-        (proxy-super getListCellRendererComponent component value index selected? focus?)
-        (render-fn this { :this      this 
-                          :component component 
-                          :value     value 
-                          :index     index 
-                          :selected? selected? 
-                          :focus?    focus? })
-        this))))
+        (let [^javax.swing.DefaultListCellRenderer this this]
+          (proxy-super getListCellRendererComponent component value index selected? focus?)
+          (render-fn this { :this      this 
+                            :component component 
+                            :value     value 
+                            :index     index 
+                            :selected? selected? 
+                            :focus?    focus? })        
+          this)))))
 
 (defn default-tree-cell-renderer 
   [render-fn]
@@ -38,16 +39,17 @@
     render-fn
     (proxy [javax.swing.tree.DefaultTreeCellRenderer] []
       (getTreeCellRendererComponent [component value selected? expanded? leaf? row focus?]
-        (proxy-super getTreeCellRendererComponent component value selected? expanded? leaf? row focus?)
-        (render-fn this { :this      this 
-                          :component component 
-                          :value     value 
-                          :selected? selected? 
-                          :expaned?  expanded? 
-                          :leaf?     leaf?
-                          :row       row
-                          :focus?    focus? })
-        this))))
+        (let [^javax.swing.tree.DefaultTreeCellRenderer this this]
+          (proxy-super getTreeCellRendererComponent component value selected? expanded? leaf? row focus?)
+          (render-fn this { :this      this 
+                            :component component 
+                            :value     value 
+                            :selected? selected? 
+                            :expaned?  expanded? 
+                            :leaf?     leaf?
+                            :row       row
+                            :focus?    focus? })
+        this)))))
 
 (defn to-cell-renderer
   [target arg]

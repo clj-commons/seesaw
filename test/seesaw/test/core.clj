@@ -24,10 +24,11 @@
                         Action
                         JFrame
                         JToolBar JTabbedPane
-                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout
+                        JPanel JLabel JButton JTextField JTextArea Box Box$Filler BoxLayout JTextPane
                         JToggleButton JCheckBox JRadioButton
                         JScrollPane
                         JSplitPane]
+           [javax.swing.text StyleConstants]
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
@@ -47,24 +48,6 @@
    meth
    (to-array [])))
 
-(defmacro test-option [opt-kw initial-atom-value final-atom-value]
-  `(testing ~(str "atom for option " (property-kw->java-name opt-kw))
-     (it ~(str "should set the component's " (property-kw->java-name opt-kw) " using an atom")
-       (let [~'a (atom ~initial-atom-value)
-             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
-         (expect (= ~initial-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
-     (it ~(str "should update the " (property-kw->java-name opt-kw) " to value of atom")
-       (let [~'a (atom ~initial-atom-value)
-             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
-         (reset! ~'a ~final-atom-value)
-         (expect (= ~final-atom-value (invoke-getter ~'p (property-kw->java-method ~opt-kw))))))
-     (it ~(str "should update the atom to " (property-kw->java-name opt-kw))
-       (let [~'a (atom ~initial-atom-value)
-             ~'p (apply-default-opts (JPanel.) {~opt-kw ~'a})]
-         (config! ~'p ~opt-kw ~final-atom-value)
-         (expect (= ~final-atom-value ~'@a))))))
-
-        
 (describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
@@ -91,20 +74,17 @@
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getPreferredSize p)))))
-    (test-option :preferred-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+        (expect (= (Dimension. 10 20) (.getPreferredSize p))))))
 
   (testing "the :minimum-size option"
     (it "set the component's minimum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:minimum-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getMinimumSize p)))))
-    (test-option :minimum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+        (expect (= (Dimension. 10 20) (.getMinimumSize p))))))
 
   (testing "the :maximum-size option"
     (it "set the component's maximum size using to-dimension"
       (let [p (apply-default-opts (JPanel.) {:maximum-size [10 :by 20]})]
-        (expect (= (Dimension. 10 20) (.getMaximumSize p)))))
-    (test-option :maximum-size (to-dimension [10 :by 20]) (to-dimension [20 :by 20])))
+        (expect (= (Dimension. 10 20) (.getMaximumSize p))))))
 
   (testing "the :size option"
     (it "set the component's min, max, and preferred size using to-dimension"
@@ -166,14 +146,6 @@
       (let [p (apply-default-opts (JPanel.) {:cursor :hand})]
         (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor p)))))))
 
-  (test-option :foreground (color 255 0 0) (color 0 0 0))
-  (test-option :background (color 255 0 0) (color 0 0 0))
-  ;; TODO: (test-option :border (color 255 0 0) (color 0 0 0))
-  (test-option :font (font :name :monospaced) (font :name :serif))
-  (test-option :tip "hello" "world")
-  ;; TODO: (test-option :icon)
-  ;; TODO: (test-option :action (action :name :blub) (action :name :bla))
-  ;; TODO: (test-option :editable? true false)
   (testing "setting enabled option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
@@ -199,17 +171,15 @@
         (expect (.isVisible c))))
     (it "sets not visible when provided a falsey value"
       (let [c (apply-default-opts (JPanel.) {:visible? nil})]
-        (expect (= false (.isVisible c)))))
-    ;; TODO: (test-option :visible? false true) ;; for some reason no property change listener exists for this?
-    )
+        (expect (= false (.isVisible c))))))
+
   (testing "setting opaque? option"
     (it "does nothing when omitted"
       (let [c (apply-default-opts (JPanel.))]
         (expect (.isOpaque c))))
     (it "sets opacity when provided"
       (let [c (apply-default-opts (JPanel.) {:opaque? false})]
-        (expect (not (.isOpaque c)))))
-    (test-option :opaque? false true))
+        (expect (not (.isOpaque c))))))
   (testing "the :model property"
     (it "sets the model when provided"
       (let [model  (javax.swing.DefaultButtonModel.)
@@ -437,7 +407,7 @@
   (it "should create a JPanel with a GridBagLayout"
     (= java.awt.GridBagLayout (class (.getLayout (form-panel)))))
   (it "should add an item with grid bag constraints"
-    (let [p (form-panel :items [["hi" :weighty 999]])
+    (let [p (form-panel :items [["hi" :weighty 999 :gridwidth 1]])
           w (first (.getComponents p))
           gbcs (.getConstraints (.getLayout p) w)]
       (expect (instance? JLabel w))
@@ -530,6 +500,27 @@
   (it "should honor the editable property"
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
+
+(describe styled-text
+  (let [t (styled-text :text "HI" 
+                       :styles [[:big :size 30]
+                                [:small :size 3]])]
+    (it "should create a text pane"
+        (expect (= JTextPane (class t)))
+        (expect (= "HI" (text t))))
+    (it "should add styles"
+        (let [style (.getStyle t "big")] 
+          (expect (isa? (class style) javax.swing.text.Style))
+          (expect (.containsAttribute style StyleConstants/FontSize 30))))))
+
+(describe style-text!
+  (let [t (styled-text :text "HI"
+                       :styles [[:big :size 30]
+                                [:small :size 3]])]
+    (it "should style the text"
+        (expect (= t (style-text! t :big 0 2)))
+        (expect (.containsAttribute (.getCharacterAttributes t) 
+                                    StyleConstants/FontSize 30)))))
 
 (describe password
   (it "should create a JPasswordField"
@@ -967,28 +958,16 @@
 
 
 (describe slider
-  (it "should sync the value of the atom with the slider value, if slider value changed"
-    (let [v (atom 15)
-          sl (slider :value v)]
-      (.setValue sl 20)
-      (expect (= @v 20))))
-  (it "should sync the value of the slider with the atom value, if atom value changed"
-    (let [v (atom 15)
-          sl (slider :value v)]
-      (reset! v 20)
-      (expect (= (.getValue sl) 20)))))
+  (it "should create a slider with a min, max, and value"
+    (let [s (slider :min 40 :max 99 :value 55)]
+      (expect (= javax.swing.JSlider (class s)))
+      (expect (= 40 (.getMinimum s)))
+      (expect (= 99 (.getMaximum s)))
+      (expect (= 55 (.getValue s))))))
 
 (describe progress-bar
-  (it "should sync the value of the atom with the progress-bar value, if progress-bar value changed"
-    (let [v (atom 15)
-          pb (progress-bar :value v)]
-      (.setValue pb 20)
-      (expect (= @v 20))))
-  (it "should sync the value of the progress-bar with the atom value, if atom value changed"
-    (let [v (atom 15)
-          pb (progress-bar :value v)]
-      (reset! v 20)
-      (expect (= (.getValue pb) 20)))))
+  (it "should create a JProgressBar"
+    (expect (= javax.swing.JProgressBar (class (progress-bar))))))
 
 (describe select
   (it "should throw an exception if selector is not a vector"
@@ -1247,4 +1226,24 @@
 (describe height
   (it "returns the height of a widget"
     (= 101 (height (xyz-panel :bounds [0 0 100 101])))))
+
+(describe card-panel
+  (it "creates a panel with a CardLayout"
+    (let [p (card-panel :hgap 4 :vgap 3 :items [["Label" :first] [(button) :second]])]
+      (expect (instance? javax.swing.JPanel p))
+      (expect (instance? java.awt.CardLayout (.getLayout p)))
+      (expect (= 4 (.. p getLayout getHgap)))
+      (expect (= 3 (.. p getLayout getVgap)))
+      (expect (= 2 (count (.getComponents p)))))))
+
+(describe show-card!
+  (it "sets the visible card in a card panel"
+    (let [a (label)
+          b (button)
+          c (checkbox)
+          p (card-panel :items [[a :first] [b :second] [c "third"]])]
+      (show-card! p :second)
+      (expect (visible? b))
+      (show-card! p "third")
+      (expect (visible? c)))))
 

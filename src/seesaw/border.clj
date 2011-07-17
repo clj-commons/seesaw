@@ -31,7 +31,9 @@
 (defn line-border 
   [& {:keys [color thickness top left bottom right] :or {thickness 1 color Color/BLACK}}]
   (if (or top left bottom right)
-    (BorderFactory/createMatteBorder (or top 0) (or left 0) (or bottom 0) (or right 0) (to-color color))
+    (BorderFactory/createMatteBorder 
+      (int (or top 0)) (int (or left 0)) (int (or bottom 0)) (int (or right 0)) 
+      ^Color (to-color color))
     (BorderFactory/createLineBorder (to-color color) thickness)))
 
 (defn compound-border

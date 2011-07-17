@@ -25,12 +25,27 @@
   (it "can create a color from rgba integers"
     (let [c (color 1 2 3 4)]
       (expect (= (Color. 1 2 3 4) c))))
-  (it "can create a color from a #-prefixed rgb hex string"
+  (it "can create a color from a #-prefixed 6-digit rgb hex string"
     (let [c (color "#010203")]
+      (expect (= (Color. 1 2 3) c))))
+  (it "can create a color from a #-prefixed 3-digit rgb hex string"
+    (let [c (color "#fed")]
+      (expect (= (Color. 0xff 0xee 0xdd) c))))
+  (it "can create a color from a #-prefixed rgb hex keyword"
+    (let [c (color :#010203)]
       (expect (= (Color. 1 2 3) c))))
   (it "can create a color from a #-prefixed rgb hex string and alpha"
     (let [c (color "#010203" 23)]
-      (expect (= (Color. 1 2 3 23) c)))))
+      (expect (= (Color. 1 2 3 23) c))))
+  (it "can create a color from a #-prefixed rgb hex keyword and alpha"
+    (let [c (color :#010203 23)]
+      (expect (= (Color. 1 2 3 23) c))))
+  (it "can create a color from a CSS-style name"
+    (expect (= (Color. 240 248 255) (color "aliceblue"))))
+  (it "can create a color from a CSS-style keyword name"
+    (expect (= (Color. 0 255 127) (color :springgreen))))
+  (it "can create a color from a mixed-case CSS-style name"
+    (expect (= (Color. 240 248 255) (color "AlIceBlUe")))))
 
 (describe to-color
   (it "returns nil for nil input"

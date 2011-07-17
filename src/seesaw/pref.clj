@@ -10,7 +10,8 @@
 
 (ns seesaw.pref)
 
-(defn preferences-node*
+(defn ^java.util.prefs.Preferences 
+  preferences-node*
   "Return the java.util.prefs.Preferences/userRoot for the specified
 namespace."
   ([ns]
