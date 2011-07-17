@@ -37,7 +37,7 @@ namespace.
     </ul>
     <span class="toc-header">Namespaces</span>
     <ul id="left-sidebar-list">
-      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li>
+      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li>
     </ul>
     
     <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
@@ -56,6 +56,8 @@ namespace.
       <a href="#seesaw.invoke/invoke-later">invoke-later</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#seesaw.invoke/invoke-now">invoke-now</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.invoke/signaller">signaller</a>
     </div>
     <br />
   </div>
@@ -121,6 +123,50 @@ Notes:
 
 See:
   <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait">http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait</a>(java.lang.Runnable) 
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.invoke/signaller">signaller</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (signaller f)
+</pre>
+  <pre id="var-docstr">Returns a function that conditionally queues the given function (+ args) on 
+the UI thread. The call is only queued if there is not already a pending call
+queued. 
+
+Suppose you're performing some computation in the background and want
+to signal some UI component to update. Normally you'd use (seesaw.core/invoke-later)
+but that can easily flood the UI thread with unnecessary updates. That is,
+only the "last" queued update really matters since it will overwrite any
+preceding updates when the event queue is drained. Thus, this function takes
+care of insuring that only one update call is "in-flight" at any given
+time.
+
+The returned function returns true if the action was queued, or false if
+one was already active.
+
+Examples:
+
+  ; Increment a number in a thread and signal the UI to update a label
+  ; with the current value. Without a signaller, the loop would send
+  ; updates way way way faster than the UI thread could handle.
+  (defn counting-text-box []
+    (let [display (label :text "0")
+          value   (atom 0)
+          signal  (signaller #(text! display (str @value)))]
+      (future
+        (loop []
+          (swap! value inc)
+          (signal)
+          (recur)))
+      label))
+
+See:
+  (seesaw.invoke/invoke-later)
 </pre>
   
   

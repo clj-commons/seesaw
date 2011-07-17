@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.keystroke - Seesaw nil API documentation</title>
+    <title>seesaw.forms - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -53,20 +53,34 @@ namespace.
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#seesaw.keystroke/keystroke">keystroke</a>
+      <a href="#seesaw.forms/append">append</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/forms-panel">forms-panel</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/group">group</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/next-column">next-column</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/next-line">next-line</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/separator">separator</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/span">span</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.forms/title">title</a>
     </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.keystroke</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.forms</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
 
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.keystroke</span>))
+  (:require <span id="long-name">seesaw.forms</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
 <pre id="namespace-docstr"></pre>
@@ -77,23 +91,109 @@ namespace.
 <div id="var-entry">
   <br />
   <hr />
-  <h2 id="seesaw.keystroke/keystroke">keystroke</h2>
+  <h2 id="seesaw.forms/append">append</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (keystroke arg)
+  <pre id="var-usage">Usage: (append this builder)
 </pre>
-  <pre id="var-docstr">Convert an argument to a KeyStroke. When the argument is a string, follows 
-the keystroke descriptor syntax for KeyStroke/getKeyStroke (see link below).
+  <pre id="var-docstr">Add the given component to the form builder</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/forms-panel">forms-panel</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (forms-panel column-spec &amp; opts)
+</pre>
+  <pre id="var-docstr">Construct a panel with a FormLayout. The column spec is
+expected to be a FormLayout column spec in string form.
 
-For example,
+The items are a list of strings, components or any of the
+combinators. For example:
 
-  (keystroke "ctrl S")
+    :items ["Login" (text) (next-line)
+            "Password" (span (text) 3)]
 
-Note that there is one additional modifier supported, "menu" which will
-replace the modifier with the appropriate platform-specific modifier key for
-menus. For example, on Windows it will be "ctrl", while on OSX, it will be
-the "command" key. Yay!
+Takes the following special properties. They correspond
+to the DefaultFormBuilder option of the same name.
 
-See <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/KeyStroke.html#getKeyStroke">http://download.oracle.com/javase/6/docs/api/javax/swing/KeyStroke.html#getKeyStroke</a>(java.lang.String)</pre>
+    :default-dialog-border?
+    :default-row-spec
+    :leading-column-offset
+    :line-gap-size
+    :paragraph-gap-size
+
+See <a href="http://www.jgoodies.com/freeware/forms/index.html">http://www.jgoodies.com/freeware/forms/index.html</a></pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/group">group</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (group &amp; items)
+</pre>
+  <pre id="var-docstr">Group the rows of the contained items into a row group.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/next-column">next-column</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (next-column)
+       (next-column n)
+</pre>
+  <pre id="var-docstr">Continue with the nth next column in the builder.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/next-line">next-line</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (next-line)
+       (next-line n)
+</pre>
+  <pre id="var-docstr">Continue with the nth next line in the builder.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/separator">separator</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (separator)
+       (separator label)
+</pre>
+  <pre id="var-docstr">Adds a separator with an optional label to the form.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/span">span</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (span component column-span)
+</pre>
+  <pre id="var-docstr">Add the given component spanning several columns.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.forms/title">title</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (title title)
+</pre>
+  <pre id="var-docstr">Adds the given title to the form.</pre>
   
   
   
