@@ -1922,14 +1922,16 @@
   ::with       (fn [c v]) ; ignore ::with option inserted by (with-widget)
   :id           seesaw.selector/id-of!
   :class        seesaw.selector/class-of!
-  :title        #(.setTitle %1 (str %2))
-  :resizable?   #(.setResizable %1 (boolean %2))
-  :content      #(.setContentPane %1 (to-widget %2 true))
-  :menubar      #(.setJMenuBar %1 %2)
-  :minimum-size #(.setMinimumSize %1 (to-dimension %2))
-  :size         #(.setSize %1 (to-dimension %2))
-  :on-close     #(.setDefaultCloseOperation %1 (frame-on-close-map %2))
-  :visible?     #(.setVisible %1 (boolean %2))
+  :on-close     #(.setDefaultCloseOperation ^javax.swing.JFrame %1 (frame-on-close-map %2))
+  :content      #(.setContentPane ^javax.swing.JFrame %1 (to-widget %2 true))
+  :menubar      #(.setJMenuBar ^javax.swing.JFrame %1 %2)
+
+  :title        #(.setTitle ^java.awt.Frame %1 (str %2))
+  :resizable?   #(.setResizable ^java.awt.Frame %1 (boolean %2))
+
+  :minimum-size #(.setMinimumSize ^java.awt.Window %1 (to-dimension %2))
+  :size         #(.setSize ^java.awt.Window %1 (to-dimension %2))
+  :visible?     #(.setVisible ^java.awt.Window %1 (boolean %2))
 })
 
 (defn frame
@@ -2026,6 +2028,15 @@
 (def ^{:private true} custom-dialog-options {
   :modal? #(.setModalityType ^java.awt.Dialog %1 (or (dialog-modality-table %2) (dialog-modality-table (boolean %2))))
   :parent #(.setLocationRelativeTo ^java.awt.Dialog%1 %2)
+
+  ; These two override frame-options for purposes of type hinting and reflection
+  :on-close     #(.setDefaultCloseOperation ^javax.swing.JDialog %1 (frame-on-close-map %2))
+  :content #(.setContentPane ^javax.swing.JDialog %1 (to-widget %2 true))
+  :menubar #(.setJMenuBar ^javax.swing.JDialog %1 %2)
+
+  ; Ditto here. Avoid reflection
+  :title        #(.setTitle ^java.awt.Dialog %1 (str %2))
+  :resizable?   #(.setResizable ^java.awt.Dialog %1 (boolean %2))
 })
 
 (def ^{:private true} dialog-result-property ::dialog-result)
@@ -2115,7 +2126,7 @@
       :as opts}]
   (let [^JDialog dlg (apply-options (construct JDialog opts) 
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
-                           (merge custom-dialog-options frame-options))]
+                           (merge frame-options custom-dialog-options))]
     (when-not size (.setSize dlg width height))
     (if visible?
       (show! dlg)
