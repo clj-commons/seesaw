@@ -61,9 +61,12 @@
     (nil? (try-cast java.lang.String 99))))
 
 (describe to-url
+  (it "returns its input if it is already a URL object"
+    (let [u (java.net.URL. "http://google.com")]
+      (expect (identical? u (to-url u)))))
   (it "returns a URL if (str input) is a valid URL"
     (= "http://darevay.com" (-> (to-url "http://darevay.com") .toExternalForm )))
-  (it "returns nil if (str input is not a valid URL"
+  (it "returns nil if (str input) is not a valid URL"
     (nil? (to-url "not a URL"))))
 
 (describe apply-options

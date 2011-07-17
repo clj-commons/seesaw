@@ -98,9 +98,10 @@
   "Try to parse (str s) as a URL. Returns new java.net.URL on success, nil 
   otherwise. This is different from clojure.java.io/as-url in that it doesn't
   throw an exception and it uses (str) on the input."
+  (if (instance? URL s) s
   (try
     (URL. (str s))
-    (catch MalformedURLException e nil)))
+    (catch MalformedURLException e nil))))
 
 (def ^{:private true} options-property "seesaw-creation-options")
 
