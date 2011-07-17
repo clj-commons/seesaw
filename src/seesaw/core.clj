@@ -2421,7 +2421,7 @@
 (def ^{:private true} progress-bar-options {
   :orientation #(.setOrientation ^javax.swing.JProgressBar %1 (or (orientation-table %2)
                                         (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
-  :value #(do (check-args (number? %2)) (.setValue ^javax.swing.JProgressBar %1 %2))
+  :value #(do (check-args (number? %2) ":value must be a number") (.setValue ^javax.swing.JProgressBar %1 %2))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum ^javax.swing.JProgressBar %1 %2))
   :max #(do (check-args (number? %2) ":max must be a number.")
