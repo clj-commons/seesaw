@@ -562,17 +562,9 @@
   :border      #(.setBorder ^JComponent %1 (seesaw.border/to-border %2))
   :font        #(.setFont ^JComponent %1 (seesaw.font/to-font %2))
   :tip         #(.setToolTipText ^JComponent %1 (str %2))
-  :text        #(.setText %1 (str %2))
-  :icon        #(.setIcon %1 (make-icon %2))
   :cursor      #(.setCursor ^java.awt.Component %1 (apply seesaw.cursor/cursor (to-seq %2)))
-  :action      #(.setAction %1 %2)
-  :editable?   #(.setEditable %1 (boolean %2))
   :visible?    #(.setVisible ^java.awt.Component %1 (boolean %2))
-  :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
-  :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table %2))
   :items       #(add-widgets %1 %2)
-  :model       #(.setModel %1 %2)
   :preferred-size #(.setPreferredSize ^JComponent %1 (to-dimension %2))
   :minimum-size   #(.setMinimumSize ^JComponent %1 (to-dimension %2))
   :maximum-size   #(.setMaximumSize ^JComponent %1 (to-dimension %2))
@@ -585,6 +577,17 @@
   :bounds     bounds-option-handler
   :popup      #(popup-option-handler %1 %2)
   :paint      #(paint-option-handler %1 %2)
+
+  ; TODO reflection - these properties aren't generally applicable to
+  ; any kind of widget so move them out
+  :icon        #(.setIcon %1 (make-icon %2))
+  :action      #(.setAction %1 %2)
+  :editable?   #(.setEditable %1 (boolean %2))
+  :text        #(.setText %1 (str %2))
+  :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
+  :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
+  :orientation #(.setOrientation %1 (orientation-table %2))
+  :model       #(.setModel %1 %2)
 })
 
 (extend-protocol ConfigureWidget
