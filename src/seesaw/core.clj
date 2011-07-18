@@ -501,8 +501,11 @@
 (def ^{:private true} v-alignment-table
   (constant-map SwingConstants :top :center :bottom))
 
-(def ^{:private true} orientation-table
-  (constant-map SwingConstants :horizontal :vertical))
+(let [table (constant-map SwingConstants :horizontal :vertical)]
+  (defn- orientation-table [v]
+    (or (table v)
+        (throw (IllegalArgumentException. 
+                (str ":orientation must be either :horizontal or :vertical. Got " v " instead."))))))
 
 (defn- bounds-option-handler [^java.awt.Component target v]
   (cond
@@ -546,6 +549,40 @@
 
 ;*******************************************************************************
 ; Default options
+
+; We define a few protocols for various setters that existing on multiple Swing
+; types, but don't have a common interface. This lets us avoid reflection.
+(defprotocol ^{:private true} SetIcon (set-icon [this v]))
+
+(extend-protocol SetIcon
+  javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
+  javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
+
+(defprotocol ^{:private true} Text 
+  (set-text [this v])
+  (get-text [this]))
+
+(extend-protocol Text
+  javax.swing.JLabel 
+    (set-text [this v] (.setText this (str v)))
+    (get-text [this] (.getText this))
+  javax.swing.AbstractButton 
+    (set-text [this v] (.setText this (str v)))
+    (get-text [this] (.getText this))
+  javax.swing.text.AbstractDocument 
+    (set-text [this v] (.replace this 0 (.getLength this) (str v) nil))
+    (get-text [this] (.getText this 0 (.getLength this)))
+  javax.swing.text.JTextComponent 
+    (set-text [this v] (.setText this (str v)))
+    (get-text [this] (.getText this)))
+
+(defprotocol ^{:private true} SetAction (set-action [this v]))
+(extend-protocol SetAction
+  javax.swing.AbstractButton (set-action [this v] (.setAction this v))
+  javax.swing.JTextField (set-action [this v] (.setAction this v))
+  javax.swing.JComboBox (set-action [this v] (.setAction this v)))
+
+
 (declare paint-option-handler)
 (def ^{:private true} default-options {
   ::with       (fn [c v]) ; ignore ::with option inserted by (with-widget)
@@ -580,13 +617,9 @@
 
   ; TODO reflection - these properties aren't generally applicable to
   ; any kind of widget so move them out
-  :icon        #(.setIcon %1 (make-icon %2))
-  :action      #(.setAction %1 %2)
-  :editable?   #(.setEditable %1 (boolean %2))
-  :text        #(.setText %1 (str %2))
-  :halign      #(.setHorizontalAlignment %1 (h-alignment-table %2))
-  :valign      #(.setVerticalAlignment %1 (v-alignment-table %2)) 
-  :orientation #(.setOrientation %1 (orientation-table %2))
+  :icon        set-icon
+  :action      set-action
+  :text        set-text
   :model       #(.setModel %1 %2)
 })
 
@@ -616,7 +649,7 @@
 ; ToDocument
 
 ; TODO ToDocument protocol
-(defn ^javax.swing.text.Document to-document
+(defn ^javax.swing.text.AbstractDocument to-document
   [v]
   (let [w (to-widget v)]
     (cond
@@ -950,6 +983,8 @@
 ; Labels
 
 (def ^{:private true} label-options {
+  :halign      #(.setHorizontalAlignment ^javax.swing.JLabel %1 (h-alignment-table %2))
+  :valign      #(.setVerticalAlignment ^javax.swing.JLabel %1 (v-alignment-table %2)) 
   :h-text-position #(.setHorizontalTextPosition ^javax.swing.JLabel %1 (h-alignment-table %2))
   :v-text-position #(.setVerticalTextPosition ^javax.swing.JLabel %1 (v-alignment-table %2))
 })
@@ -1021,6 +1056,8 @@
   (apply-options (ButtonGroup.) opts button-group-options))
 
 (def ^{:private true} button-options {
+  :halign    #(.setHorizontalAlignment ^javax.swing.AbstractButton %1 (h-alignment-table %2))
+  :valign    #(.setVerticalAlignment ^javax.swing.AbstractButton %1 (v-alignment-table %2)) 
   :selected? #(.setSelected ^javax.swing.AbstractButton %1 (boolean %2))
   :group     #(.add ^javax.swing.ButtonGroup %2 %1)
   :margin    #(.setMargin ^javax.swing.AbstractButton %1 (to-insets %2))
@@ -1055,10 +1092,15 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
+  :halign      #(.setHorizontalAlignment ^javax.swing.JTextField %1 (h-alignment-table %2))
+  :editable?   #(.setEditable ^javax.swing.text.JTextComponent %1 (boolean %2))
   ; TODO split into single/multi options since some of these will fail if
   ; multi-line? is false  
   ; TODO reflection - setColumns can apply to JTextField for JTextArea
-  :columns     #(.setColumns %1 %2) 
+  :columns     #(cond 
+                  (instance? JTextField %1) (.setColumns ^JTextField %1 %2)
+                  (instance? JTextArea %1) (.setColumns ^JTextArea %1 %2)
+                  :else (throw (IllegalArgumentException. (str ":columns is not supported on " (class %1))))) 
   :rows        #(.setRows    ^javax.swing.JTextArea %1 %2)
   :wrap-lines? #(doto ^javax.swing.JTextArea %1 (.setLineWrap (boolean %2)) (.setWrapStyleWord (boolean %2)))
   :tab-size    #(.setTabSize ^javax.swing.JTextArea %1 %2)
@@ -1109,9 +1151,8 @@
         multi?      (or (coll? arg0) (seq? arg0))]
     (cond
       (and one? (nil? arg0)) (throw (IllegalArgumentException. "First arg must not be nil"))
-      (and one? as-doc)      (.getText as-doc 0 (.getLength as-doc))
-      ; TODO reflection - there are several types with .getText
-      (and one? as-widget)   (.getText as-widget)
+      (and one? as-doc)      (get-text as-doc) 
+      (and one? as-widget)   (get-text as-widget)
       (and one? multi?)      (map #(text %) arg0)
       one?                   (text :text arg0)
 
@@ -1141,8 +1182,8 @@
         multi?      (or (coll? targets) (seq? targets))]
     (cond
       (nil? targets) (throw (IllegalArgumentException. "First arg must not be nil"))
-      as-doc      (.replace as-doc 0 (.getLength as-doc) value nil)
-      as-widget   (.setText as-widget value)
+      as-doc      (set-text as-doc value)
+      as-widget   (set-text as-widget value)
       multi?      (doseq [w targets] (text w value))))
   targets)
 
@@ -1384,6 +1425,7 @@
 ; JTree
 
 (def ^{:private true} tree-options {
+  :editable?   #(.setEditable ^javax.swing.JTree %1 (boolean %2))
   :renderer #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2))
   :expands-selected-paths? #(.setExpandsSelectedPaths ^javax.swing.JTree %1 (boolean %2))
   :large-model?            #(.setLargeModel ^javax.swing.JTree %1 (boolean %2))
@@ -1423,6 +1465,7 @@
       model)))
 
 (def ^{:private true} combobox-options {
+  :editable?   #(.setEditable ^javax.swing.JComboBox %1 (boolean %2))
   :model    (fn [lb m] ((:model default-options) lb (to-combobox-model m)))
   :renderer #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
 })
@@ -1610,6 +1653,9 @@
 
 ;*******************************************************************************
 ; Separator
+(def ^{:private true} separator-options {
+  :orientation #(.setOrientation ^javax.swing.JSeparator %1 (orientation-table %2))
+})
 
 (defn separator
   "Create a separator.
@@ -1622,7 +1668,7 @@
   "
   { :seesaw {:class 'javax.swing.JSeparator }}
   [& opts]
-  (apply-options (construct javax.swing.JSeparator opts) opts default-options))
+  (apply-options (construct javax.swing.JSeparator opts) opts (merge default-options separator-options)))
 
 ;*******************************************************************************
 ; Menus
@@ -1745,6 +1791,7 @@
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
 (def ^{:private true} toolbar-options {
+  :orientation #(.setOrientation ^javax.swing.JToolBar %1 (orientation-table %2))
   :floatable? #(.setFloatable ^javax.swing.JToolBar %1 (boolean %2))
   ; Override default :items handler
   :items     #(add-widgets %1 (insert-toolbar-separators %2))
@@ -2388,8 +2435,7 @@
 ; Slider
 
 (def ^{:private true} slider-options {
-  :orientation #(.setOrientation ^javax.swing.JSlider %1 (or (orientation-table %2)
-                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
+  :orientation #(.setOrientation ^javax.swing.JSlider %1 (orientation-table %2))
   :value #(let [v %2]
             (check-args (number? v) ":value must be a number.")
             (.setValue ^javax.swing.JSlider %1 v))
@@ -2454,8 +2500,7 @@
 ;*******************************************************************************
 ; Progress Bar
 (def ^{:private true} progress-bar-options {
-  :orientation #(.setOrientation ^javax.swing.JProgressBar %1 (or (orientation-table %2)
-                                        (throw (IllegalArgumentException. (str ":orientation must be either :horizontal or :vertical. Got " %2 " instead.")))))
+  :orientation #(.setOrientation ^javax.swing.JProgressBar %1 (orientation-table %2))
   :value #(do (check-args (number? %2) ":value must be a number") (.setValue ^javax.swing.JProgressBar %1 %2))
   :min #(do (check-args (number? %2) ":min must be a number.")
             (.setMinimum ^javax.swing.JProgressBar %1 %2))

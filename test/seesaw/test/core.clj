@@ -483,10 +483,16 @@
     (let [t (text :text "HI")]
       (expect (= JTextField (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should create a text field with the given :columns"
+    (let [t (text :text "HI" :columns 55)]
+      (expect (= 55 (.getColumns t)))))
   (it "should create a text area when multi-line? is true"
     (let [t (text :text "HI" :multi-line? true)]
       (expect (= JTextArea (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should create a text area with the given :columns"
+    (let [t (text :text "HI" :multi-line? true :columns 91)]
+      (expect (= 91 (.getColumns t)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
   (it "should enable line wrapping on words when :wrap-lines? is true"
