@@ -1177,14 +1177,13 @@
   "
   [targets value]
   (let [as-doc      (to-document targets)
-        ; TODO reflection - there's several types with .setText
         as-widget   (to-widget targets)
         multi?      (or (coll? targets) (seq? targets))]
     (cond
       (nil? targets) (throw (IllegalArgumentException. "First arg must not be nil"))
       as-doc      (set-text as-doc value)
       as-widget   (set-text as-widget value)
-      multi?      (doseq [w targets] (text w value))))
+      multi?      (doseq [w targets] (text! w value))))
   targets)
 
 (defn- add-styles [^JTextPane text-pane styles]

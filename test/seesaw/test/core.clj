@@ -32,28 +32,22 @@
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
-(describe id-for
+(describe id-of
   (it "returns nil if a widget doesn't have an id"
-    (nil? (id-for (label))))
+    (nil? (id-of (label))))
   (it "cerces to a widget before getting the id"
     (let [b (button :id :my-button)
           e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
-      (expect (= "my-button" (id-for e)))))
+      (expect (= "my-button" (id-of e)))))
   (it "returns the correct id if a widget has an id"
-    (= "id of the label" (id-for (label :id "id of the label")))))
-
-(defn invoke-getter [inst meth]
-  (clojure.lang.Reflector/invokeInstanceMethod 
-   inst
-   meth
-   (to-array [])))
+    (= "id of the label" (id-of (label :id "id of the label")))))
 
 (describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
-      (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
+      (expect (nil? (-> (JPanel.) apply-default-opts id-of))))
     (it "sets the component's name if given"
-      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for)))
+      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-of)))
     (it "throws IllegalStateException if the widget's id is already set"
       (try 
         (do (config! (label :id :foo) :id :bar) false)
@@ -686,7 +680,7 @@
   (it "should create a JScrollPane with options"
     (let [l (label :text "Test")
           s (scrollable l :id "MY-ID")]
-      (expect (= "MY-ID" (id-for s))))))
+      (expect (= "MY-ID" (id-of s))))))
 
 (describe splitter
   (it "should create a JSplitPane with with two panes"
@@ -832,7 +826,7 @@
 
 (describe frame
   (it "should create a frame with an id"
-    (= "my-frame" (id-for (frame :id :my-frame))))
+    (= "my-frame" (id-of (frame :id :my-frame))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))
@@ -894,7 +888,7 @@
   (describe custom-dialog
     (testing "argument passing"
       (it "should create a dialog with an id"
-       (= "my-dialog" (id-for (custom-dialog :id :my-dialog))))
+       (= "my-dialog" (id-of (custom-dialog :id :my-dialog))))
      (it "should create a JDialog and set its title, width, and height"
        (let [f (custom-dialog :title "Hello" :width 99 :height 88)]
          (expect (= javax.swing.JDialog (class f)))
@@ -1091,24 +1085,24 @@
     (let [expected (javax.swing.JPasswordField.)
           result   (with-widget (fn [] expected) (text :id "hi"))]
       (expect (= expected result))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
 
   (it "can handle a form with nested widget creation functions"
     (let [p (javax.swing.JPanel.)
           result (with-widget p (flow-panel :id "hi" :items [(label :text "Nested")]))]
       (expect (= p result))
       (expect (instance? javax.swing.JLabel (first (children p))))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
 
   (it "uses a class literal as a factory and applies a constructor function to it"
     (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
       (expect (instance? javax.swing.JPasswordField result))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
   (it "applies a constructor function to an existing widget instance"
     (let [existing (JPanel.)
           result (with-widget existing (border-panel :id "hi"))]
       (expect (= existing result))
-      (expect (= "hi" (id-for existing))))))
+      (expect (= "hi" (id-of existing))))))
 
 (describe dispose!
   (it "should dispose of a JFrame"
