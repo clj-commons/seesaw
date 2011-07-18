@@ -1646,12 +1646,13 @@
         (javax.swing.JMenuItem. ^String item)))))
 
 (def ^{:private true} menu-options {
-  ;:items #(add-widgets %1 (map to-menu-item %2))
   :items (fn [^javax.swing.JMenu menu items] 
             (doseq [item items] 
               (if-let [menu-item (to-menu-item item)]
                 (.add menu menu-item)
-                (.add menu (to-widget item true)))))
+                (if (= :separator item)
+                  (.addSeparator menu)
+                  (.add menu (to-widget item true))))))
 })
 
 (defn menu 
@@ -1667,6 +1668,17 @@
   { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
   (apply-button-defaults (construct javax.swing.JMenu opts) opts menu-options))
+
+(def ^{:private true} popup-options {
+  ; TODO reflection - duplicate of menu-options 
+  :items (fn [^javax.swing.JPopupMenu menu items] 
+            (doseq [item items] 
+              (if-let [menu-item (to-menu-item item)]
+                (.add menu menu-item)
+                (if (= :separator item)
+                  (.addSeparator menu)
+                  (.add menu (to-widget item true)))))) 
+})
 
 (defn popup 
   "Create a new popup menu. Additional options:
@@ -1684,7 +1696,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   { :seesaw {:class 'javax.swing.JPopupMenu }}
   [& opts]
-  (apply-options (construct javax.swing.JPopupMenu opts) opts (merge default-options menu-options)))
+  (apply-options (construct javax.swing.JPopupMenu opts) opts (merge default-options popup-options)))
 
 
 (defn- ^javax.swing.JPopupMenu make-popup [target arg event]

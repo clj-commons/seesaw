@@ -729,7 +729,7 @@
           m (menu :items [a b c d])
           [ia ib ic id] (.getMenuComponents m)]
       (expect (= a (.getAction ia)))
-      (expect (= javax.swing.JSeparator (class ib)))
+      (expect (= javax.swing.JPopupMenu$Separator (class ib)))
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
@@ -741,10 +741,10 @@
           b :separator
           c (menu-item)
           d "Just a string"
-          m (menu :items [a b c d])
-          [ia ib ic id] (.getMenuComponents m)]
+          m (popup :items [a b c d])
+          ; Separator isn't included in sub elements :(
+          [ia ic id]  (map #(.getComponent %) (.getSubElements m))]
       (expect (= a (.getAction ia)))
-      (expect (= javax.swing.JSeparator (class ib)))
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
