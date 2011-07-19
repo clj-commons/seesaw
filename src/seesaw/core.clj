@@ -588,6 +588,17 @@
   javax.swing.JTextField (set-action [this v] (.setAction this v))
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
+(defprotocol ^{:private true} SetModel (set-model [this m]))
+(extend-protocol SetModel
+  javax.swing.text.JTextComponent (set-model [this v] (.setDocument this v))
+  javax.swing.AbstractButton (set-model [this v] (.setModel this v))
+  javax.swing.JComboBox      (set-model [this v] (.setModel this v))
+  javax.swing.JList          (set-model [this v] (.setModel this v))
+  javax.swing.JTable         (set-model [this v] (.setModel this v))
+  javax.swing.JTree          (set-model [this v] (.setModel this v))
+  javax.swing.JProgressBar   (set-model [this v] (.setModel this v))
+  javax.swing.JSlider        (set-model [this v] (.setModel this v))
+  javax.swing.JScrollBar     (set-model [this v] (.setModel this v)))
 
 (declare paint-option-handler)
 (def ^{:private true} default-options {
@@ -621,12 +632,12 @@
   :popup      #(popup-option-handler %1 %2)
   :paint      #(paint-option-handler %1 %2)
 
-  ; TODO reflection - these properties aren't generally applicable to
-  ; any kind of widget so move them out
   :icon        set-icon
   :action      set-action
   :text        set-text
-  :model       #(.setModel %1 %2)
+  ; TODO reflection - these properties aren't generally applicable to
+  ; any kind of widget so move them out
+  :model       set-model
 })
 
 (extend-protocol ConfigureWidget
@@ -1560,7 +1571,9 @@
     (.addHierarchyListener splitter
       (reify java.awt.event.HierarchyListener
         (hierarchyChanged [this e]
-          (when (and (not= 0 (bit-and (.getChangeFlags e) java.awt.event.HierarchyEvent/SHOWING_CHANGED))
+          (when (and (not= 0 (bit-and 
+                               ^Integer (.getChangeFlags e) 
+                               ^Integer java.awt.event.HierarchyEvent/SHOWING_CHANGED))
                    (.isShowing splitter))
             (.removeHierarchyListener splitter this)
             (divider-location-proportional! splitter value)))))))
