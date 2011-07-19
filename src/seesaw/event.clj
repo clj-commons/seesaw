@@ -21,6 +21,50 @@
                           KeyListener ComponentListener]
            [java.beans PropertyChangeListener]))
 
+; Use some protocols for listener installation to avoid reflection
+
+(defmacro ^{:private true } extend-listener-protocol [proto proto-method java-method & classes]
+  `(extend-protocol ~proto
+     ~@(mapcat (fn [c] `(~c (~proto-method [this# v#] (. this# ~java-method v#)))) classes)))
+
+(defprotocol ^{:private true} AddChangeListener
+  (add-change-listener [this l]))
+
+(defprotocol ^{:private true} AddActionListener
+  (add-action-listener [this v]))
+
+(defprotocol ^{:private true} AddListSelectionListener
+  (add-list-selection-listener [this v]))
+
+(extend-listener-protocol AddChangeListener add-change-listener addChangeListener 
+  javax.swing.JProgressBar
+  javax.swing.JSlider
+  javax.swing.JSpinner
+  javax.swing.JTabbedPane
+  javax.swing.JViewport
+  javax.swing.AbstractButton
+  javax.swing.SingleSelectionModel
+  javax.swing.SpinnerModel
+  javax.swing.ButtonModel)
+ 
+(extend-listener-protocol AddActionListener add-action-listener addActionListener 
+  javax.swing.JFileChooser
+  javax.swing.JTextField
+  javax.swing.JComboBox
+  javax.swing.AbstractButton
+  javax.swing.ButtonModel
+  javax.swing.ComboBoxEditor
+  javax.swing.Timer)
+
+(extend-listener-protocol AddListSelectionListener add-list-selection-listener addListSelectionListener
+  javax.swing.JList
+  javax.swing.ListSelectionModel)
+
+(extend-protocol AddListSelectionListener
+  javax.swing.JTable 
+    (add-list-selection-listener [this l] 
+      (add-list-selection-listener (.getSelectionModel this) l)))
+
 ; Declaratively set up all the Swing listener types available through the
 ; listen function below. The yucky fuctions and macros below take care
 ; of reifying the interface and mapping to clojure handler functions.
@@ -78,14 +122,14 @@
     :class   ActionListener
     :events  #{:action-performed}
     ; TODO %1 can be button, combobox, textfield, etc.
-    :install #(.addActionListener %1 ^ActionListener %2)
+    :install add-action-listener
   }
   :change {
     :name    :change
     :class   ChangeListener
     :events  #{:state-changed}
     ; TODO %1 can be AbstractButton, BoundedRangeModel, others?
-    :install #(.addChangeListener %1 ^ChangeListener %2)
+    :install add-change-listener
   }
   :item {
     :name    :item
@@ -116,13 +160,7 @@
     :class   ListSelectionListener
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
-    :install (fn [target listener]
-                ; TODO reflection - this could be several different types.
-                (.addListSelectionListener 
-                  (cond
-                    (instance? javax.swing.JTable target) (.getSelectionModel ^javax.swing.JTable target)
-                    :else target)
-                  ^ListSelectionListener listener))
+    :install add-list-selection-listener
   }
   :tree-selection { 
     :name    :tree-selection
