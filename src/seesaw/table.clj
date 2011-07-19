@@ -36,31 +36,37 @@
   (let [full-values (atom [])]
     (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
       (isCellEditable [row col] false)
-      (setRowCount [rows]
+      (setRowCount [^Integer rows]
+        ; trick to force proxy-super macro to see correct type to avoid reflection.
         (swap! full-values subvec rows)
-        (proxy-super setRowCount rows))
+        (let [^javax.swing.table.DefaultTableModel this this]
+          (proxy-super setRowCount rows)))
       (addRow [^objects values]
         (swap! full-values conj (last values))
+        ; TODO reflection - I can't get rid of the reflection here without crashes
+        ; It has something to do with Object[] vs. Vector overrides.
         (proxy-super addRow values))
       (insertRow [row ^objects values]
         (swap! full-values insert-at row (last values))
+        ; TODO reflection - I can't get rid of the reflection here without crashes
+        ; It has something to do with Object[] vs. Vector overrides.
         (proxy-super insertRow row values))
       (removeRow [row]
         (swap! full-values remove-at row)
-        (proxy-super removeRow row))
+        (let [^javax.swing.table.DefaultTableModel this this]
+          (proxy-super removeRow row)))
       (getValueAt [row col] 
         (if (= -1 row col)
           column-key-map
           (if (= -1 col)
             (get @full-values row)
-            ; trick to force proxy-super macro to see correct type
-            ; to avoid reflection.
             (let [^javax.swing.table.DefaultTableModel this this]
               (proxy-super getValueAt row col)))))
       (setValueAt [value row col]
         (if (= -1 col)
           (swap! full-values assoc row value)
-          (proxy-super setValueAt value row col))))))
+          (let [^javax.swing.table.DefaultTableModel this this]
+            (proxy-super setValueAt value row col)))))))
 
 (defn- get-full-value [^javax.swing.table.TableModel model row]
   (try
