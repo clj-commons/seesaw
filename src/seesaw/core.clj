@@ -563,6 +563,9 @@
   (get-text [this]))
 
 (extend-protocol Text
+  Object
+    (set-text [this v] (set-text (to-widget this) v))
+    (get-text [this] (get-text (to-widget this)))
   javax.swing.JLabel 
     (set-text [this v] (.setText this (str v)))
     (get-text [this] (.getText this))
@@ -572,6 +575,9 @@
   javax.swing.text.AbstractDocument 
     (set-text [this v] (.replace this 0 (.getLength this) (str v) nil))
     (get-text [this] (.getText this 0 (.getLength this)))
+  javax.swing.event.DocumentEvent
+    (set-text [this v] (set-text (.getDocument this) v))
+    (get-text [this] (get-text (.getDocument this)))
   javax.swing.text.JTextComponent 
     (set-text [this v] (.setText this (str v)))
     (get-text [this] (.getText this)))
@@ -1176,14 +1182,9 @@
 
   "
   [targets value]
-  (let [as-doc      (to-document targets)
-        as-widget   (to-widget targets)
-        multi?      (or (coll? targets) (seq? targets))]
-    (cond
-      (nil? targets) (throw (IllegalArgumentException. "First arg must not be nil"))
-      as-doc      (set-text as-doc value)
-      as-widget   (set-text as-widget value)
-      multi?      (doseq [w targets] (text! w value))))
+  (check-args (not (nil? targets)) "First arg must not be nil")
+  (doseq [w (to-seq targets)] 
+    (set-text w value))
   targets)
 
 (defn- add-styles [^JTextPane text-pane styles]
