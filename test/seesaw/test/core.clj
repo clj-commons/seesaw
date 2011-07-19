@@ -435,6 +435,12 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text!
+  (it "should set the text of the document in a document event"
+    (let [doc (javax.swing.text.PlainDocument.)
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+                                                 javax.swing.event.DocumentEvent$EventType/CHANGE)]
+      (text! evt "Hello")
+      (expect (= "Hello" (text evt)))))
   (it "should set the text of a text Document"
     (let [d (javax.swing.text.PlainDocument.)
           _ (.insertString d 0 "HI" nil)
@@ -463,6 +469,12 @@
     (let [d (javax.swing.text.PlainDocument.)]
       (.insertString d 0 "HI" nil)
       (expect (= "HI" (text d)))))
+  (it "should return the text of the document in a document event"
+    (let [doc (javax.swing.text.PlainDocument.)
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+                                                 javax.swing.event.DocumentEvent$EventType/CHANGE)]
+      (.insertString doc 0 "Hello" nil)
+      (expect (= "Hello" (text evt)))))
   (it "should return the text of a button argument"
     (= "HI" (text (button :text "HI"))))
   (it "should return the text of a label argument"
