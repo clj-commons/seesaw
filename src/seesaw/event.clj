@@ -37,6 +37,7 @@
   (add-list-selection-listener [this v]))
 
 (extend-listener-protocol AddChangeListener add-change-listener addChangeListener 
+  javax.swing.BoundedRangeModel
   javax.swing.JProgressBar
   javax.swing.JSlider
   javax.swing.JSpinner
@@ -121,14 +122,12 @@
     :name    :action
     :class   ActionListener
     :events  #{:action-performed}
-    ; TODO %1 can be button, combobox, textfield, etc.
     :install add-action-listener
   }
   :change {
     :name    :change
     :class   ChangeListener
     :events  #{:state-changed}
-    ; TODO %1 can be AbstractButton, BoundedRangeModel, others?
     :install add-change-listener
   }
   :item {
