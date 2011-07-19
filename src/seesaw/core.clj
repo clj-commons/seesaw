@@ -1098,19 +1098,21 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
-  :halign      #(.setHorizontalAlignment ^javax.swing.JTextField %1 (h-alignment-table %2))
-  :editable?   #(.setEditable ^javax.swing.text.JTextComponent %1 (boolean %2))
-  ; TODO split into single/multi options since some of these will fail if
-  ; multi-line? is false  
-  ; TODO reflection - setColumns can apply to JTextField for JTextArea
-  :columns     #(cond 
-                  (instance? JTextField %1) (.setColumns ^JTextField %1 %2)
-                  (instance? JTextArea %1) (.setColumns ^JTextArea %1 %2)
-                  :else (throw (IllegalArgumentException. (str ":columns is not supported on " (class %1))))) 
+  :editable? #(.setEditable  ^javax.swing.text.JTextComponent %1 (boolean %2))
+})
+
+(def ^{:private true} text-field-options (merge {
+  :halign    #(.setHorizontalAlignment ^javax.swing.JTextField %1 (h-alignment-table %2))
+  :editable? #(.setEditable ^javax.swing.text.JTextComponent %1 (boolean %2))
+  :columns   #(.setColumns ^JTextField %1 %2)
+} text-options))
+
+(def ^{:private true} text-area-options (merge {
+  :columns     #(.setColumns ^JTextArea %1 %2)
   :rows        #(.setRows    ^javax.swing.JTextArea %1 %2)
   :wrap-lines? #(doto ^javax.swing.JTextArea %1 (.setLineWrap (boolean %2)) (.setWrapStyleWord (boolean %2)))
   :tab-size    #(.setTabSize ^javax.swing.JTextArea %1 %2)
-})
+} text-options))
 
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField 
@@ -1120,6 +1122,9 @@
     :text         Initial text content
     :multi-line?  If true, a JTextArea is created (default false)
     :editable?    If false, the text is read-only (default true)
+
+  The following properties only apply if :multi-line? is true:
+
     :wrap-lines?  If true (and :multi-line? is true) lines are wrapped. 
                   (default false)
     :tab-size     Tab size in spaces. Defaults to 8. Only applies if :multi-line? 
@@ -1149,24 +1154,22 @@
   " 
   { :seesaw {:class 'javax.swing.JTextField }} ;TODO!
   [& args]
-  ; TODO this is crying out for a multi-method or protocol
-  (let [one?        (= (count args) 1)
-        [arg0 arg1] args
-        as-doc      (to-document arg0)
-        as-widget   (to-widget arg0)
-        multi?      (or (coll? arg0) (seq? arg0))]
-    (cond
-      (and one? (nil? arg0)) (throw (IllegalArgumentException. "First arg must not be nil"))
-      (and one? as-doc)      (get-text as-doc) 
-      (and one? as-widget)   (get-text as-widget)
-      (and one? multi?)      (map #(text %) arg0)
-      one?                   (text :text arg0)
-
-      :else (let [{:keys [multi-line?] :as opts} args
-                  t (if multi-line? (construct JTextArea opts) (construct JTextField opts))]
-              (apply-options t 
-                (dissoc opts :multi-line?)
-                (merge default-options text-options))))))
+  (if (= 1 (count args))
+    (let [arg0      (first args) 
+          as-doc    (to-document arg0)
+          as-widget (to-widget arg0)
+          multi?    (or (coll? arg0) (seq? arg0))]
+      (cond 
+        (nil? arg0) (throw (IllegalArgumentException. "First arg must not be nil"))
+        as-doc      (get-text as-doc) 
+        as-widget   (get-text as-widget)
+        multi?      (map #(text %) arg0)
+        :else       (text :text arg0)))
+    (let [{:keys [multi-line?] :as opts} args
+          opts (dissoc opts :multi-line?)]
+      (if multi-line?
+        (apply-options (construct JTextArea opts) opts (merge default-options text-area-options))
+        (apply-options (construct JTextField opts) opts (merge default-options text-field-options))))))
 
 (defn text!
   "Set the text of widget(s) or document(s). targets is an object that can be
@@ -1264,7 +1267,7 @@
 
 (def ^{:private true} password-options (merge {
   :echo-char #(.setEchoChar ^javax.swing.JPasswordField %1 %2)
-} text-options))
+} text-field-options))
 
 (defn password
   "Create a password field. Options are the same as single-line text fields with
