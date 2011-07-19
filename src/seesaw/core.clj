@@ -632,12 +632,10 @@
   :popup      #(popup-option-handler %1 %2)
   :paint      #(paint-option-handler %1 %2)
 
-  :icon        set-icon
-  :action      set-action
-  :text        set-text
-  ; TODO reflection - these properties aren't generally applicable to
-  ; any kind of widget so move them out
-  :model       set-model
+  :icon       set-icon
+  :action     set-action
+  :text       set-text
+  :model      set-model
 })
 
 (extend-protocol ConfigureWidget
