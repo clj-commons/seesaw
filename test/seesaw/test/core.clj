@@ -627,6 +627,8 @@
 (describe listbox
   (it "should create a JList"
     (= javax.swing.JList (class (listbox))))
+  (it "should create a JList with :fixed-cell-height set"
+    (= 98 (.getFixedCellHeight (listbox :fixed-cell-height 98))))
   (it "should create a JList and set the selection mode"
     (expect (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.getSelectionMode (listbox :selection-mode :single)))))
   (it "should create a JList using a seq as its model"

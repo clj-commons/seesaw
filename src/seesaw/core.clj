@@ -1406,6 +1406,7 @@
   :model    (fn [lb m] ((:model default-options) lb (to-list-model m)))
   :renderer #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
   :selection-mode list-selection-mode-handler
+  :fixed-cell-height #(.setFixedCellHeight ^javax.swing.JList %1 %2)
 })
 
 (defn listbox
