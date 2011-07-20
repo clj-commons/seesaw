@@ -1557,6 +1557,18 @@
 (def ^{:private true} scrollable-options {
   :hscroll #(.setHorizontalScrollBarPolicy ^JScrollPane %1 (hscroll-table %2))
   :vscroll #(.setVerticalScrollBarPolicy ^JScrollPane %1 (vscroll-table %2))
+  :row-header
+    (fn [^JScrollPane w v] 
+      (let [v (to-widget v true)]
+      (if (instance? javax.swing.JViewport v)
+        (.setRowHeader w v)
+        (.setRowHeaderView w v))))
+  :column-header
+    (fn [^JScrollPane w v] 
+      (let [v (to-widget v true)]
+      (if (instance? javax.swing.JViewport v)
+        (.setColumnHeader w v)
+        (.setColumnHeaderView w v))))
 })
 
 (defn scrollable 
