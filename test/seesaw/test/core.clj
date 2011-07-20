@@ -688,6 +688,12 @@
     (.getShowsRootHandles (tree :shows-root-handles? true)))
   (it "should create a JTree with :shows-root-handles? false"
     (not (.getShowsRootHandles (tree :shows-root-handles? false))))
+  (it "should create a JTree with :single selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION (.. (tree :selection-mode :single) getSelectionModel getSelectionMode)))
+  (it "should create a JTree with :discontiguous selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION (.. (tree :selection-mode :discontiguous) getSelectionModel getSelectionMode)))
+  (it "should create a JTree with :contiguous selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION (.. (tree :selection-mode :contiguous) getSelectionModel getSelectionMode)))
   (it "should set the tree's model from a TreeModel"
     (let [m (javax.swing.tree.DefaultTreeModel. nil)
           t (tree :model m)]

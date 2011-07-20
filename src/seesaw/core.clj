@@ -602,6 +602,10 @@
 
 (defprotocol SetSelectionMode (set-selection-mode [this v]))
 (extend-protocol SetSelectionMode
+  javax.swing.tree.TreeSelectionModel
+    (set-selection-mode [this v] (.setSelectionMode this v))
+  javax.swing.JTree
+    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
   javax.swing.ListSelectionModel
     (set-selection-mode [this v] (.setSelectionMode this v))
   javax.swing.JTable
@@ -618,6 +622,16 @@
     (if-let [v (list-selection-mode-table v)]
       (set-selection-mode target v)
       (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys list-selection-mode-table)))))))
+
+(let [tree-selection-mode-table {
+  :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
+  :contiguous    javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION
+  :discontiguous javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION
+}]
+  (defn- tree-selection-mode-handler [target v]
+    (if-let [v (tree-selection-mode-table v)]
+      (set-selection-mode target v)
+      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys tree-selection-mode-table)))))))
 
 
 (declare paint-option-handler)
@@ -1469,6 +1483,7 @@
   :shows-root-handles?     #(.setShowsRootHandles ^javax.swing.JTree %1 (boolean %2))
   :toggle-click-count      #(.setToggleClickCount ^javax.swing.JTree %1 %2)
   :visible-row-count       #(.setVisibleRowCount ^javax.swing.JTree %1 %2)
+  :selection-mode tree-selection-mode-handler
 })
 
 (defn tree
