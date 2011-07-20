@@ -674,6 +674,14 @@
 (describe tree
   (it "should create a JTree"
     (= javax.swing.JTree (class (tree))))
+  (it "should create a JTree with :root-visible? true"
+    (.isRootVisible (tree :root-visible? true)))
+  (it "should create a JTree with :root-visible? false"
+    (not (.isRootVisible (tree :root-visible? false))))
+  (it "should create a JTree with :shows-root-handles? true"
+    (.getShowsRootHandles (tree :shows-root-handles? true)))
+  (it "should create a JTree with :shows-root-handles? false"
+    (not (.getShowsRootHandles (tree :shows-root-handles? false))))
   (it "should set the tree's model from a TreeModel"
     (let [m (javax.swing.tree.DefaultTreeModel. nil)
           t (tree :model m)]
