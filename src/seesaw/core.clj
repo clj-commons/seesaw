@@ -600,6 +600,26 @@
   javax.swing.JSlider        (set-model [this v] (.setModel this v))
   javax.swing.JScrollBar     (set-model [this v] (.setModel this v)))
 
+(defprotocol SetSelectionMode (set-selection-mode [this v]))
+(extend-protocol SetSelectionMode
+  javax.swing.ListSelectionModel
+    (set-selection-mode [this v] (.setSelectionMode this v))
+  javax.swing.JTable
+    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
+  javax.swing.JList 
+    (set-selection-mode [this v] (.setSelectionMode this v)))
+
+(let [list-selection-mode-table {
+  :single          javax.swing.ListSelectionModel/SINGLE_SELECTION
+  :single-interval javax.swing.ListSelectionModel/SINGLE_INTERVAL_SELECTION
+  :multi-interval  javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION
+}]
+  (defn- list-selection-mode-handler [target v]
+    (if-let [v (list-selection-mode-table v)]
+      (set-selection-mode target v)
+      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys list-selection-mode-table)))))))
+
+
 (declare paint-option-handler)
 (def ^{:private true} default-options {
   ::with       (fn [c v]) ; ignore ::with option inserted by (with-widget)
@@ -1371,6 +1391,7 @@
 (def ^{:private true} listbox-options {
   :model    (fn [lb m] ((:model default-options) lb (to-list-model m)))
   :renderer #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
+  :selection-mode list-selection-mode-handler
 })
 
 (defn listbox
@@ -1405,6 +1426,7 @@
   :model      #(.setModel ^javax.swing.JTable %1 (to-table-model %2))
   :show-grid? #(.setShowGrid ^javax.swing.JTable %1 (boolean %2))
   :fills-viewport-height? #(.setFillsViewportHeight ^javax.swing.JTable %1 (boolean %2))
+  :selection-mode list-selection-mode-handler
 })
 
 (defn table

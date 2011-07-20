@@ -627,6 +627,8 @@
 (describe listbox
   (it "should create a JList"
     (= javax.swing.JList (class (listbox))))
+  (it "should create a JList and set the selection mode"
+    (expect (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.getSelectionMode (listbox :selection-mode :single)))))
   (it "should create a JList using a seq as its model"
     (let [lb (listbox :model [1 2 3 4])
           model (.getModel lb)]
@@ -660,6 +662,10 @@
 (describe table
   (it "should create a JTable"
     (= javax.swing.JTable (class (table))))
+  (it "should create a JTable with :single selection-mode set"
+    (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.. (table :selection-mode :single) getSelectionModel getSelectionMode)))
+  (it "should create a JTable with :multi-interval selection-mode set"
+    (= javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION (.. (table :selection-mode :multi-interval) getSelectionModel getSelectionMode)))
   (it "should fill viewport height by default"
     (.getFillsViewportHeight (table)))
   (it "should set the table's model from a TableModel"
