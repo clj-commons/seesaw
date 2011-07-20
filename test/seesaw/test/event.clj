@@ -249,5 +249,12 @@
       (.collapseRow tree 0)
       (expect @collapsed)
       (.expandRow tree 0)
-      (expect @expanded))))
+      (expect @expanded)))
+  (it "can register a tree-will-expand listener"
+    (let [tree (javax.swing.JTree.)
+          will-expand(atom false)
+          will-collapse (atom false)]
+      (listen tree :tree-will-expand #(reset! will-expand %)
+                   :tree-will-collapse #(reset! will-collapse %))
+      (expect (not (or @will-expand @will-collapse))))))
 

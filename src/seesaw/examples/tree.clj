@@ -42,10 +42,15 @@
 (defn app []
   (let [f (make-frame)]
     ; Listen for selection changes and show them in the label
-    (listen (select f [:#tree]) :selection 
-      (fn [e] 
-        (config! (select f [:#sel]) 
-          :text (str "Selection: " (-> e selection first last)))))
+    (listen (select f [:#tree]) 
+      :tree-will-expand #(println (str "Tree will expand\n" %))
+      :tree-will-collapse #(println (str "Tree will collapse\n" %))
+      :tree-expanded #(println (str "Tree expanded\n" %))
+      :tree-collapsed #(println (str "Tree collapsed\n" %))
+      :selection 
+        (fn [e] 
+          (config! (select f [:#sel]) 
+            :text (str "Selection: " (-> e selection first last)))))
     f))
 
 (defn -main [& args]

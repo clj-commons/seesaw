@@ -14,7 +14,8 @@
   seesaw.event
   (:use [seesaw util meta])
   (:import [javax.swing.event ChangeListener DocumentListener 
-            ListSelectionListener TreeSelectionListener TreeExpansionListener]
+            ListSelectionListener 
+            TreeSelectionListener TreeExpansionListener TreeWillExpandListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
@@ -173,6 +174,15 @@
     :class   TreeExpansionListener 
     :events  #{:tree-expanded :tree-collapsed}
     :install #(.addTreeExpansionListener ^javax.swing.JTree %1 ^TreeExpansionListener %2)
+  }
+  ; Since one of the methods matches the listener name, we give the overall
+  ; a slightly different name to distinguish registering for *all* events
+  ; versus just one.
+  :tree-will-expand* { 
+    :name    :tree-will-expand*
+    :class   TreeWillExpandListener
+    :events  #{:tree-will-expand :tree-will-collapse}
+    :install #(.addTreeWillExpandListener ^javax.swing.JTree %1 ^TreeWillExpandListener %2)
   }
 })
 
