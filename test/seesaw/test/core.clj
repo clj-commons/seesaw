@@ -754,7 +754,13 @@
       ; We can't really test this since the expected divider location (in pixels)
       ; is pretty hard to predict and because of the JSplitPane visibility hack
       ; that's required, it won't actually happen until it's displayed in a frame :(
-      (expect true))))
+      (expect true)))
+  (it "should set the :divider-side"
+    (= 93 (.getDividerSize (splitter :left-right (label) (label) :divider-size 93))))
+  (it "should set the :resize-weight"
+    (= 0.75 (.getResizeWeight (splitter :left-right (label) (label) :resize-weight 0.75))))
+  (it "should set :one-touch-expandable?"
+    (.isOneTouchExpandable (splitter :left-right (label) (label) :one-touch-expandable? true))))
 
 (describe menu-item
   (it "should create a JMenuItem"

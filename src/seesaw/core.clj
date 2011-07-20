@@ -1673,6 +1673,9 @@
 
 (def ^{:private true} splitter-options {
   :divider-location divider-location!
+  :divider-size     #(.setDividerSize ^JSplitPane %1 %2)
+  :resize-weight    #(.setResizeWeight ^JSplitPane %1 %2)
+  :one-touch-expandable? #(.setOneTouchExpandable ^JSplitPane %1 (boolean %2))
 })
 
 (defn splitter
