@@ -1554,7 +1554,17 @@
   :always     ScrollPaneConstants/VERTICAL_SCROLLBAR_ALWAYS 
 })
 
-(def ^{:private true} scrollable-options {
+(def ^{:private true} scrollable-corner-constants {
+  :lower-left  ScrollPaneConstants/LOWER_LEFT_CORNER
+  :lower-right ScrollPaneConstants/LOWER_RIGHT_CORNER
+  :upper-left  ScrollPaneConstants/UPPER_LEFT_CORNER
+  :upper-right ScrollPaneConstants/UPPER_RIGHT_CORNER
+})
+
+(defn- set-scrollable-corner [k ^JScrollPane w v]
+  (.setCorner w (scrollable-corner-constants k) (to-widget v true)))
+
+(def ^{:private true} scrollable-options (merge {
   :hscroll #(.setHorizontalScrollBarPolicy ^JScrollPane %1 (hscroll-table %2))
   :vscroll #(.setVerticalScrollBarPolicy ^JScrollPane %1 (vscroll-table %2))
   :row-header
@@ -1569,7 +1579,8 @@
       (if (instance? javax.swing.JViewport v)
         (.setColumnHeader w v)
         (.setColumnHeaderView w v))))
-})
+} (into {} (for [k (keys scrollable-corner-constants)] 
+             [k (partial set-scrollable-corner k)]))))
 
 (defn scrollable 
   "Wrap target in a JScrollPane and return the scroll pane.
@@ -1579,10 +1590,16 @@
 
   Additional Options:
 
-    :hscroll - Controls appearance of horizontal scroll bar. 
-               One of :as-needed (default), :never, :always
-    :vscroll - Controls appearance of vertical scroll bar.
-               One of :as-needed (default), :never, :always
+    :hscroll       - Controls appearance of horizontal scroll bar. 
+                     One of :as-needed (default), :never, :always
+    :vscroll       - Controls appearance of vertical scroll bar.
+                     One of :as-needed (default), :never, :always
+    :row-header    - Row header widget or viewport
+    :column-header - Column header widget or viewport
+    :lower-left    - Widget in lower-left corner
+    :lower-right   - Widget in lower-right corner
+    :upper-left    - Widget in upper-left corner
+    :upper-right   - Widget in upper-right corner
 
   Examples:
 
