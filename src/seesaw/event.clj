@@ -13,7 +13,8 @@
       :author "Dave Ray"}
   seesaw.event
   (:use [seesaw util meta])
-  (:import [javax.swing.event ChangeListener DocumentListener 
+  (:import [javax.swing.event ChangeListener 
+            CaretListener DocumentListener 
             ListSelectionListener 
             TreeSelectionListener TreeExpansionListener TreeWillExpandListener]
            [javax.swing.text Document]
@@ -118,6 +119,12 @@
                     ^Document target
                     (.getDocument ^javax.swing.text.JTextComponent target))
                  ^DocumentListener listener))
+  }
+  :caret {
+    :name    :caret
+    :class   CaretListener 
+    :events  #{:caret-update}
+    :install #(.addCaretListener ^javax.swing.text.JTextComponent %1 ^CaretListener %2)
   }
   :action {
     :name    :action

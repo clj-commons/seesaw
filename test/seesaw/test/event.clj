@@ -239,6 +239,12 @@
         (expect (= 1 (count (.getItemListeners b))))
         (.. (first (.getItemListeners b)) (itemStateChanged nil))
         (expect @called))))
+  (it "can register a caret listener on a text component"
+    (let [tc (javax.swing.JTextField. "some text")
+          updated (atom nil)]
+      (listen tc :caret-update #(reset! updated %))
+      (.setCaretPosition tc 5)
+      (expect @updated)))
   (it "can register a tree expansion listener"
     (let [tree (javax.swing.JTree.)
           expanded (atom false)
