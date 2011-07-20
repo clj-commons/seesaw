@@ -14,7 +14,7 @@
   seesaw.event
   (:use [seesaw util meta])
   (:import [javax.swing.event ChangeListener DocumentListener 
-            ListSelectionListener TreeSelectionListener]
+            ListSelectionListener TreeSelectionListener TreeExpansionListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
@@ -168,6 +168,12 @@
     :named-events #{:tree-selection} ; Suppress reversed map entry
     :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)
   }
+  :tree-expansion { 
+    :name    :tree-expansion
+    :class   TreeExpansionListener 
+    :events  #{:tree-expanded :tree-collapsed}
+    :install #(.addTreeExpansionListener ^javax.swing.JTree %1 ^TreeExpansionListener %2)
+  }
 })
 
 ; Kind of a hack. Re-route methods with renamed events (due to collisions like
@@ -248,9 +254,9 @@
 
 (defn- get-or-install-handlers
   [target event-name]
-  (let [event-group (event-group-table event-name)
-        handlers    (get-handlers* target (:name event-group))]
-    (if handlers
+  (let [event-group (event-group-table event-name)]
+    (if-not event-group (throw (IllegalArgumentException. (str "Unknown event type " event-name))))
+    (if-let [handlers (get-handlers* target (:name event-group))]
       handlers
       (install-group-handlers target event-group))))
 
@@ -302,8 +308,10 @@
   (reduce
     (fn [result target]
       (cond
-        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements ^javax.swing.ButtonGroup target)))
-        :else (conj result target)))  
+        (instance? javax.swing.ButtonGroup target) 
+          (concat result (enumeration-seq (.getElements ^javax.swing.ButtonGroup target)))
+        :else 
+          (conj result target)))  
     []
     targets))
     
