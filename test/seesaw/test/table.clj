@@ -107,9 +107,15 @@
 (describe remove-at!
   (it "removes a row"
     (let [t (table-model :columns [:a] :rows (map vector (range 5)))
-          r (remove-at! t 2 )]
+          r (remove-at! t 2)]
       (expect (= t r))
       (expect (= 4 (.getRowCount t)))))
+  (it "remove the last row in a table (seesaw issue 49)"
+    (let [t (table-model :columns [:a] :rows [])
+          _ (insert-at! t 0 {:a 99})
+          r (remove-at! t 0)]
+      (expect (= t r))
+      (expect (= 0 (.getRowCount t)))))
   (it "removes multiple rows, assuming that they are sorted!"
     (let [t (table-model :columns [:a] :rows (map vector (range 5)))
           r (remove-at! t 1 2 3)]

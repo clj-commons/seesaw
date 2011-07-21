@@ -29,7 +29,9 @@
     :else      (object-array (concat row [nil]))))
 
 (defn- insert-at [vec pos item] (apply conj (subvec vec 0 pos) item (subvec vec pos)))
-(defn- remove-at [vec pos] (apply conj (subvec vec 0 pos) (subvec vec (inc pos))))
+(defn- remove-at [vec pos] 
+  (let [[head [_ & tail]] (split-at pos vec)]
+    (concat head tail)))
 
 (defn- ^javax.swing.table.DefaultTableModel proxy-table-model 
   [column-names column-key-map]
