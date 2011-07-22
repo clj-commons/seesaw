@@ -1381,10 +1381,16 @@ by zero or more options *for the scroll pane*.
 
 Additional Options:
 
-  :hscroll - Controls appearance of horizontal scroll bar. 
-             One of :as-needed (default), :never, :always
-  :vscroll - Controls appearance of vertical scroll bar.
-             One of :as-needed (default), :never, :always
+  :hscroll       - Controls appearance of horizontal scroll bar. 
+                   One of :as-needed (default), :never, :always
+  :vscroll       - Controls appearance of vertical scroll bar.
+                   One of :as-needed (default), :never, :always
+  :row-header    - Row header widget or viewport
+  :column-header - Column header widget or viewport
+  :lower-left    - Widget in lower-left corner
+  :lower-right   - Widget in lower-right corner
+  :upper-left    - Widget in upper-left corner
+  :upper-right   - Widget in upper-right corner
 
 Examples:
 
@@ -1787,9 +1793,13 @@ following additional properties:
   :text         Initial text content
   :multi-line?  If true, a JTextArea is created (default false)
   :editable?    If false, the text is read-only (default true)
+
+The following properties only apply if :multi-line? is true:
+
   :wrap-lines?  If true (and :multi-line? is true) lines are wrapped. 
                 (default false)
-  :tab-size     Tab size in spaces. Defaults to 8.
+  :tab-size     Tab size in spaces. Defaults to 8. Only applies if :multi-line? 
+                is true.
   :rows         Number of rows if :multi-line? is true (default 0).
 
 To listen for document changes, use the :listen option:
