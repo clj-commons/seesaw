@@ -201,6 +201,16 @@
         (.. (first (.getListSelectionListeners jlist)) (valueChanged nil))
         (expect @called))))
 
+  (it "can register a CaretListener on a JTextComponent with :selection key"
+    (let [jtext (javax.swing.JTextField.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getCaretListeners jtext))))
+        (listen jtext :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getCaretListeners jtext))))
+        (.. (first (.getCaretListeners jtext)) (caretUpdate nil))
+        (expect @called))))
+
   (it "can register a ListSelectionListener on a JTable with :selection key"
       (let [jtable (javax.swing.JTable. 5 1)
             called (atom false)]

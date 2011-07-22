@@ -292,11 +292,12 @@
   (cond
     (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
     ; Re-route to right listener type for :selection on various widget types
-    (instance? javax.swing.JList target)       :list-selection
-    (instance? javax.swing.JTable target)      :list-selection
-    (instance? javax.swing.JTree target)       :tree-selection
-    (instance? javax.swing.JComboBox target)   :action-performed
-    (instance? java.awt.ItemSelectable target) :item-state-changed
+    (instance? javax.swing.JList target)          :list-selection
+    (instance? javax.swing.JTable target)         :list-selection
+    (instance? javax.swing.JTree target)          :tree-selection
+    (instance? javax.swing.JComboBox target)      :action-performed
+    (instance? javax.swing.text.JTextComponent target) :caret-update
+    (instance? java.awt.ItemSelectable target)    :item-state-changed
     :else event-name))
 
 (defn- preprocess-event-specs
