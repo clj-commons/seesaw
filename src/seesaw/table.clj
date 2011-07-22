@@ -25,13 +25,16 @@
 
 (defn- unpack-row [col-key-map row]
   (cond
-    (map? row) (unpack-row-map col-key-map row)
-    :else      (object-array (concat row [nil]))))
+    (map? row)    (unpack-row-map col-key-map row)
+    (vector? row) (object-array (concat row [nil]))
+    :else         (throw (IllegalArgumentException. (str "row must be a map or vector, got " (type row))))))
 
-(defn- insert-at [vec pos item] (apply conj (subvec vec 0 pos) item (subvec vec pos)))
-(defn- remove-at [vec pos] 
-  (let [[head [_ & tail]] (split-at pos vec)]
-    (concat head tail)))
+(defn- insert-at [row-vec pos item] 
+  (apply conj (subvec row-vec 0 pos) item (subvec row-vec pos)))
+
+(defn- remove-at [row-vec pos] 
+  (let [[head [_ & tail]] (split-at pos row-vec)]
+    (vec (concat head tail))))
 
 (defn- ^javax.swing.table.DefaultTableModel proxy-table-model 
   [column-names column-key-map]
@@ -40,7 +43,10 @@
       (isCellEditable [row col] false)
       (setRowCount [^Integer rows]
         ; trick to force proxy-super macro to see correct type to avoid reflection.
-        (swap! full-values subvec rows)
+        (swap! full-values (fn [v] 
+                             (if (< rows (count v)) 
+                               (subvec v rows)
+                               (vec (concat v (take (- (count v) rows) (constantly nil)))))))
         (let [^javax.swing.table.DefaultTableModel this this]
           (proxy-super setRowCount rows)))
       (addRow [^objects values]

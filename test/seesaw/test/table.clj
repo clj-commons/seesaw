@@ -38,6 +38,11 @@
   (it "should create row from a map with extraneous fields without crashing"
     (let [t (table-model :columns [:a] :rows [{:a "a0" :b "b0"}])]
       (expect (= "a0" (.getValueAt t 0 0)))))
+
+  (it "should create rows from a map and retain non-column fields"
+    (let [t (table-model :columns [:a] :rows [{:a 99 :b 98}])
+          v (value-at t 0)]
+      (expect (= {:a 99 :b 98} v))))
           
   (it "should create rows from a list of vectors"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
@@ -46,7 +51,12 @@
       (expect (= "b0" (.getValueAt t 0 1)))
       (expect (= "a1" (.getValueAt t 1 0)))
       (expect (= "b1" (.getValueAt t 1 1)))))
-  
+ 
+  (it "should throw IllegalArgumentException if an entry in :rows is not a map or vector"
+    (try 
+      (table-model :columns [:a] :rows [1 2 3 4]) false
+      (catch IllegalArgumentException e true)))
+
   (it "makes column metadata available through (.getValueAt model -1 -1)"
     (let [t (table-model :columns [:a :b])]
       (expect (= 1 (:b (.getValueAt t -1 -1))))))
@@ -103,6 +113,18 @@
       (expect (= t r))
       (expect (= 7 (.getRowCount t)))
       (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t))))))))
+
+(describe setRowCount
+  (it "can extend the number of rows in the table with nils"
+    (let [t (table-model :columns [:a])]
+      (.setRowCount t 5)
+      (expect (= 5 (row-count t)))
+      (expect (= {:a nil} (value-at t 3)))))
+
+  (it "can reduce the number of rows in the table"
+    (let [t (table-model :columns [:a] :rows [[1] [2] [3] [4] [5]])]
+      (.setRowCount t 2)
+      (expect (= 2 (row-count t))))))
 
 (describe remove-at!
   (it "removes a row"
