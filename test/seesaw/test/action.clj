@@ -15,15 +15,20 @@
   (:import [javax.swing Action]))
 
 (describe action
-  (it "sets the name, tooltip, command and mnemonic"
-    (let [a (action :name "Test" :tip "This is a tip" :command "Go!" :mnemonic \T)]
+  (it "sets the name, tooltip, and command"
+    (let [a (action :name "Test" :tip "This is a tip" :command "Go!")]
       (expect (instance? Action a))
       (expect (.isEnabled a))
       (expect (= "Test" (.getValue a Action/NAME)))
       (expect (= "Go!" (.getValue a Action/ACTION_COMMAND_KEY)))
       (expect (not (.getValue a Action/SELECTED_KEY)))
-      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))
-      (expect (= (int \T) (.getValue a Action/MNEMONIC_KEY)))))
+      (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))))
+  (it "sets the mnemonic of the action given an integer key code"
+    (expect (= 99 (.getValue (action :mnemonic 99) Action/MNEMONIC_KEY))))
+  (it "sets the mnemonic of the action given a character"
+    (expect (= (int \T) (.getValue (action :mnemonic \T) Action/MNEMONIC_KEY))))
+  (it "sets the mnemonic of the action given a lower-case character"
+    (expect (= (int \T) (.getValue (action :mnemonic \t) Action/MNEMONIC_KEY))))
   (it "calls the handler when actionPerformed is called"
     (let [called (atom false)
           f (fn [e] (reset! called true))

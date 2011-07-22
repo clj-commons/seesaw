@@ -105,6 +105,12 @@
 
 
 (describe listen
+  (it "throws IllegalArgumentException for unknown event types"
+    (try
+      (listen (JPanel.) :something-something (fn [_]))
+      false
+      (catch IllegalArgumentException e
+        true)))
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]
@@ -232,5 +238,29 @@
         (listen b :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getItemListeners b))))
         (.. (first (.getItemListeners b)) (itemStateChanged nil))
-        (expect @called)))))
+        (expect @called))))
+  (it "can register a caret listener on a text component"
+    (let [tc (javax.swing.JTextField. "some text")
+          updated (atom nil)]
+      (listen tc :caret-update #(reset! updated %))
+      (.setCaretPosition tc 5)
+      (expect @updated)))
+  (it "can register a tree expansion listener"
+    (let [tree (javax.swing.JTree.)
+          expanded (atom false)
+          collapsed (atom false)]
+      (listen tree :tree-expanded #(reset! expanded %)
+                   :tree-collapsed #(reset! collapsed %))
+      (expect (not (or @expanded @collapsed)))
+      (.collapseRow tree 0)
+      (expect @collapsed)
+      (.expandRow tree 0)
+      (expect @expanded)))
+  (it "can register a tree-will-expand listener"
+    (let [tree (javax.swing.JTree.)
+          will-expand(atom false)
+          will-collapse (atom false)]
+      (listen tree :tree-will-expand #(reset! will-expand %)
+                   :tree-will-collapse #(reset! will-collapse %))
+      (expect (not (or @will-expand @will-collapse))))))
 

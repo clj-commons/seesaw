@@ -86,6 +86,17 @@
         target
         (.clearSelection target))))
 
+(extend-protocol Selection
+  javax.swing.text.JTextComponent
+  (get-selection [target]
+    (let [start (.getSelectionStart target)
+          end   (.getSelectionEnd target)]
+      (if-not (= start end) [[start end]])))
+  (set-selection [target [args]]
+    (if-let [[start end] args]
+      (.select target start end) 
+      (.select target 0 0))))
+
 (defn selection
   ([target] (selection target {}))
   ([target opts] 

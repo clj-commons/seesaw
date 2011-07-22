@@ -21,6 +21,7 @@
         [lazytest.expect :only (expect)]
         [clojure.string :only (capitalize split)])
   (:import [javax.swing SwingConstants
+                        ScrollPaneConstants
                         Action
                         JFrame
                         JToolBar JTabbedPane
@@ -32,28 +33,22 @@
            [java.awt Insets Color Dimension FlowLayout BorderLayout]
            [java.awt.event ActionEvent]))
 
-(describe id-for
+(describe id-of
   (it "returns nil if a widget doesn't have an id"
-    (nil? (id-for (label))))
+    (nil? (id-of (label))))
   (it "cerces to a widget before getting the id"
     (let [b (button :id :my-button)
           e (java.awt.event.ActionEvent. b java.awt.event.ActionEvent/ACTION_PERFORMED "")]
-      (expect (= "my-button" (id-for e)))))
+      (expect (= "my-button" (id-of e)))))
   (it "returns the correct id if a widget has an id"
-    (= "id of the label" (id-for (label :id "id of the label")))))
-
-(defn invoke-getter [inst meth]
-  (clojure.lang.Reflector/invokeInstanceMethod 
-   inst
-   meth
-   (to-array [])))
+    (= "id of the label" (id-of (label :id "id of the label")))))
 
 (describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
-      (expect (nil? (-> (JPanel.) apply-default-opts id-for))))
+      (expect (nil? (-> (JPanel.) apply-default-opts id-of))))
     (it "sets the component's name if given"
-      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-for)))
+      (expect "hi" (-> (JLabel.) (apply-default-opts {:id "hi"}) id-of)))
     (it "throws IllegalStateException if the widget's id is already set"
       (try 
         (do (config! (label :id :foo) :id :bar) false)
@@ -441,6 +436,12 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text!
+  (it "should set the text of the document in a document event"
+    (let [doc (javax.swing.text.PlainDocument.)
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+                                                 javax.swing.event.DocumentEvent$EventType/CHANGE)]
+      (text! evt "Hello")
+      (expect (= "Hello" (text evt)))))
   (it "should set the text of a text Document"
     (let [d (javax.swing.text.PlainDocument.)
           _ (.insertString d 0 "HI" nil)
@@ -469,6 +470,12 @@
     (let [d (javax.swing.text.PlainDocument.)]
       (.insertString d 0 "HI" nil)
       (expect (= "HI" (text d)))))
+  (it "should return the text of the document in a document event"
+    (let [doc (javax.swing.text.PlainDocument.)
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+                                                 javax.swing.event.DocumentEvent$EventType/CHANGE)]
+      (.insertString doc 0 "Hello" nil)
+      (expect (= "Hello" (text evt)))))
   (it "should return the text of a button argument"
     (= "HI" (text (button :text "HI"))))
   (it "should return the text of a label argument"
@@ -483,10 +490,16 @@
     (let [t (text :text "HI")]
       (expect (= JTextField (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should create a text field with the given :columns"
+    (let [t (text :text "HI" :columns 55)]
+      (expect (= 55 (.getColumns t)))))
   (it "should create a text area when multi-line? is true"
     (let [t (text :text "HI" :multi-line? true)]
       (expect (= JTextArea (class t)))
       (expect (= "HI" (.getText t)))))
+  (it "should create a text area with the given :columns"
+    (let [t (text :text "HI" :multi-line? true :columns 91)]
+      (expect (= 91 (.getColumns t)))))
   (it "should default line wrapping to false"
     (not (.getLineWrap (text :multi-line? true))))
   (it "should enable line wrapping on words when :wrap-lines? is true"
@@ -615,6 +628,10 @@
 (describe listbox
   (it "should create a JList"
     (= javax.swing.JList (class (listbox))))
+  (it "should create a JList with :fixed-cell-height set"
+    (= 98 (.getFixedCellHeight (listbox :fixed-cell-height 98))))
+  (it "should create a JList and set the selection mode"
+    (expect (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.getSelectionMode (listbox :selection-mode :single)))))
   (it "should create a JList using a seq as its model"
     (let [lb (listbox :model [1 2 3 4])
           model (.getModel lb)]
@@ -648,6 +665,10 @@
 (describe table
   (it "should create a JTable"
     (= javax.swing.JTable (class (table))))
+  (it "should create a JTable with :single selection-mode set"
+    (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.. (table :selection-mode :single) getSelectionModel getSelectionMode)))
+  (it "should create a JTable with :multi-interval selection-mode set"
+    (= javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION (.. (table :selection-mode :multi-interval) getSelectionModel getSelectionMode)))
   (it "should fill viewport height by default"
     (.getFillsViewportHeight (table)))
   (it "should set the table's model from a TableModel"
@@ -662,6 +683,20 @@
 (describe tree
   (it "should create a JTree"
     (= javax.swing.JTree (class (tree))))
+  (it "should create a JTree with :root-visible? true"
+    (.isRootVisible (tree :root-visible? true)))
+  (it "should create a JTree with :root-visible? false"
+    (not (.isRootVisible (tree :root-visible? false))))
+  (it "should create a JTree with :shows-root-handles? true"
+    (.getShowsRootHandles (tree :shows-root-handles? true)))
+  (it "should create a JTree with :shows-root-handles? false"
+    (not (.getShowsRootHandles (tree :shows-root-handles? false))))
+  (it "should create a JTree with :single selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION (.. (tree :selection-mode :single) getSelectionModel getSelectionMode)))
+  (it "should create a JTree with :discontiguous selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION (.. (tree :selection-mode :discontiguous) getSelectionModel getSelectionMode)))
+  (it "should create a JTree with :contiguous selection-mode set"
+    (= javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION (.. (tree :selection-mode :contiguous) getSelectionModel getSelectionMode)))
   (it "should set the tree's model from a TreeModel"
     (let [m (javax.swing.tree.DefaultTreeModel. nil)
           t (tree :model m)]
@@ -674,13 +709,28 @@
       (expect (= JScrollPane (class s)))
       (expect (= l (.. s getViewport getView)))))
   (it "should create a scroll pane with horizontal policy"
-    (expect (= javax.swing.ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER (.getHorizontalScrollBarPolicy (scrollable (text) :hscroll :never)))))
+    (expect (= ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER (.getHorizontalScrollBarPolicy (scrollable (text) :hscroll :never)))))
   (it "should create a scroll pane with vertical policy"
-    (expect (= javax.swing.ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER (.getVerticalScrollBarPolicy (scrollable (text) :vscroll :never)))))
+    (expect (= ScrollPaneConstants/VERTICAL_SCROLLBAR_NEVER (.getVerticalScrollBarPolicy (scrollable (text) :vscroll :never)))))
+  (it "should create a JScrollPane with a :row-header-view"
+    (let [hv (label)
+          s (scrollable (button) :row-header hv)]
+      (expect (= hv (.. s getRowHeader getView)))))
+  (it "should create a JScrollPane with a :column-header-view"
+    (let [hv (label)
+          s (scrollable (button) :column-header hv)]
+      (expect (= hv (.. s getColumnHeader getView)))))
+  (it "should create a JScrollPane with corners"
+    (let [[ll lr ul ur :as corners] [(label) (label) (label) (label)]
+          s (scrollable (button) :lower-left ll :lower-right lr :upper-left ul :upper-right ur)]
+      (expect (= corners [(.getCorner s ScrollPaneConstants/LOWER_LEFT_CORNER)
+                          (.getCorner s ScrollPaneConstants/LOWER_RIGHT_CORNER)
+                          (.getCorner s ScrollPaneConstants/UPPER_LEFT_CORNER)
+                          (.getCorner s ScrollPaneConstants/UPPER_RIGHT_CORNER)]))))
   (it "should create a JScrollPane with options"
     (let [l (label :text "Test")
           s (scrollable l :id "MY-ID")]
-      (expect (= "MY-ID" (id-for s))))))
+      (expect (= "MY-ID" (id-of s))))))
 
 (describe splitter
   (it "should create a JSplitPane with with two panes"
@@ -704,7 +754,13 @@
       ; We can't really test this since the expected divider location (in pixels)
       ; is pretty hard to predict and because of the JSplitPane visibility hack
       ; that's required, it won't actually happen until it's displayed in a frame :(
-      (expect true))))
+      (expect true)))
+  (it "should set the :divider-side"
+    (= 93 (.getDividerSize (splitter :left-right (label) (label) :divider-size 93))))
+  (it "should set the :resize-weight"
+    (= 0.75 (.getResizeWeight (splitter :left-right (label) (label) :resize-weight 0.75))))
+  (it "should set :one-touch-expandable?"
+    (.isOneTouchExpandable (splitter :left-right (label) (label) :one-touch-expandable? true))))
 
 (describe menu-item
   (it "should create a JMenuItem"
@@ -729,7 +785,7 @@
           m (menu :items [a b c d])
           [ia ib ic id] (.getMenuComponents m)]
       (expect (= a (.getAction ia)))
-      (expect (= javax.swing.JSeparator (class ib)))
+      (expect (= javax.swing.JPopupMenu$Separator (class ib)))
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
@@ -741,10 +797,10 @@
           b :separator
           c (menu-item)
           d "Just a string"
-          m (menu :items [a b c d])
-          [ia ib ic id] (.getMenuComponents m)]
+          m (popup :items [a b c d])
+          ; Separator isn't included in sub elements :(
+          [ia ic id]  (map #(.getComponent %) (.getSubElements m))]
       (expect (= a (.getAction ia)))
-      (expect (= javax.swing.JSeparator (class ib)))
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
@@ -826,7 +882,7 @@
 
 (describe frame
   (it "should create a frame with an id"
-    (= "my-frame" (id-for (frame :id :my-frame))))
+    (= "my-frame" (id-of (frame :id :my-frame))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))
@@ -888,7 +944,7 @@
   (describe custom-dialog
     (testing "argument passing"
       (it "should create a dialog with an id"
-       (= "my-dialog" (id-for (custom-dialog :id :my-dialog))))
+       (= "my-dialog" (id-of (custom-dialog :id :my-dialog))))
      (it "should create a JDialog and set its title, width, and height"
        (let [f (custom-dialog :title "Hello" :width 99 :height 88)]
          (expect (= javax.swing.JDialog (class f)))
@@ -1085,24 +1141,24 @@
     (let [expected (javax.swing.JPasswordField.)
           result   (with-widget (fn [] expected) (text :id "hi"))]
       (expect (= expected result))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
 
   (it "can handle a form with nested widget creation functions"
     (let [p (javax.swing.JPanel.)
           result (with-widget p (flow-panel :id "hi" :items [(label :text "Nested")]))]
       (expect (= p result))
       (expect (instance? javax.swing.JLabel (first (children p))))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
 
   (it "uses a class literal as a factory and applies a constructor function to it"
     (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
       (expect (instance? javax.swing.JPasswordField result))
-      (expect (= "hi" (id-for result)))))
+      (expect (= "hi" (id-of result)))))
   (it "applies a constructor function to an existing widget instance"
     (let [existing (JPanel.)
           result (with-widget existing (border-panel :id "hi"))]
       (expect (= existing result))
-      (expect (= "hi" (id-for existing))))))
+      (expect (= "hi" (id-of existing))))))
 
 (describe dispose!
   (it "should dispose of a JFrame"

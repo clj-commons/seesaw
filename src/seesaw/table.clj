@@ -25,42 +25,56 @@
 
 (defn- unpack-row [col-key-map row]
   (cond
-    (map? row) (unpack-row-map col-key-map row)
-    :else      (object-array (concat row [nil]))))
+    (map? row)    (unpack-row-map col-key-map row)
+    (vector? row) (object-array (concat row [nil]))
+    :else         (throw (IllegalArgumentException. (str "row must be a map or vector, got " (type row))))))
 
-(defn- insert-at [vec pos item] (apply conj (subvec vec 0 pos) item (subvec vec pos)))
-(defn- remove-at [vec pos] (apply conj (subvec vec 0 pos) (subvec vec (inc pos))))
+(defn- insert-at [row-vec pos item] 
+  (apply conj (subvec row-vec 0 pos) item (subvec row-vec pos)))
+
+(defn- remove-at [row-vec pos] 
+  (let [[head [_ & tail]] (split-at pos row-vec)]
+    (vec (concat head tail))))
 
 (defn- ^javax.swing.table.DefaultTableModel proxy-table-model 
   [column-names column-key-map]
   (let [full-values (atom [])]
     (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
       (isCellEditable [row col] false)
-      (setRowCount [rows]
-        (swap! full-values subvec rows)
-        (proxy-super setRowCount rows))
+      (setRowCount [^Integer rows]
+        ; trick to force proxy-super macro to see correct type to avoid reflection.
+        (swap! full-values (fn [v] 
+                             (if (< rows (count v)) 
+                               (subvec v rows)
+                               (vec (concat v (take (- (count v) rows) (constantly nil)))))))
+        (let [^javax.swing.table.DefaultTableModel this this]
+          (proxy-super setRowCount rows)))
       (addRow [^objects values]
         (swap! full-values conj (last values))
+        ; TODO reflection - I can't get rid of the reflection here without crashes
+        ; It has something to do with Object[] vs. Vector overrides.
         (proxy-super addRow values))
       (insertRow [row ^objects values]
         (swap! full-values insert-at row (last values))
+        ; TODO reflection - I can't get rid of the reflection here without crashes
+        ; It has something to do with Object[] vs. Vector overrides.
         (proxy-super insertRow row values))
       (removeRow [row]
         (swap! full-values remove-at row)
-        (proxy-super removeRow row))
+        (let [^javax.swing.table.DefaultTableModel this this]
+          (proxy-super removeRow row)))
       (getValueAt [row col] 
         (if (= -1 row col)
           column-key-map
           (if (= -1 col)
             (get @full-values row)
-            ; trick to force proxy-super macro to see correct type
-            ; to avoid reflection.
             (let [^javax.swing.table.DefaultTableModel this this]
               (proxy-super getValueAt row col)))))
       (setValueAt [value row col]
         (if (= -1 col)
           (swap! full-values assoc row value)
-          (proxy-super setValueAt value row col))))))
+          (let [^javax.swing.table.DefaultTableModel this this]
+            (proxy-super setValueAt value row col)))))))
 
 (defn- get-full-value [^javax.swing.table.TableModel model row]
   (try
