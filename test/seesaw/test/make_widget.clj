@@ -8,25 +8,8 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.to-widget
-  (:use [seesaw util icon])
-  (:import [java.awt Dimension]
-           [javax.swing Box JLabel JButton]))
-
-(defprotocol ToWidget 
-  (to-widget* [v]))
-
-(defmacro ^{:private true} def-to-widget [t b & forms]
-  `(extend-type 
-     ~t
-     ToWidget 
-      (~'to-widget*   ~b ~@forms)))
-
-(def-to-widget Object [c] nil)
-
-(def-to-widget java.awt.Component [c] c)
-
-(def-to-widget java.util.EventObject 
-  [v] 
-  (try-cast java.awt.Component (.getSource v)))
+(ns seesaw.test.make-widget
+  (:use seesaw.make-widget)
+  (:use [lazytest.describe :only (describe it testing)]
+        [lazytest.expect :only (expect)]))
 

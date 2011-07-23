@@ -15,7 +15,7 @@
   capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util meta to-widget])
+  (:use [seesaw util meta to-widget make-widget])
   (:require [seesaw color font border invoke timer selection 
              event selector icon action cells table graphics cursor])
   (:import [javax.swing 
