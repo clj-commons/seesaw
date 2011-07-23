@@ -13,7 +13,7 @@
   seesaw.scroll)
 
 (defprotocol ^{:private true} ScrollImpl
-  (scroll-to!* [this arg])) 
+  (get-handlers [this arg])) 
 
 (def ^{:private true} default-handlers {
   :top    (fn [target] (java.awt.Rectangle. 0 0 0 0))
@@ -21,6 +21,11 @@
             (java.awt.Rectangle. 0 (.getHeight target) 0 0))
   :point  (fn [target ^Integer x ^Integer y] (java.awt.Rectangle. x y 0 0))
   :rect   (fn [target ^Integer x ^Integer y ^Integer w ^Integer h] (java.awt.Rectangle. x y w h))
+})
+
+(def ^{:private true} list-handlers {
+  :row (fn [^javax.swing.JList target ^Integer row]
+         (.getCellBounds target row row)) 
 })
 
 (defn- ^java.awt.Rectangle to-rect [target v handlers]
@@ -32,12 +37,17 @@
       (let [[type & args] v]
         (apply (handlers type) target args))))
 
+(defn- scroll-rect-to-visible [^javax.swing.JComponent target rect]
+  (when rect
+    (.scrollRectToVisible target rect)))
+
 (extend-protocol ScrollImpl
-  javax.swing.JComponent
-    (scroll-to!* [this arg]
-      (.scrollRectToVisible this (to-rect this arg default-handlers))))
+  javax.swing.JComponent (get-handlers [this arg] default-handlers)
+
+  javax.swing.JList
+    (get-handlers [this arg] (merge default-handlers list-handlers)))
 
 (defn scroll!* [target action arg]
   (condp = action
-    :to (scroll-to!* target arg)))
+    :to (scroll-rect-to-visible target (to-rect target arg (get-handlers target arg)))))
 

@@ -8,22 +8,55 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns seesaw.examples.scroll
-  (:use seesaw.core))
+  (:use seesaw.core)
+  (:require [seesaw.bind :as bind]
+            seesaw.scroll))
 
+(defn top [target]
+  (action :name "(scroll! v :to :top)" 
+          :handler (fn [e] (scroll! target :to :top))))
+
+(defn bottom [target]
+  (action :name "(scroll! v :to :bottom)" 
+          :handler (fn [e] (scroll! target :to :bottom))))
+
+(defn point [target & [x y]]
+  (action :name (format "(scroll! v :to [:point %d %d]" x y)
+                      :handler (fn [e] (scroll! target :to [:point x y]))))
+
+(defn rect [target & [x y w h]]
+  (action :name (format "(scroll! v :to [:rect %d %d %d %d]" x y w h)
+                      :handler (fn [e] (scroll! target :to [:rect x y w h]))))
+
+(defn test-panel [target items]
+  (border-panel :center (scrollable target) 
+                :south (grid-panel :columns 2 
+                                    :items items)))
 (defn general []
-  (let [t (text :multi-line? true :text "Paste a lot of text here so there's scroll bars")
-        top (action :name "(scroll! v :to :top)" :handler (fn [e] (scroll! t :to :top)))
-        bottom (action :name "(scroll! v :to :bottom)" :handler (fn [e] (scroll! t :to :bottom)))
-        point (action :name "(scroll! v :to [:point 50 50]"
-                      :handler (fn [e] (scroll! t :to [:point 50 50])))
-        rect (action :name "(scroll! v :to [:rect 100 50 20 20]"
-                      :handler (fn [e] (scroll! t :to [:rect 100 50 20 20])))
-        p (border-panel :center (scrollable t) 
-                        :south (grid-panel :columns 2 :items [top bottom point rect]))]
-    p))
+  (let [t (text :multi-line? true :text "Paste a lot of text here so there's scroll bars")]
+    (test-panel t [(top t) (bottom t) (point t 500 500) (rect t 0 1500 50 50)])))
+
+(defn jlist-row [jlist]
+  (let [row (text :columns 10)
+        go-action  (action :name "Scroll!"
+                    :handler (fn [e]
+                               (scroll! jlist :to [:row (Integer/valueOf (text row))])
+                               (selection! jlist (Integer/valueOf (text row)))))
+        go-button (button :action go-action)]
+    (bind/bind row
+      (bind/transform #(format "(scroll! v :to [:row %s])" %))
+      (bind/property go-button :text))
+    (text! row "200")
+    (horizontal-panel :items ["Row" row go-button])))
+
+(defn jlist []
+  (let [jlist (listbox :model (range 0 1000))]
+    (test-panel jlist [(top jlist) (bottom jlist) (jlist-row jlist)])))
 
 (defn app-panel []
-  (tabbed-panel :tabs [{:title "General" :content (general)}]))
+  (tabbed-panel 
+    :tabs [{:title "General" :content (general)}
+           {:title "listbox" :content (jlist)}]))
 
 (defn -main [& args]
   (invoke-later
