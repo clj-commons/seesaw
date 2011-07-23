@@ -17,7 +17,7 @@
   seesaw.core
   (:use [seesaw util meta to-widget make-widget])
   (:require [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics cursor])
+             event selector icon action cells table graphics cursor scroll])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants
              BoxLayout
@@ -1624,6 +1624,11 @@
   (let [^JScrollPane sp (construct JScrollPane opts)]
     (.setViewportView sp (make-widget target))
     (apply-options sp opts (merge default-options scrollable-options))))
+
+(defn scroll!
+  "TODO doc"
+  [target & args]
+  (apply seesaw.scroll/scroll!* (to-widget target) args))
 
 ;*******************************************************************************
 ; Splitter
