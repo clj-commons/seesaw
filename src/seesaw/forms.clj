@@ -24,7 +24,7 @@
 (extend-protocol ComponentSpec
   Object
   (append [this builder]
-    (.append builder (seesaw.core/to-widget this true)))
+    (.append builder (seesaw.core/make-widget this)))
   String
   (append [this builder]
     (.append builder this)))
@@ -35,7 +35,7 @@
   (reify
     ComponentSpec
     (append [this builder]
-      (.append builder (seesaw.core/to-widget component true) column-span))))
+      (.append builder (seesaw.core/make-widget component) column-span))))
 
 (defn next-line
   "Continue with the nth next line in the builder."

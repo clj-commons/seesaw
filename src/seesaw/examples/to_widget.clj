@@ -19,18 +19,17 @@
 
 (defn name-field [person field]
   (text :columns 15 :text (field person)))
-; Now implement ToWidget to create an editor for that type
+; Now implement MakeWidget to create an editor for that type
 (extend-type Person
-  ToWidget
-  (to-widget* [person create?]
-    (when create?
-      (mig-panel :constraints ["", "[][grow]"]
-        :border [(line-border :thickness 1) 5]
-        :items [
-          [ "First Name"                    "gap 10"]
-          [ (name-field person :first-name) "growx, wrap"]
-          [ "Last Name"                     "gap 10"]
-          [ (name-field person :last-name)  "growx"]]))))
+  MakeWidget
+  (make-widget* [person]
+    (mig-panel :constraints ["", "[][grow]"]
+      :border [(line-border :thickness 1) 5]
+      :items [
+        [ "First Name"                    "gap 10"]
+        [ (name-field person :first-name) "growx, wrap"]
+        [ "Last Name"                     "gap 10"]
+        [ (name-field person :last-name)  "growx"]])))
 
 
 ; Make some people

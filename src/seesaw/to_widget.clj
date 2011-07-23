@@ -13,53 +13,60 @@
   (:import [java.awt Dimension]
            [javax.swing Box JLabel JButton]))
 
-(defprotocol ToWidget (to-widget* [v create?]))
+(defprotocol ToWidget 
+  (to-widget* [v]))
+
+(defprotocol MakeWidget
+  (make-widget* [v]))
 
 ; A couple macros to make definining the ToWidget protocol a little less
 ; tedious. Mostly just for fun...
 
-(defmacro ^{:private true} def-widget-coercion [t b & forms]
+(defmacro ^{:private true} def-to-widget [t b & forms]
   `(extend-type 
      ~t
      ToWidget 
-     (~'to-widget* [~(first b) create?#] ~@forms)))
+      (~'to-widget*   ~b ~@forms)))
 
-(defmacro ^{:private true} def-widget-creational-coercion [t b & forms]
+(defmacro ^{:private true} def-make-widget [t b & forms]
   `(extend-type 
      ~t
-     ToWidget 
-     (~'to-widget* [~(first b) create?#] (when create?# ~@forms))))
+     MakeWidget 
+     (~'make-widget* ~b ~@forms)))
 
-; ... for example, a component coerces to itself.
-(def-widget-coercion java.awt.Component [c] c)
+(def-to-widget Object [c] nil)
 
-(def-widget-coercion java.util.EventObject 
+(def-to-widget java.awt.Component [c] c)
+
+(def-to-widget java.util.EventObject 
   [v] 
   (try-cast java.awt.Component (.getSource v)))
 
-(def-widget-creational-coercion java.awt.Dimension [v] (Box/createRigidArea v))
+(def-make-widget java.awt.Component [c] c)
 
-(def-widget-creational-coercion javax.swing.Action [v] (JButton. v))
+(def-make-widget java.awt.Dimension [v] (Box/createRigidArea v))
 
-(def-widget-creational-coercion clojure.lang.Keyword 
+(def-make-widget javax.swing.Action [v] (JButton. v))
+
+(def-make-widget clojure.lang.Keyword 
   [v] 
   (condp = v
     :separator (javax.swing.JSeparator.)
     :fill-h (Box/createHorizontalGlue)
     :fill-v (Box/createVerticalGlue)))
 
-(def-widget-creational-coercion clojure.lang.IPersistentVector 
+(def-make-widget clojure.lang.IPersistentVector 
   [[v0 v1 v2]]
   (cond
     (= :fill-h v0) (Box/createHorizontalStrut v1)
     (= :fill-v v0) (Box/createVerticalStrut v1)
     (= :by v1) (Box/createRigidArea (Dimension. v0 v2))))
 
-(def-widget-creational-coercion Object
+(def-make-widget String 
   [v]
-  (JLabel. (str v)))
+  (JLabel. v))
 
-(def-widget-creational-coercion java.net.URL
+(def-make-widget java.net.URL
   [v]
   (JLabel. (icon v)))
 

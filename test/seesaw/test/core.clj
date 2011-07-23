@@ -201,7 +201,65 @@
   (it "hides a widget and returns it"
     (not (.isVisible (hide! (doto (JPanel.) (.setVisible true)))))))
 
+(describe make-widget
+  (it "throws an exception for unsupported arguments"
+    (try (make-widget 99) false (catch Exception e true)))
+  (it "returns nil if input is nil"
+    (= nil (make-widget nil)))
+  (it "returns input if it's already a widget"
+    (let [c (JPanel.)]
+      (expect (= c (make-widget c)))))
+  (it "returns input if it's a JFrame"
+    (let [c (JFrame.)]
+      (expect (= c (make-widget c)))))
+  (it "returns a label for string input"
+    (let [c (make-widget "TEST")]
+      (expect (= "TEST" (.getText c)))))
+  (it "returns a button if input is an Action"
+    (let [a (action :handler #(println "HI") :name "Test")
+          c (make-widget a)]
+      (expect (isa? (class c) javax.swing.JButton))
+      (expect (= "Test" (.getText c)))))
+  (it "creates a separator for :separator"
+    (expect (= javax.swing.JSeparator (class (make-widget :separator)))))
+  (it "creates horizontal glue for :fill-h"
+    (let [c (make-widget :fill-h)]
+      (expect (isa? (class c) javax.swing.Box$Filler ))
+      (expect (= 32767 (.. c getMaximumSize getWidth)))))
+  (it "creates vertical glue for :fill-v"
+    (let [c (make-widget :fill-v)]
+      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (= 32767 (.. c getMaximumSize getHeight)))))
+  (it "creates a vertical strut for [:fill-v N]"
+    (let [c (make-widget [:fill-v 99])]
+      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (= 32767 (.. c getMaximumSize getWidth)))
+      (expect (= 99 (.. c getMaximumSize getHeight)))
+      (expect (= 99 (.. c getPreferredSize getHeight)))))
+  (it "creates a horizontal strut for [:fill-h N]"
+    (let [c (make-widget [:fill-h 88])]
+      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (= 32767 (.. c getMaximumSize getHeight)))
+      (expect (= 88 (.. c getMaximumSize getWidth)))
+      (expect (= 88 (.. c getPreferredSize getWidth)))))
+  (it "creates a rigid area for a Dimension"
+    (let [c (make-widget (Dimension. 12 34))]
+      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (= 12 (.. c getMaximumSize getWidth)))
+      (expect (= 34 (.. c getMaximumSize getHeight)))
+      (expect (= 12 (.. c getPreferredSize getWidth)))
+      (expect (= 34 (.. c getPreferredSize getHeight)))))
+  (it "creates a rigid area for a [N :by N]"
+    (let [c (make-widget [12 :by 34])]
+      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (= 12 (.. c getMaximumSize getWidth)))
+      (expect (= 34 (.. c getMaximumSize getHeight)))
+      (expect (= 12 (.. c getPreferredSize getWidth)))
+      (expect (= 34 (.. c getPreferredSize getHeight))))))
+
 (describe to-widget
+  (it "returns nil for unknown inputs"
+      (= nil (to-widget "a string")))
   (it "returns nil if input is nil"
       (= nil (to-widget nil)))
   (it "returns input if it's already a widget"
@@ -210,52 +268,6 @@
   (it "returns input if it's a JFrame"
     (let [c (JFrame.)]
       (expect (= c (to-widget c)))))
-  (it "does not create a new widget if create? param is false"
-    (expect (nil? (to-widget "HI" false))))
-  (it "returns a label for text input"
-    (let [c (to-widget "TEST" true)]
-      (expect (= "TEST" (.getText c)))))
-  (it "returns a button if input is an Action"
-    (let [a (action :handler #(println "HI") :name "Test")
-          c (to-widget a true)]
-      (expect (isa? (class c) javax.swing.JButton))
-      (expect (= "Test" (.getText c)))))
-  (it "creates a separator for :separator"
-    (expect (= javax.swing.JSeparator (class (to-widget :separator true)))))
-  (it "creates horizontal glue for :fill-h"
-    (let [c (to-widget :fill-h true)]
-      (expect (isa? (class c) javax.swing.Box$Filler ))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))))
-  (it "creates vertical glue for :fill-v"
-    (let [c (to-widget :fill-v true)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))))
-  (it "creates a vertical strut for [:fill-v N]"
-    (let [c (to-widget [:fill-v 99] true)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))
-      (expect (= 99 (.. c getMaximumSize getHeight)))
-      (expect (= 99 (.. c getPreferredSize getHeight)))))
-  (it "creates a horizontal strut for [:fill-h N]"
-    (let [c (to-widget [:fill-h 88] true)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))
-      (expect (= 88 (.. c getMaximumSize getWidth)))
-      (expect (= 88 (.. c getPreferredSize getWidth)))))
-  (it "creates a rigid area for a Dimension"
-    (let [c (to-widget (Dimension. 12 34) true)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight)))))
-  (it "creates a rigid area for a [N :by N]"
-    (let [c (to-widget [12 :by 34] true)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight)))))
   (it "converts an event to its source"
     (let [b (button)
           e (ActionEvent. b 0 "hi")]
@@ -993,10 +1005,10 @@
       (let [dlg (dialog :content "Nothing" :modal? false)]
         (expect (= (test-dlg-blocking dlg) dlg))))
     (testing "return-from-dialog"
-      (let [ok (to-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))) true)
-            cancel (to-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))) true)
+      (let [ok (make-widget (action :name "Ok" :handler (fn [e] (return-from-dialog e :ok))))
+            cancel (make-widget (action :name "Cancel" :handler (fn [e] (return-from-dialog e :cancel))))
             dlg (dialog :content "Nothing"
-                             :options (map #(to-widget % true) [ok cancel]))]
+                             :options (map make-widget [ok cancel]))]
        (it "should return value passed to RETURN-FROM-DIALOG from clicking on ok button"
          (expect (= (test-dlg-blocking
                      dlg

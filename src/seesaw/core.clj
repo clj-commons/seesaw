@@ -143,12 +143,13 @@
 ;*******************************************************************************
 ; Widget coercion prototcol
 
-(defn ^java.awt.Component to-widget 
-  "Try to convert the input argument to a widget based on the following rules:
-
+(defn ^java.awt.Component make-widget
+  "Try to create a new widget based on the following rules:
+  
     nil -> nil
-    java.awt.Component -> return argument unchanged
-    java.util.EventObject -> return the event source
+    java.awt.Component -> return argument unchanged (like to-widget)
+    java.util.EventObject -> return the event source (like to-widget)
+
     java.awt.Dimension -> return Box/createRigidArea
     java.swing.Action    -> return a button using the action
     :separator -> create a horizontal JSeparator
@@ -157,18 +158,22 @@
     [:fill-h n] -> Box/createHorizontalStrut with width n
     [:fill-v n] -> Box/createVerticalStrut with height n
     [width :by height] -> create rigid area with given dimensions
-    A java.net.URL -> a label with the image located at the url
+    java.net.URL -> a label with the image located at the url
     Anything else -> a label with the text from passing the object through str
+  "
+  ([v] (when v (make-widget* v))))
 
-   If create? is false, will return nil for all rules (see above) that
-   would create a new widget. The default value for create? is false
-   to avoid inadvertently creating widgets all over the place.
+(defn ^java.awt.Component to-widget 
+  "Try to convert the input argument to a widget based on the following rules:
+
+    nil -> nil
+    java.awt.Component -> return argument unchanged
+    java.util.EventObject -> return the event source
 
   See:
     (seeseaw.to-widget)
   "
-  ([v]         (to-widget v false))
-  ([v create?] (when v (to-widget* v create?))))
+  ([v] (when v (to-widget* v))))
 
 ;*******************************************************************************
 ; Widget construction stuff
@@ -467,7 +472,7 @@
 (defn- add-widget 
   ([c w] (add-widget c w nil))
   ([^java.awt.Container c w constraint] 
-    (let [w* (to-widget w true)]
+    (let [w* (make-widget w)]
       (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
       (.add c w* constraint)
       w*)))
@@ -674,7 +679,7 @@
 
 (extend-protocol ConfigureWidget
   java.util.EventObject
-    (config* [target args] (config* (to-widget target false) args))
+    (config* [target args] (config* (to-widget target) args))
 
   java.awt.Component
     (config* [target args] (reapply-options target args default-options))
@@ -769,11 +774,11 @@
   "Create a panel with a border layout. In addition to the usual options, 
   supports:
     
-    :north  widget for north position (passed through to-widget)
-    :south  widget for south position (passed through to-widget)
-    :east   widget for east position (passed through to-widget)
-    :west   widget for west position (passed through to-widget)
-    :center widget for center position (passed through to-widget)
+    :north  widget for north position (passed through make-widget)
+    :south  widget for south position (passed through make-widget)
+    :east   widget for east position (passed through make-widget)
+    :west   widget for west position (passed through make-widget)
+    :center widget for center position (passed through make-widget)
  
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
@@ -853,7 +858,7 @@
 (defn flow-panel
   "Create a panel with a flow layout. Options:
 
-    :items  List of widgets (passed through to-widget)
+    :items  List of widgets (passed through make-widget)
     :hgap   horizontal gap between widgets
     :vgap   vertical gap between widgets
     :align  :left, :right, :leading, :trailing, :center
@@ -881,7 +886,7 @@
 (defn horizontal-panel 
   "Create a panel where widgets are arranged horizontally. Options:
 
-    :items List of widgets (passed through to-widget)
+    :items List of widgets (passed through make-widget)
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html 
   "
@@ -891,7 +896,7 @@
 (defn vertical-panel
   "Create a panel where widgets are arranged vertically Options:
 
-    :items List of widgets (passed through to-widget)
+    :items List of widgets (passed through make-widget)
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html 
   "
@@ -911,7 +916,7 @@
     
     :rows    Number of rows, defaults to 0, i.e. unspecified.
     :columns Number of columns.
-    :items   List of widgets (passed through to-widget)
+    :items   List of widgets (passed through make-widget)
     :hgap    horizontal gap between widgets
     :vgap    vertical gap between widgets
 
@@ -1075,7 +1080,7 @@
   radio buttons, toggle-able menus, etc. Takes the following options:
 
     :buttons A sequence of buttons to include in the group. They are *not*
-             passed through (to-widget), i.e. they must be button or menu 
+             passed through (make-widget), i.e. they must be button or menu 
              instances.
 
   The mutual exclusion of the buttons in the group will be maintained automatically.
@@ -1562,20 +1567,20 @@
 })
 
 (defn- set-scrollable-corner [k ^JScrollPane w v]
-  (.setCorner w (scrollable-corner-constants k) (to-widget v true)))
+  (.setCorner w (scrollable-corner-constants k) (make-widget v)))
 
 (def ^{:private true} scrollable-options (merge {
   :hscroll #(.setHorizontalScrollBarPolicy ^JScrollPane %1 (hscroll-table %2))
   :vscroll #(.setVerticalScrollBarPolicy ^JScrollPane %1 (vscroll-table %2))
   :row-header
     (fn [^JScrollPane w v] 
-      (let [v (to-widget v true)]
+      (let [v (make-widget v)]
       (if (instance? javax.swing.JViewport v)
         (.setRowHeader w v)
         (.setRowHeaderView w v))))
   :column-header
     (fn [^JScrollPane w v] 
-      (let [v (to-widget v true)]
+      (let [v (make-widget v)]
       (if (instance? javax.swing.JViewport v)
         (.setColumnHeader w v)
         (.setColumnHeaderView w v))))
@@ -1617,7 +1622,7 @@
   "
   [target & opts]
   (let [^JScrollPane sp (construct JScrollPane opts)]
-    (.setViewportView sp (to-widget target true))
+    (.setViewportView sp (make-widget target))
     (apply-options sp opts (merge default-options scrollable-options))))
 
 ;*******************************************************************************
@@ -1698,8 +1703,8 @@
     (doto ^JSplitPane (construct JSplitPane opts)
       (.setOrientation (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
                              :top-bottom JSplitPane/VERTICAL_SPLIT}))
-      (.setLeftComponent (to-widget left true))
-      (.setRightComponent (to-widget right true)))
+      (.setLeftComponent (make-widget left))
+      (.setRightComponent (make-widget right)))
     opts
     (merge default-options splitter-options)))
 
@@ -1782,7 +1787,7 @@
                 (.add menu menu-item)
                 (if (= :separator item)
                   (.addSeparator menu)
-                  (.add menu (to-widget item true))))))
+                  (.add menu (make-widget item))))))
 })
 
 (defn menu 
@@ -1807,7 +1812,7 @@
                 (.add menu menu-item)
                 (if (= :separator item)
                   (.addSeparator menu)
-                  (.add menu (to-widget item true)))))) 
+                  (.add menu (make-widget item)))))) 
 })
 
 (defn popup 
@@ -1916,7 +1921,7 @@
     (let [title-cmp (try-cast Component title)
           index     (.getTabCount tp)]
       (cond-doto tp
-        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (to-widget content true) (str tip))
+        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (make-widget content) (str tip))
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
@@ -1938,7 +1943,7 @@
     :title     Title of the tab or a component to be displayed.
     :tip       Tab's tooltip text
     :icon      Tab's icon, passed through (icon)
-    :content   The content of the tab, passed through (to-widget) as usual.
+    :content   The content of the tab, passed through (make-widget) as usual.
 
   Returns the new JTabbedPane.
 
@@ -2078,7 +2083,7 @@
   :id           seesaw.selector/id-of!
   :class        seesaw.selector/class-of!
   :on-close     #(.setDefaultCloseOperation ^javax.swing.JFrame %1 (frame-on-close-map %2))
-  :content      #(.setContentPane ^javax.swing.JFrame %1 (to-widget %2 true))
+  :content      #(.setContentPane ^javax.swing.JFrame %1 (make-widget %2))
   :menubar      #(.setJMenuBar ^javax.swing.JFrame %1 %2)
 
   :title        #(.setTitle ^java.awt.Frame %1 (str %2))
@@ -2098,7 +2103,7 @@
     :height   initial height. Note that calling (pack!) will negate this setting
     :size     initial size. Note that calling (pack!) will negate this setting
     :minimum-size minimum size of frame, e.g. [640 :by 480]
-    :content  passed through (to-widget) and used as the frame's content-pane
+    :content  passed through (make-widget) and used as the frame's content-pane
     :visible?  whether frame should be initially visible (default false)
     :resizable? whether the frame can be resized (default true)
     :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
@@ -2186,7 +2191,7 @@
 
   ; These two override frame-options for purposes of type hinting and reflection
   :on-close     #(.setDefaultCloseOperation ^javax.swing.JDialog %1 (frame-on-close-map %2))
-  :content #(.setContentPane ^javax.swing.JDialog %1 (to-widget %2 true))
+  :content #(.setContentPane ^javax.swing.JDialog %1 (make-widget %2))
   :menubar #(.setJMenuBar ^javax.swing.JDialog %1 %2)
 
   ; Ditto here. Avoid reflection
@@ -2440,7 +2445,7 @@
     :type        The type of the dialog. One of :warning, :error, :info, :plain, or :question.
 
     :options     Custom buttons/options can be provided using this argument. 
-                 It must be a seq of \"to-widget\"'able objects which will be 
+                 It must be a seq of \"make-widget\"'able objects which will be 
                  displayed as options the user can choose from. Note that in this
                  case, :success-fn, :cancel-fn & :no-fn will *not* be called. 
                  Use the handlers on those buttons & RETURN-FROM-DIALOG to close 
@@ -2498,7 +2503,7 @@
               (dialog-option-type-map option-type)
               nil                       ;icon
               (when options
-                (into-array (map #(to-widget % true) options)))
+                (into-array (map make-widget options)))
               (or default-option (first options))) ; default selection
         remaining-opts (apply dissoc opts :visible? (keys dialog-defaults))
         dlg            (apply custom-dialog :visible? false :content pane (reduce concat remaining-opts))]
@@ -2801,10 +2806,10 @@
     container))
   
 (defn replace!
-  "Replace old-widget with new-widget from container. container and each widget
-  are passed through (to-widget) as usual. Note that the layout constraints of 
-  old-widget are retained for the new widget. This is different from the behavior
-  you'd get with just remove/add in Swing.
+  "Replace old-widget with new-widget from container. container and old-widget
+  are passed through (to-widget). new-widget is passed through make-widget.
+  Note that the layout constraints of old-widget are retained for the new widget. 
+  This is different from the behavior you'd get with just remove/add in Swing.
 
   The container is properly revalidated and repainted after replacement.
 
@@ -2819,5 +2824,5 @@
   "
   [container old-widget new-widget]
   (handle-structure-change 
-    (replace!-impl (to-widget container) (to-widget old-widget) (to-widget new-widget true))))
+    (replace!-impl (to-widget container) (to-widget old-widget) (make-widget new-widget))))
 
