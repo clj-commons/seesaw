@@ -108,6 +108,7 @@
 (defn selection!
   ([target values] (selection! target {} values))
   ([target opts values] 
+    (check-args (not (nil? target)) "target of selection! cannot be nil")
     (set-selection 
       target 
       (if (or (nil? values) (:multi? opts)) values [values]) )

@@ -10,7 +10,8 @@
 
 (ns ^{:doc "Functions for dealing with scrolling. Prefer (seesaw.core/scroll!)."
       :author "Dave Ray"}
-  seesaw.scroll)
+  seesaw.scroll
+  (:use [seesaw.util]))
 
 (defprotocol ^{:private true} ScrollImpl
   (get-handlers [this arg])) 
@@ -28,14 +29,28 @@
          (.getCellBounds target row row)) 
 })
 
+(def ^{:private true} table-handlers {
+  :row    (fn [^javax.swing.JTable target ^Integer row]
+            (.getCellRect target row 0 false)) 
+  :column (fn [^javax.swing.JTable target ^Integer column]
+            (.getCellRect target 0 column false)) 
+  :cell   (fn [^javax.swing.JTable target ^Integer row ^Integer column]
+            (.getCellRect target row column false)) 
+})
+
+(defn- lookup-handler [handlers type]
+  (if-let [h (handlers type)] 
+    h
+    (throw (IllegalArgumentException. (str "Unknown scroll op " type)))))
+
 (defn- ^java.awt.Rectangle to-rect [target v handlers]
   (cond
     (instance? java.awt.Rectangle v) v
     (instance? java.awt.Point v)     (java.awt.Rectangle. ^java.awt.Point v)
-    (keyword? v)                     ((handlers v) target)
+    (keyword? v)                     ((lookup-handler handlers v) target)
     (instance? clojure.lang.PersistentVector v)
       (let [[type & args] v]
-        (apply (handlers type) target args))))
+        (apply (lookup-handler handlers type) target args))))
 
 (defn- scroll-rect-to-visible [^javax.swing.JComponent target rect]
   (when rect
@@ -45,9 +60,14 @@
   javax.swing.JComponent (get-handlers [this arg] default-handlers)
 
   javax.swing.JList
-    (get-handlers [this arg] (merge default-handlers list-handlers)))
+    (get-handlers [this arg] (merge default-handlers list-handlers))
+
+  javax.swing.JTable
+    (get-handlers [this arg] (merge default-handlers table-handlers))
+  )
 
 (defn scroll!* [target action arg]
+  (check-args (not (nil? target)) "target of scroll!* cannot be nil")
   (condp = action
     :to (scroll-rect-to-visible target (to-rect target arg (get-handlers target arg)))))
 
