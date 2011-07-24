@@ -36,42 +36,25 @@
   (let [t (text :multi-line? true :text "Paste a lot of text here so there's scroll bars")]
     (test-panel t [(top t) (bottom t) (point t 500 500) (rect t 0 1500 50 50)])))
 
-(defn jlist-row [jlist]
-  (let [row (text :columns 10)
-        go-action  (action :name "Scroll!"
-                    :handler (fn [e]
-                               (scroll! jlist :to [:row (Integer/valueOf (text row))])
-                               (selection! jlist (Integer/valueOf (text row)))))
-        go-button (button :action go-action)]
-    (bind/bind row
-      (bind/transform #(format "(scroll! v :to [:row %s])" %))
-      (bind/property go-button :text))
-    (text! row "200")
-    (horizontal-panel :items ["Row" row go-button])))
-
-(defn jlist []
-  (let [jlist (listbox :model (range 0 1000))]
-    (test-panel jlist [(top jlist) (bottom jlist) (jlist-row jlist)])))
-
-(defn jtable-op [jtable op-name]
+(defn test-op-int [target op-name]
   (let [arg (text :columns 10)
         go-action  (action :name "Scroll!"
                     :handler (fn [e]
-                               (scroll! jtable :to [op-name (Integer/valueOf (text arg))])
-                               (selection! jtable (Integer/valueOf (text arg)))))
+                               (scroll! target :to [op-name (Integer/valueOf (text arg))])
+                               #_(selection! target (Integer/valueOf (text arg)))))
         go-button (button :action go-action)]
     (bind/bind arg
       (bind/transform #(format "(scroll! v :to [%s %s])" op-name %))
       (bind/property go-button :text))
     (text! arg "200")
-    (horizontal-panel :items [arg go-button])))
+    (horizontal-panel :items [(name op-name) arg go-button])))
 
-(defn jtable-op-2 [jtable op-name]
+(defn test-op-int-int [target op-name]
   (let [arg0 (text :columns 10)
         arg1 (text :columns 10)
         go-action  (action :name "Scroll!"
                     :handler (fn [e]
-                               (scroll! jtable :to [op-name 
+                               (scroll! target :to [op-name 
                                                     (Integer/valueOf (text arg0))
                                                     (Integer/valueOf (text arg1))])))
         go-button (button :action go-action)]
@@ -81,6 +64,10 @@
     (text! [arg0 arg1] "20")
     (horizontal-panel :items [arg0 arg1 go-button])))
 
+(defn jlist []
+  (let [jlist (listbox :model (range 0 1000))]
+    (test-panel jlist [(top jlist) (bottom jlist) (test-op-int jlist :row)])))
+
 (defn jtable []
   (let [columns (map #(-> ( format "c%09d" %) keyword) (range 26))
         jtable (table :model [:columns columns
@@ -89,20 +76,29 @@
       (doto jtable 
         (.setAutoResizeMode javax.swing.JTable/AUTO_RESIZE_OFF)) 
       [(top jtable) (bottom jtable) 
-       (jtable-op jtable :row)
-       (jtable-op jtable :column)
-       (jtable-op-2 jtable :cell)])))
+       (test-op-int jtable :row)
+       (test-op-int jtable :column)
+       (test-op-int-int jtable :cell)])))
+
+(defn jtext[]
+  (let [t (text :multi-line? true 
+                :text (apply str (interpose "\n" (range 0 1000))))]
+    (test-panel t [(top t) 
+                   (bottom t) 
+                   (test-op-int t :line) 
+                   (test-op-int t :position)])))
 
 (defn app-panel []
   (tabbed-panel 
-    :tabs [{:title "General" :content (general)}
+    :tabs [{:title "general" :content (general)}
            {:title "listbox" :content (jlist)}
-           {:title "table" :content (jtable)}]))
+           {:title "table"   :content (jtable)}
+           {:title "text"    :content (jtext)}]))
 
 (defn -main [& args]
   (invoke-later
-    (-> (frame :title "Seesaw Scroll Demo" :size [600 :by 300] :content (app-panel))
+    (-> (frame :title "Seesaw Scroll Demo" :size [800 :by 400] :content (app-panel))
       show!)))
 
-(-main)
+;(-main)
 

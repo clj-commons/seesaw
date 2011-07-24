@@ -93,9 +93,11 @@
           end   (.getSelectionEnd target)]
       (if-not (= start end) [[start end]])))
   (set-selection [target [args]]
+    (if (integer? args)
+      (.select target args args)
     (if-let [[start end] args]
       (.select target start end) 
-      (.select target 0 0))))
+      (.select target 0 0)))))
 
 (defn selection
   ([target] (selection target {}))

@@ -1626,9 +1626,67 @@
     (apply-options sp opts (merge default-options scrollable-options))))
 
 (defn scroll!
-  "TODO doc"
-  [target & args]
-  (apply seesaw.scroll/scroll!* (to-widget target) args))
+  "Scroll a widget. Obviously, the widget must be contained in a scrollable.
+  Returns the widget.
+ 
+  The basic format of the function call is:
+
+    (scroll! widget modifier argument)
+
+  widget is passed through (to-widget) as usual. Currently, the only accepted 
+  value for modifier is :to. The interpretation and set of accepted values for
+  argument depends on the type of widget:
+
+    All Widgets:
+
+      :top           - Scroll to the top of the widget
+      :bottom        - Scroll to the bottom of the widget
+      java.awt.Point - Scroll so the given pixel point is visible
+      java.awt.Rectangle - Scroll so the given rectangle is visible
+      [:point x y]   - Scroll so the given pixel point is visible
+      [:rect x y w h] - Scroll so the given rectable is visible
+  
+    listboxes (JList):
+
+      [:row n] - Scroll so that row n is visible
+      
+    tables (JTable):
+
+      [:row n]        - Scroll so that row n is visible
+      [:column n]     - Scroll so that column n is visible
+      [:cell row col] - Scroll so that the given cell is visible
+
+    text widgets:
+
+      [:line n] - Scroll so that line n is visible
+      [:position n] - Scroll so that position n (character offset) is visible
+
+      Note that for text widgets, the caret will also be moved which in turn
+      causes the selection to change.
+
+  Examples:
+
+    (scroll! w :to :top)
+    (scroll! w :to :bottom)
+    (scroll! w :to [:point 99 10])
+    (scroll! w :to [:rect  99 10 100 100])
+
+    (scroll! listbox :to [:row 99])
+
+    (scroll! table :to [:row 99])
+    (scroll! table :to [:column 10])
+    (scroll! table :to [:cell 99 10])
+
+    (scroll! text :to [:line 200])
+    (scroll! text :to [:position 2000])
+
+  See:
+    (seesaw.scroll/scroll!*)
+    (seesaw.examples.scroll)
+  "
+  [target modifier arg]
+  (seesaw.scroll/scroll!* (to-widget target) modifier arg)
+  target)
 
 ;*******************************************************************************
 ; Splitter
