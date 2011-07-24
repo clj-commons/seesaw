@@ -1442,11 +1442,20 @@
     (instance? javax.swing.table.TableModel v) v
     :else (apply seesaw.table/table-model v)))
 
+(def ^{:private true} auto-resize-mode-table {
+  :off                javax.swing.JTable/AUTO_RESIZE_OFF
+  :next-column        javax.swing.JTable/AUTO_RESIZE_NEXT_COLUMN
+  :subsequent-columns javax.swing.JTable/AUTO_RESIZE_SUBSEQUENT_COLUMNS
+  :last-column        javax.swing.JTable/AUTO_RESIZE_LAST_COLUMN
+  :all-columns        javax.swing.JTable/AUTO_RESIZE_ALL_COLUMNS
+})
+
 (def ^{:private true} table-options {
   :model      #(.setModel ^javax.swing.JTable %1 (to-table-model %2))
   :show-grid? #(.setShowGrid ^javax.swing.JTable %1 (boolean %2))
   :fills-viewport-height? #(.setFillsViewportHeight ^javax.swing.JTable %1 (boolean %2))
   :selection-mode list-selection-mode-handler
+  :auto-resize #(.setAutoResizeMode ^javax.swing.JTable %1 (auto-resize-mode-table %2))
 })
 
 (defn table
@@ -1454,6 +1463,16 @@
 
     :model A TableModel, or a vector. If a vector, then it is used as
            arguments to (seesaw.table/table-model).
+    :show-grid? Whether to show the grid lines of the table.
+    :fills-viewport-height? 
+    :auto-reseize The behavior of columns when the table is resized. One of: 
+           :off                Do nothing to column widths
+           :next-column        When a column is resized, take space from next column
+           :subsequent-columns Change subsequent columns to presercve total width of table
+           :last-column        Apply adjustments to last column only
+           :all-columns        Proportionally resize all columns
+      Defaults to :subsequent-columns. If you're wondering where your horizontal scroll
+      bar is, try setting this to :off.
 
   Example:
 

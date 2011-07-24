@@ -70,11 +70,11 @@
 
 (defn jtable []
   (let [columns (map #(-> ( format "c%09d" %) keyword) (range 26))
-        jtable (table :model [:columns columns
+        jtable (table :auto-resize :off 
+                      :model [:columns columns
                               :rows (repeat 500 (into {} (for [c columns] [c 100])))])]
     (test-panel 
-      (doto jtable 
-        (.setAutoResizeMode javax.swing.JTable/AUTO_RESIZE_OFF)) 
+      jtable 
       [(top jtable) (bottom jtable) 
        (test-op-int jtable :row)
        (test-op-int jtable :column)

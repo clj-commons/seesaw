@@ -690,7 +690,17 @@
   (it "should set the table's model using seesaw.table/table-model"
     (let [t (table :model [:columns [:a :b] :rows [[23 24] [25 26]]])
           m (.getModel t)]
-      (expect (= 2 (.getRowCount m))))))
+      (expect (= 2 (.getRowCount m)))))
+  (it "should honor :auto-resize :off"
+    (= javax.swing.JTable/AUTO_RESIZE_OFF (.getAutoResizeMode (table :auto-resize :off))))
+  (it "should honor :auto-resize :next-column"
+    (= javax.swing.JTable/AUTO_RESIZE_NEXT_COLUMN (.getAutoResizeMode (table :auto-resize :next-column))))
+  (it "should honor :auto-resize :subsequent-columns"
+    (= javax.swing.JTable/AUTO_RESIZE_SUBSEQUENT_COLUMNS (.getAutoResizeMode (table :auto-resize :subsequent-columns))))
+  (it "should honor :auto-resize :last-column"
+    (= javax.swing.JTable/AUTO_RESIZE_LAST_COLUMN (.getAutoResizeMode (table :auto-resize :last-column))))
+  (it "should honor :auto-resize :all-columns"
+    (= javax.swing.JTable/AUTO_RESIZE_ALL_COLUMNS (.getAutoResizeMode (table :auto-resize :all-columns)))))
 
 (describe tree
   (it "should create a JTree"
