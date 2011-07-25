@@ -19,7 +19,7 @@
   "Enable anti-aliasing on the given Graphics2D object.
   
   Returns g2d."
-  [g2d]
+  [^java.awt.Graphics2D g2d]
   (doto g2d 
     (.setRenderingHint RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)))
 
@@ -31,7 +31,7 @@
   (cond
     (nil? v) nil
     (instance? java.awt.Image v) v
-    (instance? javax.swing.ImageIcon v) (.getImage v)
+    (instance? javax.swing.ImageIcon v) (.getImage ^javax.swing.ImageIcon v)
     :else (throw (IllegalArgumentException. (str "Don't know how to make image from " v)))))
 
 ;*******************************************************************************
@@ -148,21 +148,21 @@
   "Apply a rotation to the graphics context by degrees
   
   Returns g2d"
-  [g2d degrees] 
+  [^java.awt.Graphics2D g2d degrees] 
   (.rotate g2d (Math/toRadians degrees)) g2d)
 
 (defn translate 
   "Apply a translation to the graphics context
   
   Returns g2d"
-  [g2d dx dy] (.translate g2d (double dx) (double dy)) g2d)
+  [^java.awt.Graphics2D g2d dx dy] (.translate g2d (double dx) (double dy)) g2d)
 
 (defn scale
   "Apply a scale factor to the graphics context
 
   Returns g2d"
-  ([g2d sx sy] (.scale g2d sx sy) g2d)
-  ([g2d s]     (.scale g2d s s) g2d))
+  ([^java.awt.Graphics2D g2d sx sy] (.scale g2d sx sy) g2d)
+  ([^java.awt.Graphics2D g2d s]     (.scale g2d s s) g2d))
 
 ;*******************************************************************************
 ; Strokes
@@ -226,10 +226,10 @@
 ; Shape drawing protocol
 
 (defprotocol Draw
-  (draw* [shape g2d style]))
+  (draw* [shape ^java.awt.Graphics2D g2d style]))
 
 (extend-type java.awt.Shape Draw
-  (draw* [shape g2d style] 
+  (draw* [shape ^java.awt.Graphics2D g2d style] 
     (let [fg (to-color (:foreground style))
           bg (to-color (:background style))
           s  (or (:stroke style) default-stroke)]
@@ -244,16 +244,16 @@
           (.draw g2d shape))))))
 
 (extend-type StringShape Draw
-  (draw* [shape g2d style]
+  (draw* [shape ^java.awt.Graphics2D g2d style]
     (let [fg (to-color (:foreground style))
           f  (:font style)]
       (when f (.setFont g2d f))
       (.setColor g2d (or fg java.awt.Color/BLACK))
-      (.drawString g2d (:value shape) (:x shape) (:y shape)))))
+      (.drawString g2d ^String (:value shape) (float (:x shape)) (float (:y shape))))))
 
 (extend-type ImageShape Draw
-  (draw* [shape g2d style] 
-    (.drawImage g2d (:image shape) (:x shape) (:y shape) nil)))
+  (draw* [shape ^java.awt.Graphics2D g2d style] 
+    (.drawImage g2d ^java.awt.Image (:image shape) ^Integer (:x shape) ^Integer (:y shape) nil)))
 
 (defn draw 
   "Draw a one or more shape/style pairs to the given graphics context.

@@ -22,13 +22,13 @@
 (extend-protocol Meta
   Object
     (put-meta! [this key value] 
-      (if-let [this-map (.get meta-map this)]
-        (.put this-map key (WeakReference. value))
-        (.put meta-map this (doto (java.util.HashMap.) (.put key (WeakReference. value)))))
+      (if-let [this-map (.get ^java.util.Map meta-map this)]
+        (.put ^java.util.Map this-map key (WeakReference. value))
+        (.put ^java.util.Map meta-map this (doto (java.util.HashMap.) (.put key (WeakReference. value)))))
       this)
     (get-meta  [this key]
-      (when-let [this-map (.get meta-map this)]
-        (when-let [weak-ref (.get this-map key)]
+      (when-let [this-map (.get ^java.util.Map meta-map this)]
+        (when-let [^WeakReference weak-ref (.get ^java.util.Map this-map key)]
           (.get weak-ref))))
 
   javax.swing.JComponent

@@ -180,8 +180,8 @@
 
 (def ^{:private true} segment-regex #"^<([\w.!]+)>(.*)")
 (defn- split-segments 
-  [s] 
-  (if-let [[_ class-name & more]  (re-matches segment-regex s)] 
+  [^String s] 
+  (if-let [[_ ^String class-name & more]  (re-matches segment-regex s)] 
     (if (.endsWith class-name "!")
       (cons (str "+" (subs class-name 0 (dec (count class-name)))) (remove empty? more))
       (cons (str "*" class-name) (remove empty? more)))

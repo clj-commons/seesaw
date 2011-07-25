@@ -17,11 +17,11 @@
 ;*******************************************************************************
 ; Icons
 
-(defn icon [p]
+(defn ^javax.swing.Icon icon [p]
   (cond
     (nil? p) nil 
     (instance? javax.swing.Icon p) p
-    (instance? java.awt.Image p) (ImageIcon. p)
-    (instance? java.net.URL p) (ImageIcon. p)
+    (instance? java.awt.Image p) (ImageIcon. ^java.awt.Image p)
+    (instance? java.net.URL p) (ImageIcon. ^java.net.URL p)
     :else  (when-let [url (to-url p)] (ImageIcon. url))))
 

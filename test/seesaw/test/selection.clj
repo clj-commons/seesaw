@@ -67,6 +67,14 @@
     (it "returns the current value"
       (= 32 (selection (sc/slider :min 0 :max 100 :value 32)))))
 
+  (testing "when given a JTextComponent"
+    (it "returns nil when the selection is empty"
+      (nil? (selection (javax.swing.JTextField. "HELLO"))))
+    (it "returns a range vector [start end] when the selection is non-empty"
+      (let [t (javax.swing.JTextField. "HELLO")]
+        (.select t 2 4)
+        (expect (= [2 4] (selection t))))))
+
   (testing "when given a JTable"
     (it "returns nil when no rows are selected"
       (nil? (selection (javax.swing.JTable.))))
@@ -136,6 +144,17 @@
         (expect (= jlist (selection! jlist {:multi? true} ["test" 4 6])))
         (expect (= ["test" 4 6] (selection jlist {:multi? true})))
         (expect (= "test" (selection jlist))))))
+
+  (testing "when given a text component"
+    (it "Clears the selection when the argument is nil"
+      (let [t (javax.swing.JTextArea. "This is some text with a selection")]
+        (.select t 5 10)
+        (selection! t nil)
+        (expect (nil? (selection t)))))
+    (it "sets the selection given a [start end] range vector"
+      (let [t (javax.swing.JTextArea. "THis is more text with a selection")]
+        (selection! t [4 9])
+        (expect (= [4 9] (selection t))))))
 
   (testing "when given a JTable and an argument"
     (it "Clears the row selection when the argument is nil"

@@ -13,13 +13,60 @@
       :author "Dave Ray"}
   seesaw.event
   (:use [seesaw util meta])
-  (:import [javax.swing.event ChangeListener DocumentListener 
-            ListSelectionListener TreeSelectionListener]
+  (:import [javax.swing.event ChangeListener 
+            CaretListener DocumentListener 
+            ListSelectionListener 
+            TreeSelectionListener TreeExpansionListener TreeWillExpandListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
                           KeyListener ComponentListener]
            [java.beans PropertyChangeListener]))
+
+; Use some protocols for listener installation to avoid reflection
+
+(defmacro ^{:private true } extend-listener-protocol [proto proto-method java-method & classes]
+  `(extend-protocol ~proto
+     ~@(mapcat (fn [c] `(~c (~proto-method [this# v#] (. this# ~java-method v#)))) classes)))
+
+(defprotocol ^{:private true} AddChangeListener
+  (add-change-listener [this l]))
+
+(defprotocol ^{:private true} AddActionListener
+  (add-action-listener [this v]))
+
+(defprotocol ^{:private true} AddListSelectionListener
+  (add-list-selection-listener [this v]))
+
+(extend-listener-protocol AddChangeListener add-change-listener addChangeListener 
+  javax.swing.BoundedRangeModel
+  javax.swing.JProgressBar
+  javax.swing.JSlider
+  javax.swing.JSpinner
+  javax.swing.JTabbedPane
+  javax.swing.JViewport
+  javax.swing.AbstractButton
+  javax.swing.SingleSelectionModel
+  javax.swing.SpinnerModel
+  javax.swing.ButtonModel)
+ 
+(extend-listener-protocol AddActionListener add-action-listener addActionListener 
+  javax.swing.JFileChooser
+  javax.swing.JTextField
+  javax.swing.JComboBox
+  javax.swing.AbstractButton
+  javax.swing.ButtonModel
+  javax.swing.ComboBoxEditor
+  javax.swing.Timer)
+
+(extend-listener-protocol AddListSelectionListener add-list-selection-listener addListSelectionListener
+  javax.swing.JList
+  javax.swing.ListSelectionModel)
+
+(extend-protocol AddListSelectionListener
+  javax.swing.JTable 
+    (add-list-selection-listener [this l] 
+      (add-list-selection-listener (.getSelectionModel this) l)))
 
 ; Declaratively set up all the Swing listener types available through the
 ; listen function below. The yucky fuctions and macros below take care
@@ -33,20 +80,20 @@
                :component-moved
                :component-resized
                :component-shown}
-    :install #(.addComponentListener %1 %2)
+    :install #(.addComponentListener ^java.awt.Component %1 ^ComponentListener %2)
   }
                                     
   :property-change {
     :name    :property-change
     :class   PropertyChangeListener
     :events  #{:property-change}
-    :install #(.addPropertyChangeListener %1 %2)
+    :install #(.addPropertyChangeListener ^java.awt.Component %1 ^PropertyChangeListener %2)
   }
   :key {
     :name    :key
     :class   KeyListener
     :events  #{:key-pressed :key-released :key-typed}
-    :install #(.addKeyListener %1 %2)
+    :install #(.addKeyListener ^java.awt.Component %1 ^KeyListener %2)
   }
   :window {
     :name    :window
@@ -54,13 +101,13 @@
     :events  #{:window-activated :window-deactivated 
               :window-closed :window-closing :window-opened
               :window-deiconified :window-iconified}
-    :install  #(.addWindowListener %1 %2)
+    :install  #(.addWindowListener ^java.awt.Window %1 ^WindowListener %2)
   }
   :focus {
     :name    :focus
     :class   FocusListener
     :events  #{:focus-gained :focus-lost}
-    :install #(.addFocusListener %1 %2)
+    :install #(.addFocusListener ^java.awt.Component %1 ^FocusListener %2)
   }
   :document {
     :name    :document
@@ -69,64 +116,80 @@
     :install (fn [target listener] 
                (.addDocumentListener 
                  (if (instance? Document target) 
-                   target
-                   (.getDocument target))
-                 listener))
+                    ^Document target
+                    (.getDocument ^javax.swing.text.JTextComponent target))
+                 ^DocumentListener listener))
+  }
+  :caret {
+    :name    :caret
+    :class   CaretListener 
+    :events  #{:caret-update}
+    :install #(.addCaretListener ^javax.swing.text.JTextComponent %1 ^CaretListener %2)
   }
   :action {
     :name    :action
     :class   ActionListener
     :events  #{:action-performed}
-    :install #(.addActionListener %1 %2)
+    :install add-action-listener
   }
   :change {
     :name    :change
     :class   ChangeListener
     :events  #{:state-changed}
-    :install #(.addChangeListener %1 %2)
+    :install add-change-listener
   }
   :item {
     :name    :item
     :class   ItemListener
     :events  #{:item-state-changed}
-    :install #(.addItemListener %1 %2)
+    :install #(.addItemListener ^java.awt.ItemSelectable %1 ^ItemListener %2)
   }
   :mouse { 
     :name    :mouse
     :class   MouseListener
     :events  #{:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released}
-    :install #(.addMouseListener %1 %2)
+    :install #(.addMouseListener ^java.awt.Component %1 ^MouseListener %2)
   }
   :mouse-motion { 
     :name    :mouse-motion
     :class   MouseMotionListener
     :events  #{:mouse-moved :mouse-dragged}
-    :install #(.addMouseMotionListener %1 %2)
+    :install #(.addMouseMotionListener ^java.awt.Component %1 ^MouseMotionListener %2)
   }
   :mouse-wheel { 
     :name    :mouse-wheel
     :class   MouseWheelListener
     :events  #{:mouse-wheel-moved}
-    :install #(.addMouseWheelListener %1 %2)
+    :install #(.addMouseWheelListener ^java.awt.Component %1 ^MouseWheelListener %2)
   }
   :list-selection { 
     :name    :list-selection
     :class   ListSelectionListener
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
-    :install (fn [target listener]
-                (.addListSelectionListener 
-                  (cond
-                    (instance? javax.swing.JTable target) (.getSelectionModel target)
-                    :else target)
-                  listener))
+    :install add-list-selection-listener
   }
   :tree-selection { 
     :name    :tree-selection
     :class   TreeSelectionListener
     :events  #{:value-changed}
     :named-events #{:tree-selection} ; Suppress reversed map entry
-    :install #(.addTreeSelectionListener %1 %2)
+    :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)
+  }
+  :tree-expansion { 
+    :name    :tree-expansion
+    :class   TreeExpansionListener 
+    :events  #{:tree-expanded :tree-collapsed}
+    :install #(.addTreeExpansionListener ^javax.swing.JTree %1 ^TreeExpansionListener %2)
+  }
+  ; Since one of the methods matches the listener name, we give the overall
+  ; a slightly different name to distinguish registering for *all* events
+  ; versus just one.
+  :tree-will-expand* { 
+    :name    :tree-will-expand*
+    :class   TreeWillExpandListener
+    :events  #{:tree-will-expand :tree-will-collapse}
+    :install #(.addTreeWillExpandListener ^javax.swing.JTree %1 ^TreeWillExpandListener %2)
   }
 })
 
@@ -161,7 +224,7 @@
 (defmacro ^{:private true} reify-all-event-groups
   []
   `(do
-    ~@(for [[_ {klass :class events :events}] event-groups]
+    ~@(for [[_ {^Class klass :class events :events}] event-groups]
       ; the symbol is very important here since the def-reify-listener
       ; macro is expecting a symbol NOT a class instance! So many hours 
       ; wasted...
@@ -208,9 +271,9 @@
 
 (defn- get-or-install-handlers
   [target event-name]
-  (let [event-group (event-group-table event-name)
-        handlers    (get-handlers* target (:name event-group))]
-    (if handlers
+  (let [event-group (event-group-table event-name)]
+    (if-not event-group (throw (IllegalArgumentException. (str "Unknown event type " event-name))))
+    (if-let [handlers (get-handlers* target (:name event-group))]
       handlers
       (install-group-handlers target event-group))))
 
@@ -229,11 +292,12 @@
   (cond
     (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
     ; Re-route to right listener type for :selection on various widget types
-    (instance? javax.swing.JList target)       :list-selection
-    (instance? javax.swing.JTable target)      :list-selection
-    (instance? javax.swing.JTree target)       :tree-selection
-    (instance? javax.swing.JComboBox target)   :action-performed
-    (instance? java.awt.ItemSelectable target) :item-state-changed
+    (instance? javax.swing.JList target)          :list-selection
+    (instance? javax.swing.JTable target)         :list-selection
+    (instance? javax.swing.JTree target)          :tree-selection
+    (instance? javax.swing.JComboBox target)      :action-performed
+    (instance? javax.swing.text.JTextComponent target) :caret-update
+    (instance? java.awt.ItemSelectable target)    :item-state-changed
     :else event-name))
 
 (defn- preprocess-event-specs
@@ -262,8 +326,10 @@
   (reduce
     (fn [result target]
       (cond
-        (instance? javax.swing.ButtonGroup target) (concat result (enumeration-seq (.getElements target)))
-        :else (conj result target)))  
+        (instance? javax.swing.ButtonGroup target) 
+          (concat result (enumeration-seq (.getElements ^javax.swing.ButtonGroup target)))
+        :else 
+          (conj result target)))  
     []
     targets))
     
