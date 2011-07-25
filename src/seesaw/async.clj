@@ -6,22 +6,22 @@
     [seesaw.core :only (listen invoke-now)]
     [seesaw.timer :only (timer)]))
 
-(defprotocol Async
+(defprotocol Cancelable
   (cancel* [this] "Cancel this asynchronuous process."))
 
 (defn cancel
   "Cancel the given asynchronuous event or process."
   [this]
-  {:pre [(satisfies? Async this)]}
+  {:pre [(satisfies? Cancelable this)]}
   (cancel* this))
 
-(defprotocol AsyncEventSource
+(defprotocol Waitable
   (wait-for* [this] "Start waiting for the given event source."))
 
 (defn wait-for
   "Wait asynchronuously for the given event source. Returns the source."
   [this]
-  {:pre [(satisfies? AsyncEventSource this)]}
+  {:pre [(satisfies? Waitable this)]}
   (wait-for* this))
 
 (defmacro async-fn
@@ -35,7 +35,7 @@
        (invoke [~'this ~@args]
          (when-not @canceled?#
            ~@body))
-       Async
+       Cancelable
        (cancel* [_this]
          (reset! canceled?# true)))))
 
@@ -43,7 +43,7 @@
   "Run an asynchronuous workflow. 
   
   continue returns a single argument function that takes a continuation
-  function and returns an object that satisfiels AsyncEventSource and Async. 
+  function and returns an object that satisfies Waitable and Cancelable. 
   
   Returns a promise which may be dereferenced for the workflow result if 
   there is any. If the workflow is canceled, the result is ::canceled.
@@ -60,7 +60,7 @@
         cont   (continue (async-fn [r] (deliver result r)))]
     (wait-for cont)
     (reify
-      Async
+      Cancelable
       (cancel* [this]
         (deliver result ::canceled)
         (cancel cont)
@@ -71,21 +71,41 @@
         @result))))
 
 (defn call-async
-  "Returns a constructor function for an async workflow that called the given
-  function on the given args and passes the result onto a continuation function."
+  "Returns a constructor function for an async workflow that calls the given
+  function on the given args and passes the result onto a continuation function.
+  Use this to convert a normal function to an async function, usable within
+  (async-workflow).
+  
+  Examples:
+
+    (call-async map #(* 2) (range 10))
+  "
   [f & args]
   (fn [continue]
     (reify
-      AsyncEventSource
+      Waitable
       (wait-for* [this]
         (continue (apply f args)))
-      Async
+      Cancelable
       (cancel* [this]
         (cancel continue)))))
 
 (defmacro doasync
-  "Returns a constructor function that runs the block asynchronuously and passes 
-  on the result to a continuation function."
+  "Convenience macro for (call-async). Wraps body in a no-arg function, passes
+  it to (call-async), and returns the result. When run, the result of the body
+  is passed to the continuation.
+
+  This macro is most often used within the body of (async-workflow).
+
+  Examples:
+
+    ; Same as the example in (call-async)
+    (doasync
+      (map #(* 2) (range 10))
+
+  See:
+    (call-async)
+  "
   [& body]
   `(call-async (fn [] ~@body)))
 
@@ -108,12 +128,17 @@
   Executes the steps and the body asynchronuously and passes on the result
   to the continuation.
 
-  Similar to clojure.core/for one may specify a test condition with :when.
+  Similar to (clojure.core/for) one may specify a test condition with :when.
   If the condition is true, the let will be continued. Otherwise the
   process will be stopped and nil will be passed on to the continuation.
 
-  Similar to clojure.core/for one may specify normal let bindings with :let.
-  This reliefs the need to wrap things in a doasync block. The above example
+      (let-async [is-even? (call-async even? 2)
+                  :when is-even?
+                  ... more ...]
+         ...)
+
+  Similar to (clojure.core/for) one may specify normal let bindings with :let.
+  This relieves the need to wrap things in a doasync block. The above example
   could be also written as:
 
       (let-async [is-even? (call-async even? 2)
@@ -144,14 +169,14 @@
        (let [canceled?# (atom false)
              ~current   (atom nil)]
          (reify
-           AsyncEventSource
+           Waitable
            (wait-for* [_this#]
              (when-not @canceled?#
                ~(->> steps
                   (partition 2)
                   reverse
                   (reduce step `(~global-continue (do ~@body))))))
-           Async
+           Cancelable
            (cancel* [_this#]
              (reset! canceled?# true)
              (when-let [curr# @~current] (cancel curr#))
@@ -206,33 +231,40 @@
   Examples:
   
     (async-workflow
-      [event (await-event button :action-performed)])"
+      [event (await-event button :action-performed)])
+  
+  See:
+    (seesaw.core/listen)
+  "
   [target event]
   (fn [continue]
     (let [remove-fn (promise)]
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this]
           (let [handler (fn [evt] (@remove-fn) (continue evt))]
             (deliver remove-fn (listen target event handler))))
-        Async
+        Cancelable
         (cancel* [this]
           (@remove-fn)
           (cancel continue))))))
 
 (defn wait
   "Wait asynchronuously for t milliseconds and pass nil to the continuation.
-  That is, if used within (let-async), the bound value will be nil."
+  That is, if used within (let-async), the bound value will be nil.
+  
+  See:
+    (seesaw.timer/timer)"
   [t]
   (fn [continue]
     (let [tmr (promise)]
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this]
           (deliver tmr (timer (fn [_] (continue nil))
                               :initial-delay t
                               :repeats?      false)))
-        Async
+        Cancelable
         (cancel* [this]
           (.stop ^javax.swing.Timer @tmr)
           (cancel continue))))))
@@ -257,11 +289,11 @@
                              (continue result)))
           fut (atom nil)]
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this]
           (reset! fut (future
             (inner-continue (apply f args)))))
-        Async
+        Cancelable
         (cancel* [this]
           (when-let [fut @fut]
             (future-cancel fut))
@@ -297,10 +329,10 @@
                              (global-continue result)))
           events (for [evt events] (evt inner-continue))]
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this]
           (doseq [event events] (wait-for event)))
-        Async
+        Cancelable
         (cancel* [this]
           (doseq [event events] (cancel event))
           (cancel global-continue))))))
@@ -321,10 +353,10 @@
           events    (for [[event p] (map vector events promises)]
                       (event (inner-continue p)))]
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this]
           (doseq [event events] (wait-for event)))
-        Async
+        Cancelable
         (cancel* [this]
           (doseq [event events] (cancel event))
           (cancel global-continue))))))
@@ -333,8 +365,8 @@
   "Wait asynchronuously for the given event. Passes on the result to the
   continuation if pred returns truethy for it. If the result does not
   fulfil the predicate the optional invalid handler is called with the
-  continuation and the result. If the invalid handler returns an
-  AsyncEventSource, the await-valid will wait again for the new source.
+  continuation and the result. If the invalid handler returns a
+  Waitable, the await-valid will wait again for the new source.
   Otherwise the invalid-handler should return nil and handle the result
   and continuation on its own. The default behaviour for invalid is to
   cycle until a valid result is returned."
@@ -349,9 +381,9 @@
                                (wait-for (reset! current (event this))))))]
       (reset! current (event inner-continue))
       (reify
-        AsyncEventSource
+        Waitable
         (wait-for* [this] (wait-for @current))
-        Async
+        Cancelable
         (cancel* [this]
           (cancel @current)
           (cancel global-continue))))))

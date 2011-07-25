@@ -162,15 +162,45 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn countdown-workflow [btn seconds format-str]
+  (if (>= seconds 0)
+    (async-workflow
+      ; Update the button text with time remaining
+      (call-async text! btn (format format-str seconds))
+      ; Wait for the button or a second
+      [e (await-any
+          (await-event btn :action-performed)
+          (wait 1000))]
+
+      ; Loop. Force end if button was clicked. Hmm.
+      (countdown-workflow btn 
+                          (if e -1 (dec seconds)) 
+                          format-str))
+    (doasync :done))) 
+
+(defn countdown-workflow-tab []
+  (let [fmt "Restart Computer (%d seconds)"
+        btn (button :text fmt)]
+    (vertical-panel
+      :items ["Countdown button workflow"
+              (controls (countdown-workflow btn 10 fmt))
+              :separator
+              btn])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn -main [& args]
   (invoke-later
     (-> (frame 
-          :size [450 :by 450]
+          :size [500 :by 450]
           :content (tabbed-panel :tabs [{:title "Passcode" :content (passcode-tab)}
                                         {:title "Linear" :content (a-wait-bc-tab)}
                                         {:title "Background Task" :content (background-task-tab)}
-                                        {:title "N Clicks" :content (n-clicks-on-tab)}]))
+                                        {:title "N Clicks" :content (n-clicks-on-tab)}
+                                        {:title "Countdown" :content (countdown-workflow-tab)}]))
       show!)))
 
-(-main)
+;(-main)
 
