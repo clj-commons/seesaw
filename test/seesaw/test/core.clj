@@ -10,7 +10,8 @@
 
 (ns seesaw.test.core
   (:require [seesaw.selector :as selector]
-            [seesaw.cursor :as cursor])
+            [seesaw.cursor :as cursor]
+            clojure.java.io)
   (:use seesaw.core
         seesaw.font
         seesaw.graphics
@@ -459,7 +460,7 @@
           _ (.insertString d 0 "HI" nil)
           r (text! d "BYE!")]
       (expect (= d r))
-      (expect (= "BYE!" (text d))))))
+      (expect (= "BYE!" (text d)))))
   (it "should set the text of a single text widget argument"
     (= "BYE" (text (text! (text "HI") "BYE"))))
   (it "should set the text of a single button argument"
@@ -470,6 +471,12 @@
       (expect (= [a b] result))
       (expect (= "YUM" (text a)))
       (expect (= "YUM" (text b)))))
+  (it "should set the text of a widget to the contents of a non-string 'slurpable'"
+    (let [t (text :multi-line? true)]
+      (text! t (clojure.java.io/resource "seesaw/test/core.text.txt"))
+      ; Be careful editing the test file with vim. It will silently add
+      ; a trailing newline on save.
+      (expect (= "Some text in a resource" (text t)))))) 
 
 (describe text
   (it "should throw IllegalArgumentException if argument is nil"

@@ -16,7 +16,8 @@
       :author "Dave Ray"}
   seesaw.core
   (:use [seesaw util meta to-widget make-widget])
-  (:require [seesaw color font border invoke timer selection 
+  (:require clojure.java.io
+            [seesaw color font border invoke timer selection 
              event selector icon action cells table graphics cursor scroll])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants
@@ -563,28 +564,36 @@
   javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
   javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
 
+
 (defprotocol ^{:private true} Text 
   (set-text [this v])
   (get-text [this]))
+
+(defn- convert-text-value [v]
+  (cond
+    (nil? v)    v
+    (string? v) v
+    (satisfies? clojure.java.io/IOFactory v) (slurp v)
+    :else (str v)))
 
 (extend-protocol Text
   Object
     (set-text [this v] (set-text (to-widget this) v))
     (get-text [this] (get-text (to-widget this)))
   javax.swing.JLabel 
-    (set-text [this v] (.setText this (str v)))
+    (set-text [this v] (.setText this (convert-text-value v)))
     (get-text [this] (.getText this))
   javax.swing.AbstractButton 
-    (set-text [this v] (.setText this (str v)))
+    (set-text [this v] (.setText this (convert-text-value v)))
     (get-text [this] (.getText this))
   javax.swing.text.AbstractDocument 
-    (set-text [this v] (.replace this 0 (.getLength this) (str v) nil))
+    (set-text [this v] (.replace this 0 (.getLength this) (convert-text-value v) nil))
     (get-text [this] (.getText this 0 (.getLength this)))
   javax.swing.event.DocumentEvent
     (set-text [this v] (set-text (.getDocument this) v))
     (get-text [this] (get-text (.getDocument this)))
   javax.swing.text.JTextComponent 
-    (set-text [this v] (.setText this (str v)))
+    (set-text [this v] (.setText this (convert-text-value v)))
     (get-text [this] (.getText this)))
 
 (defprotocol ^{:private true} SetAction (set-action [this v]))
@@ -1224,6 +1233,19 @@
   turned into a widget or document, or a list of such things. value is the new
   text value to be applied. Returns targets.
 
+  target may be one of:
+
+    A widget
+    A widget-able thing like an event
+    A Document
+    A DocumentEvent
+
+  The resulting text in the widget depends on the type of value:
+
+    A string                               - the string
+    A URL, File, or anything \"slurpable\" - the slurped value
+    Anythign else                          - (str value)
+
   Example:
 
       user=> (def t (text \"HI\"))
@@ -1231,6 +1253,12 @@
       user=> (text t)
       \"BYE\"
 
+      ; Put the contents of a URL in editor
+      (text! editor (java.net.URL. \"http://google.com\"))
+
+  Notes:
+    
+    This applies to the :text property of new text widgets and config! as well.
   "
   [targets value]
   (check-args (not (nil? targets)) "First arg must not be nil")
