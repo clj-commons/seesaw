@@ -2399,6 +2399,7 @@
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge frame-options custom-dialog-options))]
     (when-not size (.setSize dlg width height))
+    (.setLocationByPlatform dlg true)
     (if visible?
       (show! dlg)
       dlg)))
