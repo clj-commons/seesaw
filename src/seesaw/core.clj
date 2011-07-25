@@ -2251,7 +2251,8 @@
   (cond-doto ^JFrame (apply-options (construct JFrame opts) 
                (dissoc opts :width :height :visible?) frame-options)
     (not size) (.setSize width height)
-    true       (.setVisible (boolean visible?))))
+    true       (.setLocationByPlatform true)
+    visible?   (.setVisible (boolean visible?))))
 
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 

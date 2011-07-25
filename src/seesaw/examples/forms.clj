@@ -34,4 +34,4 @@
 (defn -main [& args]
   (invoke-later (-> (app) pack! show!)))
 
-;(-main)
+(-main)

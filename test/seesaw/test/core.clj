@@ -937,7 +937,9 @@
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
           f (frame :content c)]
-      (expect (= c (.getContentPane f))))))
+      (expect (= c (.getContentPane f)))))
+  (it "should, by default, set location by platform to true"
+    (.isLocationByPlatform (frame))))
 
 (describe to-root
   (it "should convert a widget to its parent applet"
