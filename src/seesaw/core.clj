@@ -573,7 +573,11 @@
   (cond
     (nil? v)    v
     (string? v) v
+    (number? v) (str v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
+    ; TODO This line is unreachable because the IOFactory protocol is
+    ; extended to Object, i.e. satisfies? above will *always* return
+    ; true :(
     :else (str v)))
 
 (extend-protocol Text
