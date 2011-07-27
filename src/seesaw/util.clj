@@ -113,6 +113,30 @@
   [target]
   (get-meta target options-property))
 
+(defn- strip-question-mark
+  [^String s] 
+  (if (.endsWith ^String s "?")
+    (.substring s 0 (dec (count s)))
+    s))
+
+(defn- setter-name [property]
+  (->> property 
+    name 
+    strip-question-mark
+    (str "set-") 
+    camelize 
+    symbol))
+
+(defmacro bean-option [target-type property & [set-conv get-conv]]
+  (let [target (gensym "target")]
+  `(fn [~(with-meta target {:tag target-type}) value#]
+     (. ~target ~(setter-name property) (~(or set-conv identity) value#)))))
+
+(defn default-option 
+  ([] (fn [target value]))
+  ([setter] setter)
+  ([setter getter] setter))
+
 (defn apply-options
   [target opts handler-map]
   (check-args (or (map? opts) (even? (count opts))) 

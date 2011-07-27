@@ -192,7 +192,10 @@
       (expect (= Color/GREEN (.getForeground c)))))
   (it "sets border when provided using to-border"
     (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
-      (expect (= "TEST" (.. c getBorder getTitle))))))
+      (expect (= "TEST" (.. c getBorder getTitle)))))
+  (it "sets cursor when provided"
+    (let [c (apply-default-opts (JPanel.) {:cursor :hand})]
+      (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor c)))))))
 
 (describe show!
   (it "makes a widget visible and returns it"
@@ -534,16 +537,17 @@
       (expect (not (.isEditable t))))))
 
 (describe styled-text
-  (let [t (styled-text :text "HI" 
-                       :styles [[:big :size 30]
-                                [:small :size 3]])]
-    (it "should create a text pane"
-        (expect (= JTextPane (class t)))
-        (expect (= "HI" (text t))))
-    (it "should add styles"
-        (let [style (.getStyle t "big")] 
-          (expect (isa? (class style) javax.swing.text.Style))
-          (expect (.containsAttribute style StyleConstants/FontSize 30))))))
+  (it "should create a text pane"
+    (let [t (styled-text :text "HI")]
+      (expect (instance? JTextPane t))
+      (expect (= "HI" (text t)))))
+  (it "should add styles"
+    (let [t (styled-text :text "HI" 
+                    :styles [[:big :size 30]
+                            [:small :size 3]])
+          style (.getStyle t "big")] 
+      (expect (isa? (class style) javax.swing.text.Style))
+      (expect (.containsAttribute style StyleConstants/FontSize 30)))))
 
 (describe style-text!
   (let [t (styled-text :text "HI"
