@@ -573,7 +573,11 @@
   (cond
     (nil? v)    v
     (string? v) v
+    (number? v) (str v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
+    ; TODO This line is unreachable because the IOFactory protocol is
+    ; extended to Object, i.e. satisfies? above will *always* return
+    ; true :(
     :else (str v)))
 
 (extend-protocol Text
@@ -2256,7 +2260,8 @@
   (cond-doto ^JFrame (apply-options (construct JFrame opts) 
                (dissoc opts :width :height :visible?) frame-options)
     (not size) (.setSize width height)
-    true       (.setVisible (boolean visible?))))
+    true       (.setLocationByPlatform true)
+    visible?   (.setVisible (boolean visible?))))
 
 (defn- get-root
   "Basically the same as SwingUtilities/getRoot, except handles JPopupMenus 
@@ -2403,6 +2408,7 @@
                            (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
                            (merge frame-options custom-dialog-options))]
     (when-not size (.setSize dlg width height))
+    (.setLocationByPlatform dlg true)
     (if visible?
       (show! dlg)
       dlg)))

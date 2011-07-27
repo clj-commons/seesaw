@@ -474,6 +474,12 @@
       (expect (= [a b] result))
       (expect (= "YUM" (text a)))
       (expect (= "YUM" (text b)))))
+  (it "should set the text of a widget to an integer"
+    (= "99" (text (text! (text "initial") 99))))
+  (it "should set the text of a widget to a double"
+    (= (str 3.14) (text (text! (text "initial") 3.14))))
+  (it "should set the text of a widget to a rational"
+    (= (str 1/3) (text (text! (text "initial") 1/3))))
   (it "should set the text of a widget to the contents of a non-string 'slurpable'"
     (let [t (text :multi-line? true)]
       (text! t (clojure.java.io/resource "seesaw/test/core.text.txt"))
@@ -941,7 +947,9 @@
   (it "should create a JFrame and set its content pane"
     (let [c (label :text "HI")
           f (frame :content c)]
-      (expect (= c (.getContentPane f))))))
+      (expect (= c (.getContentPane f)))))
+  (it "should, by default, set location by platform to true"
+    (.isLocationByPlatform (frame))))
 
 (describe to-root
   (it "should convert a widget to its parent applet"
