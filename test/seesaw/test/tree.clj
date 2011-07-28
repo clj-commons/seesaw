@@ -10,7 +10,7 @@
 
 (ns seesaw.test.tree
   (:use seesaw.tree)
-  (:use [lazytest.describe :only (describe it testing given)]
+  (:use [lazytest.describe :only (describe do-it it testing given)]
         [lazytest.expect :only (expect)]))
 
 (describe simple-tree-model
@@ -32,4 +32,17 @@
     (it "should retrieve the index of a child"
       (= [0 1 2] (map #(.getIndexOfChild m "dir" %) [1 2 3])))))
 
-
+(describe update-tree!
+  (given [tree (javax.swing.JTree. (simple-tree-model (constantly true) #(range (inc %)) 1))
+          path (javax.swing.tree.TreePath. (into-array [1 1 1 1]))]
+    (do-it "expand path"
+      (.makeVisible tree path))
+    (it "should be visible before update"
+      (.isVisible tree path))
+    (do-it "update tree"
+      (update-tree! tree (simple-tree-model (constantly true) #(range (+ % 2)) 1)))
+    (it "should update the tree"
+        (= [1 2]
+           (vec (.getPath (.getPathForRow tree (dec (.getRowCount tree)))))))
+    (it "should retain expanded paths after update"
+      (.isVisible tree path))))
