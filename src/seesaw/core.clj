@@ -658,22 +658,22 @@
   :items       (default-option :items #(add-widgets %1 %2)) 
   :id          (default-option :id seesaw.selector/id-of!)
   :class       (default-option :class seesaw.selector/class-of!)
-  :opaque?     (bean-option JComponent :opaque? boolean) ; #(.setOpaque %1 (boolean %2))
-  :enabled?    (bean-option java.awt.Component :enabled? boolean)
-  :focusable?  (bean-option java.awt.Component :focusable? boolean)
+  :opaque?     (bean-option :opaque? JComponent boolean) ; #(.setOpaque %1 (boolean %2))
+  :enabled?    (bean-option :enabled? java.awt.Component boolean)
+  :focusable?  (bean-option :focusable? java.awt.Component boolean)
   :background  (default-option :background
                   #(do
                     (.setBackground ^JComponent %1 (seesaw.color/to-color %2))
                     (.setOpaque ^JComponent %1 true)))
-  :foreground  (bean-option JComponent :foreground seesaw.color/to-color)
-  :border      (bean-option JComponent :border seesaw.border/to-border)
-  :font        (bean-option JComponent :font seesaw.font/to-font)
-  :tip         (bean-option JComponent :tool-tip-text str)
-  :cursor      (bean-option java.awt.Component :cursor #(apply seesaw.cursor/cursor (to-seq %)))
-  :visible?    (bean-option java.awt.Component :visible? boolean)
-  :preferred-size (bean-option JComponent :preferred-size to-dimension)
-  :minimum-size   (bean-option JComponent :minimum-size to-dimension)
-  :maximum-size   (bean-option JComponent :maximum-size to-dimension)
+  :foreground  (bean-option :foreground JComponent seesaw.color/to-color)
+  :border      (bean-option :border JComponent seesaw.border/to-border)
+  :font        (bean-option :font JComponent seesaw.font/to-font)
+  :tip         (bean-option [:tip :tool-tip-text] JComponent str)
+  :cursor      (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)))
+  :visible?    (bean-option :visible? java.awt.Component boolean)
+  :preferred-size (bean-option :preferred-size JComponent to-dimension)
+  :minimum-size   (bean-option :minimum-size JComponent to-dimension)
+  :maximum-size   (bean-option :maximum-size JComponent to-dimension)
   :size           (default-option :size
                     #(let [d (to-dimension %2)]
                      (doto ^JComponent %1 
@@ -1052,10 +1052,10 @@
 ; Labels
 
 (def ^{:private true} label-options {
-  :halign          (bean-option javax.swing.JLabel :horizontal-alignment h-alignment-table)
-  :valign          (bean-option javax.swing.JLabel :vertical-alignment v-alignment-table) 
-  :h-text-position (bean-option javax.swing.JLabel :horizontal-text-position h-alignment-table)
-  :v-text-position (bean-option javax.swing.JLabel :vertical-text-position v-alignment-table)
+  :halign          (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table)
+  :valign          (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table) 
+  :h-text-position (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table)
+  :v-text-position (bean-option [:v-text-position :vertical-text-position] javax.swing.JLabel v-alignment-table)
 })
 
 (defn label 
@@ -1125,10 +1125,10 @@
   (apply-options (ButtonGroup.) opts button-group-options))
 
 (def ^{:private true} button-options {
-  :halign    (bean-option javax.swing.AbstractButton :horizontal-alignment h-alignment-table)
-  :valign    (bean-option javax.swing.AbstractButton :vertical-alignment v-alignment-table) 
-  :selected? (bean-option javax.swing.AbstractButton :selected? boolean)
-  :margin    (bean-option javax.swing.AbstractButton :margin to-insets)
+  :halign    (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
+  :valign    (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
+  :selected? (bean-option :selected? javax.swing.AbstractButton boolean)
+  :margin    (bean-option :margin javax.swing.AbstractButton to-insets)
 
   :group     (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1))
 })
@@ -1162,22 +1162,22 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
-  :editable? (bean-option javax.swing.text.JTextComponent :editable? boolean)
+  :editable? (bean-option :editable? javax.swing.text.JTextComponent boolean)
 })
 
 (def ^{:private true} text-field-options (merge {
-  :halign    (bean-option javax.swing.JTextField :horizontal-alignment h-alignment-table)
-  :columns   (bean-option javax.swing.JTextField :columns)
+  :halign    (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table)
+  :columns   (bean-option :columns javax.swing.JTextField)
 } text-options))
 
 (def ^{:private true} text-area-options (merge {
-  :columns     (bean-option javax.swing.JTextArea :columns)
-  :rows        (bean-option javax.swing.JTextArea :rows)
+  :columns     (bean-option :columns javax.swing.JTextArea)
+  :rows        (bean-option :rows javax.swing.JTextArea)
   :wrap-lines? (default-option :wrap-lines? 
                   #(doto ^javax.swing.JTextArea %1 
                     (.setLineWrap (boolean %2)) 
                     (.setWrapStyleWord (boolean %2))))
-  :tab-size    (bean-option javax.swing.JTextArea :tab-size)
+  :tab-size    (bean-option :tab-size javax.swing.JTextArea)
 } text-options))
 
 (defn text
@@ -1350,7 +1350,7 @@
 ; JPasswordField
 
 (def ^{:private true} password-options (merge {
-  :echo-char (bean-option javax.swing.JPasswordField :echo-char)
+  :echo-char (bean-option :echo-char javax.swing.JPasswordField)
 } text-field-options))
 
 (defn password
@@ -1406,9 +1406,9 @@
 ; JEditorPane
 
 (def ^{:private true} editor-pane-options {
-  :page         (bean-option javax.swing.JEditorPane :page to-url)
-  :content-type (bean-option javax.swing.JEditorPane :content-type str)
-  :editor-kit   (bean-option javax.swing.JEditorPane :editor-kit)
+  :page         (bean-option :page javax.swing.JEditorPane to-url)
+  :content-type (bean-option :content-type javax.swing.JEditorPane str)
+  :editor-kit   (bean-option :editor-kit javax.swing.JEditorPane)
 })
 
 (defn editor-pane
@@ -1448,7 +1448,7 @@
   :renderer          (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2)))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
-  :fixed-cell-height (bean-option javax.swing.JList :fixed-cell-height)
+  :fixed-cell-height (bean-option :fixed-cell-height javax.swing.JList)
 })
 
 (defn listbox
@@ -1488,11 +1488,11 @@
 })
 
 (def ^{:private true} table-options {
-  :model                  (bean-option javax.swing.JTable :model to-table-model)
-  :show-grid?             (bean-option javax.swing.JTable :show-grid? boolean)
-  :fills-viewport-height? (bean-option javax.swing.JTable :fills-viewport-height? boolean)
+  :model                  (bean-option :model javax.swing.JTable to-table-model)
+  :show-grid?             (bean-option :show-grid? javax.swing.JTable boolean)
+  :fills-viewport-height? (bean-option :fills-viewport-height? javax.swing.JTable boolean)
   :selection-mode         (default-option :selection-mode list-selection-mode-handler)
-  :auto-resize            (bean-option javax.swing.JTable :auto-resize-mode auto-resize-mode-table)
+  :auto-resize            (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
 })
 
 (defn table
@@ -1535,17 +1535,17 @@
 ; JTree
 
 (def ^{:private true} tree-options {
-  :editable?               (bean-option javax.swing.JTree :editable? boolean)
+  :editable?               (bean-option :editable? javax.swing.JTree boolean)
   :renderer                (default-option :renderer
                               #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2)))
-  :expands-selected-paths? (bean-option javax.swing.JTree :expands-selected-paths? boolean)
-  :large-model?            (bean-option javax.swing.JTree :large-model? boolean)
-  :root-visible?           (bean-option javax.swing.JTree :root-visible? boolean)
-  :row-height              (bean-option javax.swing.JTree :row-height)
-  :scrolls-on-expand?      (bean-option javax.swing.JTree :scrolls-on-expand? boolean)
-  :shows-root-handles?     (bean-option javax.swing.JTree :shows-root-handles? boolean)
-  :toggle-click-count      (bean-option javax.swing.JTree :toggle-click-count)
-  :visible-row-count       (bean-option javax.swing.JTree :visible-row-count)
+  :expands-selected-paths? (bean-option :expands-selected-paths? javax.swing.JTree boolean)
+  :large-model?            (bean-option :large-model? javax.swing.JTree boolean)
+  :root-visible?           (bean-option :root-visible? javax.swing.JTree boolean)
+  :row-height              (bean-option :row-height javax.swing.JTree)
+  :scrolls-on-expand?      (bean-option :scrolls-on-expand? javax.swing.JTree boolean)
+  :shows-root-handles?     (bean-option :shows-root-handles? javax.swing.JTree boolean)
+  :toggle-click-count      (bean-option :toggle-click-count javax.swing.JTree)
+  :visible-row-count       (bean-option :visible-row-count javax.swing.JTree)
   :selection-mode          (default-option :selection-mode tree-selection-mode-handler)
 })
 
@@ -1577,7 +1577,7 @@
       model)))
 
 (def ^{:private true} combobox-options {
-  :editable? (bean-option javax.swing.JComboBox :editable? boolean)
+  :editable? (bean-option :editable? javax.swing.JComboBox boolean)
   :model     (default-option :model    (fn [lb m] ((:model default-options) lb (to-combobox-model m))))
   :renderer  (default-option :renderer 
                #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))) 
@@ -1628,8 +1628,8 @@
   (.setCorner w (scrollable-corner-constants k) (make-widget v)))
 
 (def ^{:private true} scrollable-options (merge {
-  :hscroll (bean-option JScrollPane :horizontal-scroll-bar-policy hscroll-table)
-  :vscroll (bean-option JScrollPane :vertical-scroll-bar-policy vscroll-table)
+  :hscroll (bean-option [:hscroll :horizontal-scroll-bar-policy] JScrollPane hscroll-table)
+  :vscroll (bean-option [:vscroll :vertical-scroll-bar-policy] JScrollPane vscroll-table)
   :row-header
     (default-option :row-header
       (fn [^JScrollPane w v] 
@@ -1800,10 +1800,10 @@
   splitter)
 
 (def ^{:private true} splitter-options {
-  :divider-location (default-option :divider-location divider-location!)
-  :divider-size     (bean-option JSplitPane :divider-size)
-  :resize-weight    (bean-option JSplitPane :resize-weight)
-  :one-touch-expandable? (bean-option JSplitPane :one-touch-expandable? boolean)
+  :divider-location      (default-option :divider-location divider-location!)
+  :divider-size          (bean-option :divider-size JSplitPane)
+  :resize-weight         (bean-option :resize-weight JSplitPane)
+  :one-touch-expandable? (bean-option :one-touch-expandable? JSplitPane boolean)
 })
 
 (defn splitter
@@ -1866,7 +1866,7 @@
 ;*******************************************************************************
 ; Separator
 (def ^{:private true} separator-options {
-  :orientation (bean-option javax.swing.JSeparator :orientation orientation-table)
+  :orientation (bean-option :orientation javax.swing.JSeparator orientation-table)
 })
 
 (defn separator
@@ -1886,7 +1886,7 @@
 ; Menus
 
 (def ^{:private true} menu-item-options {
-  :key (bean-option javax.swing.JMenuItem [:key :accelerator] seesaw.keystroke/keystroke)
+  :key (bean-option [:key :accelerator] javax.swing.JMenuItem seesaw.keystroke/keystroke)
 })
 
 (defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
@@ -2004,8 +2004,8 @@
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
 (def ^{:private true} toolbar-options {
-  :orientation (bean-option javax.swing.JToolBar :orientation orientation-table)
-  :floatable?  (bean-option javax.swing.JToolBar :floatable? boolean)
+  :orientation (bean-option :orientation javax.swing.JToolBar orientation-table)
+  :floatable?  (bean-option :floatable? javax.swing.JToolBar boolean)
   ; Override default :items handler
   :items       (default-option :items #(add-widgets %1 (insert-toolbar-separators %2)))
 })
@@ -2050,8 +2050,8 @@
   tp)
 
 (def ^{:private true} tabbed-panel-options {
-  :placement (bean-option javax.swing.JTabbedPane [:placement :tab-placement] tab-placement-table)
-  :overflow  (bean-option javax.swing.JTabbedPane [:overflow :tab-layout-policy] tab-overflow-table)
+  :placement (bean-option [:placement :tab-placement] javax.swing.JTabbedPane tab-placement-table)
+  :overflow  (bean-option [:overflow :tab-layout-policy] javax.swing.JTabbedPane tab-overflow-table)
   :tabs      (default-option :tabs add-to-tabbed-panel)
 })
 
@@ -2206,16 +2206,16 @@
   ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
   :id          (default-option :id seesaw.selector/id-of!)
   :class       (default-option :class seesaw.selector/class-of!)
-  :on-close    (bean-option javax.swing.JFrame [:on-close :default-close-operation] frame-on-close-map)
-  :content     (bean-option javax.swing.JFrame [:content :content-pane] make-widget)
-  :menubar     (bean-option javax.swing.JFrame [:menubar :j-menu-bar])
+  :on-close    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
+  :content     (bean-option [:content :content-pane] javax.swing.JFrame make-widget)
+  :menubar     (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
 
-  :title        (bean-option java.awt.Frame :title str)
-  :resizable?   (bean-option java.awt.Frame :resizable? boolean)
+  :title        (bean-option :title java.awt.Frame str)
+  :resizable?   (bean-option :resizable? java.awt.Frame boolean)
 
-  :minimum-size (bean-option java.awt.Window :minimum-size  to-dimension)
-  :size         (bean-option java.awt.Window :size to-dimension)
-  :visible?     (bean-option java.awt.Window :visible? boolean)
+  :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
+  :size         (bean-option :size java.awt.Window to-dimension)
+  :visible?     (bean-option :visible? java.awt.Window boolean)
 })
 
 (defn frame
@@ -2317,13 +2317,13 @@
   :parent (default-option :parent #(.setLocationRelativeTo ^java.awt.Dialog %1 %2))
 
   ; These two override frame-options for purposes of type hinting and reflection
-  :on-close (bean-option javax.swing.JDialog [:on-close :default-close-operation] frame-on-close-map)
-  :content  (bean-option javax.swing.JDialog [:content :content-pane] make-widget)
-  :menubar  (bean-option javax.swing.JDialog [:menubar :j-menu-bar])
+  :on-close (bean-option [:on-close :default-close-operation] javax.swing.JDialog frame-on-close-map)
+  :content  (bean-option [:content :content-pane] javax.swing.JDialog make-widget)
+  :menubar  (bean-option [:menubar :j-menu-bar] javax.swing.JDialog)
 
   ; Ditto here. Avoid reflection
-  :title        (bean-option java.awt.Dialog :title str)
-  :resizable?   (bean-option java.awt.Dialog :resizable? boolean)
+  :title        (bean-option :title java.awt.Dialog str)
+  :resizable?   (bean-option :resizable? java.awt.Dialog boolean)
 })
 
 (def ^{:private true} dialog-result-property ::dialog-result)
@@ -2652,10 +2652,10 @@
 ; Slider
 
 (def ^{:private true} slider-options {
-  :orientation (bean-option javax.swing.JSlider :orientation orientation-table)
-  :value       (bean-option javax.swing.JSlider :value)
-  :min         (bean-option javax.swing.JSlider [:min :minimum])
-  :max         (bean-option javax.swing.JSlider [:max :maximum])
+  :orientation (bean-option :orientation javax.swing.JSlider orientation-table)
+  :value       (bean-option :value javax.swing.JSlider)
+  :min         (bean-option [:min :minimum] javax.swing.JSlider)
+  :max         (bean-option [:max :maximum] javax.swing.JSlider)
   :minor-tick-spacing (default-option :minor-tick-spacing 
                         #(do (check-args (number? %2) ":minor-tick-spacing must be a number.")
                            (.setPaintTicks ^javax.swing.JSlider %1 true)
@@ -2664,11 +2664,11 @@
                         #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
                            (.setPaintTicks ^javax.swing.JSlider %1 true)
                            (.setMajorTickSpacing ^javax.swing.JSlider %1 %2)))
-  :snap-to-ticks? (bean-option javax.swing.JSlider :snap-to-ticks? boolean)
-  :paint-ticks?   (bean-option javax.swing.JSlider :paint-ticks? boolean)
-  :paint-labels?  (bean-option javax.swing.JSlider :paint-labels? boolean)
-  :paint-track?   (bean-option javax.swing.JSlider :paint-track? boolean)
-  :inverted?      (bean-option javax.swing.JSlider :inverted? boolean)
+  :snap-to-ticks? (bean-option :snap-to-ticks? javax.swing.JSlider boolean)
+  :paint-ticks?   (bean-option :paint-ticks? javax.swing.JSlider boolean)
+  :paint-labels?  (bean-option :paint-labels? javax.swing.JSlider boolean)
+  :paint-track?   (bean-option :paint-track? javax.swing.JSlider boolean)
+  :inverted?      (bean-option :inverted? javax.swing.JSlider boolean)
  
 })
 
@@ -2715,12 +2715,12 @@
 ;*******************************************************************************
 ; Progress Bar
 (def ^{:private true} progress-bar-options {
-  :orientation    (bean-option javax.swing.JProgressBar :orientation orientation-table)
-  :value          (bean-option javax.swing.JProgressBar :value)
-  :min            (bean-option javax.swing.JProgressBar [:min :minimum])
-  :max            (bean-option javax.swing.JProgressBar [:max :maximum])
-  :paint-string?  (bean-option javax.swing.JProgressBar [:paint-string? :string-painted?] boolean)
-  :indeterminate? (bean-option javax.swing.JProgressBar :indeterminate? boolean)
+  :orientation    (bean-option :orientation javax.swing.JProgressBar orientation-table)
+  :value          (bean-option :value javax.swing.JProgressBar)
+  :min            (bean-option [:min :minimum] javax.swing.JProgressBar)
+  :max            (bean-option [:max :maximum] javax.swing.JProgressBar)
+  :paint-string?  (bean-option [:paint-string? :string-painted?] javax.swing.JProgressBar boolean)
+  :indeterminate? (bean-option :indeterminate? javax.swing.JProgressBar boolean)
 })
 
 (defn progress-bar

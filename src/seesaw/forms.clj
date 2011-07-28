@@ -95,10 +95,10 @@
 (def ^{:private true} builder-options
   {:items                  (default-option :items #(doseq [item %2] (append item %1)))
    :default-dialog-border? (default-option :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1)))
-   :default-row-spec       (bean-option DefaultFormBuilder :default-row-spec)
-   :leading-column-offset  (bean-option DefaultFormBuilder :leading-column-offset)
-   :line-gap-size          (bean-option DefaultFormBuilder :line-gap-size)
-   :paragraph-gap-size     (bean-option DefaultFormBuilder :paragraph-gap-size)})
+   :default-row-spec       (bean-option :default-row-spec DefaultFormBuilder)
+   :leading-column-offset  (bean-option :leading-column-offset DefaultFormBuilder)
+   :line-gap-size          (bean-option :line-gap-size DefaultFormBuilder)
+   :paragraph-gap-size     (bean-option :paragraph-gap-size DefaultFormBuilder)})
 
 (def ^{:private true} ignore-builder-options
   (ignore-options builder-options))

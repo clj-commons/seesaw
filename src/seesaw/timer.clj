@@ -12,9 +12,9 @@
   (:use [seesaw util action options]))
 
 (def ^{:private true} timer-opts {
-  :initial-delay (bean-option javax.swing.Timer :initial-delay)
-  :delay         (bean-option javax.swing.Timer :delay)
-  :repeats?      (bean-option javax.swing.Timer :repeats? boolean) 
+  :initial-delay (bean-option :initial-delay javax.swing.Timer)
+  :delay         (bean-option :delay javax.swing.Timer)
+  :repeats?      (bean-option :repeats? javax.swing.Timer boolean) 
 })
 
 (defn- timer-handler [f initial-value]

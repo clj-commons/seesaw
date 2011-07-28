@@ -26,7 +26,7 @@
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
 (def ^{:private true} action-options {
-  :enabled?  (bean-option Action :enabled? boolean)
+  :enabled?  (bean-option :enabled? Action boolean)
   :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
   :name      (action-property-option :name Action/NAME str)
   :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)

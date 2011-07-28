@@ -31,8 +31,8 @@
          (fn [^JFileChooser chooser dir] 
            (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
                                             (java.io.File. (str dir))))))
-  :multi? (bean-option JFileChooser [:multi? :multi-selection-enabled] boolean)
-  :selection-mode (bean-option JFileChooser [:selection-mode :file-selection-mode] file-selection-modes)
+  :multi? (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
+  :selection-mode (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
   :filters (default-option :filters 
              #(doseq [[name exts] %2]
                 (.setFileFilter 
