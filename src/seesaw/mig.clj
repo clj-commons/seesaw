@@ -30,8 +30,8 @@
   (@#'seesaw.core/handle-structure-change parent))
 
 (def ^{:private true} mig-panel-options {
-  :constraints apply-mig-constraints
-  :items       add-mig-items
+  :constraints (default-option :constraints apply-mig-constraints)
+  :items       (default-option :items add-mig-items)
 })
 
 (defn mig-panel
