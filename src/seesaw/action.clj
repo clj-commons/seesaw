@@ -18,10 +18,10 @@
 ; Actions
 
 (defn- action-property-option
-  ([name key set-conv]
-   (fn [^Action target value] (.putValue target key (set-conv value))))
+  ([name key set-conv] (action-property-option name key set-conv nil))
   ([name key set-conv get-conv]
-   (fn [^Action target value] (.putValue target key (set-conv value)))))
+   (default-option name 
+     (fn [^Action target value] (.putValue target key ((or set-conv identity) value))))))
 
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")

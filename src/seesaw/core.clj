@@ -1444,7 +1444,8 @@
       model)))
 
 (def ^{:private true} listbox-options {
-  :model             (default-option :model (fn [lb m] ((:model default-options) lb (to-list-model m))))
+  ; TODO This setter access should be a function in options.clj
+  :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m))))
   :renderer          (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2)))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
@@ -1578,7 +1579,9 @@
 
 (def ^{:private true} combobox-options {
   :editable? (bean-option :editable? javax.swing.JComboBox boolean)
-  :model     (default-option :model    (fn [lb m] ((:model default-options) lb (to-combobox-model m))))
+  :model     (default-option :model    
+               ; TODO this setter lookup should be a function in options.clj
+               (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m))))
   :renderer  (default-option :renderer 
                #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))) 
 })
@@ -1904,13 +1907,14 @@
         (javax.swing.JMenuItem. ^String item)))))
 
 (def ^{:private true} menu-options {
-  :items (fn [^javax.swing.JMenu menu items] 
+  :items (default-option :items 
+           (fn [^javax.swing.JMenu menu items] 
             (doseq [item items] 
               (if-let [menu-item (to-menu-item item)]
                 (.add menu menu-item)
                 (if (= :separator item)
                   (.addSeparator menu)
-                  (.add menu (make-widget item))))))
+                  (.add menu (make-widget item)))))))
 })
 
 (defn menu 
