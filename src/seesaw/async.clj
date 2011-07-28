@@ -109,6 +109,25 @@
   [& body]
   `(call-async (fn [] ~@body)))
 
+(declare resolves-to?)
+
+(if (or (> (:major *clojure-version*) 1) (>= (:minor *clojure-version*) 3))
+  (defn ^{:private true} resolves-to?
+    [sym target env]
+    (when (symbol? sym)
+      (when-let [v (resolve env sym)]
+        (= v target))))
+  (defn ^{:private true} resolves-to?
+    [sym target env]
+    (when (symbol? sym)
+      (when-let [v (when-not (contains? env sym)
+                     (resolve sym))]
+        (= v target)))))
+
+(defn ^{:private true} is-call-to?
+  [form target env]
+  (and (seq? form) (resolves-to? (first form) target env)))
+
 (defmacro let-async
   "Create a binding of locals similar to let. However on the right hand side
   of the bindings are asynchronuous functions. Their results will be bound to
@@ -155,12 +174,25 @@
   (let [global-continue (gensym "global-continue")
         current (gensym "current")
         step    (fn [inner [local local-continue]]
-                  (condp = local
-                    :when `(if ~local-continue
-                             ~inner
-                             (~global-continue nil))
-                    :let  `(let ~local-continue
-                             ~inner)
+                  (cond
+                    (= local :when)
+                    `(if ~local-continue
+                       ~inner
+                       (~global-continue nil))
+
+                    (= local :let)
+                    `(let ~local-continue
+                       ~inner)
+
+                    (is-call-to? local-continue #'doasync &env)
+                    `(let [~local (do ~@(next local-continue))]
+                       ~inner)
+
+                    (is-call-to? local-continue #'call-async &env)
+                    `(let [~local ~(next local-continue)]
+                       ~inner)
+
+                    :else
                     `(->> (async-fn [~local] ~inner)
                        (~local-continue)
                        (reset! ~current)
