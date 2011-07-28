@@ -40,12 +40,12 @@
          (reset! canceled?# true)))))
 
 (defn run-async
-  "Run an asynchronuous workflow. 
-  
+  "Run an asynchronuous workflow.
+
   continue returns a single argument function that takes a continuation
-  function and returns an object that satisfies Waitable and Cancelable. 
-  
-  Returns a promise which may be dereferenced for the workflow result if 
+  function and returns an object that satisfies Waitable and Cancelable.
+
+  Returns a promise which may be dereferenced for the workflow result if
   there is any. If the workflow is canceled, the result is ::canceled.
 
   Takes a sequence of key/value option pairs:
@@ -75,7 +75,7 @@
   function on the given args and passes the result onto a continuation function.
   Use this to convert a normal function to an async function, usable within
   (async-workflow).
-  
+
   Examples:
 
     (call-async map #(* 2) (range 10))
@@ -223,16 +223,16 @@
 (defn await-event
   "Awaits the given event on the given target asynchronuously. Passes on the
   event to the continuation. target and event are passed to (seesaw.core/listen).
-  
+
   Notes:
 
     To wait for multiple events wrap in (await-any or await-some).
- 
+
   Examples:
-  
+
     (async-workflow
       [event (await-event button :action-performed)])
-  
+
   See:
     (seesaw.core/listen)
   "
@@ -252,7 +252,7 @@
 (defn wait
   "Wait asynchronuously for t milliseconds and pass nil to the continuation.
   That is, if used within (let-async), the bound value will be nil.
-  
+
   See:
     (seesaw.timer/timer)"
   [t]
@@ -272,11 +272,11 @@
 (defn await-future*
   "Call the function with any additional arguments in a background thread and
   wait asynchronuously for its completion. Passes on the result to the
-  continuation. 
+  continuation.
 
   Notes:
-    You probably want the (seesaw.async/await-future) macro. 
-  
+    You probably want the (seesaw.async/await-future) macro.
+
     The continuation function with the result is always called on the UI thread.
 
   See:
@@ -313,9 +313,9 @@
 (defn await-any
   "Wait asynchronuously until one of the given events happens. Passes on
   the result of the triggering event to the continuation.
-  
+
   events is one or more async processes, e.g. (await-event).
- 
+
   Examples:
 
     ; Wait for one of a set of buttons to be pushed
@@ -360,31 +360,3 @@
         (cancel* [this]
           (doseq [event events] (cancel event))
           (cancel global-continue))))))
-
-(defn await-valid
-  "Wait asynchronuously for the given event. Passes on the result to the
-  continuation if pred returns truethy for it. If the result does not
-  fulfil the predicate the optional invalid handler is called with the
-  continuation and the result. If the invalid handler returns a
-  Waitable, the await-valid will wait again for the new source.
-  Otherwise the invalid-handler should return nil and handle the result
-  and continuation on its own. The default behaviour for invalid is to
-  cycle until a valid result is returned."
-  [pred event & {:keys [invalid]}]
-  (fn [global-continue]
-    (let [invalid   (or invalid (fn [_ _] event))
-          current   (atom nil)
-          inner-continue (async-fn [result]
-                           (if (pred result)
-                             (global-continue result)
-                             (when-let [event (invalid global-continue result)]
-                               (wait-for (reset! current (event this))))))]
-      (reset! current (event inner-continue))
-      (reify
-        Waitable
-        (wait-for* [this] (wait-for @current))
-        Cancelable
-        (cancel* [this]
-          (cancel @current)
-          (cancel global-continue))))))
-
