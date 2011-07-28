@@ -127,15 +127,20 @@
     camelize 
     symbol))
 
-(defmacro bean-option [target-type property & [set-conv get-conv]]
-  (let [target (gensym "target")]
+(defn- split-bean-option-name [v]
+  (cond
+    (vector? v) [(first v) (second v)]
+    :else [v v]))
+(defmacro bean-option [target-type name-arg & [set-conv get-conv]]
+  (let [[option-name bean-property-name] (split-bean-option-name name-arg)
+        target (gensym "target")]
   `(fn [~(with-meta target {:tag target-type}) value#]
-     (. ~target ~(setter-name property) (~(or set-conv identity) value#)))))
+     (. ~target ~(setter-name bean-property-name) (~(or set-conv identity) value#)))))
 
 (defn default-option 
-  ([] (fn [target value]))
-  ([setter] setter)
-  ([setter getter] setter))
+  ([name] (fn [target value]))
+  ([name setter] setter)
+  ([name setter getter] setter))
 
 (defn apply-options
   [target opts handler-map]
