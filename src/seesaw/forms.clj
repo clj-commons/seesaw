@@ -16,7 +16,7 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.util :only (bean-option default-option apply-options ignore-options)]))
+    [seesaw.options :only (bean-option default-option apply-options ignore-options)]))
 
 (defprotocol ComponentSpec
   (append [this builder] "Add the given component to the form builder"))

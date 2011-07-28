@@ -11,7 +11,7 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use seesaw.util)
+  (:use [seesaw util options])
   (:import [javax.swing JFileChooser]))
 
 (def ^{:private true} file-chooser-types {

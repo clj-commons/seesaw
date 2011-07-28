@@ -10,7 +10,6 @@
 
 (ns seesaw.util
   (:require clojure.string)
-  (:use [seesaw meta])
   (:import [java.net URL MalformedURLException]))
 
 (defn check-args 
@@ -103,59 +102,6 @@
     (URL. (str s))
     (catch MalformedURLException e nil))))
 
-(def ^{:private true} options-property "seesaw-creation-options")
-
-(defn- store-option-handlers
-  [target handler-map]
-  (put-meta! target options-property handler-map))
-
-(defn- get-option-handlers
-  [target]
-  (get-meta target options-property))
-
-(defn- strip-question-mark
-  [^String s] 
-  (if (.endsWith ^String s "?")
-    (.substring s 0 (dec (count s)))
-    s))
-
-(defn- setter-name [property]
-  (->> property 
-    name 
-    strip-question-mark
-    (str "set-") 
-    camelize 
-    symbol))
-
-(defn- split-bean-option-name [v]
-  (cond
-    (vector? v) [(first v) (second v)]
-    :else [v v]))
-(defmacro bean-option [target-type name-arg & [set-conv get-conv]]
-  (let [[option-name bean-property-name] (split-bean-option-name name-arg)
-        target (gensym "target")]
-  `(fn [~(with-meta target {:tag target-type}) value#]
-     (. ~target ~(setter-name bean-property-name) (~(or set-conv identity) value#)))))
-
-(defn default-option 
-  ([name] (fn [target value]))
-  ([name setter] setter)
-  ([name setter getter] setter))
-
-(defn apply-options
-  [target opts handler-map]
-  (check-args (or (map? opts) (even? (count opts))) 
-              "opts must be a map or have an even number of entries")
-  (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
-    (if-let [f (get handler-map k)]
-      (f target v)
-      (throw (IllegalArgumentException. (str "Unknown option " k)))))
-  (store-option-handlers target handler-map))
-
-(defn reapply-options
-  [target args default-options]
-  (let [options (or (get-option-handlers target) default-options)]
-    (apply-options target args options)))
 
 (defn to-dimension
   [v]
@@ -200,13 +146,3 @@
     children
     root))
 
-(defn ignore
-  "Might be used to explicitly ignore the default behaviour of options."
-  [x _]
-  x)
-
-(defn ignore-options
-  "Create a ignore-map for options, which should be ignored. Ready to
-  be merged into default option maps."
-  [source-options]
-  (zipmap (keys source-options) (repeat ignore)))

@@ -15,7 +15,7 @@
   capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util meta to-widget make-widget])
+  (:use [seesaw util options meta to-widget make-widget])
   (:require clojure.java.io
             [seesaw color font border invoke timer selection 
              event selector icon action cells table graphics cursor scroll])

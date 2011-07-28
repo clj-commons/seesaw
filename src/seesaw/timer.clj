@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.timer
-  (:use [seesaw util action]))
+  (:use [seesaw util action options]))
 
 (def ^{:private true} timer-opts {
   :initial-delay (bean-option javax.swing.Timer :initial-delay)
