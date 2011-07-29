@@ -14,7 +14,7 @@
         [lazytest.expect :only (expect)]))
 
 (describe apply-options
-  (it "throws IllegalArgumentException if properties aren't event"
+  (it "throws IllegalArgumentException if properties aren't even"
     (try
       (do (apply-options (javax.swing.JPanel.) [1 2 3] {}) false)
       (catch IllegalArgumentException e true)))
@@ -22,4 +22,16 @@
     (try
       (do (apply-options (javax.swing.JPanel.) [:unknown "unknown"] {}) false)
       (catch IllegalArgumentException e true))))
+
+(describe get-option-value
+  (it "throws IllegalArgumentException if target has no handler map"
+    (try
+      (get-option-value (javax.swing.JPanel.) :text) false
+      (catch IllegalArgumentException e true)))
+  (it "throws IllegalArgumentException if option doesn't support getter"
+    (try
+      (get-option-value (javax.swing.JPanel.) :text {:text (default-option :text nil nil)}) false
+      (catch IllegalArgumentException e true)))
+  (it "uses the getter of an option to retrieve a value"
+    (= "hi" (get-option-value (javax.swing.JPanel.) :text {:text (default-option :text nil (constantly "hi"))}))))
 

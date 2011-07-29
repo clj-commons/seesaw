@@ -21,7 +21,7 @@
   [target handler-map]
   (put-meta! target options-property handler-map))
 
-(defn- get-option-handlers
+(defn- get-option-value-handlers
   [target]
   (get-meta target options-property))
 
@@ -77,7 +77,7 @@
 
 (defn reapply-options
   [target args default-options]
-  (let [options (or (get-option-handlers target) default-options)]
+  (let [options (or (get-option-value-handlers target) default-options)]
     (apply-options target args options)))
 
 (defn ignore-options
@@ -85,4 +85,13 @@
   be merged into default option maps."
   [source-options]
   (into {} (for [k (keys source-options)] [k (ignore-option k)])))
+
+(defn get-option-value 
+  ([target name] (get-option-value target name (get-option-value-handlers target)))
+  ([target name handlers]
+    (let [^Option option (get handlers name)
+          getter (:getter option)]
+      (if getter
+        (getter target)
+        (throw (IllegalArgumentException. (str "No getter found for option " name)))))))
 
