@@ -19,11 +19,11 @@
                                (doasync 
                                  (alert e (str "Workflow completed with result: " result))
                                  (config! e :enabled? true)
-                                 (config! stop :enabled? false))
-                               ) :canceled (fn [_]
-                                             (config! e :enabled? true)
-                                             (config! stop :enabled? false)
-                                             (alert e "Workflow canceled"))))))]
+                                 (config! stop :enabled? false))) 
+                              :canceled (fn [_]
+                                          (config! e :enabled? true)
+                                          (config! stop :enabled? false)
+                                          (alert e "Workflow canceled"))))))]
     (horizontal-panel :border 5 :items [start stop]))) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,25 +70,30 @@
 (defn background-task [start-btn status progress]
   (async-workflow
     (doasync
-      (text! status (str "Click '" (text start-btn) "' to start background task")))
-    ; Wait for button a to be clicked
+      (config! start-btn :enabled? true)
+      (text!   status (str "Click '" (text start-btn) "' to start background task")))
+
+    ; Wait for button "Start Task" to be clicked
     (await-event start-btn :action-performed)
-    (doasync
-      (text! status "Background task running"))
-    ; Run some code in a background thread and collect the result when
-    ; it's done
+
+    (doasync 
+      (config! start-btn :enabled? false)
+      (text!   status "Background task running"))
+
+    ; Run some code in a background thread and collect the result when it's done
     [result (await-future 
               (loop [n 100]
                 (if-not (.. (Thread/currentThread) isInterrupted)
                   (do
-                (Thread/sleep 50)
-                (invoke-now (config! progress :value (- 100 n)))
-                (if (> n 0) 
-                  (recur (dec n))
-                  "YES."))
-                  "Canceled")))]
+                    (Thread/sleep 50)
+                    (invoke-now (config! progress :value (- 100 n)))
+                    (if (> n 0) 
+                      (recur (dec n))
+                      :completed))
+                  :canceled)))]
     (doasync
-      (text! status (str "Background task complete with result " result)))))
+      (text! status (str "Background task complete with result " result))
+      result)))
 
 (defn background-task-tab []
   (let [start-btn (button :text "Start Task")
@@ -129,17 +134,17 @@
 
 (defn passcode-workflow
   [digit-buttons cancel-button [output & more] result]
-  (if output
-    (async-workflow
-      ; v will be either the text of the button, or nil for cancel
-      [v (apply await-any (conj 
-                            (map #(await-button % (text %)) digit-buttons)
-                            (await-button cancel-button nil)))
-       :when v]
-      (doasync (text! output v))
-      (passcode-workflow digit-buttons cancel-button more (conj result v)))
-    (doasync 
-      result)))
+  
+  (async-workflow
+    ; v will be either the text of the button, or nil for cancel
+    [v (apply await-any (conj 
+                          (map #(await-button % (text %)) digit-buttons)
+                          (await-button cancel-button nil)))]
+    (doasync (when v (text! output v)))
+    (cond 
+      (nil? v) (doasync :canceled)
+      more     (passcode-workflow digit-buttons cancel-button more (conj result v))
+      :else    (doasync (conj result v)))))
 
 (defn passcode-tab []
   (let [digit-buttons (map #(button :text %1) (range 0 9))
@@ -163,27 +168,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn countdown-workflow [btn seconds format-str]
-  (if (>= seconds 0)
-    (async-workflow
-      ; Update the button text with time remaining
-      (call-async text! btn (format format-str seconds))
-      ; Wait for the button or a second
-      [e (await-any
-          (await-event btn :action-performed)
-          (wait 1000))]
+  (async-workflow
+    ; Update the button text with time remaining
+    (call-async text! btn (format format-str seconds))
 
-      ; Loop. Force end if button was clicked. Hmm.
-      (countdown-workflow btn 
-                          (if e -1 (dec seconds)) 
-                          format-str))
-    (doasync :done))) 
+    ; Wait for the button or a second. (wait) always returns nil.
+    [clicked (await-any
+                (await-event btn :action-performed)
+                (wait 1000))]
+
+    ; Now do the right thing based on click, time remaining, etc
+    (cond 
+      clicked       (doasync :clicked)
+      (= 0 seconds) (doasync :timeout)
+      :else         (countdown-workflow btn (dec seconds) format-str)))) 
 
 (defn countdown-workflow-tab []
   (let [fmt "Restart Computer (%d seconds)"
         btn (button :text fmt)]
     (vertical-panel
       :items ["Countdown button workflow"
-              (controls (countdown-workflow btn 10 fmt))
+              (controls (countdown-workflow btn 5 fmt))
               :separator
               btn])))
 
