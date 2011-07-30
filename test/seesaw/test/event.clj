@@ -105,6 +105,24 @@
 
 
 (describe listen
+  (it "throws IllegalArgumentException if its event/handler pair list isn't even length"
+    (try
+      (listen :something-something (fn [_]))
+      false
+      (catch IllegalArgumentException e
+        true)))
+  (it "throws IllegalArgumentException if its first arguments isn't an event source"
+    (try
+      (listen :something-something (fn [_]) :another)
+      false
+      (catch IllegalArgumentException e
+        true)))
+  (it "throws IllegalArgumentException if a handler isn't a function"
+    (try
+      (listen (javax.swing.JPanel.) :mouse "foo")
+      false
+      (catch IllegalArgumentException e
+        true)))
   (it "throws IllegalArgumentException for unknown event types"
     (try
       (listen (JPanel.) :something-something (fn [_]))
