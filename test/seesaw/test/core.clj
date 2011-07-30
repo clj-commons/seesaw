@@ -287,6 +287,36 @@
     (let [t (text)]
       (expect (= (.getDocument t) (to-document t))))))
 
+(describe config
+  (it "throws IllegalArgumentException for an unknown option"
+    (try
+      (config (text "HI") :textish)
+      false
+      (catch IllegalArgumentException e true)))
+  (it "can retrieve the :id of a widget"
+    (= "foo" (config (text :id :foo) :id)))
+  (it "can retrieve the :class of a widget"
+    (= #{"foo"} (config (text :class :foo) :class)))
+  (it "can retrieve the :tip of a widget"
+    (= "I'm a tooltip" (config (text :tip "I'm a tooltip") :tip)))
+  (it "can retrieve the value of :text from a widget"
+    (= "HI" (config (text "HI") :text)))
+  (it "can retrieve the value of :opaque? from a widget"
+    (let [t (text :opaque? false)] 
+      (= (.isOpaque t) (config t :opaque?))))
+  (it "can retrieve the value of :enabled? from a widget"
+    (let [t (text)] 
+      (= (.isEnabled t) (config t :enabled?))))
+  (it "can retrieve the value of :size from a widget"
+    (let [t (text :size [100 :by 101])] 
+      (= (.getSize t) (config t :size))))
+  (it "can retrieve the value of :foreground from a widget"
+    (let [t (text)] 
+      (= (.getForeground t) (config t :foreground))))
+  (it "can retrieve the value of :background from a widget"
+    (let [t (text)] 
+      (= (.getBackground t) (config t :background))))
+  )
 
 (describe config!
   (it "configures the properties given to it on a single target"

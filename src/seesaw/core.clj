@@ -533,10 +533,39 @@
 
 ;*******************************************************************************
 ; Widget configuration stuff
-(defprotocol ConfigureWidget (config* [target args]))
+(defprotocol ^{:private true} Configurable
+  "A protocol for configuring and querying properties of an object. Client
+  code should use (seesaw.core/config!) and (seesaw.core/config) rather than
+  calling protocol methods directly.
+  
+  See:
+    (seesaw.core/config)
+    (seesaw.core/config!)
+  "
+  (config!* [target args] "Configure one or more options on target. Args is a list of key/value pairs. See (seesaw.core/config!)")
+  (config* [target name] "Retrieve the current value for the given named option. See (seesaw.core/config)"))
+
+(defn config
+  "Retrieve the value of an option from target. For example:
+  
+    (config button1 :text)
+    => \"I'm a button!\"
+  
+  Target must satisfy the Configurable protocol. In general, it may be a widget, 
+  or convertible to widget with (to-widget). For example, the target can be an event 
+  object.
+
+  Returns the option value. 
+  Throws IllegalArgumentException if an unknown option is requested.
+
+  See:
+    (seesaw.core/config!)
+  "
+  [target name]
+  (config* target name))
 
 (defn config!
-  "Applies properties in the argument list to one or more targets. For example:
+  "Applies options in the argument list to one or more targets. For example:
 
     (config! button1 :enabled? false :text \"I' disabled\")
 
@@ -544,13 +573,19 @@
 
     (config! [button1 button2] :enabled? false :text \"We're disabled\")
  
-  Targets may be actual widgets, or convertible to widgets with (to-widget).
-  For example, the target can be an event object.
+  Targets must satisfy the Configurable protocol. In general, they may be widgets, 
+  or convertible to widgets with (to-widget). For example, the target can be an event 
+  object.
 
-  Returns the input targets."
+  Returns the input targets.
+  Throws IllegalArgumentException if an unknown option is encountered.
+
+  See:
+    (seesaw.core/config)
+  "
   [targets & args]
   (doseq [target (to-seq targets)]
-    (config* target args))
+    (config!* target args))
   targets)
 
 ;*******************************************************************************
@@ -653,18 +688,20 @@
 
 (declare paint-option-handler)
 (def ^{:private true} default-options {
-  ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
+  ::with       (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
   :listen      (default-option :listen #(apply seesaw.event/listen %1 %2))
+
   :items       (default-option :items #(add-widgets %1 %2)) 
-  :id          (default-option :id seesaw.selector/id-of!)
-  :class       (default-option :class seesaw.selector/class-of!)
+  :id          (default-option :id seesaw.selector/id-of! seesaw.selector/id-of)
+  :class       (default-option :class seesaw.selector/class-of! seesaw.selector/class-of)
   :opaque?     (bean-option :opaque? JComponent boolean) ; #(.setOpaque %1 (boolean %2))
   :enabled?    (bean-option :enabled? java.awt.Component boolean)
   :focusable?  (bean-option :focusable? java.awt.Component boolean)
   :background  (default-option :background
                   #(do
                     (.setBackground ^JComponent %1 (seesaw.color/to-color %2))
-                    (.setOpaque ^JComponent %1 true)))
+                    (.setOpaque ^JComponent %1 true))
+                  #(.getBackground ^JComponent %1))
   :foreground  (bean-option :foreground JComponent seesaw.color/to-color)
   :border      (bean-option :border JComponent seesaw.border/to-border)
   :font        (bean-option :font JComponent seesaw.font/to-font)
@@ -676,10 +713,11 @@
   :maximum-size   (bean-option :maximum-size JComponent to-dimension)
   :size           (default-option :size
                     #(let [d (to-dimension %2)]
-                     (doto ^JComponent %1 
-                       (.setPreferredSize d)
-                       (.setMinimumSize d)
-                       (.setMaximumSize d))))
+                      (doto ^JComponent %1 
+                        (.setPreferredSize d)
+                        (.setMinimumSize d)
+                        (.setMaximumSize d)))
+                    #(.getSize ^JComponent %1))
   :location   (default-option :location #(move! %1 :to %2))
   :bounds     (default-option :bounds bounds-option-handler)
   :popup      (default-option :popup #(popup-option-handler %1 %2))
@@ -687,25 +725,30 @@
 
   :icon       (default-option :icon set-icon)
   :action     (default-option :action set-action)
-  :text       (default-option :text set-text)
+  :text       (default-option :text set-text get-text)
   :model      (default-option :model set-model)
 })
 
-(extend-protocol ConfigureWidget
+(extend-protocol Configurable
   java.util.EventObject
-    (config* [target args] (config* (to-widget target) args))
+    (config* [target name] (config* (to-widget target) name))
+    (config!* [target args] (config!* (to-widget target) args))
 
   java.awt.Component
-    (config* [target args] (reapply-options target args default-options))
+    (config* [target name] (get-option-value target name))
+    (config!* [target args] (reapply-options target args default-options))
 
   javax.swing.JComponent
-    (config* [target args] (reapply-options target args default-options))
+    (config* [target name] (get-option-value target name))
+    (config!* [target args] (reapply-options target args default-options))
 
   javax.swing.Action
-    (config* [target args] (reapply-options target args default-options))
+    (config* [target name] (get-option-value target name))
+    (config!* [target args] (reapply-options target args default-options))
 
   java.awt.Window
-    (config* [target args] (reapply-options target args default-options)))
+    (config* [target name] (get-option-value target name))
+    (config!* [target args] (reapply-options target args default-options)))
 
 (defn apply-default-opts
   "only used in tests!"

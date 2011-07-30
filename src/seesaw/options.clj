@@ -39,6 +39,16 @@
     camelize 
     symbol))
 
+(defn- getter-name [property]
+  (let [property (name property)
+        prefix   (if (.endsWith property "?") "is-" "get-")]
+    (->> property 
+      name 
+      strip-question-mark
+      (str prefix) 
+      camelize 
+      symbol)))
+
 (defn- split-bean-option-name [v]
   (cond
     (vector? v) v
@@ -51,17 +61,18 @@
   `(Option. ~option-name 
       (fn [~(with-meta target {:tag target-type}) value#]
         (. ~target ~(setter-name bean-property-name) (~(or set-conv identity) value#)))
-      nil)))
+      (fn [~(with-meta target {:tag target-type})]
+        (~(or get-conv identity) (. ~target ~(getter-name bean-property-name)))))))
 
 (defn default-option 
-  ([name] (default-option name (fn [target value])))
-  ([name setter] (default-option name setter (fn [target])))
+  ([name] (default-option name (fn [_ _] (throw (IllegalArgumentException. (str "No setter defined for option " name))))))
+  ([name setter] (default-option name setter (fn [_] (throw (IllegalArgumentException. (str "No getter defined for option " name))))))
   ([name setter getter] (Option. name setter getter)))
 
 (defn ignore-option
   "Might be used to explicitly ignore the default behaviour of options."
   [name]
-  (default-option name))
+  (default-option name (fn [_ _]) (fn [_ _])))
 
 (defn apply-options
   [target opts handler-map]
