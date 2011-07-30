@@ -1162,7 +1162,12 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
-  :editable? (bean-option :editable? javax.swing.text.JTextComponent boolean)
+  :editable?           (bean-option :editable? javax.swing.text.JTextComponent boolean)
+  :margin              (bean-option :margin javax.swing.text.JTextComponent to-insets)
+  :caret-color         (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :disabled-text-color (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :selected-text-color (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :selection-color     (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
 })
 
 (def ^{:private true} text-field-options (merge {
@@ -1188,6 +1193,17 @@
     :text         Initial text content
     :multi-line?  If true, a JTextArea is created (default false)
     :editable?    If false, the text is read-only (default true)
+    :margin       
+    :caret-color
+    :disabled-text-color
+    :selected-text-color
+    :selection-color
+
+
+  The following properties only apply if :multi-line? is false: 
+    
+    :columns Number of columns of text
+    :halign  Horizontal text alignment (:left, :right, :center, :leading, :trailing)
 
   The following properties only apply if :multi-line? is true:
 
@@ -1289,10 +1305,10 @@
           :underline  (.addAttribute style StyleConstants/Underline (boolean v))
           (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
 
-(def ^{:private true} styled-text-options {
+(def ^{:private true} styled-text-options (merge {
   :wrap-lines? (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2)))
   :styles      (default-option :styles add-styles)
-})
+} text-options))
 
 (defn styled-text 
   "Create a text pane. 

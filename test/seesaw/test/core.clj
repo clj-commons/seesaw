@@ -538,6 +538,18 @@
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"
     (= 123 (.getRows (text :multi-line? true :rows 123))))
+  (it "should set the :caret-color"
+    (= Color/ORANGE (.getCaretColor (text :caret-color Color/ORANGE))))
+  (it "should set the :disabled-text-color"
+    (= Color/ORANGE (.getDisabledTextColor (text :disabled-text-color Color/ORANGE))))
+  (it "should set the :selected-text-color"
+    (= Color/ORANGE (.getSelectedTextColor (text :selected-text-color Color/ORANGE))))
+  (it "should set the :selection-color"
+    (= Color/ORANGE (.getSelectionColor (text :selection-color Color/ORANGE))))
+  (it "should handle the :margin option with to-insets"
+    (let [t (text :margin 1)
+          i   (.getMargin t)]
+      (expect (= [1 1 1 1] [(.top i) (.left i) (.bottom i) (.right i)]))))
   (it "should honor the editable property"
     (let [t (text :text "HI" :editable? false :multi-line? true)]
       (expect (not (.isEditable t))))))
