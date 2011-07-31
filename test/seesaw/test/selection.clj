@@ -26,8 +26,12 @@
   (testing "when given an AbstractButton (e.g. toggle or checkbox)"
     (it "returns nil when the button is not selected"
       (nil? (selection (javax.swing.JCheckBox. "something" false))))
-    (it "returns a single-element seq with the text of the button if it's selected and multi? is true"
-      (= ["something"] (selection (javax.swing.JCheckBox. "something" true) {:multi? true}))))
+    (it "returns the button itself if it is selected"
+      (let [b (javax.swing.JCheckBox. "something" true)]
+        (expect (= b (selection b)))))
+    (it "returns a single-element seq with the button itself if it's selected and multi? is true"
+      (let [b (javax.swing.JCheckBox. "something" true)] 
+        (expect (= [b] (selection b {:multi? true}))))))
 
   (testing "when given a ButtonGroup"
     (it "returns nil when no button is selected"

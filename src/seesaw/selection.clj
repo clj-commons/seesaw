@@ -22,7 +22,7 @@
     (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v)))
 
   javax.swing.AbstractButton
-    (get-selection [target]      (seq (.getSelectedObjects target)))
+    (get-selection [target]      (if (.isSelected target) [target]))
     (set-selection [target [v]]  (doto target (.setSelected (boolean v))))
 
   javax.swing.ButtonGroup
