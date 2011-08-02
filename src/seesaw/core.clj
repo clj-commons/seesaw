@@ -491,7 +491,7 @@
    events and other objects can also be used. The id is always returned as
    a string, even it if was originally given as a keyword.
 
-  Returns the id as a string, or nil.
+  Returns the id as a keyword, or nil.
   
   See:
     (seesaw.core/select).

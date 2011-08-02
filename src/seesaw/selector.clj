@@ -33,11 +33,10 @@
 (defn id-of! 
   "INTERNAL USE ONLY."
   [w id]
-  (let [id-key (name id)
-        existing-id (ss-meta/get-meta w id-property)]
+  (let [existing-id (ss-meta/get-meta w id-property)]
     (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
     ; TODO should we enforce unique ids?
-    (ss-meta/put-meta! w id-property id-key)))
+    (ss-meta/put-meta! w id-property (keyword id))))
 
 (defn class-of! 
   "INTERNAL USE ONLY."
@@ -138,7 +137,7 @@
 (defn- id=
  "Selector predicate, :#foo is as short-hand for (id= \"foo\")."
  [id]
-  (pred #(= (-> % id-of) id)))
+  (pred #(= (-> % id-of) (keyword id))))
 
 (defn- exact-type=
   [class-name]
