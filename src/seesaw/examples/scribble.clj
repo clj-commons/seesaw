@@ -24,48 +24,48 @@
     (when current-shape
       (apply draw g current-shape))))
 
-(defn default-start [create-shape-fn]
+(defn start-new-shape [create-shape-fn]
   (fn [state e]
     (let [p (.getPoint e)] 
       (assoc state 
              :start-point [(.x p) (.y p)]
              :current-shape [(create-shape-fn (.x p) (.y p)) (:style state)]))))
 
-(defn default-drag [update-shape-fn]
+(defn drag-new-shape [update-shape-fn]
   (fn [state e [dx dy]]
     (let [p (.getPoint e)
           [start-x start-y] (:start-point state)] 
       (assoc state :current-shape [(update-shape-fn start-x start-y (.x p) (.y p)) (:style state)]))))
 
-(defn default-finish [state event]
+(defn finish-new-shape [state event]
   (-> state
     (update-in [:shapes] conj (:current-shape state))
     (assoc :current-shape nil)))
 
 (def tool-handlers {
   :pencil {
-    :start (default-start #(path [] (move-to %1 %2)))
+    :start (start-new-shape #(path [] (move-to %1 %2)))
     :drag  (fn [state e delta]
              (let [p (.getPoint e)
                    [shape style] (:current-shape state)]
                (.lineTo shape (.x p) (.y p))
                state))
-    :finish default-finish
+    :finish finish-new-shape
   }
   :line {
-    :start  (default-start #(line %1 %2 %1 %2)) 
-    :drag   (default-drag line)
-    :finish default-finish
+    :start  (start-new-shape #(line %1 %2 %1 %2)) 
+    :drag   (drag-new-shape line)
+    :finish finish-new-shape
   }
   :rect {
-    :start  (default-start #(rect %1 %2 0 0)) 
-    :drag   (default-drag #(rect %1 %2 (- %3 %1) (- %4 %2)))
-    :finish default-finish
+    :start  (start-new-shape #(rect %1 %2 0 0)) 
+    :drag   (drag-new-shape #(rect %1 %2 (- %3 %1) (- %4 %2)))
+    :finish finish-new-shape
   }
   :ellipse {
-    :start  (default-start #(ellipse %1 %2 0 0)) 
-    :drag   (default-drag #(ellipse %1 %2 (- %3 %1) (- %4 %2)))
-    :finish default-finish
+    :start  (start-new-shape #(ellipse %1 %2 0 0)) 
+    :drag   (drag-new-shape #(ellipse %1 %2 (- %3 %1) (- %4 %2)))
+    :finish finish-new-shape
   }
 })
 
