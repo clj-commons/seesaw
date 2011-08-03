@@ -287,6 +287,14 @@
     (let [t (text)]
       (expect (= (.getDocument t) (to-document t))))))
 
+(defmacro verify-config [target key getter]
+  (let [t (gensym "t")] 
+    `(it ~(str "can retrieve the value of " key " from a widget") 
+     (let [~t ~target
+           expected# ~(if (symbol? getter) `(. ~t ~getter) getter)
+           actual# (config ~t ~key)]
+       (expect (= expected# actual#))))))
+
 (describe config
   (it "throws IllegalArgumentException for an unknown option"
     (try
@@ -297,26 +305,37 @@
     (= :foo (config (text :id :foo) :id)))
   (it "can retrieve the :class of a widget"
     (= #{"foo"} (config (text :class :foo) :class)))
-  (it "can retrieve the :tip of a widget"
-    (= "I'm a tooltip" (config (text :tip "I'm a tooltip") :tip)))
-  (it "can retrieve the value of :text from a widget"
-    (= "HI" (config (text "HI") :text)))
-  (it "can retrieve the value of :opaque? from a widget"
-    (let [t (text :opaque? false)] 
-      (= (.isOpaque t) (config t :opaque?))))
-  (it "can retrieve the value of :enabled? from a widget"
-    (let [t (text)] 
-      (= (.isEnabled t) (config t :enabled?))))
-  (it "can retrieve the value of :size from a widget"
-    (let [t (text :size [100 :by 101])] 
-      (= (.getSize t) (config t :size))))
-  (it "can retrieve the value of :foreground from a widget"
-    (let [t (text)] 
-      (= (.getForeground t) (config t :foreground))))
-  (it "can retrieve the value of :background from a widget"
-    (let [t (text)] 
-      (= (.getBackground t) (config t :background))))
-  )
+  (verify-config (text :text "HI") :text "HI")
+  (verify-config (button :text "button") :text "button")
+  (verify-config (label :text "label") :text "label")
+  (verify-config (text :opaque? false) :opaque? false)
+  (verify-config (text :opaque? true) :opaque? true)
+  (verify-config (text) :enabled? isEnabled)
+  (verify-config (text :size [100 :by 101]) :size getSize)
+  (verify-config (text :preferred-size [100 :by 101]) :preferred-size getPreferredSize)
+  (verify-config (text :minimum-size [100 :by 101]) :minimum-size getMinimumSize)
+  (verify-config (text :maximum-size [100 :by 101]) :maximum-size getMaximumSize)
+  (verify-config (text) :foreground getForeground)
+  (verify-config (text) :background getBackground)
+  (verify-config (text :focusable? true) :focusable? true)
+  (verify-config (text :focusable? false) :focusable? false)
+  (verify-config (text :visible? true) :visible? true)
+  (verify-config (text :visible? false) :visible? false)
+  (verify-config (border-panel :border 1) :border getBorder)
+  (verify-config (border-panel :location [100 200]) :location (java.awt.Point. 100 200))
+  (verify-config (border-panel :bounds [100 200 300 400]) :bounds (java.awt.Rectangle. 100 200 300 400))
+  (verify-config (border-panel :font :monospace) :border getBorder)
+  (verify-config (border-panel :tip "A tool tip") :tip "A tool tip")
+  (verify-config (border-panel :cursor :hand) :cursor getCursor)
+  (verify-config (button) :model getModel)
+  (verify-config (text) :model getDocument)
+  (verify-config (combobox) :model getModel)
+  (verify-config (listbox) :model getModel)
+  (verify-config (table) :model getModel)
+  (verify-config (tree) :model getModel)
+  (verify-config (progress-bar) :model getModel)
+  (verify-config (slider) :model getModel)
+          )
 
 (describe config!
   (it "configures the properties given to it on a single target"
@@ -363,6 +382,10 @@
       (expect (= 12 (.getVgap l)))
       (expect (.getAlignOnBaseline l))
       (expect (= [a b c] (seq (.getComponents p))))))
+  (it "should returns :items with config"
+    (let [items [(JPanel.) (JPanel.) (JPanel.)]
+          p     (flow-panel :items items)]
+      (expect (= items (config p :items)))))
   (it "should throw IllegalArgumentException if a nil item is given"
     (try (flow-panel :items [nil]) false (catch IllegalArgumentException e true))))
 
@@ -396,21 +419,34 @@
           p (border-panel :hgap 99 :vgap 12 :items [[n :north] [s :south][e :east][w :west][c :center]])
           l (.getLayout p)]
       (expect (= java.awt.BorderLayout (class l)))
-      (expect (= #{n s e w c} (apply hash-set (.getComponents p)))))))
+      (expect (= #{n s e w c} (apply hash-set (.getComponents p))))))
+  (it "should return its :items with config"
+    (let [[n s e w c] [(JPanel.) (JPanel.) (JPanel.)(JPanel.)(JPanel.)]
+           items [[n :north] [s :south][e :east][w :west][c :center]]
+          p (border-panel :hgap 99 :vgap 12 :items items)]
+      (expect (= items (config p :items))))))
 
 (describe horizontal-panel
   (it "should create a horizontal box of :items list"
     (let [[a b c] [(JPanel.) (JPanel.) (JPanel.)]
           p (horizontal-panel :items [a b c])]
       (expect (= BoxLayout/X_AXIS (.. p getLayout getAxis)))
-      (expect (= [a b c] (seq (.getComponents p)))))))
+      (expect (= [a b c] (seq (.getComponents p))))))
+  (it "should get :items with config"
+    (let [items [(JPanel.) (JPanel.) (JPanel.)]
+          p (horizontal-panel :items items)]
+      (expect (= items (config p :items))))))
 
 (describe vertical-panel
   (it "should create a vertical box of :items list"
     (let [[a b c] [(JPanel.) (JPanel.) (JPanel.)]
           p (vertical-panel :items [a b c])]
       (expect (= BoxLayout/Y_AXIS (.. p getLayout getAxis)))
-      (expect (= [a b c] (seq (.getComponents p)))))))
+      (expect (= [a b c] (seq (.getComponents p))))))
+  (it "should get :items with config"
+    (let [items [(JPanel.) (JPanel.) (JPanel.)]
+          p (vertical-panel :items items)]
+      (expect (= items (config p :items))))))
 
 (describe grid-panel
   (it "should default to 1 column"
@@ -431,7 +467,11 @@
   (it "should add the given items to the panel"
     (let [[a b c] [(label :text "A") (label :text "B") (label :text "C")]
           g (grid-panel :items [a b c])] 
-      (expect (= [a b c] (seq (.getComponents g)))))))
+      (expect (= [a b c] (seq (.getComponents g))))))
+  (it "should get :items with config"
+    (let [items [(label :text "A") (label :text "B") (label :text "C")]
+          g (grid-panel :items items)] 
+      (expect (= items (config g :items))))))
 
 (describe realize-grid-bag-constraints
   (it "should return a vector of widget/constraint pairs"
@@ -564,6 +604,7 @@
     (let [t (text :multi-line? true :wrap-lines? true)]
       (expect (.getLineWrap t))
       (expect (.getWrapStyleWord t))))
+  (verify-config (text :multi-line? true :wrap-lines? true) :wrap-lines? true)
   (it "should set tab size with :tab-size"
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"
@@ -589,6 +630,8 @@
     (let [t (styled-text :text "HI")]
       (expect (instance? JTextPane t))
       (expect (= "HI" (text t)))))
+  (verify-config (styled-text :wrap-lines? true) :wrap-lines? true)
+  (verify-config (styled-text :wrap-lines? false) :wrap-lines? false)
   (it "should add styles"
     (let [t (styled-text :text "HI" 
                     :styles [[:big :size 30]
@@ -642,7 +685,13 @@
   (it "should create a button group with a list of buttons"
     (let [[a b c] [(radio) (checkbox) (toggle)]
           bg (button-group :buttons [a b c])]
-      (expect (= [a b c] (enumeration-seq (.getElements bg)))))))
+      (expect (= [a b c] (enumeration-seq (.getElements bg))))))
+  (it "should return buttons in the group with config :buttons"
+    (let [buttons [(radio) (checkbox) (toggle)]
+          bg (button-group :buttons buttons)]
+      (expect (= buttons (config bg :buttons)))
+      ;(expect (= [a b c] (enumeration-seq (.getElements bg))))
+      )))
 
 (describe button
   (it "should create a JButton"
@@ -821,6 +870,7 @@
       (expect (= javax.swing.JSplitPane (class s)))
       (expect (= left (.getLeftComponent s)))
       (expect (= right (.getRightComponent s)))))
+  (verify-config (splitter :top-bottom "top" "bottom" :divider-location 99) :divider-location 99)
   (it "should set the divider location to an absolute pixel location with an int"
     (let [s (splitter :top-bottom "top" "bottom" :divider-location 99)]
       (expect (= 99 (.getDividerLocation s)))))

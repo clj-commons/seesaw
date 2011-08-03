@@ -362,6 +362,12 @@
     .repaint))
 
 ;*******************************************************************************
+; Layout manipulation. See far below for more. 
+(defprotocol LayoutManipulation
+  (add!* [layout target widget constraint])
+  (get-constraint [layout container widget]))
+
+;*******************************************************************************
 ; move!
 
 (defprotocol ^{:private true} Movable
@@ -641,17 +647,20 @@
   javax.swing.JTextField (set-action [this v] (.setAction this v))
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
-(defprotocol ^{:private true} SetModel (set-model [this m]))
-(extend-protocol SetModel
-  javax.swing.text.JTextComponent (set-model [this v] (.setDocument this v))
-  javax.swing.AbstractButton (set-model [this v] (.setModel this v))
-  javax.swing.JComboBox      (set-model [this v] (.setModel this v))
-  javax.swing.JList          (set-model [this v] (.setModel this v))
-  javax.swing.JTable         (set-model [this v] (.setModel this v))
-  javax.swing.JTree          (set-model [this v] (.setModel this v))
-  javax.swing.JProgressBar   (set-model [this v] (.setModel this v))
-  javax.swing.JSlider        (set-model [this v] (.setModel this v))
-  javax.swing.JScrollBar     (set-model [this v] (.setModel this v)))
+(defprotocol ^{:private true} ConfigModel 
+  (get-model [this])
+  (set-model [this m]))
+
+(extend-protocol ConfigModel
+  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v))
+  javax.swing.AbstractButton (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JComboBox      (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JList          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JTable         (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JTree          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JProgressBar   (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JSlider        (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
+  javax.swing.JScrollBar     (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v)))
 
 (defprotocol SetSelectionMode (set-selection-mode [this v]))
 (extend-protocol SetSelectionMode
@@ -691,7 +700,8 @@
   ::with       (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
   :listen      (default-option :listen #(apply seesaw.event/listen %1 %2))
 
-  :items       (default-option :items #(add-widgets %1 %2)) 
+  :items       (default-option :items #(add-widgets %1 %2)
+                                      #(seq (.getComponents ^java.awt.Container %1))) 
   :id          (default-option :id seesaw.selector/id-of! seesaw.selector/id-of)
   :class       (default-option :class seesaw.selector/class-of! seesaw.selector/class-of)
   :opaque?     (bean-option :opaque? JComponent boolean) ; #(.setOpaque %1 (boolean %2))
@@ -718,15 +728,15 @@
                         (.setMinimumSize d)
                         (.setMaximumSize d)))
                     #(.getSize ^JComponent %1))
-  :location   (default-option :location #(move! %1 :to %2))
-  :bounds     (default-option :bounds bounds-option-handler)
+  :location   (default-option :location #(move! %1 :to %2) #(.getLocation ^java.awt.Component %1))
+  :bounds     (default-option :bounds bounds-option-handler #(.getBounds ^java.awt.Component %1)) 
   :popup      (default-option :popup #(popup-option-handler %1 %2))
   :paint      (default-option :paint #(paint-option-handler %1 %2))
 
   :icon       (default-option :icon set-icon)
   :action     (default-option :action set-action)
   :text       (default-option :text set-text get-text)
-  :model      (default-option :model set-model)
+  :model      (default-option :model set-model get-model)
 })
 
 (extend-protocol Configurable
@@ -811,17 +821,23 @@
 
 (def ^{:private true}  border-layout-dirs 
   (constant-map BorderLayout :north :south :east :west :center))
+(def ^{:private true}  border-layout-dirs-r (reverse-map border-layout-dirs))
 
-(defn- border-panel-items-handler
+(defn- border-panel-items-setter
   [panel items]
   (doseq [[w dir] items]
     (add-widget panel w (border-layout-dirs dir))))
+
+(defn- border-panel-items-getter
+  [^java.awt.Container panel]
+  (let [layout (.getLayout panel)]
+    (map #(vector % (border-layout-dirs-r (get-constraint layout panel %))) (.getComponents panel))))
 
 (def ^{:private true} border-layout-options 
   (merge
     { :hgap  (default-option :hgap #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2))
       :vgap  (default-option :vgap #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)) 
-      :items (default-option :items border-panel-items-handler) }
+      :items (default-option :items border-panel-items-setter border-panel-items-getter) }
     (reduce 
       (fn [m [k v]] (assoc m k (default-option k #(add-widget %1 %2 v))))
       {} 
@@ -1128,9 +1144,14 @@
 
 ;*******************************************************************************
 ; Buttons
+(extend-protocol Configurable
+  javax.swing.ButtonGroup 
+    (config* [target name] (get-option-value target name))
+    (config!* [target args] (reapply-options target args default-options)))
 
 (def ^{:private true} button-group-options {
-  :buttons (default-option :buttons #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b)))
+  :buttons (default-option :buttons #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b))
+                                    #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1)))
 })
 
 (defn button-group
@@ -1224,7 +1245,8 @@
   :wrap-lines? (default-option :wrap-lines? 
                   #(doto ^javax.swing.JTextArea %1 
                     (.setLineWrap (boolean %2)) 
-                    (.setWrapStyleWord (boolean %2))))
+                    (.setWrapStyleWord (boolean %2)))
+                  #(.getLineWrap ^javax.swing.JTextArea %1))
   :tab-size    (bean-option :tab-size javax.swing.JTextArea)
 } text-options))
 
@@ -1349,7 +1371,8 @@
           (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
 
 (def ^{:private true} styled-text-options (merge {
-  :wrap-lines? (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2)))
+  :wrap-lines? (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2))
+                                            #(get-meta %1 :wrap-lines?))
   :styles      (default-option :styles add-styles)
 } text-options))
 
@@ -1504,7 +1527,8 @@
 
 (def ^{:private true} listbox-options {
   ; TODO This setter access should be a function in options.clj
-  :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m))))
+  :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m)))
+                                            get-model)
   :renderer          (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2)))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
@@ -1640,7 +1664,8 @@
   :editable? (bean-option :editable? javax.swing.JComboBox boolean)
   :model     (default-option :model    
                ; TODO this setter lookup should be a function in options.clj
-               (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m))))
+               (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m)))
+               get-model)
   :renderer  (default-option :renderer 
                #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))) 
 })
@@ -1862,7 +1887,8 @@
   splitter)
 
 (def ^{:private true} splitter-options {
-  :divider-location      (default-option :divider-location divider-location!)
+  :divider-location      (default-option :divider-location divider-location!
+                                        #(.getDividerLocation ^JSplitPane %1))
   :divider-size          (bean-option :divider-size JSplitPane)
   :resize-weight         (bean-option :resize-weight JSplitPane)
   :one-touch-expandable? (bean-option :one-touch-expandable? JSplitPane boolean)
@@ -2903,10 +2929,6 @@
 
 ;*******************************************************************************
 ; Widget layout manipulation
-
-(defprotocol LayoutManipulation
-  (add!* [layout target widget constraint])
-  (get-constraint [layout container widget]))
 
 (extend-protocol LayoutManipulation
   java.awt.LayoutManager

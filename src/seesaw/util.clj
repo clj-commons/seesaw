@@ -146,3 +146,8 @@
     children
     root))
 
+(defn reverse-map 
+  "Reverse the direction of a map"
+  [m]
+  (into {} (for [[k v] m] [v k])))
+

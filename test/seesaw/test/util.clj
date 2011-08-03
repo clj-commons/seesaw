@@ -104,3 +104,7 @@
   (it "should return false for a non-atom"
     (not (atom? (ref nil)))))
 
+(describe reverse-map
+  (it "should reverse a map"
+    (= {1 :a 2 :b} (reverse-map {:a 1 :b 2}))))
+
