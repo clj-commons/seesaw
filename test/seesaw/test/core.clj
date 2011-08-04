@@ -821,6 +821,13 @@
 (describe tree
   (it "should create a JTree"
     (= javax.swing.JTree (class (tree))))
+  (verify-config (tree :scrolls-on-expand? true) :scrolls-on-expand? true)
+  (verify-config (tree :scrolls-on-expand? false) :scrolls-on-expand? false)
+  (verify-config (tree :shows-root-handles? true) :shows-root-handles? true)
+  (verify-config (tree :shows-root-handles? false) :shows-root-handles? false)
+  (verify-config (tree :toggle-click-count 2) :toggle-click-count 2)
+  (verify-config (tree :toggle-click-count 1) :toggle-click-count 1)
+  (verify-config (tree :visible-row-count 20) :visible-row-count 20)
   (it "should create a JTree with :root-visible? true"
     (.isRootVisible (tree :root-visible? true)))
   (it "should create a JTree with :root-visible? false"
