@@ -69,14 +69,14 @@
   }
 })
 
-(defn switch-tool [event]
-  (let [tool (selection event)]
-    (swap! state assoc :tool (if tool (tool-handlers (id-of tool))))))
+(defn switch-tool [state source]
+  (let [tool (selection source)]
+    (assoc state :tool (if tool (tool-handlers (id-of tool))))))
 
-(defn update-shape-style [event]
-  (let [style-key (id-of event)
-        new-value (selection event)] 
-    (swap! state update-in [:style] 
+(defn update-shape-style 
+  [state source]
+  (let [style-key (id-of source) new-value (selection source)] 
+    (update-in state [:style] 
       (fn [old-style]
         (apply style 
             (apply concat (assoc old-style style-key new-value)))))))
@@ -91,13 +91,16 @@
 
 (defn add-behaviors [root]
   (let [canvas (select root [:#canvas])
-        tools (button-group :buttons (select root [:.tool]))]
-    (listen tools :selection switch-tool)
-    (listen (select root [:.style]) :selection update-shape-style)
+        tools  (button-group :buttons (select root [:.tool]))
+        styles (select root [:.style])]
+    (listen tools  :selection #(swap! state switch-tool %))
+    (listen styles :selection #(swap! state update-shape-style %))
     (when-mouse-dragged canvas 
       :start  (dispatch :start)
       :drag   (dispatch :drag)
-      :finish (dispatch :finish)))
+      :finish (dispatch :finish))
+    (doseq [s styles] #(swap! state update-shape-style s))
+    (swap! state switch-tool tools))
   root)
 
 (defn make-ui []
@@ -106,6 +109,7 @@
     :size [800 :by 600]
     :content
       (border-panel
+        :border 5
         :north (toolbar 
                  :floatable? false
                  :items [(toggle :id :pencil  :class :tool :text "Pencil" :selected? true)
@@ -118,7 +122,7 @@
                          "Line"
                          (combobox :id :foreground :class :style :model colors)
                          "Fill"
-                         (combobox :id :background :class :style :model colors)
+                         (selection! (combobox :id :background :class :style :model colors) nil)
                          ])
         :center (scrollable (canvas :id :canvas
                                     :paint render 
