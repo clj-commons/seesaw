@@ -1580,7 +1580,7 @@
                                    (.getShowVerticalLines t))))
   :show-vertical-lines? (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
   :show-horizontal-lines? (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
-  :fills-viewport-height? (bean-option :fills-viewport-height? javax.swing.JTable boolean)
+  :fills-viewport-height? (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
   :selection-mode         (default-option :selection-mode list-selection-mode-handler)
   :auto-resize            (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
 })

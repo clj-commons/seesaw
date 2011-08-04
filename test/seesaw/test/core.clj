@@ -799,6 +799,8 @@
     (let [t (table :model [:columns [:a :b] :rows [[23 24] [25 26]]])
           m (.getModel t)]
       (expect (= 2 (.getRowCount m)))))
+  (verify-config (table :fills-viewport-height? true) :fills-viewport-height? true)
+  (verify-config (table :fills-viewport-height? false) :fills-viewport-height? false)
   (verify-config (table :show-grid? true) :show-grid? true)
   (verify-config (table :show-grid? false) :show-grid? false)
   (verify-config (table :show-vertical-lines? true) :show-vertical-lines? true)
