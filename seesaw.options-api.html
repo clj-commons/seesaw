@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.icon - Seesaw nil API documentation</title>
+    <title>seesaw.options - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,27 +52,54 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.options/ignore-option">ignore-option</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.options/ignore-options">ignore-options</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.icon</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.options</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.icon</span>))
+  (:require <span id="long-name">seesaw.options</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr">Functions for loading and creating icons.</pre>
+<pre id="namespace-docstr">Functions for dealing with options.</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
-
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.options/ignore-option">ignore-option</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (ignore-option name)
+</pre>
+  <pre id="var-docstr">Might be used to explicitly ignore the default behaviour of options.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.options/ignore-options">ignore-options</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (ignore-options source-options)
+</pre>
+  <pre id="var-docstr">Create a ignore-map for options, which should be ignored. Ready to
+be merged into default option maps.</pre>
+  
+  
+  
+</div>
 
 
 </div>
