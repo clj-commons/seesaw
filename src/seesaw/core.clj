@@ -2194,6 +2194,8 @@
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
     (seesaw.graphics/anti-alias g)
     (when before (seesaw.graphics/push g (before this g)))
+    ; TODO reflection here can't be eliminated thanks for proxy limitations
+    ; with protected methods
     (when super? (proxy-super paintComponent g))
     (when after  (seesaw.graphics/push g (after this g)))))
 
@@ -2761,11 +2763,11 @@
                         #(do (check-args (number? %2) ":major-tick-spacing must be a number.")
                            (.setPaintTicks ^javax.swing.JSlider %1 true)
                            (.setMajorTickSpacing ^javax.swing.JSlider %1 %2)))
-  :snap-to-ticks? (bean-option :snap-to-ticks? javax.swing.JSlider boolean)
-  :paint-ticks?   (bean-option :paint-ticks? javax.swing.JSlider boolean)
-  :paint-labels?  (bean-option :paint-labels? javax.swing.JSlider boolean)
-  :paint-track?   (bean-option :paint-track? javax.swing.JSlider boolean)
-  :inverted?      (bean-option :inverted? javax.swing.JSlider boolean)
+  :snap-to-ticks? (bean-option [:snap-to-ticks? :snap-to-ticks] javax.swing.JSlider boolean)
+  :paint-ticks?   (bean-option [:paint-ticks? :paint-ticks] javax.swing.JSlider boolean)
+  :paint-labels?  (bean-option [:paint-labels? :paint-labels] javax.swing.JSlider boolean)
+  :paint-track?   (bean-option [:paint-track? :paint-track] javax.swing.JSlider boolean)
+  :inverted?      (bean-option [:inverted? :inverted] javax.swing.JSlider boolean)
  
 })
 

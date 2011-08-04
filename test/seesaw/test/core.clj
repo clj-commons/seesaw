@@ -1169,7 +1169,17 @@
       (expect (= javax.swing.JSlider (class s)))
       (expect (= 40 (.getMinimum s)))
       (expect (= 99 (.getMaximum s)))
-      (expect (= 55 (.getValue s))))))
+      (expect (= 55 (.getValue s)))))
+          
+  (verify-config (slider :snap-to-ticks? true) :snap-to-ticks? true)
+  (verify-config (slider :snap-to-ticks? false) :snap-to-ticks? false)
+  (verify-config (slider :paint-ticks? true) :paint-ticks? true)
+  (verify-config (slider :paint-ticks? false) :paint-ticks? false)
+  (verify-config (slider :paint-track? true) :paint-track? true)
+  (verify-config (slider :paint-track? false) :paint-track? false)
+  (verify-config (slider :inverted? true) :inverted? true)
+  (verify-config (slider :inverted? false) :inverted? false)
+          )
 
 (describe progress-bar
   (it "should create a JProgressBar"
