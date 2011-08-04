@@ -54,7 +54,7 @@
                               :cursor :hand)
                             (text 
                               :text "HI"
-                              :listen [:action :handler (fn [e] (println (.. (to-widget e) (getText))))])
+                              :listen [:action (fn [e] (println (.. (to-widget e) (getText))))])
                             (scrollable 
                               (text 
                                 :text (apply str (interpose "\n" (range 0 20))) 

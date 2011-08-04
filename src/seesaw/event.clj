@@ -292,11 +292,12 @@
   (cond
     (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
     ; Re-route to right listener type for :selection on various widget types
-    (instance? javax.swing.JList target)       :list-selection
-    (instance? javax.swing.JTable target)      :list-selection
-    (instance? javax.swing.JTree target)       :tree-selection
-    (instance? javax.swing.JComboBox target)   :action-performed
-    (instance? java.awt.ItemSelectable target) :item-state-changed
+    (instance? javax.swing.JList target)          :list-selection
+    (instance? javax.swing.JTable target)         :list-selection
+    (instance? javax.swing.JTree target)          :tree-selection
+    (instance? javax.swing.JComboBox target)      :action-performed
+    (instance? javax.swing.text.JTextComponent target) :caret-update
+    (instance? java.awt.ItemSelectable target)    :item-state-changed
     :else event-name))
 
 (defn- preprocess-event-specs
@@ -367,11 +368,14 @@
   *not* retrievable from the event object.
   "
   [targets & more]
-    (doseq [target (get-sub-targets (to-seq targets))
-            [event-name event-fn] (preprocess-event-specs target more)]
-      (let [handlers (get-or-install-handlers target event-name)
-            final-method-name (get event-method-table event-name event-name)]
-        (swap! handlers append-listener final-method-name event-fn)))
-    (fn [] (apply remove-listener targets more)))
+  (check-args (even? (count more)) "List of event name/handler pairs must have even length")
+  (doseq [target (get-sub-targets (to-seq targets))
+          [event-name event-fn] (preprocess-event-specs target more)]
+    (check-args (keyword? event-name) (str "Event name is not a keyword: " event-name))
+    (check-args (fn? event-fn) (str "Event handler for " event-name " is not a function"))
+    (let [handlers (get-or-install-handlers target event-name)
+          final-method-name (get event-method-table event-name event-name)]
+      (swap! handlers append-listener final-method-name event-fn)))
+  (fn [] (apply remove-listener targets more)))
 
 

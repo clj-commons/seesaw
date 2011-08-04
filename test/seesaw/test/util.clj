@@ -69,16 +69,6 @@
   (it "returns nil if (str input) is not a valid URL"
     (nil? (to-url "not a URL"))))
 
-(describe apply-options
-  (it "throws IllegalArgumentException if properties aren't event"
-    (try
-      (do (apply-options (javax.swing.JPanel.) [1 2 3] {}) false)
-      (catch IllegalArgumentException e true)))
-  (it "throws IllegalArgumentException for an unknown property"
-    (try
-      (do (apply-options (javax.swing.JPanel.) [:unknown "unknown"] {}) false)
-      (catch IllegalArgumentException e true))))
-
 (describe to-dimension
   (it "should throw an exception if it doesn't know what to do"
     (try
@@ -113,4 +103,8 @@
     (atom? (atom nil)))
   (it "should return false for a non-atom"
     (not (atom? (ref nil)))))
+
+(describe reverse-map
+  (it "should reverse a map"
+    (= {1 :a 2 :b} (reverse-map {:a 1 :b 2}))))
 

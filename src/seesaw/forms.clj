@@ -16,7 +16,7 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.util :only (apply-options ignore-options)]))
+    [seesaw.options :only (bean-option default-option apply-options ignore-options)]))
 
 (defprotocol ComponentSpec
   (append [this builder] "Add the given component to the form builder"))
@@ -24,7 +24,7 @@
 (extend-protocol ComponentSpec
   Object
   (append [this builder]
-    (.append builder (seesaw.core/to-widget this true)))
+    (.append builder (seesaw.core/make-widget this)))
   String
   (append [this builder]
     (.append builder this)))
@@ -35,7 +35,7 @@
   (reify
     ComponentSpec
     (append [this builder]
-      (.append builder (seesaw.core/to-widget component true) column-span))))
+      (.append builder (seesaw.core/make-widget component) column-span))))
 
 (defn next-line
   "Continue with the nth next line in the builder."
@@ -87,18 +87,18 @@
       (.setRowGroupingEnabled builder false))))
 
 (def ^{:private true} layout-options
-  {:column-groups #(.setColumnGroups %1 (into-array (map int-array %2)))})
+  {:column-groups (default-option :column-groups #(.setColumnGroups %1 (into-array (map int-array %2))))})
 
 (def ^{:private true} ignore-layout-options
   (ignore-options layout-options))
 
 (def ^{:private true} builder-options
-  {:items                  #(doseq [item %2] (append item %1))
-   :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1))
-   :default-row-spec       #(.setDefaultRowSpec %1 %2)
-   :leading-column-offset  #(.setLeadingColumnOffset %1 %2)
-   :line-gap-size          #(.setLineGapSize %1 %2)
-   :paragraph-gap-size     #(.setParagraphGapSize %1 %2)})
+  {:items                  (default-option :items #(doseq [item %2] (append item %1)))
+   :default-dialog-border? (default-option :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1)))
+   :default-row-spec       (bean-option :default-row-spec DefaultFormBuilder)
+   :leading-column-offset  (bean-option :leading-column-offset DefaultFormBuilder)
+   :line-gap-size          (bean-option :line-gap-size DefaultFormBuilder)
+   :paragraph-gap-size     (bean-option :paragraph-gap-size DefaultFormBuilder)})
 
 (def ^{:private true} ignore-builder-options
   (ignore-options builder-options))
@@ -136,3 +136,4 @@
       (apply-options opts (merge @#'seesaw.core/default-options
                                  ignore-layout-options
                                  ignore-builder-options)))))
+

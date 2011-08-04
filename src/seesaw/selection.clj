@@ -22,7 +22,7 @@
     (set-selection [target [v]] (.putValue target javax.swing.Action/SELECTED_KEY (boolean v)))
 
   javax.swing.AbstractButton
-    (get-selection [target]      (seq (.getSelectedObjects target)))
+    (get-selection [target]      (if (.isSelected target) [target]))
     (set-selection [target [v]]  (doto target (.setSelected (boolean v))))
 
   javax.swing.ButtonGroup
@@ -93,9 +93,11 @@
           end   (.getSelectionEnd target)]
       (if-not (= start end) [[start end]])))
   (set-selection [target [args]]
+    (if (integer? args)
+      (.select target args args)
     (if-let [[start end] args]
       (.select target start end) 
-      (.select target 0 0))))
+      (.select target 0 0)))))
 
 (defn selection
   ([target] (selection target {}))
@@ -108,6 +110,7 @@
 (defn selection!
   ([target values] (selection! target {} values))
   ([target opts values] 
+    (check-args (not (nil? target)) "target of selection! cannot be nil")
     (set-selection 
       target 
       (if (or (nil? values) (:multi? opts)) values [values]) )

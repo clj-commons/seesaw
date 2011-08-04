@@ -105,6 +105,24 @@
 
 
 (describe listen
+  (it "throws IllegalArgumentException if its event/handler pair list isn't even length"
+    (try
+      (listen :something-something (fn [_]))
+      false
+      (catch IllegalArgumentException e
+        true)))
+  (it "throws IllegalArgumentException if its first arguments isn't an event source"
+    (try
+      (listen :something-something (fn [_]) :another)
+      false
+      (catch IllegalArgumentException e
+        true)))
+  (it "throws IllegalArgumentException if a handler isn't a function"
+    (try
+      (listen (javax.swing.JPanel.) :mouse "foo")
+      false
+      (catch IllegalArgumentException e
+        true)))
   (it "throws IllegalArgumentException for unknown event types"
     (try
       (listen (JPanel.) :something-something (fn [_]))
@@ -199,6 +217,16 @@
         (listen jlist :selection (fn [e] (reset! called true)))
         (expect (= 1 (count (.getListSelectionListeners jlist))))
         (.. (first (.getListSelectionListeners jlist)) (valueChanged nil))
+        (expect @called))))
+
+  (it "can register a CaretListener on a JTextComponent with :selection key"
+    (let [jtext (javax.swing.JTextField.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getCaretListeners jtext))))
+        (listen jtext :selection (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getCaretListeners jtext))))
+        (.. (first (.getCaretListeners jtext)) (caretUpdate nil))
         (expect @called))))
 
   (it "can register a ListSelectionListener on a JTable with :selection key"

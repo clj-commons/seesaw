@@ -9,12 +9,12 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.timer
-  (:use [seesaw util action]))
+  (:use [seesaw util action options]))
 
 (def ^{:private true} timer-opts {
-  :initial-delay #(.setInitialDelay ^javax.swing.Timer %1 %2)
-  :delay         #(.setDelay ^javax.swing.Timer %1 %2)
-  :repeats?      #(.setRepeats ^javax.swing.Timer %1 (boolean %2)) 
+  :initial-delay (bean-option :initial-delay javax.swing.Timer)
+  :delay         (bean-option :delay javax.swing.Timer)
+  :repeats?      (bean-option :repeats? javax.swing.Timer boolean) 
 })
 
 (defn- timer-handler [f initial-value]

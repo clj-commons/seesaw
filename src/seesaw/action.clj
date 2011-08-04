@@ -11,26 +11,33 @@
 (ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
       :author "Dave Ray"}
   seesaw.action
-  (:use [seesaw util icon keystroke meta])
+  (:use [seesaw util icon keystroke meta options])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
 ; Actions
 
+(defn- action-property-option
+  ([name key set-conv] (action-property-option name key set-conv nil))
+  ([name key set-conv get-conv]
+   (default-option name 
+     (fn [^Action target value] (.putValue target key ((or set-conv identity) value))))))
+
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
 (def ^{:private true} action-options {
-  :enabled?  #(.setEnabled ^Action %1 (boolean %2))
-  :selected? #(.putValue ^Action %1 Action/SELECTED_KEY (boolean %2))
-  :name      #(.putValue ^Action %1 Action/NAME (str %2))
-  :command   #(.putValue ^Action %1 Action/ACTION_COMMAND_KEY (str %2))
-  :tip       #(.putValue ^Action %1 Action/SHORT_DESCRIPTION (str %2))
-  :icon      #(.putValue ^Action %1 Action/SMALL_ICON (icon %2))
-  :key       #(.putValue ^Action %1 Action/ACCELERATOR_KEY (keystroke %2))
-  :mnemonic  (fn [^Action a v]
-               (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
-                  (.putValue a Action/MNEMONIC_KEY v))) 
-  :handler   #(put-meta! %1 action-handler-property %2)
+  :enabled?  (bean-option :enabled? Action boolean)
+  :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
+  :name      (action-property-option :name Action/NAME str)
+  :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)
+  :tip       (action-property-option :tip Action/SHORT_DESCRIPTION str)
+  :icon      (action-property-option :icon Action/SMALL_ICON icon)
+  :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
+  :mnemonic  (default-option :mnemonic 
+               (fn [^Action a v]
+                 (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
+                   (.putValue a Action/MNEMONIC_KEY v)))) 
+  :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
 })
 
 (defn action 

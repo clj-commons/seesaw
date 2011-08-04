@@ -67,7 +67,12 @@
   Create a rectangular shape with the given upper-left corner, width and 
   height.
   "
-  ([x y w h] (java.awt.geom.Rectangle2D$Double. x y w h))
+  ([x y w h] (java.awt.geom.Rectangle2D$Double.
+                (if (> w 0) x (+ x w)) 
+                (if (> h 0) y (+ y h))
+                (Math/abs w)
+                (Math/abs h)
+                                        ))
   ([x y w] (rect x y w w)))
 
 
@@ -76,13 +81,22 @@
   Create a rectangular shape with the given upper-left corner, width,
   height and corner radii.
   "
-  ([x y w h rx ry] (java.awt.geom.RoundRectangle2D$Double. x y w h rx ry))
+  ([x y w h rx ry] (java.awt.geom.RoundRectangle2D$Double.
+                      (if (> w 0) x (+ x w)) 
+                      (if (> h 0) y (+ y h))
+                      (Math/abs w)
+                      (Math/abs h)
+                      rx ry))
   ([x y w h rx] (rounded-rect x y w h rx rx))
   ([x y w h] (rounded-rect x y w h 5)))
 
 (defn ellipse 
   "Create an ellipse that occupies the given rectangular region"
-  ([x y w h]  (java.awt.geom.Ellipse2D$Double. x y w h))
+  ([x y w h]  (java.awt.geom.Ellipse2D$Double.
+                      (if (> w 0) x (+ x w)) 
+                      (if (> h 0) y (+ y h))
+                      (Math/abs w)
+                      (Math/abs h)))
   ([x y w]  (ellipse x y w w)))
 
 (defn circle 
@@ -92,7 +106,12 @@
 
 (defn arc 
   ([x y w h start extent arc-type]
-    (java.awt.geom.Arc2D$Double. x y w h start extent arc-type))
+    (java.awt.geom.Arc2D$Double.
+      (if (> w 0) x (+ x w)) 
+      (if (> h 0) y (+ y h))
+      (Math/abs w)
+      (Math/abs h)
+      start extent arc-type))
   ([x y w h start extent]
     (arc x y w h start extent java.awt.geom.Arc2D/OPEN)))
 
@@ -267,6 +286,7 @@
 
   Returns g2d.
   "
+  ([g2d] g2d)
   ([g2d shape style]
       (draw* shape g2d style)
       g2d)

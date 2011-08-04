@@ -11,7 +11,7 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use seesaw.util)
+  (:use [seesaw util options])
   (:import [javax.swing JFileChooser]))
 
 (def ^{:private true} file-chooser-types {
@@ -27,13 +27,17 @@
 })
 
 (def ^{:private true} file-chooser-options {
-  :dir (fn [^JFileChooser chooser dir] 
-         (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
-                                            (java.io.File. (str dir)))))
-  :multi? #(.setMultiSelectionEnabled ^JFileChooser %1 (boolean %2))
-  :selection-mode #(.setFileSelectionMode ^JFileChooser %1 (get file-selection-modes %2))
-  :filters #(doseq [[name exts] %2]
-              (.setFileFilter ^JFileChooser %1 (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts))))
+  :dir (default-option :dir
+         (fn [^JFileChooser chooser dir] 
+           (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
+                                            (java.io.File. (str dir))))))
+  :multi? (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
+  :selection-mode (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
+  :filters (default-option :filters 
+             #(doseq [[name exts] %2]
+                (.setFileFilter 
+                  ^JFileChooser %1 
+                  (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts)))))
 })
 
 (def ^{:private true} last-dir (atom nil))

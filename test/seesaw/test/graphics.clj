@@ -33,6 +33,10 @@
     (let [r (rect 1 2 3 4)]
       (expect (= java.awt.geom.Rectangle2D$Double (class r)))
       (expect (= [1 2 3 4] [(.x r) (.y r) (.width r) (.height r)]))))
+  (it "creates a rectangle shape with give corner, adjusting for negative width and height"
+    (let [r (rect 10 20 -3 -4)]
+      (expect (= java.awt.geom.Rectangle2D$Double (class r)))
+      (expect (= [7 16 3 4] [(.x r) (.y r) (.width r) (.height r)]))))
   (it "creates a square with give corner, and side length"
     (let [r (rect 1 2 3)]
       (expect (= java.awt.geom.Rectangle2D$Double (class r)))
@@ -43,6 +47,11 @@
     (let [r (rounded-rect 1 2 3 4 5 6)]
       (expect (= java.awt.geom.RoundRectangle2D$Double (class r)))
       (expect (= [1 2 3 4] [(.x r) (.y r) (.width r) (.height r)]))
+      (expect (= [5 6] [(.arcwidth r) (.archeight r)]))))
+  (it "creates a rounded rectangle shape with give corner, negative width and height and radii"
+    (let [r (rounded-rect 10 20 -3 -4 5 6)]
+      (expect (= java.awt.geom.RoundRectangle2D$Double (class r)))
+      (expect (= [7 16 3 4] [(.x r) (.y r) (.width r) (.height r)]))
       (expect (= [5 6] [(.arcwidth r) (.archeight r)]))))
   (it "creates a rounded rectangle shape with give corner, width and height and radius"
     (let [r (rounded-rect 1 2 3 4 5)]
@@ -55,6 +64,10 @@
     (let [r (ellipse 1 2 3 4)]
       (expect (= java.awt.geom.Ellipse2D$Double (class r)))
       (expect (= [1 2 3 4] [(.x r) (.y r) (.width r) (.height r)]))))
+  (it "creates an elliptical shape with give corner, negative width and height"
+    (let [r (ellipse 11 12 -3 -4)]
+      (expect (= java.awt.geom.Ellipse2D$Double (class r)))
+      (expect (= [8 8 3 4] [(.x r) (.y r) (.width r) (.height r)]))))
   (it "creates a square with give corner, and side length"
     (let [r (ellipse 1 2 3)]
       (expect (= java.awt.geom.Ellipse2D$Double (class r)))
@@ -72,6 +85,12 @@
       (expect (= java.awt.geom.Arc2D$Double (class s)))
       (expect (= java.awt.geom.Arc2D/OPEN (.getArcType s)))
       (expect (= [1 2 3 4 0 360]
+                 [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)]))))
+  (it "creates an arc shape with corner, negative width, negative height and angle"
+    (let [s (arc 12 22 -3 -4 0 360)]
+      (expect (= java.awt.geom.Arc2D$Double (class s)))
+      (expect (= java.awt.geom.Arc2D/OPEN (.getArcType s)))
+      (expect (= [9 18 3 4 0 360]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
 (describe chord
@@ -80,6 +99,12 @@
       (expect (= java.awt.geom.Arc2D$Double (class s)))
       (expect (= java.awt.geom.Arc2D/CHORD (.getArcType s)))
       (expect (= [1 2 3 4 0 360]
+                 [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)]))))
+  (it "creates an chord shape with corner, negative width, negative height and angle"
+    (let [s (chord 10 21 -3 -4 0 360)]
+      (expect (= java.awt.geom.Arc2D$Double (class s)))
+      (expect (= java.awt.geom.Arc2D/CHORD (.getArcType s)))
+      (expect (= [7 17 3 4 0 360]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
 (describe pie
@@ -88,6 +113,12 @@
       (expect (= java.awt.geom.Arc2D$Double (class s)))
       (expect (= java.awt.geom.Arc2D/PIE (.getArcType s)))
       (expect (= [1 2 3 4 0 360]
+                 [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)]))))
+  (it "creates an pie shape with corner, negative width, negative height and angle"
+    (let [s (pie 11 20 -3 -4 0 360)]
+      (expect (= java.awt.geom.Arc2D$Double (class s)))
+      (expect (= java.awt.geom.Arc2D/PIE (.getArcType s)))
+      (expect (= [8 16 3 4 0 360]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
 (describe stroke
