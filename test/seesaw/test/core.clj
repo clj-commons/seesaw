@@ -821,6 +821,8 @@
 (describe tree
   (it "should create a JTree"
     (= javax.swing.JTree (class (tree))))
+  (verify-config (tree :expands-selected-paths? true) :expands-selected-paths? true)
+  (verify-config (tree :expands-selected-paths? false) :expands-selected-paths? false)
   (verify-config (tree :scrolls-on-expand? true) :scrolls-on-expand? true)
   (verify-config (tree :scrolls-on-expand? false) :scrolls-on-expand? false)
   (verify-config (tree :shows-root-handles? true) :shows-root-handles? true)

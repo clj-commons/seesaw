@@ -1630,7 +1630,7 @@
   :editable?               (bean-option :editable? javax.swing.JTree boolean)
   :renderer                (default-option :renderer
                               #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2)))
-  :expands-selected-paths? (bean-option :expands-selected-paths? javax.swing.JTree boolean)
+  :expands-selected-paths? (bean-option [:expands-selected-paths? :expands-selected-paths] javax.swing.JTree boolean)
   :large-model?            (bean-option :large-model? javax.swing.JTree boolean)
   :root-visible?           (bean-option :root-visible? javax.swing.JTree boolean)
   :row-height              (bean-option :row-height javax.swing.JTree)
