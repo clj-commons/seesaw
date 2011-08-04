@@ -1573,7 +1573,13 @@
 
 (def ^{:private true} table-options {
   :model                  (bean-option :model javax.swing.JTable to-table-model)
-  :show-grid?             (bean-option :show-grid? javax.swing.JTable boolean)
+  :show-grid?             (default-option :show-grid? 
+                            #(.setShowGrid ^javax.swing.JTable %1 (boolean %2))
+                            (fn [^javax.swing.JTable t] 
+                              (and (.getShowHorizontalLines t) 
+                                   (.getShowVerticalLines t))))
+  :show-vertical-lines? (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
+  :show-horizontal-lines? (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
   :fills-viewport-height? (bean-option :fills-viewport-height? javax.swing.JTable boolean)
   :selection-mode         (default-option :selection-mode list-selection-mode-handler)
   :auto-resize            (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
@@ -1585,6 +1591,8 @@
     :model A TableModel, or a vector. If a vector, then it is used as
            arguments to (seesaw.table/table-model).
     :show-grid? Whether to show the grid lines of the table.
+    :show-horizontal-lines? Whether to show vertical grid lines
+    :show-vertical-lines?   Whether to show horizontal grid lines
     :fills-viewport-height? 
     :auto-reseize The behavior of columns when the table is resized. One of: 
            :off                Do nothing to column widths

@@ -799,6 +799,12 @@
     (let [t (table :model [:columns [:a :b] :rows [[23 24] [25 26]]])
           m (.getModel t)]
       (expect (= 2 (.getRowCount m)))))
+  (verify-config (table :show-grid? true) :show-grid? true)
+  (verify-config (table :show-grid? false) :show-grid? false)
+  (verify-config (table :show-vertical-lines? true) :show-vertical-lines? true)
+  (verify-config (table :show-vertical-lines? false) :show-vertical-lines? false)
+  (verify-config (table :show-horizontal-lines? true) :show-horizontal-lines? true)
+  (verify-config (table :show-horizontal-lines? false) :show-horizontal-lines? false)
   (it "should honor :auto-resize :off"
     (= javax.swing.JTable/AUTO_RESIZE_OFF (.getAutoResizeMode (table :auto-resize :off))))
   (it "should honor :auto-resize :next-column"
