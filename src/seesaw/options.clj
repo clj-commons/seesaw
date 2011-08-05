@@ -74,16 +74,25 @@
   [name]
   (default-option name (fn [_ _]) (fn [_ _])))
 
+(defn- apply-option
+  [target ^Option opt v]
+  (if-let [setter (.setter opt)] 
+    (setter target v)
+    (throw (IllegalArgumentException. (str "No setter found for option " (.name opt))))))
+
+(defn- ^Option lookup-option [handler-map name]
+  (if-let [opt (get handler-map name)]
+    opt
+    (throw (IllegalArgumentException. (str "Unknown option " name)))))
+
 (defn apply-options
   [target opts handler-map]
   (check-args (or (map? opts) (even? (count opts))) 
               "opts must be a map or have an even number of entries")
-  (doseq [[k v] (if (map? opts) opts (partition 2 opts))]
-    (if-let [^Option opt (get handler-map k)]
-      (if-let [setter (.setter opt)] 
-        (setter target v)
-        (throw (IllegalArgumentException. (str "No setter found for option " k))))
-      (throw (IllegalArgumentException. (str "Unknown option " k)))))
+  (let [pairs (if (map? opts) opts (partition 2 opts))] 
+    (doseq [[k v] pairs]
+      (let [opt (lookup-option handler-map k)]
+        (apply-option target opt v))))
   (store-option-handlers target handler-map))
 
 (defn reapply-options

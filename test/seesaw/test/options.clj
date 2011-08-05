@@ -21,6 +21,13 @@
   (it "throws IllegalArgumentException for an unknown property"
     (try
       (do (apply-options (javax.swing.JPanel.) [:unknown "unknown"] {}) false)
+      (catch IllegalArgumentException e true)))
+  (it "throws IllegalArgumentException for a property with no setter"
+    (try
+      (do 
+        (apply-options (javax.swing.JPanel.) 
+                       [:no-setter "no-setter"] 
+                       { :no-setter (default-option :no-setter) }) false)
       (catch IllegalArgumentException e true))))
 
 (describe get-option-value
