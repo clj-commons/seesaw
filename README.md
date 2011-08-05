@@ -57,12 +57,6 @@ Now run it:
 * Run `lein deps`
 * Move along
 
-## TODO
-
-* Selectors - select widgets by class, data, etc.
-* Styling
-* Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
-
 ## License
 
 Copyright (C) 2011 Dave Ray
