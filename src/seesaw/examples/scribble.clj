@@ -103,6 +103,14 @@
     (swap! state switch-tool tools))
   root)
 
+; TODO On OSX (at least) the renderer is not used for the currently
+; displayed value, only when the combobox list is displayed
+(defn color-cell [this {:keys [value selected?]}]
+  (if value
+    (config! this :background value 
+                  :foreground (if (= :white value) :black :white))
+    (config! this :text "None")))
+
 (defn make-ui []
   (frame
     :title "Seesaw Scribble"
@@ -120,9 +128,9 @@
                          "Width" 
                          (combobox :id :stroke :class :style :model [1 2 3 5 8 13 21])
                          "Line"
-                         (combobox :id :foreground :class :style :model colors)
+                         (combobox :id :foreground :class :style :model colors :renderer color-cell)
                          "Fill"
-                         (selection! (combobox :id :background :class :style :model colors) nil)
+                         (selection! (combobox :id :background :class :style :model colors :renderer color-cell) nil)
                          ])
         :center (scrollable (canvas :id :canvas
                                     :paint render 
