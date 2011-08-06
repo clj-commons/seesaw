@@ -177,4 +177,12 @@
       (expect (= "graphics" result))
       (expect (= [["graphics" "this" "style"]["graphics" "this" "style2"]] final-args)))))
   
+(describe style
+  (it "creates a new style object"
+    (let [strk (stroke :width 5)
+          s (style :foreground :black :background :white :stroke strk :font :monospace)]
+      (expect (= java.awt.Color/BLACK (:foreground s)))
+      (expect (= java.awt.Color/WHITE (:background s)))
+      (expect (= strk (:stroke s)))
+      (expect (not (nil? (:font s)))))))
 

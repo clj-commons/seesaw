@@ -231,7 +231,10 @@
 ;*******************************************************************************
 ; Styles
 
-(defrecord Style [foreground background stroke font])
+(defrecord Style [^java.awt.Color  foreground 
+                  ^java.awt.Color  background 
+                  ^java.awt.Stroke stroke 
+                  ^java.awt.Font   font])
 
 (defn style 
   [& {:keys [foreground background stroke font]}]
