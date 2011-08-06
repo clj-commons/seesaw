@@ -1532,7 +1532,8 @@
   :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m)))
                                             get-model)
   :renderer          (default-option :renderer
-                        #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2)))
+                        #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
+                        #(.getCellRenderer ^javax.swing.JList %1))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
   :fixed-cell-height (bean-option :fixed-cell-height javax.swing.JList)
 })
@@ -1631,7 +1632,8 @@
 (def ^{:private true} tree-options {
   :editable?               (bean-option :editable? javax.swing.JTree boolean)
   :renderer                (default-option :renderer
-                              #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2)))
+                              #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2))
+                              #(.getCellRenderer ^javax.swing.JTree %1))
   :expands-selected-paths? (bean-option [:expands-selected-paths? :expands-selected-paths] javax.swing.JTree boolean)
   :large-model?            (bean-option :large-model? javax.swing.JTree boolean)
   :root-visible?           (bean-option :root-visible? javax.swing.JTree boolean)
@@ -1677,7 +1679,8 @@
                (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m)))
                get-model)
   :renderer  (default-option :renderer 
-               #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))) 
+               #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
+               #(.getRenderer ^javax.swing.JComboBox %1)) 
 })
 
 (defn combobox

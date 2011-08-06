@@ -761,7 +761,8 @@
     (let [render-fn (fn [renderer info] nil)
           renderer (default-list-cell-renderer render-fn)
           lb (listbox :renderer renderer)]
-      (= renderer (.getCellRenderer lb)))))
+      (expect (= renderer (.getCellRenderer lb)))
+      (expect (= renderer (config lb :renderer))))))
 
 (describe combobox
   (it "should create a JComboBox"
@@ -776,7 +777,8 @@
       (let [render-fn (fn [renderer info] nil)
             renderer (default-list-cell-renderer render-fn)
             lb (combobox :renderer renderer)]
-        (= renderer (.getRenderer lb))))
+        (= renderer (.getRenderer lb))
+        (= renderer (config lb :renderer))))
   (it "should create a JComboBox using a seq as its model"
     (let [lb (combobox :model [1 2 3 4])
           model (.getModel lb)]
