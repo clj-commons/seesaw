@@ -76,10 +76,7 @@
 (defn update-shape-style 
   [state source]
   (let [style-key (id-of source) new-value (selection source)] 
-    (update-in state [:style] 
-      (fn [old-style]
-        (apply style 
-            (apply concat (assoc old-style style-key new-value)))))))
+    (update-in state [:style] update-style style-key new-value)))
 
 (defn dispatch [handler-name]
   (fn [event & args] 
