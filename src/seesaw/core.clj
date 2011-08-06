@@ -1229,6 +1229,7 @@
   :editable?           (bean-option :editable? javax.swing.text.JTextComponent boolean)
   :margin              (bean-option :margin javax.swing.text.JTextComponent to-insets)
   :caret-color         (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :caret-position      (bean-option :caret-position javax.swing.text.JTextComponent)
   :disabled-text-color (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selected-text-color (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selection-color     (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
@@ -1259,10 +1260,11 @@
     :multi-line?  If true, a JTextArea is created (default false)
     :editable?    If false, the text is read-only (default true)
     :margin       
-    :caret-color
-    :disabled-text-color
-    :selected-text-color
-    :selection-color
+    :caret-color          Color of caret (see seesaw.color)
+    :caret-position       Caret position as zero-based integer offset
+    :disabled-text-color  A color value
+    :selected-text-color  A color value
+    :selection-color      A color value
 
 
   The following properties only apply if :multi-line? is false: 

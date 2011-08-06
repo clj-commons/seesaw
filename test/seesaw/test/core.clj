@@ -609,6 +609,7 @@
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"
     (= 123 (.getRows (text :multi-line? true :rows 123))))
+  (verify-config (text :text "hello there" :caret-position 5) :caret-position 5)
   (it "should set the :caret-color"
     (= Color/ORANGE (.getCaretColor (text :caret-color Color/ORANGE))))
   (it "should set the :disabled-text-color"
