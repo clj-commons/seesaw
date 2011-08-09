@@ -11,7 +11,7 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use [seesaw util options])
+  (:use [seesaw util options color])
   (:import [javax.swing JFileChooser]))
 
 (def ^{:private true} file-chooser-types {
@@ -122,4 +122,24 @@
             (remember-chooser-dir chooser))
           (success-fn chooser (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser))))
       :else (cancel-fn chooser))))
+
+(defn choose-color
+  "Choose a color with a color chooser dialog. The optional first argument is the
+  parent component for the dialog. The rest of the args is a list of key/value 
+  pairs:
+  
+          :color The initial selected color (see seesaw.color/to-color)
+          :title The dialog's title
+  
+  Returns the selected color or nil if canceled.
+  
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JColorChooser.html
+  "
+  [& args]
+  (let [[parent & {:keys [color title]
+                   :or { title "Choose a color"}
+                   :as opts}] (if (keyword? (first args)) (cons nil args) args)
+        parent (if (keyword? parent) nil parent)]
+    (javax.swing.JColorChooser/showDialog parent title (to-color color))))
 
