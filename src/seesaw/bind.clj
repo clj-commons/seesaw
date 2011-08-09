@@ -99,6 +99,25 @@
         (fn [e] (handler (.getValue this)))))
     (notify [this v] (ssc/invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
 
+(defn b-swap! 
+  "Creates a bindable that swaps! an atom's value using the given function each
+  time its input changes. That is, each time a new value comes in, 
+  (apply swap! atom f new-value args) is called.
+
+  This bindable's value (the current value of the atom) is subscribable.
+  
+  Example:
+  
+    ; Accumulate list of selections in a vector
+    (bind (selection my-list) (b-swap! my-atom conj))
+  "
+  [atom f & args]
+  (reify Bindable
+    (subscribe [this handler] 
+      (subscribe atom handler))
+    (notify [this v] 
+      (apply swap! atom f v args))))
+
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum
       :max :maximum

@@ -138,3 +138,17 @@
     (let [s (ssc/slider)]
       (expect (= (.getModel s) (to-bindable s))))))
 
+(describe b-swap!
+  (it "acts like swap! passing the old value, new value, and additional args to a function"
+    (let [start (atom nil)
+          target (atom [])
+          end (atom nil)]
+      (bind start 
+            (b-swap! target conj) 
+            end)
+      (reset! start 1)
+      (reset! start 2)
+      (reset! start 3)
+      (expect (= [1 2 3] @target))
+      (expect (= @end @target)))))
+
