@@ -11,7 +11,11 @@
 (ns ^{:doc "Functions for dealing with drag and drop and data transfer."
       :author "Dave Ray"}
   seesaw.dnd
-  (:import [java.awt.datatransfer DataFlavor]))
+  (:import [java.awt.datatransfer DataFlavor
+                                  UnsupportedFlavorException
+                                  Transferable]
+           [javax.swing TransferHandler 
+                        TransferHandler$TransferSupport]))
 
 (defn ^DataFlavor to-flavor
   [v]
@@ -25,3 +29,29 @@
 
     :else (to-flavor (class v))))
 
+(defn default-transferable 
+  [o]
+  (let [flavors (into-array DataFlavor [(to-flavor o)])]
+    (proxy [Transferable] []
+      (isDataFlavorSupported [flavor]
+        (= flavor (aget flavors 0)))
+
+      (getTransferDataFlavors [] flavors)
+
+      (getTransferData [flavor]
+        (if (.isDataFlavorSupported this flavor)
+          o
+          (throw (UnsupportedFlavorException. flavor)))))))
+
+(defn default-transfer-handler 
+  [& {:keys [import export] :as opts}]
+  (let [import           (if (map? import) (mapcat vec import) import)
+        import-pairs     (partition 2 import)
+        accepted-flavors (map (comp to-flavor first) import-pairs)] 
+    (proxy [TransferHandler] []
+      (canImport [^TransferHandler$TransferSupport support]
+        (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
+      (importdata [^TransferHandler$TransferSupport support]
+        (if (.canImport this support)
+          true
+          false)))))

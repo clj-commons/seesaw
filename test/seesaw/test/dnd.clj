@@ -13,7 +13,9 @@
   (:use [seesaw.graphics]
         [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
-  (:import [java.awt.datatransfer DataFlavor]))
+  (:import [java.awt.datatransfer DataFlavor StringSelection
+                                  UnsupportedFlavorException]
+           [javax.swing TransferHandler]))
 
 (describe to-flavor
   (it "returns the flavor if it's already a flavor"
@@ -38,4 +40,42 @@
     (= DataFlavor/imageFlavor (to-flavor java.awt.Image)))
   (it "returns an image flavor for an image value"
     (= DataFlavor/imageFlavor (to-flavor (buffered-image 10 10)))))
+
+(describe default-transferable
+  (testing "resulting transferable"
+    (it "can hold an arbitrary object"
+      (let [o ["hi"]
+            t (default-transferable o)]
+        (expect (identical? o (.getTransferData t (to-flavor o))))))
+    (it "throws UnsupportedFlavorException correctly"
+      (let [t (default-transferable "hi")]
+        (try (.getTransferData t (to-flavor java.io.File)) false (catch UnsupportedFlavorException e true))))
+    (it "implements (getTransferDataFlavors)"
+      (let [t (default-transferable [])
+            flavors (.getTransferDataFlavors t)]
+        (expect (= (to-flavor []) (aget flavors 0)))))
+    (it "implements (isDataFlavorSupported)"
+      (let [t (default-transferable [])]
+        (expect (.isDataFlavorSupported t (to-flavor [])))
+        (expect (not (.isDataFlavorSupported t (to-flavor ""))))))))
+
+(defn fake-transfer-support [t]
+  (javax.swing.TransferHandler$TransferSupport. (javax.swing.JLabel.) t))
+
+(describe default-transfer-handler
+  (it "creates a transfer handler"
+    (instance? javax.swing.TransferHandler (default-transfer-handler)))
+  (testing "(canImport)"
+    (it "returns false if the :import map is missing or empty"
+      (not (.canImport (default-transfer-handler) (fake-transfer-support (StringSelection. "hi")))))
+    (it "only accepts flavors in the keys of the :import map"
+      (let [th (default-transfer-handler :import {String (fn [info])})]
+        (expect (.canImport th (fake-transfer-support (StringSelection. "hi"))))
+        (expect (not (.canImport th (fake-transfer-support (default-transferable []))))))))
+  (testing "(importData)"
+    (it "returns false immediately if (canImport) returns false"
+      (let [called (atom false)
+            th (default-transfer-handler :import {String (fn [info] (reset! called true))})]
+        (expect (not (.importData th (fake-transfer-support (default-transferable [])))))
+        (expect (not @called))))))
 
