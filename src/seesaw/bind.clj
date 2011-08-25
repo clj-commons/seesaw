@@ -71,6 +71,35 @@
       (recur target (to-bindable (first more)) (next more))))
       (composite first-source target))
 
+(defn funnel
+  "Create a binding chain with several input chains. Provides a
+  vector of input values further along the chain.
+
+  Example: Only enable a button if there is some text in both fields.
+
+    (let [t1 (text)
+          t2 (text)
+          b  (button)]
+      (bind
+        (funnel
+          (property t1 :text)
+          (property t2 :text))
+        (transform #(every? seq %))
+        (property b :enabled?)))
+  "
+  [& bindables]
+  (let [inputs  (map to-bindable bindables)
+        invals  (atom (vec (repeat (count inputs) nil)))
+        handler (fn [i] (fn [v] (swap! invals assoc i v)))]
+    (doseq [[i input] (map-indexed vector inputs)]
+      (subscribe input (handler i)))
+    (reify
+      Bindable
+      (subscribe [this handler] (subscribe invals handler))
+      (notify [this vs]
+        (doseq [[input v] (map vector inputs vs)]
+          (notify input v))))))
+
 (defn- get-document-text [^javax.swing.text.Document d]
   (.getText d 0 (.getLength d)))
 
@@ -271,11 +300,11 @@
 (extend-protocol ToBindable
   javax.swing.JLabel
     (to-bindable* [this] (property this :text))
-  javax.swing.JSlider  
+  javax.swing.JSlider
     (to-bindable* [this] (.getModel this))
-  javax.swing.JProgressBar  
+  javax.swing.JProgressBar
     (to-bindable* [this] (.getModel this))
-  javax.swing.text.JTextComponent 
+  javax.swing.text.JTextComponent
     (to-bindable* [this] (.getDocument this)))
 
 
