@@ -43,15 +43,36 @@
           o
           (throw (UnsupportedFlavorException. flavor)))))))
 
+(defn- get-import-handler
+  [^TransferHandler$TransferSupport support pairs]
+  (some
+    (fn [[flavor handler :as v]]
+      (if (.isDataFlavorSupported support flavor)
+        v))
+    pairs))
+
+(defn- get-import-data [^TransferHandler$TransferSupport support flavor]
+  (.. support getTransferable (getTransferData flavor)))
+
 (defn default-transfer-handler 
   [& {:keys [import export] :as opts}]
   (let [import           (if (map? import) (mapcat vec import) import)
-        import-pairs     (partition 2 import)
-        accepted-flavors (map (comp to-flavor first) import-pairs)] 
+        make-pair        (fn [[flavor handler]] [(to-flavor flavor) handler])
+        import-pairs     (map make-pair (partition 2 import))
+        accepted-flavors (map first import-pairs)] 
     (proxy [TransferHandler] []
+
       (canImport [^TransferHandler$TransferSupport support]
         (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
-      (importdata [^TransferHandler$TransferSupport support]
+
+      (importData [^TransferHandler$TransferSupport support]
         (if (.canImport this support)
-          true
+          (let [[^DataFlavor flavor handler] (get-import-handler support import-pairs)
+                data                         (get-import-data support flavor)
+                drop?                        (.isDrop support)]
+            (boolean (handler { :data          data 
+                                :drop?         drop?
+                                :drop-location (if drop? (.getDropLocation support))
+                                :target        (.getComponent support)
+                                :support       support })))
           false)))))

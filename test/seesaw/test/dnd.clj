@@ -65,17 +65,31 @@
 (describe default-transfer-handler
   (it "creates a transfer handler"
     (instance? javax.swing.TransferHandler (default-transfer-handler)))
+
   (testing "(canImport)"
     (it "returns false if the :import map is missing or empty"
       (not (.canImport (default-transfer-handler) (fake-transfer-support (StringSelection. "hi")))))
+
     (it "only accepts flavors in the keys of the :import map"
       (let [th (default-transfer-handler :import {String (fn [info])})]
         (expect (.canImport th (fake-transfer-support (StringSelection. "hi"))))
         (expect (not (.canImport th (fake-transfer-support (default-transferable []))))))))
+
   (testing "(importData)"
     (it "returns false immediately if (canImport) returns false"
       (let [called (atom false)
             th (default-transfer-handler :import {String (fn [info] (reset! called true))})]
         (expect (not (.importData th (fake-transfer-support (default-transferable [])))))
-        (expect (not @called))))))
+        (expect (not @called))))
+
+    (it "calls the handler for the first matching flavor"
+      (let [called (atom nil)
+            th (default-transfer-handler :import {String (fn [info] (reset! called info) true)})
+            support (fake-transfer-support (StringSelection. "Something"))]
+        (expect (.importData th support))
+        (expect (= @called {:data "Something"
+                            :drop? false
+                            :drop-location nil
+                            :target (.getComponent support)
+                            :support support}))))))
 
