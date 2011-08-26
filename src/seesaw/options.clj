@@ -60,9 +60,9 @@
         target (gensym "target")]
   `(Option. ~option-name 
       (fn [~(with-meta target {:tag target-type}) value#]
-        (. ~target ~(setter-name bean-property-name) (~(or set-conv identity) value#)))
+        (. ~target ~(setter-name bean-property-name) (~(or set-conv 'identity) value#)))
       (fn [~(with-meta target {:tag target-type})]
-        (~(or get-conv identity) (. ~target ~(getter-name bean-property-name)))))))
+        (~(or get-conv 'identity) (. ~target ~(getter-name bean-property-name)))))))
 
 (defn default-option 
   ([name] (default-option name (fn [_ _] (throw (IllegalArgumentException. (str "No setter defined for option " name))))))
