@@ -99,6 +99,18 @@
       (expect (= 10 @end1))
       (expect (= 20 @end2)))))
 
+(describe funnel
+  (it "create a funnel in a bind which listens to multiple source and produces a vector of values"
+    (let [a (atom 0)
+          b (atom 1)
+          f (funnel a b)
+          end (atom nil)]
+      (bind f end)
+      (reset! a 5)
+      (expect (= [5 nil] @end))
+      (reset! b 6)
+      (expect (= [5 6] @end)))))
+
 (describe some
   (it "doesn't pass along falsey values returned by the predicate"
     (let [start (atom :foo)
