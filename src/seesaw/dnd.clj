@@ -51,13 +51,71 @@
         v))
     pairs))
 
-(defn- get-import-data [^TransferHandler$TransferSupport support flavor]
+(defn- get-import-data 
+  [^TransferHandler$TransferSupport support flavor]
   (.. support getTransferable (getTransferData flavor)))
 
 (defn default-transfer-handler 
+  "INCOMPLETE!
+  Create a transfer handler for drag and drop operations. Take a list
+  of key/value option pairs as usual. The following options are supported:
+  
+    :import - A vector of flavor/handler pairs used when a drop/paste occurs
+              (see below)
+    :export - A map of options used when a drag/copy occurs (see below)
+  
+  Data Import
+
+    The :import option specifies a vector of data-flavor/handler pairs. When
+    a drop/paste occurs, the handler for the first matching flavor is called
+    with a map with the following keys:
+
+      :target        The widget that's the target of the drop
+      :data          The data, type depends on flavor
+      :drop?         true if this is a drop operation, otherwise it's a paste
+      :drop-location Instance of javax.swing.TransferHandler$DropLocation or
+                     nil if drop? is false. Use (.getPoint) to get a
+                     java.awt.Point.
+      :support       Instance of javax.swing.TransferHandler$TransferSupport
+                     for advanced use.
+
+    The handler must return truthy if the drop is accepted, falsey otherwise.
+
+  Data Export
+
+    The :export option specifies the behavior when a drag or copy is started
+    from a widget. It is a map with the following keys:
+
+      :actions A function that takes a widget and returns a set of supported
+               actions. Defaults to #{:move}. Can be any of :move, :copy, or
+               :link.
+      :start   A function that takes a widget and returns a vector of flavor/value
+               pairs to be exported. Defaults to [SomeFlavor (seesaw.core/selection)].
+      :finish  A function that takes a map of values. It's called when the drag/paste
+               is completed. The map has the following keys:
+                :source The widget from which the drag started
+                :action The action, :move, :copy, or :link.
+                :data   Vector of flavor/value pairs returned by :start function.
+
+  Examples:
+
+
+    (default-transfer-handler
+      ; Allow either strings or lists of files to be dropped
+      :import [String       (fn [{:keys [data]}] ... data is a string ...)
+               java.io.File (fn [{:keys [data]}] ... data is a *list* of files ...)]
+      
+      :export {
+        :actions (fn [_] #{:move :copy})
+        :start   (fn [w] [String (seesaw.core/text w)])
+        :finish  (fn [_] ... do something when drag is finished ...) })
+
+  See:
+
+    http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html
+  "
   [& {:keys [import export] :as opts}]
-  (let [import           (if (map? import) (mapcat vec import) import)
-        make-pair        (fn [[flavor handler]] [(to-flavor flavor) handler])
+  (let [make-pair        (fn [[flavor handler]] [(to-flavor flavor) handler])
         import-pairs     (map make-pair (partition 2 import))
         accepted-flavors (map first import-pairs)] 
     (proxy [TransferHandler] []
