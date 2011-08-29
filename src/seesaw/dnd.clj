@@ -11,6 +11,7 @@
 (ns ^{:doc "Functions for dealing with drag and drop and data transfer."
       :author "Dave Ray"}
   seesaw.dnd
+  (:use [seesaw.util :only [constant-map]])
   (:import [java.awt.datatransfer DataFlavor
                                   UnsupportedFlavorException
                                   Transferable]
@@ -30,17 +31,38 @@
     :else (to-flavor (class v))))
 
 (defn default-transferable 
-  [o]
-  (let [flavors (into-array DataFlavor [(to-flavor o)])]
+  "Constructs a transferable given a vector of alternating flavor/value pairs.
+  Flavors are passed through (seesaw.dnd.to-flavor). If a value is a function,
+  i.e. (fn? value) is true, then then function is called with no arguments
+  when the value is requested for its corresponding flavor. This way calculation
+  of the value can be deferred until drop time. 
+  
+  Each flavor must be unique and it's assumed that the flavor and value agree.
+  
+  Examples:
+  
+    ; A transferable holding String or File data where the file calc is
+    ; deferred
+    (default-transferable [String       \"/home/dave\"
+                           java.io.File (fn [] (java.io.File. \"/home/dave\"))])
+  
+  "
+  [pairs]
+  (let [pairs (map 
+                (fn [[f v]] 
+                  [(to-flavor f) v]) 
+                (partition 2 pairs))
+        flavor-map (into {} pairs)
+        flavor-arr (into-array DataFlavor (map first pairs))]
     (proxy [Transferable] []
       (isDataFlavorSupported [flavor]
-        (= flavor (aget flavors 0)))
+        (contains? flavor-map flavor))
 
-      (getTransferDataFlavors [] flavors)
+      (getTransferDataFlavors [] flavor-arr)
 
       (getTransferData [flavor]
-        (if (.isDataFlavorSupported this flavor)
-          o
+        (if-let [v (get flavor-map flavor)]
+          (if (fn? v) (v) v)
           (throw (UnsupportedFlavorException. flavor)))))))
 
 (defn- get-import-handler
@@ -54,6 +76,9 @@
 (defn- get-import-data 
   [^TransferHandler$TransferSupport support flavor]
   (.. support getTransferable (getTransferData flavor)))
+
+(def ^{:private true} action-table
+  (constant-map TransferHandler :copy :copy-or-move :link :move :none))
 
 (defn default-transfer-handler 
   "INCOMPLETE!
@@ -86,11 +111,11 @@
     The :export option specifies the behavior when a drag or copy is started
     from a widget. It is a map with the following keys:
 
-      :actions A function that takes a widget and returns a set of supported
-               actions. Defaults to #{:move}. Can be any of :move, :copy, or
-               :link.
+      :actions A function that takes a widget and returns a keyword indicating
+               supported actions. Defaults to :move. Can be any of :move, :copy, 
+               :copy-or-move, :link, or :none.
       :start   A function that takes a widget and returns a vector of flavor/value
-               pairs to be exported. Defaults to [SomeFlavor (seesaw.core/selection)].
+               pairs to be exported. Required.
       :finish  A function that takes a map of values. It's called when the drag/paste
                is completed. The map has the following keys:
                 :source The widget from which the drag started
@@ -106,7 +131,7 @@
                java.io.File (fn [{:keys [data]}] ... data is a *list* of files ...)]
       
       :export {
-        :actions (fn [_] #{:move :copy})
+        :actions (fn [_] :copy)
         :start   (fn [w] [String (seesaw.core/text w)])
         :finish  (fn [_] ... do something when drag is finished ...) })
 
@@ -117,7 +142,12 @@
   [& {:keys [import export] :as opts}]
   (let [make-pair        (fn [[flavor handler]] [(to-flavor flavor) handler])
         import-pairs     (map make-pair (partition 2 import))
-        accepted-flavors (map first import-pairs)] 
+        accepted-flavors (map first import-pairs)
+        start            (if-let [start-val (:start export)]
+                           (fn [c] (default-transferable (start-val c))))
+        actions          (if export 
+                             (or (:actions export) (constantly :move))
+                             (constantly :none))] 
     (proxy [TransferHandler] []
 
       (canImport [^TransferHandler$TransferSupport support]
@@ -133,4 +163,9 @@
                                 :drop-location (if drop? (.getDropLocation support))
                                 :target        (.getComponent support)
                                 :support       support })))
-          false)))))
+          false))
+      (createTransferable [^javax.swing.JComponent c]
+        (start c))
+      (getSourceActions [^javax.swing.JComponent c]
+        (action-table (or (actions c) :none))))))
+

@@ -45,17 +45,21 @@
   (testing "resulting transferable"
     (it "can hold an arbitrary object"
       (let [o ["hi"]
-            t (default-transferable o)]
+            t (default-transferable [o o])]
         (expect (identical? o (.getTransferData t (to-flavor o))))))
+    (it "can hold arbitrary objects or functions"
+      (let [t (default-transferable [String "hi" Integer (fn [] 99)])]
+        (expect (= "hi" (.getTransferData t (to-flavor String))))
+        (expect (= 99 (.getTransferData t (to-flavor Integer))))))
     (it "throws UnsupportedFlavorException correctly"
       (let [t (default-transferable "hi")]
         (try (.getTransferData t (to-flavor java.io.File)) false (catch UnsupportedFlavorException e true))))
     (it "implements (getTransferDataFlavors)"
-      (let [t (default-transferable [])
+      (let [t (default-transferable [[] []])
             flavors (.getTransferDataFlavors t)]
         (expect (= (to-flavor []) (aget flavors 0)))))
     (it "implements (isDataFlavorSupported)"
-      (let [t (default-transferable [])]
+      (let [t (default-transferable [[] []])]
         (expect (.isDataFlavorSupported t (to-flavor [])))
         (expect (not (.isDataFlavorSupported t (to-flavor ""))))))))
 
@@ -91,5 +95,34 @@
                             :drop? false
                             :drop-location nil
                             :target (.getComponent support)
-                            :support support}))))))
+                            :support support})))))
+
+  (testing "(createTransferable)"
+    (it "returns a transferable given :import/:start "
+      (let [c (javax.swing.JTextField. "some text")
+            th (default-transfer-handler :export { :start (fn [c] [String (.getText c)]) })
+            trans (.createTransferable th c)]
+        (expect (= "some text" (.getTransferData trans (to-flavor String)))))))
+
+  (testing "(getSourceActions)"
+    (it "returns :none if :export is omitted"
+      (let [c (javax.swing.JTextField. "some text")
+            th (default-transfer-handler)
+            actions (.getSourceActions th c)]
+        (expect (= TransferHandler/NONE actions))))
+    (it "returns :none if the provided function returns nil"
+      (let [c (javax.swing.JTextField. "some text")
+            th (default-transfer-handler :export { :actions (fn [c] nil) })
+            actions (.getSourceActions th c)]
+        (expect (= TransferHandler/NONE actions))))
+    (it "returns :move by default"
+      (let [c (javax.swing.JTextField. "some text")
+            th (default-transfer-handler :export {})
+            actions (.getSourceActions th c)]
+        (expect (= TransferHandler/MOVE actions))))
+    (it "returns the result of calling the provided function"
+      (let [c (javax.swing.JTextField. "some text")
+            th (default-transfer-handler :export { :actions (fn [c] :link) })
+            actions (.getSourceActions th c)]
+        (expect (= TransferHandler/LINK actions))))))
 
