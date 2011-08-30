@@ -662,6 +662,35 @@
   javax.swing.JSlider        (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
   javax.swing.JScrollBar     (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; dragEnabled is a common method on many types, but not in any common interface :(
+(defprotocol ^{:private true} ConfigDragEnabled
+  (get-drag-enabled [this]) 
+  (set-drag-enabled [this v]))
+
+; Do-nothing impls for everybody
+(extend-protocol ConfigDragEnabled
+  javax.swing.JComponent (get-drag-enabled [this] false) (set-drag-enabled [this v])
+  javax.swing.JWindow    (get-drag-enabled [this] false) (set-drag-enabled [this v]))
+
+(defmacro ^{:private true} config-drag-enabled-impl [& classes]
+  `(extend-protocol ConfigDragEnabled
+   ~@(mapcat
+      (fn [c]
+        `(~c (~'get-drag-enabled [this#] (. this# ~'getDragEnabled))
+             (~'set-drag-enabled [this# v#] (. this# ~'setDragEnabled (boolean v#)))))
+     classes)))
+
+(config-drag-enabled-impl 
+  javax.swing.text.JTextComponent
+  javax.swing.JColorChooser
+  javax.swing.JFileChooser
+  javax.swing.JTable
+  javax.swing.JList
+  javax.swing.JTree)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defprotocol SetSelectionMode (set-selection-mode [this v]))
 (extend-protocol SetSelectionMode
   javax.swing.tree.TreeSelectionModel
@@ -737,6 +766,7 @@
   :action     (default-option :action set-action)
   :text       (default-option :text set-text get-text)
   :model      (default-option :model set-model get-model)
+  :drag-enabled? (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
 })
 
 (extend-protocol Configurable

@@ -295,7 +295,7 @@
            actual# (config ~t ~key)]
        (expect (= expected# actual#))))))
 
-(describe config
+(describe config 
   (it "throws IllegalArgumentException for an unknown option"
     (try
       (config (text "HI") :textish)
@@ -305,6 +305,12 @@
     (= :foo (config (text :id :foo) :id)))
   (it "can retrieve the :class of a widget"
     (= #{"foo"} (config (text :class :foo) :class)))
+
+  (verify-config (text :drag-enabled? true) :drag-enabled? true)
+  (verify-config (tree :drag-enabled? true) :drag-enabled? true)
+  (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
+  (verify-config (table :drag-enabled? true) :drag-enabled? true)
+
   (verify-config (text :text "HI") :text "HI")
   (verify-config (button :text "button") :text "button")
   (verify-config (label :text "label") :text "label")
