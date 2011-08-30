@@ -599,12 +599,18 @@
 
 ; We define a few protocols for various setters that existing on multiple Swing
 ; types, but don't have a common interface. This lets us avoid reflection.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; get/setText is a common method on many types, but not in any common interface :(
+
 (defprotocol ^{:private true} SetIcon (set-icon [this v]))
 
 (extend-protocol SetIcon
   javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
   javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; get/setText is a common method on many types, but not in any common interface :(
 
 (defprotocol ^{:private true} Text 
   (set-text [this v])
@@ -641,26 +647,42 @@
     (set-text [this v] (.setText this (convert-text-value v)))
     (get-text [this] (.getText this)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; setAction is a common method on many types, but not in any common interface :(
+
 (defprotocol ^{:private true} SetAction (set-action [this v]))
 (extend-protocol SetAction
   javax.swing.AbstractButton (set-action [this v] (.setAction this v))
   javax.swing.JTextField (set-action [this v] (.setAction this v))
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; set/getModel is a common method on many types, but not in any common interface :(
+
 (defprotocol ^{:private true} ConfigModel 
   (get-model [this])
   (set-model [this m]))
 
 (extend-protocol ConfigModel
-  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v))
-  javax.swing.AbstractButton (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JComboBox      (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JList          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JTable         (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JTree          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JProgressBar   (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JSlider        (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JScrollBar     (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v)))
+  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v)))
+
+(defmacro ^{:private true} config-model-impl [& classes]
+  `(extend-protocol ConfigModel 
+   ~@(mapcat
+      (fn [c]
+        `(~c (~'get-model [this#] (. this# ~'getModel))
+             (~'set-model [this# v#] (. this# ~'setModel v#))))
+     classes)))
+
+(config-model-impl 
+  javax.swing.AbstractButton
+  javax.swing.JComboBox
+  javax.swing.JList
+  javax.swing.JTable
+  javax.swing.JTree
+  javax.swing.JProgressBar
+  javax.swing.JSlider
+  javax.swing.JScrollBar)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
