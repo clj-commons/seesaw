@@ -124,5 +124,20 @@
       (let [c (javax.swing.JTextField. "some text")
             th (default-transfer-handler :export { :actions (fn [c] :link) })
             actions (.getSourceActions th c)]
-        (expect (= TransferHandler/LINK actions))))))
+        (expect (= TransferHandler/LINK actions)))))
+  (testing "(exportDone)"
+    (it "returns false if :export is omitted"
+      (let [th (default-transfer-handler)]
+        (expect (not (.exportDone th nil nil TransferHandler/MOVE)))))
+    (it "returns false if :export/:finish is omitted"
+      (let [th (default-transfer-handler :export {})]
+        (expect (not (.exportDone th nil nil TransferHandler/MOVE)))))
+    (it "calls the :export/:finish function with a map"
+      (let [source (javax.swing.JTextField. "some text")
+            tr (default-transferable [String "hi" Integer (fn [] 99)])
+            called (atom nil)
+            th (default-transfer-handler :export { :finish (fn [v] (reset! called v) true) })]
+        (.exportDone th source tr TransferHandler/MOVE)
+        (expect (= {:source source :data tr :action :move} @called))))))
+
 

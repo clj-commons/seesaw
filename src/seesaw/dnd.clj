@@ -12,6 +12,7 @@
       :author "Dave Ray"}
   seesaw.dnd
   (:use [seesaw.util :only [constant-map]])
+  (:require clojure.set)
   (:import [java.awt.datatransfer DataFlavor
                                   UnsupportedFlavorException
                                   Transferable]
@@ -77,12 +78,14 @@
   [^TransferHandler$TransferSupport support flavor]
   (.. support getTransferable (getTransferData flavor)))
 
-(def ^{:private true} action-table
+(def ^{:private true} keyword-to-action
   (constant-map TransferHandler :copy :copy-or-move :link :move :none))
 
+(def ^{:private true} action-to-keyword 
+  (clojure.set/map-invert keyword-to-action))
+
 (defn default-transfer-handler 
-  "INCOMPLETE!
-  Create a transfer handler for drag and drop operations. Take a list
+  "Create a transfer handler for drag and drop operations. Take a list
   of key/value option pairs as usual. The following options are supported:
   
     :import - A vector of flavor/handler pairs used when a drop/paste occurs
@@ -120,7 +123,7 @@
                is completed. The map has the following keys:
                 :source The widget from which the drag started
                 :action The action, :move, :copy, or :link.
-                :data   Vector of flavor/value pairs returned by :start function.
+                :data   A Transferable
 
   Examples:
 
@@ -145,6 +148,7 @@
         accepted-flavors (map first import-pairs)
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
+        finish           (:finish export)
         actions          (if export 
                              (or (:actions export) (constantly :move))
                              (constantly :none))] 
@@ -164,8 +168,16 @@
                                 :target        (.getComponent support)
                                 :support       support })))
           false))
+
       (createTransferable [^javax.swing.JComponent c]
         (start c))
+
       (getSourceActions [^javax.swing.JComponent c]
-        (action-table (or (actions c) :none))))))
+        (keyword-to-action (or (actions c) :none)))
+
+      (exportDone [^javax.swing.JComponent c ^Transferable data action]
+        (if finish
+          (finish { :source c 
+                             :data   data 
+                             :action (action-to-keyword action) }))))))
 

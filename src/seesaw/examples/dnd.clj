@@ -9,47 +9,31 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.dnd
-  (:use seesaw.core))
+  (:use seesaw.core)
+  (:require [seesaw.dnd :as dnd]))
 
 ; From http://download.oracle.com/javase/tutorial/uiswing/examples/dnd/ListCutPasteProject/src/dnd/ListCutPaste.java
 
-(defn string-data [info]
-  (try
-    (.. info getTransferable (getTransferData java.awt.datatransfer.DataFlavor/stringFlavor))
-    (catch Exception e nil)))
-
 (defn transfer-handler []
-  (proxy [javax.swing.TransferHandler] []
-    (importData [^javax.swing.TransferHandler$TransferSupport info]
-      (when (.canImport this info)
-        (let [list  (.getComponent info)
-              model (.getModel list)
-              data  (string-data info)]
-          (if data
-            (if (.isDrop info)
-              (let [dl (.getDropLocation info)
-                    index (.getIndex dl)]
-                (if (.isInsert dl)
-                  (.add model index data)
-                  (.set model index data)))
-              (let [index (.getSelectedIndex list)]
-                (if (neg? index)
-                  (.addElement model data)
-                  (.add model (inc index) data))))
-            true))))
-
-    (createTransferable [^javax.swing.JComponent c]
-      (java.awt.datatransfer.StringSelection. (selection c)))
-    
-    (getSourceActions [^javax.swing.JComponent c]
-      javax.swing.TransferHandler/COPY_OR_MOVE)
-    
-    (exportDone [^javax.swing.JComponent c ^javax.swing.Transferable data action]
-      (if (= javax.swing.TransferHandler/MOVE)
-        (.. c getModel (remove (.getSelectedIndex c)))))
-    
-    (canImport [^javax.swing.TransferHandler$TransferSupport support]
-      (.isDataFlavorSupported support java.awt.datatransfer.DataFlavor/stringFlavor))))
+  (dnd/default-transfer-handler
+    :import [String (fn [{:keys [target data drop? drop-location] }]
+                      (let [model (.getModel target)]
+                        (if drop?
+                          (let [dl drop-location
+                                index (.getIndex dl)]
+                            (if (.isInsert dl)
+                              (.add model index data)
+                              (.set model index data)))
+                          (let [index (.getSelectedIndex target)]
+                            (if (neg? index)
+                              (.addElement model data)
+                              (.add model (inc index) data))))))]
+    :export {
+      :actions (fn [_] :copy-or-move)
+      :start   (fn [c] [String (selection c)])
+      :finish  (fn [{:keys [source action]}]
+                 (if (= action :move)
+                   (.. source getModel (remove (.getSelectedIndex source))))) }))
 
 (defn app []
   (let [th    (transfer-handler)
