@@ -181,3 +181,10 @@
                              :data   data 
                              :action (action-to-keyword action) }))))))
 
+(defn ^TransferHandler to-transfer-handler
+  [v]
+  (cond
+    (instance? TransferHandler v) v
+    (vector? v) (apply default-transfer-handler v)
+    :else (throw (IllegalArgumentException. (str "Don't know how to make TransferHandler from: " v)))))
+

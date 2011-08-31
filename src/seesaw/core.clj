@@ -19,7 +19,7 @@
   (:require clojure.java.io
             clojure.set
             [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics cursor scroll])
+             event selector icon action cells table graphics cursor scroll dnd])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants DropMode
              BoxLayout
@@ -806,6 +806,7 @@
   :text       (default-option :text set-text get-text)
   :model      (default-option :model set-model get-model)
   :drag-enabled? (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
+  :transfer-handler (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)
 })
 
 (extend-protocol Configurable

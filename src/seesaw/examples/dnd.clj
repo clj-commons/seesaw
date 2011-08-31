@@ -29,7 +29,7 @@
                               (.addElement model data)
                               (.add model (inc index) data))))))]
     :export {
-      :actions (fn [_] :copy-or-move)
+      :actions (constantly :copy-or-move)
       :start   (fn [c] [String (selection c)])
       :finish  (fn [{:keys [source action]}]
                  (if (= action :move)
@@ -37,27 +37,26 @@
 
 (defn app []
   (let [th    (transfer-handler)
-        list1 (doto (listbox 
-                      :drag-enabled? true
-                      :preferred-size [100 :by 400]
-                      :selection-mode :single
-                      :model ["alpha" "beta" "gamma" "delta" "epsilon" "zeta"])
-                (.setDropMode javax.swing.DropMode/ON_OR_INSERT)
-                (.setTransferHandler th))
-        list2 (doto (listbox 
-                      :drag-enabled? true
-                      :preferred-size [100 :by 400]
-                      :selection-mode :single
-                      :model ["uma" "dois" "tres" "quatro" "cinco" "seis"])
-                (.setDropMode javax.swing.DropMode/INSERT)
-                (.setTransferHandler th))
-        list3 (doto (listbox 
-                      :drag-enabled? true
-                      :preferred-size [100 :by 400]
-                      :selection-mode :single
-                      :model ["adeen" "dva" "tri" "chyetirye" "pyat" "shest"])
-                (.setDropMode javax.swing.DropMode/ON)
-                (.setTransferHandler th))]
+        list1 (listbox 
+                :drag-enabled? true
+                :drop-mode :on-or-insert
+                :transfer-handler th
+                :preferred-size [100 :by 400]
+                :selection-mode :single
+                :model ["alpha" "beta" "gamma" "delta" "epsilon" "zeta"])
+        list2 (listbox 
+                :drag-enabled? true
+                :drop-mode :insert
+                :transfer-handler th
+                :preferred-size [100 :by 400]
+                :selection-mode :single
+                :model ["uma" "dois" "tres" "quatro" "cinco" "seis"])
+        list3 (listbox 
+                :drag-enabled? true
+                :drop-mode :on
+                :preferred-size [100 :by 400]
+                :selection-mode :single
+                :model ["adeen" "dva" "tri" "chyetirye" "pyat" "shest"])]
     (frame
       :title "ListCutPaste"
       :content
@@ -74,4 +73,4 @@
       pack!
       show!)))
 
- (-main)
+ ;(-main)
