@@ -28,7 +28,7 @@
 (def ^{:private true} action-options {
   :enabled?  (bean-option :enabled? Action boolean)
   :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
-  :name      (action-property-option :name Action/NAME str)
+  :name      (action-property-option :name Action/NAME translate)
   :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)
   :tip       (action-property-option :tip Action/SHORT_DESCRIPTION str)
   :icon      (action-property-option :icon Action/SMALL_ICON icon)

@@ -622,6 +622,7 @@
     (nil? v)    v
     (string? v) v
     (number? v) (str v)
+    (and (keyword? v) (namespace v)) (translate v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
     ; TODO This line is unreachable because the IOFactory protocol is
     ; extended to Object, i.e. satisfies? above will *always* return
@@ -2388,7 +2389,7 @@
   :content     (bean-option [:content :content-pane] javax.swing.JFrame make-widget)
   :menubar     (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
 
-  :title        (bean-option :title java.awt.Frame str)
+  :title        (bean-option :title java.awt.Frame translate)
   :resizable?   (bean-option :resizable? java.awt.Frame boolean)
 
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
@@ -2501,7 +2502,7 @@
   :menubar  (bean-option [:menubar :j-menu-bar] javax.swing.JDialog)
 
   ; Ditto here. Avoid reflection
-  :title        (bean-option :title java.awt.Dialog str)
+  :title        (bean-option :title java.awt.Dialog translate)
   :resizable?   (bean-option :resizable? java.awt.Dialog boolean)
 })
 
