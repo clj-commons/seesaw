@@ -2394,6 +2394,7 @@
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
   :size         (bean-option :size java.awt.Window to-dimension)
   :visible?     (bean-option :visible? java.awt.Window boolean)
+  :transfer-handler (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
 })
 
 (defn frame
