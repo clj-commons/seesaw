@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.util
-  (:require clojure.string)
+  (:require clojure.string [j18n.core :as j18n])
   (:import [java.net URL MalformedURLException]))
 
 (defn check-args 
@@ -151,3 +151,8 @@
   [m]
   (into {} (for [[k v] m] [v k])))
 
+(defn translate
+  [message]
+  (if (and (keyword? message) (namespace message))
+    (j18n/translate* message)
+    (str message)))
