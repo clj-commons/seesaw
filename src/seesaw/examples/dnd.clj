@@ -38,24 +38,24 @@
 (defn app []
   (let [th    (transfer-handler)
         list1 (doto (listbox 
+                      :drag-enabled? true
                       :preferred-size [100 :by 400]
                       :selection-mode :single
                       :model ["alpha" "beta" "gamma" "delta" "epsilon" "zeta"])
-                (.setDragEnabled true)
                 (.setDropMode javax.swing.DropMode/ON_OR_INSERT)
                 (.setTransferHandler th))
         list2 (doto (listbox 
+                      :drag-enabled? true
                       :preferred-size [100 :by 400]
                       :selection-mode :single
                       :model ["uma" "dois" "tres" "quatro" "cinco" "seis"])
-                (.setDragEnabled true)
                 (.setDropMode javax.swing.DropMode/INSERT)
                 (.setTransferHandler th))
         list3 (doto (listbox 
+                      :drag-enabled? true
                       :preferred-size [100 :by 400]
                       :selection-mode :single
                       :model ["adeen" "dva" "tri" "chyetirye" "pyat" "shest"])
-                (.setDragEnabled true)
                 (.setDropMode javax.swing.DropMode/ON)
                 (.setTransferHandler th))]
     (frame
@@ -74,4 +74,4 @@
       pack!
       show!)))
 
-;(-main)
+ (-main)

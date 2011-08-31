@@ -17,10 +17,11 @@
   seesaw.core
   (:use [seesaw util options meta to-widget make-widget])
   (:require clojure.java.io
+            clojure.set
             [seesaw color font border invoke timer selection 
              event selector icon action cells table graphics cursor scroll])
   (:import [javax.swing 
-             SwingConstants UIManager ScrollPaneConstants
+             SwingConstants UIManager ScrollPaneConstants DropMode
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea JTextPane
@@ -712,6 +713,22 @@
   javax.swing.JTree)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; drop-mode support constants
+
+(def ^{:private true} drop-mode-to-keyword {
+  DropMode/INSERT            :insert
+  DropMode/INSERT_COLS       :insert-cols
+  DropMode/INSERT_ROWS       :insert-rows
+  DropMode/ON                :on
+  DropMode/ON_OR_INSERT      :on-or-insert
+  DropMode/ON_OR_INSERT_COLS :on-or-insert-cols 
+  DropMode/ON_OR_INSERT_ROWS :on-or-insert-rows
+  DropMode/USE_SELECTION     :use-selection
+})
+
+(def ^{:private true} keyword-to-drop-mode (clojure.set/map-invert drop-mode-to-keyword))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol SetSelectionMode (set-selection-mode [this v]))
 (extend-protocol SetSelectionMode
@@ -1285,6 +1302,7 @@
   :disabled-text-color (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selected-text-color (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selection-color     (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :drop-mode           (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (def ^{:private true} text-field-options (merge {
@@ -1588,6 +1606,7 @@
                         #(.getCellRenderer ^javax.swing.JList %1))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
   :fixed-cell-height (bean-option :fixed-cell-height javax.swing.JList)
+  :drop-mode         (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn listbox
@@ -1638,6 +1657,7 @@
   :fills-viewport-height? (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
   :selection-mode         (default-option :selection-mode list-selection-mode-handler)
   :auto-resize            (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
+  :drop-mode              (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn table
@@ -1695,6 +1715,7 @@
   :toggle-click-count      (bean-option :toggle-click-count javax.swing.JTree)
   :visible-row-count       (bean-option :visible-row-count javax.swing.JTree)
   :selection-mode          (default-option :selection-mode tree-selection-mode-handler)
+  :drop-mode               (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn tree

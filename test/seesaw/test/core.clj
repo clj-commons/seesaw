@@ -311,6 +311,11 @@
   (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
   (verify-config (table :drag-enabled? true) :drag-enabled? true)
 
+  (verify-config (text :drop-mode :insert) :drop-mode :insert)
+  (verify-config (tree :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (listbox :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (table :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+
   (verify-config (text :text "HI") :text "HI")
   (verify-config (button :text "button") :text "button")
   (verify-config (label :text "label") :text "label")
