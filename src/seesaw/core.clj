@@ -614,8 +614,28 @@
 ; get/setText is a common method on many types, but not in any common interface :(
 
 (defprotocol ^{:private true} Text 
-  (set-text [this v])
-  (get-text [this]))
+  (set-text* [this v])
+  (get-text* [this]))
+
+(extend-protocol Text
+  Object
+    (set-text* [this v] (set-text* (to-widget this) v))
+    (get-text* [this] (get-text* (to-widget this)))
+  javax.swing.JLabel
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this))
+  javax.swing.AbstractButton
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this))
+  javax.swing.text.AbstractDocument
+    (set-text* [this v] (.replace this 0 (.getLength this) v nil))
+    (get-text* [this] (.getText this 0 (.getLength this)))
+  javax.swing.event.DocumentEvent
+    (set-text* [this v] (set-text* (.getDocument this) v))
+    (get-text* [this] (get-text* (.getDocument this)))
+  javax.swing.text.JTextComponent
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this)))
 
 (defn- convert-text-value [v]
   (cond
@@ -628,25 +648,13 @@
     ; true :(
     :else (str v)))
 
-(extend-protocol Text
-  Object
-    (set-text [this v] (set-text (to-widget this) v))
-    (get-text [this] (get-text (to-widget this)))
-  javax.swing.JLabel 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this))
-  javax.swing.AbstractButton 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this))
-  javax.swing.text.AbstractDocument 
-    (set-text [this v] (.replace this 0 (.getLength this) (convert-text-value v) nil))
-    (get-text [this] (.getText this 0 (.getLength this)))
-  javax.swing.event.DocumentEvent
-    (set-text [this v] (set-text (.getDocument this) v))
-    (get-text [this] (get-text (.getDocument this)))
-  javax.swing.text.JTextComponent 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this)))
+(defn- set-text
+  [this v]
+  (set-text* this (convert-text-value v)))
+
+(defn- get-text
+  [this]
+  (get-text* this))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; setAction is a common method on many types, but not in any common interface :(
