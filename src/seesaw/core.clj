@@ -2654,11 +2654,11 @@
   [source message {:keys [title value type choices icon to-string] 
                    :or {type :plain to-string str}}]
   (let [source  (to-widget source)
-        message (if (coll? message) (object-array message) (str message))
+        message (if (coll? message) (object-array message) (translate message))
         choices (when choices (object-array (map #(InputChoice. % to-string) choices)))
         result  (JOptionPane/showInputDialog ^java.awt.Component source 
                                  message 
-                                 title 
+                                 (translate title) 
                                  (input-type-map type) 
                                  (make-icon icon)
                                  choices value)]
