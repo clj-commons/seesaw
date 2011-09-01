@@ -2624,7 +2624,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
   "
   ([source message] 
-    (JOptionPane/showMessageDialog (to-widget source) (str message)))
+    (JOptionPane/showMessageDialog (to-widget source) (translate message)))
   ([message] (alert nil message)))
 
 ;*******************************************************************************

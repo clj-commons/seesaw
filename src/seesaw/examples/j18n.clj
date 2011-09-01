@@ -9,8 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.examples.j18n
-  (use [seesaw.core])
-  (require [j18n.core]))
+  (use [seesaw.core]))
 
 ; Declare a bundle. Will look on classpath for seesaw/examples/j18n.properties
 ; or a locale-specific file. Don't forget to call (j18n.core/init-bundles!)
@@ -24,8 +23,8 @@
             ; Use a set of properties for the action, all with prefix "action"
             :resource ::my-action
             :handler (fn [_] 
-                       ; Use translate directly to lookup values in the bundle
-                       (alert (j18n.core/translate ::my-action.click-message))))] 
+                       ; Alert and other dialog functions know about resources
+                       (alert ::my-action.click-message)))] 
     (->
       (frame 
         ; Most Seesaw properties (title, text, icon) will look in the resource
