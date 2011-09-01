@@ -12,16 +12,23 @@
       :author "Dave Ray"}
   seesaw.icon
   (:use [seesaw util])
+  (:require [clojure.java.io :as jio])
   (:import [javax.swing ImageIcon]))
 
 ;*******************************************************************************
 ; Icons
 
-(defn ^javax.swing.Icon icon [p]
+(defn ^javax.swing.Icon icon 
+  [p]
   (cond
     (nil? p) nil 
-    (instance? javax.swing.Icon p) p
-    (instance? java.awt.Image p) (ImageIcon. ^java.awt.Image p)
-    (instance? java.net.URL p) (ImageIcon. ^java.net.URL p)
-    :else  (when-let [url (to-url p)] (ImageIcon. url))))
+    (instance? javax.swing.Icon p)   p
+    (instance? java.awt.Image p)     (ImageIcon. ^java.awt.Image p)
+    (instance? java.net.URL p)       (ImageIcon. ^java.net.URL p)
+    (and (keyword? p) (namespace p)) (icon (translate p))
+    :else
+      (if-let [url (jio/resource (str p))]
+        (icon url)
+        (if-let [url (to-url p)] 
+          (ImageIcon. url)))))
 
