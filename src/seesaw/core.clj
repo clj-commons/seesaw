@@ -1416,7 +1416,7 @@
 
     A string                               - the string
     A URL, File, or anything \"slurpable\" - the slurped value
-    Anythign else                          - (str value)
+    Anythign else                          - (translate value)
 
   Example:
 
@@ -2230,7 +2230,7 @@
     (let [title-cmp (try-cast Component title)
           index     (.getTabCount tp)]
       (cond-doto tp
-        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (make-widget content) (str tip))
+        true (.addTab (if-not title-cmp (translate title)) (make-icon icon) (make-widget content) (translate tip))
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
@@ -2613,7 +2613,7 @@
 ; Alert
 (defn alert
   "Show a simple message alert dialog. Take an optional parent component, source,
-  used for dialog placement, and a message which is passed through (str).
+  used for dialog placement, and a message which is passed through (translate).
 
   Examples:
 
