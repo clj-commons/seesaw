@@ -181,10 +181,29 @@
                              :data   data 
                              :action (action-to-keyword action) }))))))
 
+
+
 (defn ^TransferHandler to-transfer-handler
   [v]
   (cond
     (instance? TransferHandler v) v
     (vector? v) (apply default-transfer-handler v)
     :else (throw (IllegalArgumentException. (str "Don't know how to make TransferHandler from: " v)))))
+
+(defn everything-transfer-handler 
+  "Handler that accepts all drops. For debugging."
+  [handler]
+  (proxy [TransferHandler] []
+
+    (canImport [^TransferHandler$TransferSupport support] true)
+
+    (importData [^TransferHandler$TransferSupport support]
+      (handler support)
+      false)
+
+    (createTransferable [^javax.swing.JComponent c] nil)
+
+    (getSourceActions [^javax.swing.JComponent c] TransferHandler/NONE)
+
+    (exportDone [^javax.swing.JComponent c ^Transferable data action])))
 
