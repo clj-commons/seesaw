@@ -191,14 +191,43 @@
     :events  #{:tree-will-expand :tree-will-collapse}
     :install #(.addTreeWillExpandListener ^javax.swing.JTree %1 ^TreeWillExpandListener %2)
   }
+
+  :drag-source {
+    :name         :drag-source
+    :class        java.awt.dnd.DragSourceListener 
+    :events       #{:drag-drop-end :drag-enter :drag-exit :drag-over :drop-action-changed}
+    ; Names are mostly the same as DragTarget events, so prefix with ds-
+    ; See event-method-table below too!
+    :named-events #{:ds-drag-drop-end :ds-drag-enter :ds-drag-exit :ds-drag-over :ds-drop-action-changed}
+    :install      #(.addDragSourceListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceListener %2)
+  }
+
+  :drag-source-motion { 
+    :name    :drag-source-motion
+    :class   java.awt.dnd.DragSourceMotionListener 
+    :events  #{:drag-mouse-moved}
+    :install #(.addDragSourceMotionListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceMotionListener %2)
+  }
+
+  :drop-target {
+    :name         :drop-target
+    :class        java.awt.dnd.DropTargetListener
+    :events       #{:drag-enter :drag-exit :drag-over :drop :drop-action-changed}
+    ; Names are mostly the same as DragSource events, so prefix with dt-
+    ; See event-method-table below too!
+    :named-events #{:dt-drag-enter :dt-drag-exit :dt-drag-over :dt-drop :dt-drop-action-changed}
+    :install      #(.addDropTargetListener ^java.awt.dnd.DropTarget %1 ^java.awt.dnd.DropTargetListener %2)
+  }
 })
 
 ; Kind of a hack. Re-route methods with renamed events (due to collisions like
 ; valueChanged()) back to their real names.
-(def ^{:private true} event-method-table {
+(def ^{:private true} event-method-table (merge {
   :list-selection :value-changed
   :tree-selection :value-changed
-})
+ }
+ (into {} (for [e (get-in event-groups [:drag-source :events])] [(keyword (str "ds-" (name e))) e]))
+ (into {} (for [e (get-in event-groups [:drag-target :events])] [(keyword (str "dt-" (name e))) e]))))
 
 (defmulti reify-listener (fn [& args] (first args)))
 
