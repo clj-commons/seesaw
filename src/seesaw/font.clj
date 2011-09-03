@@ -41,7 +41,7 @@
   (if (= 1 (count args))
     (let [v (first args)]
       (if (and (keyword? v) (namespace v))
-        (Font/decode (translate v))
+        (Font/decode (resource v))
         (Font/decode (str v))))
     (let [{:keys [style size from] :as opts} args
           font-name (:name opts)

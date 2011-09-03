@@ -97,7 +97,7 @@
             (reapply-options
               target (mapcat (fn [k]
                               (let [prop (keyword nspace (str prefix "." k))]
-                                (when-let [v (translate prop)]
+                                (when-let [v (resource prop)]
                                   [(keyword k) v])))
                             (map name keys))
               nil)))))

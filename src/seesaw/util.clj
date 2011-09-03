@@ -151,8 +151,8 @@
   [m]
   (into {} (for [[k v] m] [v k])))
 
-(defn translate
+(defn resource
   [message]
   (if (and (keyword? message) (namespace message))
-    (j18n/translate* message)
+    (j18n/resource message)
     (str message)))
