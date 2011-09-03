@@ -16,7 +16,8 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.options :only (bean-option default-option apply-options ignore-options)]))
+    [seesaw.options :only (bean-option default-option apply-options ignore-options)]
+    [seesaw.util :only (resource)]))
 
 (defprotocol ComponentSpec
   (append [this builder] "Add the given component to the form builder"))
@@ -27,7 +28,10 @@
     (.append builder (seesaw.core/make-widget this)))
   String
   (append [this builder]
-    (.append builder this)))
+    (.append builder this))
+  clojure.lang.Keyword
+  (append [this builder]
+    (append (resource this) builder)))
 
 (defn span
   "Add the given component spanning several columns."
@@ -61,7 +65,7 @@
   (reify
     ComponentSpec
     (append [this builder]
-      (.appendTitle builder title))))
+      (.appendTitle builder (resource title)))))
 
 (defn separator
   "Adds a separator with an optional label to the form."
@@ -74,7 +78,7 @@
    (reify
      ComponentSpec
      (append [this builder]
-       (.appendSeparator builder label)))))
+       (.appendSeparator builder (resource label))))))
 
 (defn group
   "Group the rows of the contained items into a row group."
