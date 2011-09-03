@@ -642,7 +642,7 @@
     (nil? v)    v
     (string? v) v
     (number? v) (str v)
-    (and (keyword? v) (namespace v)) (translate v)
+    (and (keyword? v) (namespace v)) (resource v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
     ; TODO This line is unreachable because the IOFactory protocol is
     ; extended to Object, i.e. satisfies? above will *always* return
@@ -1465,7 +1465,7 @@
 
     A string                               - the string
     A URL, File, or anything \"slurpable\" - the slurped value
-    Anythign else                          - (translate value)
+    Anythign else                          - (resource value)
 
   Example:
 
@@ -2299,7 +2299,7 @@
     (let [title-cmp (try-cast Component title)
           index     (.getTabCount tp)]
       (cond-doto tp
-        true (.addTab (if-not title-cmp (translate title)) (make-icon icon) (make-widget content) (translate tip))
+        true (.addTab (if-not title-cmp (resource title)) (make-icon icon) (make-widget content) (resource tip))
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
@@ -2473,7 +2473,7 @@
   :content     (bean-option [:content :content-pane] javax.swing.JFrame make-widget)
   :menubar     (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
 
-  :title        (bean-option :title java.awt.Frame translate)
+  :title        (bean-option :title java.awt.Frame resource)
   :resizable?   (bean-option :resizable? java.awt.Frame boolean)
 
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
@@ -2588,7 +2588,7 @@
   :menubar  (bean-option [:menubar :j-menu-bar] javax.swing.JDialog)
 
   ; Ditto here. Avoid reflection
-  :title        (bean-option :title java.awt.Dialog translate)
+  :title        (bean-option :title java.awt.Dialog resource)
   :resizable?   (bean-option :resizable? java.awt.Dialog boolean)
 })
 
@@ -2691,7 +2691,7 @@
 ; Alert
 (defn alert
   "Show a simple message alert dialog. Take an optional parent component, source,
-  used for dialog placement, and a message which is passed through (translate).
+  used for dialog placement, and a message which is passed through (resource).
 
   Examples:
 
@@ -2702,7 +2702,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
   "
   ([source message] 
-    (JOptionPane/showMessageDialog (to-widget source) (translate message)))
+    (JOptionPane/showMessageDialog (to-widget source) (resource message)))
   ([message] (alert nil message)))
 
 ;*******************************************************************************
@@ -2732,11 +2732,11 @@
   [source message {:keys [title value type choices icon to-string] 
                    :or {type :plain to-string str}}]
   (let [source  (to-widget source)
-        message (if (coll? message) (object-array message) (translate message))
+        message (if (coll? message) (object-array message) (resource message))
         choices (when choices (object-array (map #(InputChoice. % to-string) choices)))
         result  (JOptionPane/showInputDialog ^java.awt.Component source 
                                  message 
-                                 (translate title) 
+                                 (resource title) 
                                  (input-type-map type) 
                                  (make-icon icon)
                                  choices value)]

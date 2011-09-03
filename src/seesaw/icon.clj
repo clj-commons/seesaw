@@ -25,7 +25,7 @@
     (instance? javax.swing.Icon p)   p
     (instance? java.awt.Image p)     (ImageIcon. ^java.awt.Image p)
     (instance? java.net.URL p)       (ImageIcon. ^java.net.URL p)
-    (and (keyword? p) (namespace p)) (icon (translate p))
+    (and (keyword? p) (namespace p)) (icon (resource p))
     :else
       (if-let [url (jio/resource (str p))]
         (icon url)

@@ -11,14 +11,7 @@
 (ns seesaw.examples.j18n
   (use [seesaw.core]))
 
-; Declare a bundle. Will look on classpath for seesaw/examples/j18n.properties
-; or a locale-specific file. Don't forget to call (j18n.core/init-bundles!)
-; in main!
-(j18n.core/defbundle bundle)
-
 (defn -main [& args]
-  ; Initialize j18n bundles
-  (j18n.core/init-bundles!)
   (let [a (action 
             ; Use a set of properties for the action, all with prefix "action"
             :resource ::my-action
