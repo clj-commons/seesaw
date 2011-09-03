@@ -23,21 +23,6 @@
    (default-option name 
      (fn [^Action target value] (.putValue target key ((or set-conv identity) value))))))
 
-(declare action-options)
-
-(defn- configure-action-from-resource
-  [target value]
-  {:pre [(keyword? value) (namespace value)]}
-  (let [nspace (namespace value)
-        prefix (name value)]
-    (reapply-options
-      target (mapcat (fn [k]
-                       (let [prop (keyword nspace (str prefix "." k))]
-                         (when-let [v (translate prop)]
-                           [(keyword k) v])))
-                     ["name" "command" "tip" "icon" "key" "mnemonic"])
-      action-options)))
-
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
 (def ^{:private true} action-options {
@@ -53,7 +38,8 @@
                  (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
                    (.putValue a Action/MNEMONIC_KEY v)))) 
   :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
-  :resource  (default-option :resource configure-action-from-resource)
+  :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
+  ;:resource  (default-option :resource configure-action-from-resource)
 })
 
 (defn action 

@@ -74,6 +74,34 @@
   [name]
   (default-option name (fn [_ _]) (fn [_ _])))
 
+(declare reapply-options)
+
+(defn resource-option 
+  "Defines an option that takes a j18n namespace-qualified keyword as a
+  value. The keyword is used as a prefix for the set of properties in
+  the given key list. This allows subsets of widget options to be configured
+  from a resource bundle.
+  
+  Example:
+    ; The :resource property looks in a resource bundle for 
+    ; prefix.text, prefix.foreground, etc.
+    (resource-option :resource [:text :foreground :background])
+  "
+  [option-name keys]
+  (default-option 
+    option-name 
+    (fn [target value]
+      {:pre [(keyword? value) (namespace value)]}
+      (let [nspace (namespace value)
+            prefix (name value)]
+            (reapply-options
+              target (mapcat (fn [k]
+                              (let [prop (keyword nspace (str prefix "." k))]
+                                (when-let [v (translate prop)]
+                                  [(keyword k) v])))
+                            (map name keys))
+              nil)))))
+
 (defn- apply-option
   [target ^Option opt v]
   (if-let [setter (.setter opt)] 

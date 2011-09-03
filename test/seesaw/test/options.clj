@@ -9,9 +9,12 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.options
-  (:use seesaw.options)
-  (:use [lazytest.describe :only (describe it testing)]
+  (:require [j18n.core :as j18n])
+  (:use seesaw.options
+        [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
+
+(j18n/defbundle MyBundle)
 
 (describe apply-options
   (it "throws IllegalArgumentException if properties aren't even"
@@ -41,4 +44,16 @@
       (catch IllegalArgumentException e true)))
   (it "uses the getter of an option to retrieve a value"
     (= "hi" (get-option-value (javax.swing.JPanel.) :text {:text (default-option :text nil (constantly "hi"))}))))
+
+(describe resource-option
+  (it "has a setter that applies options using values from resource bundle"
+    (do
+      (j18n/init-bundles!)
+      (let [l  (apply-options (javax.swing.JLabel.) 
+                            [:resource ::resource-option] 
+                            {:resource (resource-option :resource [:text :name])
+                             :text (bean-option :text javax.swing.JLabel)
+                             :name (bean-option :name javax.swing.JLabel) })]
+        (expect (= "expected text" (.getText l)))
+        (expect (= "expected name" (.getName l)))))))
 
