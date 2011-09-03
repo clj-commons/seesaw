@@ -19,7 +19,10 @@
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn make-frame []
-  (frame :title "Hello Seesaw" :width 600 :height 600
+  (frame 
+    :title "Hello Seesaw" 
+    :width 600 :height 600
+    :icon "http://clojure.github.com/clojure/static/favicon.png"
     :content
     (border-panel :vgap 5
       :north (toolbar 

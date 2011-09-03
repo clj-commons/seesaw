@@ -2397,9 +2397,15 @@
   :nothing JFrame/DO_NOTHING_ON_CLOSE
 })
 
+(defn- ^java.awt.Image frame-icon-converter [value]
+  (cond
+    (instance? java.awt.Image value) value)
+    :else (let [^javax.swing.ImageIcon i (make-icon value)]
+            (.getImage i)))
+
 (def ^{:private true} frame-options {
   ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
-  :resource    (resource-option :resource [:title])
+  :resource    (resource-option :resource [:title :icon])
   :id          (default-option :id seesaw.selector/id-of!)
   :class       (default-option :class seesaw.selector/class-of!)
   :on-close    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
@@ -2413,6 +2419,7 @@
   :size         (bean-option :size java.awt.Window to-dimension)
   :visible?     (bean-option :visible? java.awt.Window boolean)
   :transfer-handler (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
+  :icon         (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)
 })
 
 (defn frame
@@ -2420,6 +2427,7 @@
 
     :id       id of the window, used by (select).
     :title    the title of the window
+    :icon     the icon of the frame (varies by platform)
     :width    initial width. Note that calling (pack!) will negate this setting
     :height   initial height. Note that calling (pack!) will negate this setting
     :size     initial size. Note that calling (pack!) will negate this setting

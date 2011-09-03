@@ -1071,6 +1071,10 @@
     (let [c (label :text "HI")
           f (frame :content c)]
       (expect (= c (.getContentPane f)))))
+  (it "should set the frame's icon from an image"
+    (let [i (buffered-image 16 16)
+          f (frame :icon i)]
+      (expect (= i (.getIconImage f)))))
   (it "should, by default, set location by platform to true"
     (.isLocationByPlatform (frame))))
 
