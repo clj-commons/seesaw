@@ -1213,6 +1213,13 @@
 
     :h-text-position Horizontal text position, :left, :right, :center, etc.
     :v-text-position Horizontal text position, :top, :center, :bottom, etc.
+    :resource        Namespace-qualified keyword which is a resource prefix for the
+                     labels properties
+
+  Resources and i18n:
+
+    A label's base properties can be set from a resource prefix, i.e. a namespace-
+    qualified keyword that refers to a resource bundle loadable by j18n. 
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
@@ -1288,21 +1295,55 @@
 
   
 (defn button 
+  "Construct a generic button. In addition to default widget options, supports
+  the following:
+  
+      :halign    Horizontal alignment. One of :left, :right, :leading, :trailing, 
+                 :center
+      :valign    Vertical alignment. One of :top, :center, :bottom
+      :selected? Whether the button is initially selected. Mostly for checked 
+                 and radio buttons/menu-items.
+      :margin    The button margins as insets. See (seesaw.util/to-insets)
+      :group     A button-group that the button should be added to.
+      :resource  A resource prefix (see below).
+ 
+  Resources and i18n:
+
+    A button's base properties can be set from a resource prefix, i.e. a namespace-
+    qualified keyword that refers to a resource bundle loadable by j18n. 
+
+  See:
+    (seesaw.core/button-group)"
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JButton args) args))
 
 (defn toggle   
+  "Same as (seesaw.core/button), but creates a toggle button. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JToggleButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JToggleButton args) args))
 
 (defn checkbox 
+  "Same as (seesaw.core/button), but creates a checkbox. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JCheckBox }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JCheckBox args) args))
 
 (defn radio    
+  "Same as (seesaw.core/button), but creates a radio button. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JRadioButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JRadioButton args) args))
@@ -2081,9 +2122,27 @@
   :key (bean-option [:key :accelerator] javax.swing.JMenuItem seesaw.keystroke/keystroke)
 })
 
-(defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
-(defn checkbox-menu-item [& args] (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
-(defn radio-menu-item    [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
+(defn menu-item          
+  "Create a menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button)"
+  [& args] 
+  (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
+
+(defn checkbox-menu-item 
+  "Create a checked menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button)"
+  [& args] 
+  (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
+
+(defn 
+  radio-menu-item    
+  "Create a radio menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button).
+  
+  Notes:
+    Use (seesaw.core/button-group) or the :group option to enforce mutual exclusion
+    across menu items."
+  [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
 
 (defn- ^javax.swing.JMenuItem to-menu-item
   [item]
@@ -2107,7 +2166,8 @@
 })
 
 (defn menu 
-  "Create a new menu. Additional options:
+  "Create a new menu. In addition to all options applicable to (seesaw.core/button)
+  the following additional options are supported:
 
     :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
   
@@ -2115,6 +2175,7 @@
     This function is compatible with (seesaw.core/with-widget).
   
   See:
+    (seesaw.core/button)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
@@ -2399,9 +2460,9 @@
 
 (defn- ^java.awt.Image frame-icon-converter [value]
   (cond
-    (instance? java.awt.Image value) value)
+    (instance? java.awt.Image value) value
     :else (let [^javax.swing.ImageIcon i (make-icon value)]
-            (.getImage i)))
+            (.getImage i))))
 
 (def ^{:private true} frame-options {
   ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
