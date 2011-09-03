@@ -34,10 +34,14 @@
                                     :text  ::menu.tools.text
                                     :items [a])])
         :content (vertical-panel
-                  :items [(button :text ::button.text
+                          ; Use individual resource properties directly
+                  :items [(button :text       ::button.text
                                   :foreground ::button.foreground
-                                  :font ::button.font
-                                  :icon ::button.icon)
+                                  :font       ::button.font
+                                  :icon       ::button.icon)
+                          ; Or many widgets can use prefix-driven resource groups
+                          (button :resource ::button)
+                          (label :resource ::label)
                           a]))
       pack!
       show!)))

@@ -773,6 +773,9 @@
       (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys tree-selection-mode-table)))))))
 
 (declare paint-option-handler)
+
+(def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
+
 (def ^{:private true} default-options {
   ::with       (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
   :listen      (default-option :listen #(apply seesaw.event/listen %1 %2))
@@ -1190,6 +1193,7 @@
 ; Labels
 
 (def ^{:private true} label-options {
+  :resource        (resource-option :resource base-resource-options)
   :halign          (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table)
   :valign          (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table) 
   :h-text-position (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table)
@@ -1268,6 +1272,7 @@
   (apply-options (ButtonGroup.) opts button-group-options))
 
 (def ^{:private true} button-options {
+  :resource  (resource-option :resource base-resource-options)
   :halign    (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
   :valign    (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
   :selected? (bean-option :selected? javax.swing.AbstractButton boolean)
@@ -1305,6 +1310,9 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
+  :resource        (resource-option :resource 
+                                    (concat base-resource-options 
+                                            [:caret-color :disabled-text-color :selected-text-color :selection-color]))
   :editable?           (bean-option :editable? javax.swing.text.JTextComponent boolean)
   :margin              (bean-option :margin javax.swing.text.JTextComponent to-insets)
   :caret-color         (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
@@ -2391,6 +2399,7 @@
 
 (def ^{:private true} frame-options {
   ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
+  :resource    (resource-option :resource [:title])
   :id          (default-option :id seesaw.selector/id-of!)
   :class       (default-option :class seesaw.selector/class-of!)
   :on-close    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
