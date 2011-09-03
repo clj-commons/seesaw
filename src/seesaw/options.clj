@@ -85,20 +85,25 @@
     opt
     (throw (IllegalArgumentException. (str "Unknown option " name)))))
 
-(defn apply-options
+(defn- apply-options*
   [target opts handler-map]
-  (check-args (or (map? opts) (even? (count opts))) 
-              "opts must be a map or have an even number of entries")
   (let [pairs (if (map? opts) opts (partition 2 opts))] 
     (doseq [[k v] pairs]
       (let [opt (lookup-option handler-map k)]
         (apply-option target opt v))))
-  (store-option-handlers target handler-map))
+  target)
+
+(defn apply-options
+  [target opts handler-map]
+  (check-args (or (map? opts) (even? (count opts))) 
+              "opts must be a map or have an even number of entries")
+  (store-option-handlers target handler-map)
+  (apply-options* target opts handler-map))
 
 (defn reapply-options
   [target args default-options]
   (let [options (or (get-option-value-handlers target) default-options)]
-    (apply-options target args options)))
+    (apply-options* target args options)))
 
 (defn ignore-options
   "Create a ignore-map for options, which should be ignored. Ready to
