@@ -14,8 +14,6 @@
         [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
-(j18n/defbundle MyBundle)
-
 (describe apply-options
   (it "throws IllegalArgumentException if properties aren't even"
     (try
@@ -47,13 +45,11 @@
 
 (describe resource-option
   (it "has a setter that applies options using values from resource bundle"
-    (do
-      (j18n/init-bundles!)
-      (let [l  (apply-options (javax.swing.JLabel.) 
-                            [:resource ::resource-option] 
-                            {:resource (resource-option :resource [:text :name])
-                             :text (bean-option :text javax.swing.JLabel)
-                             :name (bean-option :name javax.swing.JLabel) })]
-        (expect (= "expected text" (.getText l)))
-        (expect (= "expected name" (.getName l)))))))
+    (let [l  (apply-options (javax.swing.JLabel.) 
+                          [:resource ::resource-option] 
+                          {:resource (resource-option :resource [:text :name])
+                            :text (bean-option :text javax.swing.JLabel)
+                            :name (bean-option :name javax.swing.JLabel) })]
+      (expect (= "expected text" (.getText l)))
+      (expect (= "expected name" (.getName l))))))
 
