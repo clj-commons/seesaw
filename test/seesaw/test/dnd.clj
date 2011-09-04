@@ -36,6 +36,10 @@
     (= DataFlavor/javaFileListFlavor (to-flavor java.io.File)))
   (it "returns a file list flavor for a file value"
     (= DataFlavor/javaFileListFlavor (to-flavor (java.io.File. "."))))
+  (it "returns a url flavor for a URL class"
+    (= url-flavor (to-flavor java.net.URL)))
+  (it "returns a url flavor for a URL value"
+    (= url-flavor (to-flavor (java.net.URL. "http://example.com"))))
   (it "returns an image flavor for an Image class"
     (= DataFlavor/imageFlavor (to-flavor java.awt.Image)))
   (it "returns an image flavor for an image value"

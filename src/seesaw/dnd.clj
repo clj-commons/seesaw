@@ -19,11 +19,36 @@
            [javax.swing TransferHandler 
                         TransferHandler$TransferSupport]))
 
+(defn ^DataFlavor make-flavor
+  "Construct a new data flavor with the given mime-type and representation class.
+  
+
+  Notes:
+
+    Run seesaw.dnd-explorer to experiment with flavors coming from
+    other apps.
+
+  Examples:
+  
+    ; HTML as a reader
+    (make-flavor \"text/html\" java.io.Reader)
+  "
+  [mime-type ^java.lang.Class rep-class]
+  (DataFlavor. 
+    (format "%s;class=%s" 
+            mime-type 
+            (.getCanonicalName rep-class))))
+
+(def url-flavor (make-flavor "application/x-java-url" java.net.URL))
+(def html-flavor (make-flavor "text/html" java.lang.String))
+
 (defn ^DataFlavor to-flavor
   [v]
   (cond
     (instance? DataFlavor v) v
     (= v String) DataFlavor/stringFlavor
+    (= v java.io.File) DataFlavor/javaFileListFlavor
+    (= v java.net.URL) url-flavor
     (= v java.io.File) DataFlavor/javaFileListFlavor
     (= v java.awt.Image) DataFlavor/imageFlavor
     (instance? java.awt.Image v) DataFlavor/imageFlavor
