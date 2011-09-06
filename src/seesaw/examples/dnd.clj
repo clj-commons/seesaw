@@ -12,60 +12,83 @@
   (:use seesaw.core)
   (:require [seesaw.dnd :as dnd]))
 
-; From http://download.oracle.com/javase/tutorial/uiswing/examples/dnd/ListCutPasteProject/src/dnd/ListCutPaste.java
+; Set up a few targets for different data flavors.
 
-(defn transfer-handler []
-  (dnd/default-transfer-handler
-    :import [String (fn [{:keys [target data drop? drop-location] }]
-                      (let [model (.getModel target)]
-                        (if drop?
-                          (let [dl drop-location
-                                index (.getIndex dl)]
-                            (if (.isInsert dl)
-                              (.add model index data)
-                              (.set model index data)))
-                          (let [index (.getSelectedIndex target)]
-                            (if (neg? index)
-                              (.addElement model data)
-                              (.add model (inc index) data))))))]
-    :export {
-      :actions (constantly :copy-or-move)
-      :start   (fn [c] [String (selection c)])
-      :finish  (fn [{:keys [source action]}]
-                 (if (= action :move)
-                   (.. source getModel (remove (.getSelectedIndex source))))) }))
+(defn string-target []
+  (listbox
+    :model ["A String"]
+    :drag-enabled? true
+    :drop-mode :insert
+    :transfer-handler 
+      (dnd/default-transfer-handler 
+        :import [String (fn [{:keys [target data]}]
+                          (.. target getModel (addElement data)))]
+        :export {
+          :actions (constantly :copy)
+          :start   (fn [c] [String (selection c)])
+          ; No :finish needed
+        })))
+
+(defn file-target []
+  (listbox
+    :model []
+    :drag-enabled? true
+    :drop-mode :insert
+    :transfer-handler 
+      (dnd/default-transfer-handler 
+        :import [java.io.File (fn [{:keys [target data]}]
+                                ; For File flavor, data is always List<java.io.File>
+                                (doseq [file data] 
+                                  (.. target getModel (addElement file))))])))
+(defn url-target []
+  (listbox
+    :model [(java.net.URL. "http://github.com/daveray/seesaw")]
+    :drag-enabled? true
+    :drop-mode :insert
+    :transfer-handler 
+      (dnd/default-transfer-handler 
+        :import [java.net.URL (fn [{:keys [target data]}]
+                                ; data is java.net.URL
+                                (.. target getModel (addElement data)))]
+        :export {
+          :actions (constantly :copy)
+          :start   (fn [c] 
+                     (let [url (selection c)] 
+                       [java.net.URL        url
+                        ; Most apps (browsers) want uri-list flavor which is a string of 
+                        ; CRLF-delimited URLs 
+                        dnd/uri-list-flavor (.toExternalForm url)]))
+          ; No :finish needed
+        })))
+
+(defn image-target []
+  (let [icon-label (label)] 
+    (left-right-split
+      (scrollable
+        (listbox
+          :listen [:selection (fn [e] (config! icon-label :icon (selection e)))]
+          :selection-mode :single
+          :model []
+          :drag-enabled? true
+          :drop-mode :insert
+          :transfer-handler 
+            (dnd/default-transfer-handler 
+              :import [java.awt.Image (fn [{:keys [target data]}]
+                                        (.. target getModel (addElement data)))])))
+      (scrollable icon-label)
+      :divider-location 1/2)))
 
 (defn app []
-  (let [th    (transfer-handler)
-        list1 (listbox 
-                :drag-enabled? true
-                :drop-mode :on-or-insert
-                :transfer-handler th
-                :preferred-size [100 :by 400]
-                :selection-mode :single
-                :model ["alpha" "beta" "gamma" "delta" "epsilon" "zeta"])
-        list2 (listbox 
-                :drag-enabled? true
-                :drop-mode :insert
-                :transfer-handler th
-                :preferred-size [100 :by 400]
-                :selection-mode :single
-                :model ["uma" "dois" "tres" "quatro" "cinco" "seis"])
-        list3 (listbox 
-                :drag-enabled? true
-                :drop-mode :on
-                :preferred-size [100 :by 400]
-                :selection-mode :single
-                :model ["adeen" "dva" "tri" "chyetirye" "pyat" "shest"])]
-    (frame
-      :title "ListCutPaste"
-      :content
-        (grid-panel 
-          :columns 3
-          :items [ 
-            (border-panel :border "Greek Alphabet" :center (scrollable list1))
-            (border-panel :border "Portuguese Numbers" :center (scrollable list2))
-            (border-panel :border "Russian Numbers" :center (scrollable list3))]))))
+  (frame
+    :title "Seesaw Drag-n-Drop Example"
+    :content
+      (vertical-panel
+        :items [ 
+          (border-panel :border "Drag and Drop Text here" :center (scrollable (string-target)))
+          (border-panel :border "Drag and Drop Files here" :center (scrollable (file-target)))
+          (border-panel :border "Drag and Drop URLs here" :center (scrollable (url-target)))
+          (border-panel :border "Drag and Drop Images here" :center (image-target))
+          ])))
 
 (defn -main [& args]
   (invoke-later
@@ -73,4 +96,4 @@
       pack!
       show!)))
 
- ;(-main)
+;(-main)

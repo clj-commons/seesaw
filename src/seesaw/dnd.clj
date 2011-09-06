@@ -40,7 +40,8 @@
             (.getCanonicalName rep-class))))
 
 (def url-flavor (make-flavor "application/x-java-url" java.net.URL))
-(def html-flavor (make-flavor "text/html" java.lang.String))
+(def uri-list-flavor (make-flavor "text/uri-list" String))
+(def html-flavor (make-flavor "text/html" String))
 
 (defn ^DataFlavor to-flavor
   [v]
@@ -184,14 +185,18 @@
 
       (importData [^TransferHandler$TransferSupport support]
         (if (.canImport this support)
-          (let [[^DataFlavor flavor handler] (get-import-handler support import-pairs)
-                data                         (get-import-data support flavor)
-                drop?                        (.isDrop support)]
-            (boolean (handler { :data          data 
-                                :drop?         drop?
-                                :drop-location (if drop? (.getDropLocation support))
-                                :target        (.getComponent support)
-                                :support       support })))
+          (try 
+            (let [[^DataFlavor flavor handler] (get-import-handler support import-pairs)
+                  data                         (get-import-data support flavor)
+                  drop?                        (.isDrop support)]
+              (boolean (handler { :data          data 
+                                  :drop?         drop?
+                                  :drop-location (if drop? (.getDropLocation support))
+                                  :target        (.getComponent support)
+                                  :support       support })))
+            (catch Exception e 
+              (.printStackTrace e) 
+              (throw e)))
           false))
 
       (createTransferable [^javax.swing.JComponent c]
