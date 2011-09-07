@@ -140,6 +140,27 @@
 (def ^{:private true} action-to-keyword 
   (clojure.set/map-invert keyword-to-action))
 
+(defn- unpack-drop-location [^javax.swing.TransferHandler$DropLocation dl]
+  (let [^java.awt.Point pt (.getDropPoint dl) ]
+    (merge 
+      (cond
+        (instance? javax.swing.JList$DropLocation dl) 
+          { :index (.getIndex dl) :insert? (.isInsert dl) }
+
+        (instance? javax.swing.JTable$DropLocation dl)
+          { :column (.getColumn dl)
+            :row    (.getRow dl)
+            :insert-column? (.isInsertColumn dl)
+            :insert-row?    (.isInsertRow dl) }
+        (instance? javax.swing.text.JTextComponent$DropLocation dl)
+          { :bias (.getBias dl)
+            :index (.getIndex dl) }
+        (instance? javax.swing.JTree$DropLocation dl)
+          { :index (.getChildIndex dl) 
+            :path  (.getPath dl) }
+        :else {})
+      {:point [(.x pt) (.y pt)]})))
+
 (defn default-transfer-handler 
   "Create a transfer handler for drag and drop operations. Take a list
   of key/value option pairs as usual. The following options are supported:
@@ -157,13 +178,41 @@
       :target        The widget that's the target of the drop
       :data          The data, type depends on flavor
       :drop?         true if this is a drop operation, otherwise it's a paste
-      :drop-location Instance of javax.swing.TransferHandler$DropLocation or
-                     nil if drop? is false. Use (.getPoint) to get a
-                     java.awt.Point.
+      :drop-location Map of drop location info or nil if drop? is false. See 
+                     below.
       :support       Instance of javax.swing.TransferHandler$TransferSupport
                      for advanced use.
 
     The handler must return truthy if the drop is accepted, falsey otherwise.
+
+    If :drop? is true, :drop-location will be non-nil and include the following
+    keys, depending on the type of the drop target:
+
+      All types:
+
+        :point    [x y] vector
+
+      listbox 
+  
+        :index    The index for the drop
+        :insert?  True if it's an insert, i.e. \"between\" entries
+
+      table 
+
+        :column         The column for the drop
+        :row            The row for the drop
+        :insert-column? True if it's an insert, i.e. \"between\" columns.
+        :insert-row?    True if it's an insert, i.e. \"between\" rows 
+
+      tree 
+  
+        :index  The index of the drop point 
+        :path   TreePath of the drop point
+
+      Text Components
+
+        :bias   No idea what this is
+        :index  The insertion index
 
   Data Export
 
@@ -220,7 +269,7 @@
                   drop?                        (.isDrop support)]
               (boolean (handler { :data          data 
                                   :drop?         drop?
-                                  :drop-location (if drop? (.getDropLocation support))
+                                  :drop-location (if drop? (unpack-drop-location (.getDropLocation support)))
                                   :target        (.getComponent support)
                                   :support       support })))
             ; When Swing calls importData it seems to catch and suppress all 

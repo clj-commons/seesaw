@@ -94,9 +94,9 @@
     :content
       (vertical-panel
         :items [ 
-          (border-panel :border "Drag and Drop Text here" :center (scrollable (string-target)))
-          (border-panel :border "Drag and Drop Files here" :center (scrollable (file-target)))
-          (border-panel :border "Drag and Drop URLs here" :center (scrollable (url-target)))
+          (border-panel :border "Drag and Drop Text here"   :center (scrollable (string-target)))
+          (border-panel :border "Drag and Drop Files here"  :center (scrollable (file-target)))
+          (border-panel :border "Drag and Drop URLs here"   :center (scrollable (url-target)))
           (border-panel :border "Drag and Drop Images here" :center (image-target))
           ])))
 
@@ -106,5 +106,5 @@
       pack!
       show!)))
 
-(-main)
+;(-main)
 
