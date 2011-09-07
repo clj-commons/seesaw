@@ -12,7 +12,8 @@
       :author "Dave Ray"}
   seesaw.chooser
   (:use [seesaw util options color])
-  (:import [javax.swing JFileChooser]))
+  (:import javax.swing.filechooser.FileFilter
+           [javax.swing JFileChooser]))
 
 (def ^{:private true} file-chooser-types {
   :open   JFileChooser/OPEN_DIALOG
@@ -33,6 +34,7 @@
                                             (java.io.File. (str dir))))))
   :multi? (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
   :selection-mode (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
+  :filter #(.setFileFilter ^JFileChooser %1 %2)
   :filters (default-option :filters 
              #(doseq [[name exts] %2]
                 (.setFileFilter 
@@ -58,6 +60,27 @@
   (reset! last-dir (.getCurrentDirectory chooser))
   chooser)
 
+(defn file-filter
+  "Create a FileFilter.
+  All options are necessary.
+  
+  Arguments:
+  
+    accept - a function taking a java.awt.File
+             returning true if the file should be shown,
+             false otherwise.
+  
+    description - description of this filter, will show up in the 
+                  filter-selection box when opening a file choosing dialog.
+  "
+  [accept description]
+  (proxy [FileFilter] []
+    (accept [file]
+      (if (accept file)
+        true false))
+    (getDescription []
+      description)))
+
 (defn choose-file
   "Choose a file to open or save. The arguments can take two forms. First, with
   an initial parent component which will act as the parent of the dialog.
@@ -77,6 +100,7 @@
     :multi?  If true, multi-selection is enabled and a seq of files is returned.
     :selection-mode The file selection mode: :files-only, :dirs-only and :files-and-dirs.
                     Defaults to :files-only
+    :filter A FileFilter, see (file-filter).
     :filters A seq of lists where each list contains a filter name and a seq of
              extensions as strings for that filter. Default: [].
     :remember-directory? Flag specifying whether to remember the directory for future
