@@ -12,16 +12,36 @@
       :author "Dave Ray"}
   seesaw.dnd
   (:use [seesaw.util :only [constant-map]])
-  (:require clojure.set)
+  (:require clojure.set
+            clojure.string)
   (:import [java.awt.datatransfer DataFlavor
                                   UnsupportedFlavorException
                                   Transferable]
            [javax.swing TransferHandler 
                         TransferHandler$TransferSupport]))
 
+(defprotocol Flavorful
+  "Protocol for abstracting DataFlavor including automatic conversion from
+  external/native representations (e.g. uri-list) to friendlier internal 
+  representations (e.g. list of java.net.URL)."
+  (to-flavor [this]
+    "Return an instance of java.awt.datatransfer.DataFlavor for this.")
+  (to-local [this value] 
+    "Given an incoming value convert it to the expected local format. For example, a uri-list
+    would return a vector of URL.")
+  (to-remote [this value] 
+    "Given an outgoing value, convert it to the appropriate remote format.
+    For example, a vector of URLs would be serialized as a uri-list."))
+
+; Default/do-nothin impl for DataFlavors
+(extend-protocol Flavorful
+  DataFlavor
+  (to-flavor [this] this)
+  (to-local [this value] value)
+  (to-remote [this value] value))
+
 (defn ^DataFlavor make-flavor
   "Construct a new data flavor with the given mime-type and representation class.
-  
 
   Notes:
 
@@ -39,30 +59,43 @@
             mime-type 
             (.getCanonicalName rep-class))))
 
-(def url-flavor (make-flavor "application/x-java-url" java.net.URL))
-(def uri-list-flavor (make-flavor "text/uri-list" String))
-(def html-flavor (make-flavor "text/html" String))
+(defn local-object-flavor 
+  "Creates a flavor for moving raw Java objects between components within a
+  single JVM instance. class-or-value is either the class of data, or an
+  example value from which the class is taken.
+  
+  Examples:
+  
+    ; Move Clojure vectors
+    (local-object-flavor [])
+  "
+  [class-or-value]
+  (if (class? class-or-value)
+    (make-flavor DataFlavor/javaJVMLocalObjectMimeType class-or-value)
+    (local-object-flavor (class class-or-value))))
 
-(defn ^DataFlavor to-flavor
-  [v]
-  (cond
-    (instance? DataFlavor v) v
-    (= v String) DataFlavor/stringFlavor
-    (= v java.io.File) DataFlavor/javaFileListFlavor
-    (= v java.net.URL) url-flavor
-    (= v java.io.File) DataFlavor/javaFileListFlavor
-    (= v java.awt.Image) DataFlavor/imageFlavor
-    (instance? java.awt.Image v) DataFlavor/imageFlavor
-    (class? v) (DataFlavor. (format "%s; class=%s" DataFlavor/javaJVMLocalObjectMimeType (.getName v)))
+(def ^{:doc "Flavor for a list of java.io.File objects" }
+  file-list-flavor DataFlavor/javaFileListFlavor)
 
-    :else (to-flavor (class v))))
+(def ^{:doc "Flavor for a list of java.net.URL objects." }
+  uri-list-flavor 
+  (let [flavor (make-flavor "text/uri-list" String)]
+    (reify Flavorful
+      (to-flavor [this] flavor)
+      (to-local [this value] 
+        (map #(java.net.URL. %) (clojure.string/split-lines value)))
+      (to-remote [this value] 
+        (clojure.string/join "\r\n" (map #(.toExternalForm ^java.net.URL %) value))))))
+
+(def ^{:doc "Flavor for HTML text"} html-flavor (make-flavor "text/html" String))
+(def ^{:doc "Flavor for images as java.awt.Image" } image-flavor DataFlavor/imageFlavor)
+(def ^{:doc "Flavor for raw text" } string-flavor DataFlavor/stringFlavor)
 
 (defn default-transferable 
   "Constructs a transferable given a vector of alternating flavor/value pairs.
-  Flavors are passed through (seesaw.dnd.to-flavor). If a value is a function,
-  i.e. (fn? value) is true, then then function is called with no arguments
-  when the value is requested for its corresponding flavor. This way calculation
-  of the value can be deferred until drop time. 
+  If a value is a function, i.e. (fn? value) is true, then then function is 
+  called with no arguments when the value is requested for its corresponding 
+  flavor. This way calculation of the value can be deferred until drop time. 
   
   Each flavor must be unique and it's assumed that the flavor and value agree.
   
@@ -70,15 +103,12 @@
   
     ; A transferable holding String or File data where the file calc is
     ; deferred
-    (default-transferable [String       \"/home/dave\"
-                           java.io.File (fn [] (java.io.File. \"/home/dave\"))])
+    (default-transferable [string-flavor    \"/home/dave\"
+                           file-list-flavor #(vector (java.io.File. \"/home/dave\"))])
   
   "
   [pairs]
-  (let [pairs (map 
-                (fn [[f v]] 
-                  [(to-flavor f) v]) 
-                (partition 2 pairs))
+  (let [pairs      (map (fn [[f v]] [(to-flavor f) [f v]]) (partition 2 pairs))
         flavor-map (into {} pairs)
         flavor-arr (into-array DataFlavor (map first pairs))]
     (proxy [Transferable] []
@@ -88,21 +118,21 @@
       (getTransferDataFlavors [] flavor-arr)
 
       (getTransferData [flavor]
-        (if-let [v (get flavor-map flavor)]
-          (if (fn? v) (v) v)
+        (if-let [[flavorful v] (get flavor-map flavor)]
+          (to-remote flavorful (if (fn? v) (v) v))
           (throw (UnsupportedFlavorException. flavor)))))))
 
 (defn- get-import-handler
   [^TransferHandler$TransferSupport support pairs]
   (some
-    (fn [[flavor handler :as v]]
-      (if (.isDataFlavorSupported support flavor)
+    (fn [[flavorful handler :as v]]
+      (if (.isDataFlavorSupported support (to-flavor flavorful))
         v))
     pairs))
 
 (defn- get-import-data 
-  [^TransferHandler$TransferSupport support flavor]
-  (.. support getTransferable (getTransferData flavor)))
+  [^TransferHandler$TransferSupport support flavorful]
+  (to-local flavorful (.. support getTransferable (getTransferData (to-flavor flavorful)))))
 
 (def ^{:private true} keyword-to-action
   (constant-map TransferHandler :copy :copy-or-move :link :move :none))
@@ -120,7 +150,7 @@
   
   Data Import
 
-    The :import option specifies a vector of data-flavor/handler pairs. When
+    The :import option specifies a vector of flavor/handler pairs. When
     a drop/paste occurs, the handler for the first matching flavor is called
     with a map with the following keys:
 
@@ -156,12 +186,12 @@
 
     (default-transfer-handler
       ; Allow either strings or lists of files to be dropped
-      :import [String       (fn [{:keys [data]}] ... data is a string ...)
-               java.io.File (fn [{:keys [data]}] ... data is a *list* of files ...)]
+      :import [string-flavor    (fn [{:keys [data]}] ... data is a string ...)
+               file-list-flavor (fn [{:keys [data]}] ... data is a *list* of files ...)]
       
       :export {
         :actions (fn [_] :copy)
-        :start   (fn [w] [String (seesaw.core/text w)])
+        :start   (fn [w] [string-flavor (seesaw.core/text w)])
         :finish  (fn [_] ... do something when drag is finished ...) })
 
   See:
@@ -169,9 +199,8 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html
   "
   [& {:keys [import export] :as opts}]
-  (let [make-pair        (fn [[flavor handler]] [(to-flavor flavor) handler])
-        import-pairs     (map make-pair (partition 2 import))
-        accepted-flavors (map first import-pairs)
+  (let [import-pairs     (partition 2 import)
+        accepted-flavors (map (comp to-flavor first) import-pairs)
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
         finish           (:finish export)
@@ -186,14 +215,16 @@
       (importData [^TransferHandler$TransferSupport support]
         (if (.canImport this support)
           (try 
-            (let [[^DataFlavor flavor handler] (get-import-handler support import-pairs)
-                  data                         (get-import-data support flavor)
+            (let [[flavorful handler] (get-import-handler support import-pairs)
+                  data                         (get-import-data support flavorful)
                   drop?                        (.isDrop support)]
               (boolean (handler { :data          data 
                                   :drop?         drop?
                                   :drop-location (if drop? (.getDropLocation support))
                                   :target        (.getComponent support)
                                   :support       support })))
+            ; When Swing calls importData it seems to catch and suppress all 
+            ; exceptions, which is maddening to debug. :|
             (catch Exception e 
               (.printStackTrace e) 
               (throw e)))
@@ -208,10 +239,8 @@
       (exportDone [^javax.swing.JComponent c ^Transferable data action]
         (if finish
           (finish { :source c 
-                             :data   data 
-                             :action (action-to-keyword action) }))))))
-
-
+                    :data   data 
+                    :action (action-to-keyword action) }))))))
 
 (defn ^TransferHandler to-transfer-handler
   [v]

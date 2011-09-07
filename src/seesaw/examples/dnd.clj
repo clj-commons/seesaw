@@ -14,21 +14,23 @@
 
 ; Set up a few targets for different data flavors.
 
+; A list box that imports and exports strings
 (defn string-target []
   (listbox
     :model ["A String"]
     :drag-enabled? true
     :drop-mode :insert
     :transfer-handler 
-      (dnd/default-transfer-handler 
-        :import [String (fn [{:keys [target data]}]
-                          (.. target getModel (addElement data)))]
-        :export {
-          :actions (constantly :copy)
-          :start   (fn [c] [String (selection c)])
-          ; No :finish needed
-        })))
+      [:import [dnd/string-flavor (fn [{:keys [target data]}]
+                                    (.. target getModel (addElement data)))]
+       :export {
+         :actions (constantly :copy)
+         :start   (fn [c] [dnd/string-flavor (selection c)])
+         ; No :finish needed
+        }]))
 
+
+; A list box that imports and exports files, like with finder or explorer
 (defn file-target []
   (listbox
     :model []
@@ -36,10 +38,19 @@
     :drop-mode :insert
     :transfer-handler 
       (dnd/default-transfer-handler 
-        :import [java.io.File (fn [{:keys [target data]}]
-                                ; For File flavor, data is always List<java.io.File>
-                                (doseq [file data] 
-                                  (.. target getModel (addElement file))))])))
+        :import [dnd/file-list-flavor (fn [{:keys [target data]}]
+                                        ; data is always List<java.io.File>
+                                        (doseq [file data] 
+                                          (.. target getModel (addElement file))))]
+        :export {
+          :actions (constantly :copy)
+          :start   (fn [c] 
+                     (let [file (selection c)] 
+                       [dnd/file-list-flavor [file]]))
+          ; No :finish needed
+        })))
+
+; A list box that imports and exports URLs, like with a browser
 (defn url-target []
   (listbox
     :model [(java.net.URL. "http://github.com/daveray/seesaw")]
@@ -47,20 +58,19 @@
     :drop-mode :insert
     :transfer-handler 
       (dnd/default-transfer-handler 
-        :import [java.net.URL (fn [{:keys [target data]}]
-                                ; data is java.net.URL
-                                (.. target getModel (addElement data)))]
+        :import [dnd/uri-list-flavor (fn [{:keys [target data]}]
+                                      ; data is seq of java.net.URL
+                                      (doseq [url data] 
+                                        (.. target getModel (addElement url))))]
         :export {
           :actions (constantly :copy)
           :start   (fn [c] 
                      (let [url (selection c)] 
-                       [java.net.URL        url
-                        ; Most apps (browsers) want uri-list flavor which is a string of 
-                        ; CRLF-delimited URLs 
-                        dnd/uri-list-flavor (.toExternalForm url)]))
+                       [dnd/uri-list-flavor [url]]))
           ; No :finish needed
         })))
 
+; A list box that imports and exports images, like with a browser
 (defn image-target []
   (let [icon-label (label)] 
     (left-right-split
@@ -73,7 +83,7 @@
           :drop-mode :insert
           :transfer-handler 
             (dnd/default-transfer-handler 
-              :import [java.awt.Image (fn [{:keys [target data]}]
+              :import [dnd/image-flavor (fn [{:keys [target data]}]
                                         (.. target getModel (addElement data)))])))
       (scrollable icon-label)
       :divider-location 1/2)))
@@ -96,4 +106,5 @@
       pack!
       show!)))
 
-;(-main)
+(-main)
+
