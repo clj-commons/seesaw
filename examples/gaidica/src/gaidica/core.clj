@@ -143,5 +143,7 @@
                :center (make-tabs))))
 
 (defn -main [& args]
-  (invoke-later (show! (app))))
+  (invoke-later (show! (app)))
+  ; Avoid RejectedExecutionException in lein :(
+  @(promise))
 
