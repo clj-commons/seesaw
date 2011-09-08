@@ -24,7 +24,7 @@
   "Protocol for abstracting DataFlavor including automatic conversion from
   external/native representations (e.g. uri-list) to friendlier internal 
   representations (e.g. list of java.net.URL)."
-  (to-flavor [this]
+  (to-raw-flavor [this]
     "Return an instance of java.awt.datatransfer.DataFlavor for this.")
   (to-local [this value] 
     "Given an incoming value convert it to the expected local format. For example, a uri-list
@@ -36,7 +36,7 @@
 ; Default/do-nothin impl for DataFlavors
 (extend-protocol Flavorful
   DataFlavor
-  (to-flavor [this] this)
+  (to-raw-flavor [this] this)
   (to-local [this value] value)
   (to-remote [this value] value))
 
@@ -81,7 +81,7 @@
   uri-list-flavor 
   (let [flavor (make-flavor "text/uri-list" String)]
     (reify Flavorful
-      (to-flavor [this] flavor)
+      (to-raw-flavor [this] flavor)
       (to-local [this value] 
         (map #(java.net.URL. %) (clojure.string/split-lines value)))
       (to-remote [this value] 
@@ -108,7 +108,7 @@
   
   "
   [pairs]
-  (let [pairs      (map (fn [[f v]] [(to-flavor f) [f v]]) (partition 2 pairs))
+  (let [pairs      (map (fn [[f v]] [(to-raw-flavor f) [f v]]) (partition 2 pairs))
         flavor-map (into {} pairs)
         flavor-arr (into-array DataFlavor (map first pairs))]
     (proxy [Transferable] []
@@ -126,13 +126,13 @@
   [^TransferHandler$TransferSupport support pairs]
   (some
     (fn [[flavorful handler :as v]]
-      (if (.isDataFlavorSupported support (to-flavor flavorful))
+      (if (.isDataFlavorSupported support (to-raw-flavor flavorful))
         v))
     pairs))
 
 (defn- get-import-data 
   [^TransferHandler$TransferSupport support flavorful]
-  (to-local flavorful (.. support getTransferable (getTransferData (to-flavor flavorful)))))
+  (to-local flavorful (.. support getTransferable (getTransferData (to-raw-flavor flavorful)))))
 
 (def ^{:private true} keyword-to-action
   (constant-map TransferHandler :copy :copy-or-move :link :move :none))
@@ -249,7 +249,7 @@
   "
   [& {:keys [import export] :as opts}]
   (let [import-pairs     (partition 2 import)
-        accepted-flavors (map (comp to-flavor first) import-pairs)
+        accepted-flavors (map (comp to-raw-flavor first) import-pairs)
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
         finish           (:finish export)

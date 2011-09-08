@@ -40,24 +40,24 @@
     (it "can hold an arbitrary object"
       (let [o ["hi"]
             t (default-transferable [string-flavor o])]
-        (expect (identical? o (.getTransferData t (to-flavor string-flavor))))))
+        (expect (identical? o (.getTransferData t (to-raw-flavor string-flavor))))))
     (it "can hold arbitrary objects or functions"
       (let [t (default-transferable [string-flavor "hi" 
                                      (local-object-flavor Integer) (fn [] 99)])]
-        (expect (= "hi" (.getTransferData t (to-flavor string-flavor))))
-        (expect (= 99 (.getTransferData t (to-flavor (local-object-flavor Integer)))))))
+        (expect (= "hi" (.getTransferData t (to-raw-flavor string-flavor))))
+        (expect (= 99 (.getTransferData t (to-raw-flavor (local-object-flavor Integer)))))))
     (it "throws UnsupportedFlavorException correctly"
       (let [t (default-transferable [string-flavor "hi"])]
-        (try (.getTransferData t (to-flavor file-list-flavor)) false 
+        (try (.getTransferData t (to-raw-flavor file-list-flavor)) false 
              (catch UnsupportedFlavorException e true))))
     (it "implements (getTransferDataFlavors)"
       (let [t (default-transferable [(local-object-flavor []) []])
             flavors (.getTransferDataFlavors t)]
-        (expect (= (to-flavor (local-object-flavor [])) (aget flavors 0)))))
+        (expect (= (to-raw-flavor (local-object-flavor [])) (aget flavors 0)))))
     (it "implements (isDataFlavorSupported)"
       (let [t (default-transferable [(local-object-flavor []) []])]
-        (expect (.isDataFlavorSupported t (to-flavor (local-object-flavor []))))
-        (expect (not (.isDataFlavorSupported t (to-flavor string-flavor))))))))
+        (expect (.isDataFlavorSupported t (to-raw-flavor (local-object-flavor []))))
+        (expect (not (.isDataFlavorSupported t (to-raw-flavor string-flavor))))))))
 
 (defn fake-transfer-support [t]
   (javax.swing.TransferHandler$TransferSupport. (javax.swing.JLabel.) t))
@@ -98,7 +98,7 @@
       (let [c (javax.swing.JTextField. "some text")
             th (default-transfer-handler :export { :start (fn [c] [string-flavor (.getText c)]) })
             trans (.createTransferable th c)]
-        (expect (= "some text" (.getTransferData trans (to-flavor string-flavor)))))))
+        (expect (= "some text" (.getTransferData trans (to-raw-flavor string-flavor)))))))
 
   (testing "(getSourceActions)"
     (it "returns :none if :export is omitted"
