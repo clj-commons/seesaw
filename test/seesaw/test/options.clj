@@ -9,8 +9,9 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.options
-  (:use seesaw.options)
-  (:use [lazytest.describe :only (describe it testing)]
+  (:require [j18n.core :as j18n])
+  (:use seesaw.options
+        [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
 (describe apply-options
@@ -21,6 +22,13 @@
   (it "throws IllegalArgumentException for an unknown property"
     (try
       (do (apply-options (javax.swing.JPanel.) [:unknown "unknown"] {}) false)
+      (catch IllegalArgumentException e true)))
+  (it "throws IllegalArgumentException for a property with no setter"
+    (try
+      (do 
+        (apply-options (javax.swing.JPanel.) 
+                       [:no-setter "no-setter"] 
+                       { :no-setter (default-option :no-setter) }) false)
       (catch IllegalArgumentException e true))))
 
 (describe get-option-value
@@ -34,4 +42,14 @@
       (catch IllegalArgumentException e true)))
   (it "uses the getter of an option to retrieve a value"
     (= "hi" (get-option-value (javax.swing.JPanel.) :text {:text (default-option :text nil (constantly "hi"))}))))
+
+(describe resource-option
+  (it "has a setter that applies options using values from resource bundle"
+    (let [l  (apply-options (javax.swing.JLabel.) 
+                          [:resource ::resource-option] 
+                          {:resource (resource-option :resource [:text :name])
+                            :text (bean-option :text javax.swing.JLabel)
+                            :name (bean-option :name javax.swing.JLabel) })]
+      (expect (= "expected text" (.getText l)))
+      (expect (= "expected name" (.getName l))))))
 

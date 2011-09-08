@@ -177,4 +177,24 @@
       (expect (= "graphics" result))
       (expect (= [["graphics" "this" "style"]["graphics" "this" "style2"]] final-args)))))
   
+(describe style
+  (it "creates a new style object"
+    (let [strk (stroke :width 5)
+          s (style :foreground :black :background :white :stroke strk :font :monospace)]
+      (expect (= java.awt.Color/BLACK (:foreground s)))
+      (expect (= java.awt.Color/WHITE (:background s)))
+      (expect (= strk (:stroke s)))
+      (expect (not (nil? (:font s)))))))
 
+(describe update-style
+  (it "constructs a new style with new property values"
+    (let [strk (stroke :width 5)
+          s (update-style (style :foreground :black :stroke strk) :foreground :white :background :black)]
+      (expect (instance? seesaw.graphics.Style s))
+      (expect (= java.awt.Color/WHITE (:foreground s)))
+      (expect (= java.awt.Color/BLACK (:background s)))
+      (expect (= strk (:stroke s)))))
+  (it "constructs a new style and can clear property values"
+    (let [s (update-style (style :foreground :black) :foreground nil)]
+      (expect (instance? seesaw.graphics.Style s))
+      (expect (nil? (:foreground s))))))

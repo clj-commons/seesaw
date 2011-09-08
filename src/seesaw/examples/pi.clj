@@ -8,7 +8,7 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns pi.core
+(ns seesaw.examples.pi
   (:use seesaw.core)
   (:require seesaw.invoke)
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
@@ -97,7 +97,7 @@
 
 (defn make-frame []
   (frame
-    :on-close :exit
+    ;:on-close :exit
     :size [300 :by 300]
     :content (border-panel :class :container
                :north  (toolbar :items ["Steps"     gap (text :id :steps)     gap
@@ -164,4 +164,6 @@
       (apply-behaviors behaviors) 
       pack! 
       show!)))
+
+;(-main)
 

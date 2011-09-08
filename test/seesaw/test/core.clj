@@ -295,7 +295,7 @@
            actual# (config ~t ~key)]
        (expect (= expected# actual#))))))
 
-(describe config
+(describe config 
   (it "throws IllegalArgumentException for an unknown option"
     (try
       (config (text "HI") :textish)
@@ -305,6 +305,17 @@
     (= :foo (config (text :id :foo) :id)))
   (it "can retrieve the :class of a widget"
     (= #{"foo"} (config (text :class :foo) :class)))
+
+  (verify-config (text :drag-enabled? true) :drag-enabled? true)
+  (verify-config (tree :drag-enabled? true) :drag-enabled? true)
+  (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
+  (verify-config (table :drag-enabled? true) :drag-enabled? true)
+
+  (verify-config (text :drop-mode :insert) :drop-mode :insert)
+  (verify-config (tree :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (listbox :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (table :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+
   (verify-config (text :text "HI") :text "HI")
   (verify-config (button :text "button") :text "button")
   (verify-config (label :text "label") :text "label")
@@ -609,6 +620,7 @@
     (= 22 (.getTabSize (text :multi-line? true :tab-size 22))))
   (it "should set number of rows with :rows"
     (= 123 (.getRows (text :multi-line? true :rows 123))))
+  (verify-config (text :text "hello there" :caret-position 5) :caret-position 5)
   (it "should set the :caret-color"
     (= Color/ORANGE (.getCaretColor (text :caret-color Color/ORANGE))))
   (it "should set the :disabled-text-color"
@@ -760,7 +772,8 @@
     (let [render-fn (fn [renderer info] nil)
           renderer (default-list-cell-renderer render-fn)
           lb (listbox :renderer renderer)]
-      (= renderer (.getCellRenderer lb)))))
+      (expect (= renderer (.getCellRenderer lb)))
+      (expect (= renderer (config lb :renderer))))))
 
 (describe combobox
   (it "should create a JComboBox"
@@ -775,7 +788,8 @@
       (let [render-fn (fn [renderer info] nil)
             renderer (default-list-cell-renderer render-fn)
             lb (combobox :renderer renderer)]
-        (= renderer (.getRenderer lb))))
+        (= renderer (.getRenderer lb))
+        (= renderer (config lb :renderer))))
   (it "should create a JComboBox using a seq as its model"
     (let [lb (combobox :model [1 2 3 4])
           model (.getModel lb)]
@@ -1057,6 +1071,10 @@
     (let [c (label :text "HI")
           f (frame :content c)]
       (expect (= c (.getContentPane f)))))
+  (it "should set the frame's icon from an image"
+    (let [i (buffered-image 16 16)
+          f (frame :icon i)]
+      (expect (= i (.getIconImage f)))))
   (it "should, by default, set location by platform to true"
     (.isLocationByPlatform (frame))))
 

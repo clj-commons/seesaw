@@ -39,7 +39,10 @@
     "
   [& args]
   (if (= 1 (count args))
-    (Font/decode (str (first args)))
+    (let [v (first args)]
+      (if (and (keyword? v) (namespace v))
+        (Font/decode (resource v))
+        (Font/decode (str v))))
     (let [{:keys [style size from] :as opts} args
           font-name (:name opts)
           font-style (get style-table (or style :plain))

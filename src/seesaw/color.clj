@@ -12,6 +12,7 @@
             in the core color options."
       :author "Dave Ray"}
   seesaw.color
+  (:use [seesaw.util :only (resource)])
   (:import [java.awt Color]))
 
 (def ^{:private true} color-names {
@@ -204,7 +205,10 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/Color.html
     http://www.w3.org/TR/css3-color/
   "
-  ([s] (or (color-names (.toLowerCase (name s))) (decode (name s))))
+  ([s]
+    (if (and (keyword? s) (namespace s))
+      (color (resource s))
+      (or (color-names (.toLowerCase (name s))) (decode (name s)))))
   ([s a] (apply color (assoc (get-rgba (color s)) 3 a)))
   ([^Integer r ^Integer g ^Integer b ^Integer a] (Color. r (or g 0) (or b 0) (or a 255)))
   ([r g b] (color r g b nil)))

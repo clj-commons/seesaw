@@ -231,10 +231,67 @@
 ;*******************************************************************************
 ; Styles
 
-(defrecord Style [foreground background stroke font])
+(defrecord Style [^java.awt.Color  foreground 
+                  ^java.awt.Color  background 
+                  ^java.awt.Stroke stroke 
+                  ^java.awt.Font   font])
 
 (defn style 
+  "Create a new style object for use with (seesaw.graphics/draw). Takes a list
+  of key/value pairs:
+  
+    :foreground A color value (see seesaw.color) for the foreground (stroke)
+    :background A color value (see seesaw.color) for the background (fill)
+    :stroke     A stroke value used to draw outlines (see seesaw.graphics/stroke)
+    :font       Font value used for drawing text shapes
+  
+    The default value for all properties is nil. See (seesaw.graphics/draw) for
+    interpretation of nil values.
+
+  Notes:
+
+    Style objects are immutable so they can be efficiently \"pre-compiled\" and
+    used for drawing multiple shapes.
+
+  Examples:
+  
+    ; Red on black
+    (style :foreground :red :background :black :font :monospace)
+    
+    ; Red, 8-pixel line with no fill.
+    (style :foreground :red :stroke 8)
+
+  See:
+    (seesaw.graphics/update-style)
+    (seesaw.graphics/draw)
+  "
   [& {:keys [foreground background stroke font]}]
+  (Style. 
+    (to-color foreground) 
+    (to-color background)
+    (to-stroke stroke)
+    (to-font font)))
+
+(defn update-style
+  "Update a style with new properties and return a new style. This is basically
+  exactly the same as (clojure.core/assoc) with the exception that color, stroke,
+  and font values are interpreted by Seesaw.
+  
+  Examples:
+  
+    (def start (style :foreground blue :background :white))
+    (def no-fill (update-style start :background nil))
+    (def red-line (update-style no-fill :foreground :red))
+  
+  See:
+    (seesaw.graphics/style)
+    (seesaw.graphics/draw)
+  "
+  [s & {:keys [foreground background stroke font] 
+        :or { foreground (:foreground s) ; Preserve original value and watch out for nil
+              background (:background s) 
+              stroke (:stroke s) 
+              font (:font s) }}]
   (Style. 
     (to-color foreground) 
     (to-color background)

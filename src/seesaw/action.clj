@@ -28,7 +28,7 @@
 (def ^{:private true} action-options {
   :enabled?  (bean-option :enabled? Action boolean)
   :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
-  :name      (action-property-option :name Action/NAME str)
+  :name      (action-property-option :name Action/NAME resource)
   :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)
   :tip       (action-property-option :tip Action/SHORT_DESCRIPTION str)
   :icon      (action-property-option :icon Action/SMALL_ICON icon)
@@ -38,6 +38,7 @@
                  (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
                    (.putValue a Action/MNEMONIC_KEY v)))) 
   :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
+  :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
 })
 
 (defn action 

@@ -8,7 +8,7 @@ _"killing CamelCase, proxy and reify, one class at a time"_
 
 *_Seesaw's experimental and subject to radical change_*
 
-_*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs] (http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-dae and trustworthy.*_
+_*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs] (http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
 
 Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it. It's an experiment to see what I can do to make user interface development funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
@@ -56,12 +56,6 @@ Now run it:
 * In your project's `project.clj` file, change the Seesaw version to `X.Y.Z-SNAPSHOT` to match whatever's in Seesaw's `project.clj`.
 * Run `lein deps`
 * Move along
-
-## TODO
-
-* Selectors - select widgets by class, data, etc.
-* Styling
-* Investigate how a framework like [cljque] (https://github.com/stuartsierra/cljque) might fit in with Seesaw
 
 ## License
 

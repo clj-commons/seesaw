@@ -17,10 +17,11 @@
   seesaw.core
   (:use [seesaw util options meta to-widget make-widget])
   (:require clojure.java.io
+            clojure.set
             [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics cursor scroll])
+             event selector icon action cells table graphics cursor scroll dnd])
   (:import [javax.swing 
-             SwingConstants UIManager ScrollPaneConstants
+             SwingConstants UIManager ScrollPaneConstants DropMode
              BoxLayout
              JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane
              JLabel JTextField JTextArea JTextPane
@@ -599,47 +600,65 @@
 
 ; We define a few protocols for various setters that existing on multiple Swing
 ; types, but don't have a common interface. This lets us avoid reflection.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; get/setText is a common method on many types, but not in any common interface :(
+
 (defprotocol ^{:private true} SetIcon (set-icon [this v]))
 
 (extend-protocol SetIcon
   javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
   javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; get/setText is a common method on many types, but not in any common interface :(
 
 (defprotocol ^{:private true} Text 
-  (set-text [this v])
-  (get-text [this]))
+  (set-text* [this v])
+  (get-text* [this]))
+
+(extend-protocol Text
+  Object
+    (set-text* [this v] (set-text* (to-widget this) v))
+    (get-text* [this] (get-text* (to-widget this)))
+  javax.swing.JLabel
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this))
+  javax.swing.AbstractButton
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this))
+  javax.swing.text.AbstractDocument
+    (set-text* [this v] (.replace this 0 (.getLength this) v nil))
+    (get-text* [this] (.getText this 0 (.getLength this)))
+  javax.swing.event.DocumentEvent
+    (set-text* [this v] (set-text* (.getDocument this) v))
+    (get-text* [this] (get-text* (.getDocument this)))
+  javax.swing.text.JTextComponent
+    (set-text* [this v] (.setText this v))
+    (get-text* [this] (.getText this)))
 
 (defn- convert-text-value [v]
   (cond
     (nil? v)    v
     (string? v) v
     (number? v) (str v)
+    (and (keyword? v) (namespace v)) (resource v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
     ; TODO This line is unreachable because the IOFactory protocol is
     ; extended to Object, i.e. satisfies? above will *always* return
     ; true :(
     :else (str v)))
 
-(extend-protocol Text
-  Object
-    (set-text [this v] (set-text (to-widget this) v))
-    (get-text [this] (get-text (to-widget this)))
-  javax.swing.JLabel 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this))
-  javax.swing.AbstractButton 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this))
-  javax.swing.text.AbstractDocument 
-    (set-text [this v] (.replace this 0 (.getLength this) (convert-text-value v) nil))
-    (get-text [this] (.getText this 0 (.getLength this)))
-  javax.swing.event.DocumentEvent
-    (set-text [this v] (set-text (.getDocument this) v))
-    (get-text [this] (get-text (.getDocument this)))
-  javax.swing.text.JTextComponent 
-    (set-text [this v] (.setText this (convert-text-value v)))
-    (get-text [this] (.getText this)))
+(defn- set-text
+  [this v]
+  (set-text* this (convert-text-value v)))
+
+(defn- get-text
+  [this]
+  (get-text* this))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; setAction is a common method on many types, but not in any common interface :(
 
 (defprotocol ^{:private true} SetAction (set-action [this v]))
 (extend-protocol SetAction
@@ -647,20 +666,78 @@
   javax.swing.JTextField (set-action [this v] (.setAction this v))
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; set/getModel is a common method on many types, but not in any common interface :(
+
 (defprotocol ^{:private true} ConfigModel 
   (get-model [this])
   (set-model [this m]))
 
 (extend-protocol ConfigModel
-  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v))
-  javax.swing.AbstractButton (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JComboBox      (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JList          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JTable         (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JTree          (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JProgressBar   (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JSlider        (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v))
-  javax.swing.JScrollBar     (get-model [this] (.getModel this)) (set-model [this v] (.setModel this v)))
+  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v)))
+
+(defmacro ^{:private true} config-model-impl [& classes]
+  `(extend-protocol ConfigModel 
+   ~@(mapcat
+      (fn [c]
+        `(~c (~'get-model [this#] (. this# ~'getModel))
+             (~'set-model [this# v#] (. this# ~'setModel v#))))
+     classes)))
+
+(config-model-impl 
+  javax.swing.AbstractButton
+  javax.swing.JComboBox
+  javax.swing.JList
+  javax.swing.JTable
+  javax.swing.JTree
+  javax.swing.JProgressBar
+  javax.swing.JSlider
+  javax.swing.JScrollBar)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; dragEnabled is a common method on many types, but not in any common interface :(
+(defprotocol ^{:private true} ConfigDragEnabled
+  (get-drag-enabled [this]) 
+  (set-drag-enabled [this v]))
+
+; Do-nothing impls for everybody
+(extend-protocol ConfigDragEnabled
+  javax.swing.JComponent (get-drag-enabled [this] false) (set-drag-enabled [this v])
+  javax.swing.JWindow    (get-drag-enabled [this] false) (set-drag-enabled [this v]))
+
+(defmacro ^{:private true} config-drag-enabled-impl [& classes]
+  `(extend-protocol ConfigDragEnabled
+   ~@(mapcat
+      (fn [c]
+        `(~c (~'get-drag-enabled [this#] (. this# ~'getDragEnabled))
+             (~'set-drag-enabled [this# v#] (. this# ~'setDragEnabled (boolean v#)))))
+     classes)))
+
+(config-drag-enabled-impl 
+  javax.swing.text.JTextComponent
+  javax.swing.JColorChooser
+  javax.swing.JFileChooser
+  javax.swing.JTable
+  javax.swing.JList
+  javax.swing.JTree)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; drop-mode support constants
+
+(def ^{:private true} drop-mode-to-keyword {
+  DropMode/INSERT            :insert
+  DropMode/INSERT_COLS       :insert-cols
+  DropMode/INSERT_ROWS       :insert-rows
+  DropMode/ON                :on
+  DropMode/ON_OR_INSERT      :on-or-insert
+  DropMode/ON_OR_INSERT_COLS :on-or-insert-cols 
+  DropMode/ON_OR_INSERT_ROWS :on-or-insert-rows
+  DropMode/USE_SELECTION     :use-selection
+})
+
+(def ^{:private true} keyword-to-drop-mode (clojure.set/map-invert drop-mode-to-keyword))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol SetSelectionMode (set-selection-mode [this v]))
 (extend-protocol SetSelectionMode
@@ -696,6 +773,9 @@
       (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys tree-selection-mode-table)))))))
 
 (declare paint-option-handler)
+
+(def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
+
 (def ^{:private true} default-options {
   ::with       (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
   :listen      (default-option :listen #(apply seesaw.event/listen %1 %2))
@@ -737,6 +817,8 @@
   :action     (default-option :action set-action)
   :text       (default-option :text set-text get-text)
   :model      (default-option :model set-model get-model)
+  :drag-enabled? (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
+  :transfer-handler (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)
 })
 
 (extend-protocol Configurable
@@ -1111,6 +1193,7 @@
 ; Labels
 
 (def ^{:private true} label-options {
+  :resource        (resource-option :resource base-resource-options)
   :halign          (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table)
   :valign          (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table) 
   :h-text-position (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table)
@@ -1130,6 +1213,13 @@
 
     :h-text-position Horizontal text position, :left, :right, :center, etc.
     :v-text-position Horizontal text position, :top, :center, :bottom, etc.
+    :resource        Namespace-qualified keyword which is a resource prefix for the
+                     labels properties
+
+  Resources and i18n:
+
+    A label's base properties can be set from a resource prefix, i.e. a namespace-
+    qualified keyword that refers to a resource bundle loadable by j18n. 
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
@@ -1189,6 +1279,7 @@
   (apply-options (ButtonGroup.) opts button-group-options))
 
 (def ^{:private true} button-options {
+  :resource  (resource-option :resource base-resource-options)
   :halign    (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
   :valign    (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
   :selected? (bean-option :selected? javax.swing.AbstractButton boolean)
@@ -1204,21 +1295,55 @@
 
   
 (defn button 
+  "Construct a generic button. In addition to default widget options, supports
+  the following:
+  
+      :halign    Horizontal alignment. One of :left, :right, :leading, :trailing, 
+                 :center
+      :valign    Vertical alignment. One of :top, :center, :bottom
+      :selected? Whether the button is initially selected. Mostly for checked 
+                 and radio buttons/menu-items.
+      :margin    The button margins as insets. See (seesaw.util/to-insets)
+      :group     A button-group that the button should be added to.
+      :resource  A resource prefix (see below).
+ 
+  Resources and i18n:
+
+    A button's base properties can be set from a resource prefix, i.e. a namespace-
+    qualified keyword that refers to a resource bundle loadable by j18n. 
+
+  See:
+    (seesaw.core/button-group)"
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JButton args) args))
 
 (defn toggle   
+  "Same as (seesaw.core/button), but creates a toggle button. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JToggleButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JToggleButton args) args))
 
 (defn checkbox 
+  "Same as (seesaw.core/button), but creates a checkbox. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JCheckBox }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JCheckBox args) args))
 
 (defn radio    
+  "Same as (seesaw.core/button), but creates a radio button. Use :selected? option
+  to set initial state.
+  
+  See:
+    (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JRadioButton }} 
   [& args] 
   (apply-button-defaults (construct javax.swing.JRadioButton args) args))
@@ -1226,12 +1351,17 @@
 ;*******************************************************************************
 ; Text widgets
 (def ^{:private true} text-options {
+  :resource        (resource-option :resource 
+                                    (concat base-resource-options 
+                                            [:caret-color :disabled-text-color :selected-text-color :selection-color]))
   :editable?           (bean-option :editable? javax.swing.text.JTextComponent boolean)
   :margin              (bean-option :margin javax.swing.text.JTextComponent to-insets)
   :caret-color         (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :caret-position      (bean-option :caret-position javax.swing.text.JTextComponent)
   :disabled-text-color (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selected-text-color (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
   :selection-color     (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
+  :drop-mode           (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (def ^{:private true} text-field-options (merge {
@@ -1259,10 +1389,11 @@
     :multi-line?  If true, a JTextArea is created (default false)
     :editable?    If false, the text is read-only (default true)
     :margin       
-    :caret-color
-    :disabled-text-color
-    :selected-text-color
-    :selection-color
+    :caret-color          Color of caret (see seesaw.color)
+    :caret-position       Caret position as zero-based integer offset
+    :disabled-text-color  A color value
+    :selected-text-color  A color value
+    :selection-color      A color value
 
 
   The following properties only apply if :multi-line? is false: 
@@ -1334,7 +1465,7 @@
 
     A string                               - the string
     A URL, File, or anything \"slurpable\" - the slurped value
-    Anythign else                          - (str value)
+    Anythign else                          - (resource value)
 
   Example:
 
@@ -1530,9 +1661,11 @@
   :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m)))
                                             get-model)
   :renderer          (default-option :renderer
-                        #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2)))
+                        #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
+                        #(.getCellRenderer ^javax.swing.JList %1))
   :selection-mode    (default-option :selection-mode list-selection-mode-handler)
   :fixed-cell-height (bean-option :fixed-cell-height javax.swing.JList)
+  :drop-mode         (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn listbox
@@ -1583,6 +1716,7 @@
   :fills-viewport-height? (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
   :selection-mode         (default-option :selection-mode list-selection-mode-handler)
   :auto-resize            (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
+  :drop-mode              (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn table
@@ -1629,7 +1763,8 @@
 (def ^{:private true} tree-options {
   :editable?               (bean-option :editable? javax.swing.JTree boolean)
   :renderer                (default-option :renderer
-                              #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2)))
+                              #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2))
+                              #(.getCellRenderer ^javax.swing.JTree %1))
   :expands-selected-paths? (bean-option [:expands-selected-paths? :expands-selected-paths] javax.swing.JTree boolean)
   :large-model?            (bean-option :large-model? javax.swing.JTree boolean)
   :root-visible?           (bean-option :root-visible? javax.swing.JTree boolean)
@@ -1639,6 +1774,7 @@
   :toggle-click-count      (bean-option :toggle-click-count javax.swing.JTree)
   :visible-row-count       (bean-option :visible-row-count javax.swing.JTree)
   :selection-mode          (default-option :selection-mode tree-selection-mode-handler)
+  :drop-mode               (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword)
 })
 
 (defn tree
@@ -1675,7 +1811,8 @@
                (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m)))
                get-model)
   :renderer  (default-option :renderer 
-               #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))) 
+               #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
+               #(.getRenderer ^javax.swing.JComboBox %1)) 
 })
 
 (defn combobox
@@ -1985,9 +2122,27 @@
   :key (bean-option [:key :accelerator] javax.swing.JMenuItem seesaw.keystroke/keystroke)
 })
 
-(defn menu-item          [& args] (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
-(defn checkbox-menu-item [& args] (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
-(defn radio-menu-item    [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
+(defn menu-item          
+  "Create a menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button)"
+  [& args] 
+  (apply-button-defaults (javax.swing.JMenuItem.) args menu-item-options))
+
+(defn checkbox-menu-item 
+  "Create a checked menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button)"
+  [& args] 
+  (apply-button-defaults (javax.swing.JCheckBoxMenuItem.) args))
+
+(defn 
+  radio-menu-item    
+  "Create a radio menu item for use in (seesaw.core/menu). Supports same options as
+  (seesaw.core/button).
+  
+  Notes:
+    Use (seesaw.core/button-group) or the :group option to enforce mutual exclusion
+    across menu items."
+  [& args] (apply-button-defaults (javax.swing.JRadioButtonMenuItem.) args))
 
 (defn- ^javax.swing.JMenuItem to-menu-item
   [item]
@@ -2011,7 +2166,8 @@
 })
 
 (defn menu 
-  "Create a new menu. Additional options:
+  "Create a new menu. In addition to all options applicable to (seesaw.core/button)
+  the following additional options are supported:
 
     :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
   
@@ -2019,6 +2175,7 @@
     This function is compatible with (seesaw.core/with-widget).
   
   See:
+    (seesaw.core/button)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
@@ -2142,7 +2299,7 @@
     (let [title-cmp (try-cast Component title)
           index     (.getTabCount tp)]
       (cond-doto tp
-        true (.addTab (when-not title-cmp (str title)) (make-icon icon) (make-widget content) (str tip))
+        true (.addTab (if-not title-cmp (resource title)) (make-icon icon) (make-widget content) (resource tip))
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
@@ -2301,20 +2458,29 @@
   :nothing JFrame/DO_NOTHING_ON_CLOSE
 })
 
+(defn- ^java.awt.Image frame-icon-converter [value]
+  (cond
+    (instance? java.awt.Image value) value
+    :else (let [^javax.swing.ImageIcon i (make-icon value)]
+            (.getImage i))))
+
 (def ^{:private true} frame-options {
   ::with       (default-option ::with) ; ignore ::with option inserted by (with-widget)
+  :resource    (resource-option :resource [:title :icon])
   :id          (default-option :id seesaw.selector/id-of!)
   :class       (default-option :class seesaw.selector/class-of!)
   :on-close    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
   :content     (bean-option [:content :content-pane] javax.swing.JFrame make-widget)
   :menubar     (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
 
-  :title        (bean-option :title java.awt.Frame str)
+  :title        (bean-option :title java.awt.Frame resource)
   :resizable?   (bean-option :resizable? java.awt.Frame boolean)
 
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
   :size         (bean-option :size java.awt.Window to-dimension)
   :visible?     (bean-option :visible? java.awt.Window boolean)
+  :transfer-handler (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
+  :icon         (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)
 })
 
 (defn frame
@@ -2322,6 +2488,7 @@
 
     :id       id of the window, used by (select).
     :title    the title of the window
+    :icon     the icon of the frame (varies by platform)
     :width    initial width. Note that calling (pack!) will negate this setting
     :height   initial height. Note that calling (pack!) will negate this setting
     :size     initial size. Note that calling (pack!) will negate this setting
@@ -2421,7 +2588,7 @@
   :menubar  (bean-option [:menubar :j-menu-bar] javax.swing.JDialog)
 
   ; Ditto here. Avoid reflection
-  :title        (bean-option :title java.awt.Dialog str)
+  :title        (bean-option :title java.awt.Dialog resource)
   :resizable?   (bean-option :resizable? java.awt.Dialog boolean)
 })
 
@@ -2524,7 +2691,7 @@
 ; Alert
 (defn alert
   "Show a simple message alert dialog. Take an optional parent component, source,
-  used for dialog placement, and a message which is passed through (str).
+  used for dialog placement, and a message which is passed through (resource).
 
   Examples:
 
@@ -2535,7 +2702,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
   "
   ([source message] 
-    (JOptionPane/showMessageDialog (to-widget source) (str message)))
+    (JOptionPane/showMessageDialog (to-widget source) (resource message)))
   ([message] (alert nil message)))
 
 ;*******************************************************************************
@@ -2565,11 +2732,11 @@
   [source message {:keys [title value type choices icon to-string] 
                    :or {type :plain to-string str}}]
   (let [source  (to-widget source)
-        message (if (coll? message) (object-array message) (str message))
+        message (if (coll? message) (object-array message) (resource message))
         choices (when choices (object-array (map #(InputChoice. % to-string) choices)))
         result  (JOptionPane/showInputDialog ^java.awt.Component source 
                                  message 
-                                 title 
+                                 (resource title) 
                                  (input-type-map type) 
                                  (make-icon icon)
                                  choices value)]

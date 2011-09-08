@@ -81,13 +81,6 @@
          {:key :updated :text "Last Updated"}
          {:key :image :text "Image"}]]))
 
-(defn set-divider-location [w v]
-  (if (.isDisplayable w)
-    (.setDividerLocation w v)
-    (invoke-later
-      (set-divider-location w v)))
-  w)
-
 (defn make-webcam-panel []
   (let [webcam-table (make-webcam-table)
         image-label  (label :text "")]
@@ -98,11 +91,10 @@
     (border-panel 
       :id :webcam
       :border 5
-      :center
-        (-> (top-bottom-split
-          (scrollable webcam-table)
-          (scrollable image-label))
-          (set-divider-location 0.5)))))
+      :center (top-bottom-split
+                (scrollable webcam-table)
+                (scrollable image-label)
+                :divider-location 1/2))))
 
 (defn update-webcams [webcam-panel webcams]
   (let [t (select webcam-panel [:#webcam-table])]
@@ -151,5 +143,7 @@
                :center (make-tabs))))
 
 (defn -main [& args]
-  (invoke-later (show! (app))))
+  (invoke-later (show! (app)))
+  ; Avoid RejectedExecutionException in lein :(
+  @(promise))
 

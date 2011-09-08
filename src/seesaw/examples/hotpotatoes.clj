@@ -24,7 +24,7 @@
       
 (defn app 
   [exit?]
-  (let [exit-action (action :handler (fn [e] (if exit? (System/exit 0) (.dispose (to-frame e)))) :name "Exit")
+  (let [exit-action (action :handler dispose! :name "Exit")
         url-text    (text "http://google.com")
         status      (label "Ready")
         result-text (text :multi-line? true :editable? false :font "MONOSPACED-14")
@@ -39,6 +39,7 @@
     (frame 
       :id :frame
       :title "Hot Potatoes!"
+      :on-close (if exit? :exit :dispose)
       :menubar (menubar :items [(menu :text "File" :items [exit-action])])
       :width 500 :height 600
       :content 
@@ -60,5 +61,6 @@
 
 (defn -main [& args]
   (invoke-later (show! (app true))))
+
 ;(show! (app false))
 
