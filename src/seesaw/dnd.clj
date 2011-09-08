@@ -23,15 +23,15 @@
 (defprotocol Flavorful
   "Protocol for abstracting DataFlavor including automatic conversion from
   external/native representations (e.g. uri-list) to friendlier internal 
-  representations (e.g. list of java.net.URL)."
+  representations (e.g. list of java.net.URI)."
   (to-raw-flavor [this]
     "Return an instance of java.awt.datatransfer.DataFlavor for this.")
   (to-local [this value] 
     "Given an incoming value convert it to the expected local format. For example, a uri-list
-    would return a vector of URL.")
+    would return a vector of URI.")
   (to-remote [this value] 
     "Given an outgoing value, convert it to the appropriate remote format.
-    For example, a vector of URLs would be serialized as a uri-list."))
+    For example, a vector of URIs would be serialized as a uri-list."))
 
 ; Default/do-nothin impl for DataFlavors
 (extend-protocol Flavorful
@@ -77,15 +77,16 @@
 (def ^{:doc "Flavor for a list of java.io.File objects" }
   file-list-flavor DataFlavor/javaFileListFlavor)
 
-(def ^{:doc "Flavor for a list of java.net.URL objects." }
+(def ^{:doc "Flavor for a list of java.net.URI objects. Note it's URI, not URL.
+            With just java.net.URL it's possible to drop non-URL links, e.g. \"about:config\"." }
   uri-list-flavor 
   (let [flavor (make-flavor "text/uri-list" String)]
     (reify Flavorful
       (to-raw-flavor [this] flavor)
       (to-local [this value] 
-        (map #(java.net.URL. %) (clojure.string/split-lines value)))
+        (map #(java.net.URI. %) (clojure.string/split-lines value)))
       (to-remote [this value] 
-        (clojure.string/join "\r\n" (map #(.toExternalForm ^java.net.URL %) value))))))
+        (clojure.string/join "\r\n" value)))))
 
 (def ^{:doc "Flavor for HTML text"} html-flavor (make-flavor "text/html" String))
 (def ^{:doc "Flavor for images as java.awt.Image" } image-flavor DataFlavor/imageFlavor)
