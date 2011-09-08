@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.cursor - Seesaw nil API documentation</title>
+    <title>seesaw.dnd-explorer - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,85 +52,27 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#seesaw.cursor/cursor">cursor</a>
-    </div>
+    
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.cursor</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.dnd-explorer</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
-<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.cursor</span>))
+  (:require <span id="long-name">seesaw.dnd-explorer</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr">Functions for creating Swing cursors.</pre>
+<pre id="namespace-docstr"></pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
-<div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="seesaw.cursor/cursor">cursor</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (cursor type &amp; args)
-</pre>
-  <pre id="var-docstr">Create a built-in or custom cursor. Take one of two forms:
 
-  (cursor :name-of-built-in-cursor)
-
-Creates a built-in cursor of the given type. Valid types are:
-
-  :crosshair :custom :default :hand :move :text :wait
-  :e-resize :n-resize :ne-resize :nw-resize 
-  :s-resize :se-resize :sw-resize :w-resize
-
-To create custom cursor:
-
-  (cursor image-or-icon optional-hotspot)
-
-where image-or-icon is a java.awt.Image (see seesaw.graphics/buffered-image)
-or javax.swing.ImageIcon (see seesaw.icon/icon). The hotspot is an optional
-[x y] point indicating the click point for the cursor. Defaults to [0 0].
-
-Examples:
-
-  ; The hand cursor
-  (cursor :hand)
-
-  ; Create a custom cursor from a URL:
-  (cursor (icon "<a href="http://path/to/my/cursor.png">http://path/to/my/cursor.png</a>") [5 5])
-
-Notes:
-  This function is used implicitly by the :cursor option on most widget
-  constructor functions. So 
-
-      (label :cursor (cursor :hand))
-
-  is equivalent to:
-
-      (label :cursor :hand)
-
-  Same for setting the cursor with (seesaw.core/config!).
-
-  Also, the size of a cursor is platform dependent, so some experimentation
-  will be required with creating custom cursors from images.
-
-See:
-
-  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html">http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html</a> 
-  <a href="http://download.oracle.com/javase/6/docs/api/java/awt/Toolkit.html#createCustomCursor%28java.awt.Image,%20java.awt.Point,%20java.lang.String%29">http://download.oracle.com/javase/6/docs/api/java/awt/Toolkit.html#createCustomCursor%28java.awt.Image,%20java.awt.Point,%20java.lang.String%29</a>
-</pre>
-  
-  
-  
-</div>
 
 
 </div>

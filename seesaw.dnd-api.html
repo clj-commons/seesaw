@@ -1,0 +1,391 @@
+<html>
+  <head>
+    <title>seesaw.dnd - Seesaw nil API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
+    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
+    <script src="file/view/clojure.js" type="text/javascript"></script>
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">Seesaw API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">Seesaw</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <span class="toc-header">Namespaces</span>
+    <ul id="left-sidebar-list">
+      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.dnd-api.html" class="wiki_link">seesaw.dnd</a></li><li><a href="seesaw.dnd-explorer-api.html" class="wiki_link">seesaw.dnd-explorer</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.make-widget-api.html" class="wiki_link">seesaw.make-widget</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.options-api.html" class="wiki_link">seesaw.options</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.scroll-api.html" class="wiki_link">seesaw.scroll</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li>
+    </ul>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/Flavorful">Flavorful</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/default-transfer-handler">default-transfer-handler</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/default-transferable">default-transferable</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/everything-transfer-handler">everything-transfer-handler</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/file-list-flavor">file-list-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/html-flavor">html-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/image-flavor">image-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/local-object-flavor">local-object-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/make-flavor">make-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/string-flavor">string-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/to-local">to-local</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/to-raw-flavor">to-raw-flavor</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/to-remote">to-remote</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.dnd/uri-list-flavor">uri-list-flavor</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.dnd</span>
+  - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
+  </h1>
+<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
+<br />Usage:
+<pre>
+(ns your-namespace
+  (:require <span id="long-name">seesaw.dnd</span>))
+</pre><pre>
+</pre><h2>Overview</h2>
+<pre id="namespace-docstr">Functions for dealing with drag and drop and data transfer.</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/Flavorful">Flavorful</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Protocol for abstracting DataFlavor including automatic conversion from
+external/native representations (e.g. uri-list) to friendlier internal 
+representations (e.g. list of java.net.URI).</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/default-transfer-handler">default-transfer-handler</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (default-transfer-handler &amp; {:keys [import export], :as opts})
+</pre>
+  <pre id="var-docstr">Create a transfer handler for drag and drop operations. Take a list
+of key/value option pairs as usual. The following options are supported:
+
+  :import - A vector of flavor/handler pairs used when a drop/paste occurs
+            (see below)
+  :export - A map of options used when a drag/copy occurs (see below)
+
+Data Import
+
+  The :import option specifies a vector of flavor/handler pairs. When
+  a drop/paste occurs, the handler for the first matching flavor is called
+  with a map with the following keys:
+
+    :target        The widget that's the target of the drop
+    :data          The data, type depends on flavor
+    :drop?         true if this is a drop operation, otherwise it's a paste
+    :drop-location Map of drop location info or nil if drop? is false. See 
+                   below.
+    :support       Instance of javax.swing.TransferHandler$TransferSupport
+                   for advanced use.
+
+  The handler must return truthy if the drop is accepted, falsey otherwise.
+
+  If :drop? is true, :drop-location will be non-nil and include the following
+  keys, depending on the type of the drop target:
+
+    All types:
+
+      :point    [x y] vector
+
+    listbox 
+
+      :index    The index for the drop
+      :insert?  True if it's an insert, i.e. "between" entries
+
+    table 
+
+      :column         The column for the drop
+      :row            The row for the drop
+      :insert-column? True if it's an insert, i.e. "between" columns.
+      :insert-row?    True if it's an insert, i.e. "between" rows 
+
+    tree 
+
+      :index  The index of the drop point 
+      :path   TreePath of the drop point
+
+    Text Components
+
+      :bias   No idea what this is
+      :index  The insertion index
+
+Data Export
+
+  The :export option specifies the behavior when a drag or copy is started
+  from a widget. It is a map with the following keys:
+
+    :actions A function that takes a widget and returns a keyword indicating
+             supported actions. Defaults to :move. Can be any of :move, :copy, 
+             :copy-or-move, :link, or :none.
+    :start   A function that takes a widget and returns a vector of flavor/value
+             pairs to be exported. Required.
+    :finish  A function that takes a map of values. It's called when the drag/paste
+             is completed. The map has the following keys:
+              :source The widget from which the drag started
+              :action The action, :move, :copy, or :link.
+              :data   A Transferable
+
+Examples:
+
+
+  (default-transfer-handler
+    ; Allow either strings or lists of files to be dropped
+    :import [string-flavor    (fn [{:keys [data]}] ... data is a string ...)
+             file-list-flavor (fn [{:keys [data]}] ... data is a *list* of files ...)]
+    
+    :export {
+      :actions (fn [_] :copy)
+      :start   (fn [w] [string-flavor (seesaw.core/text w)])
+      :finish  (fn [_] ... do something when drag is finished ...) })
+
+See:
+
+  <a href="http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html">http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html</a>
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/default-transferable">default-transferable</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (default-transferable pairs)
+</pre>
+  <pre id="var-docstr">Constructs a transferable given a vector of alternating flavor/value pairs.
+If a value is a function, i.e. (fn? value) is true, then then function is 
+called with no arguments when the value is requested for its corresponding 
+flavor. This way calculation of the value can be deferred until drop time. 
+
+Each flavor must be unique and it's assumed that the flavor and value agree.
+
+Examples:
+
+  ; A transferable holding String or File data where the file calc is
+  ; deferred
+  (default-transferable [string-flavor    "/home/dave"
+                         file-list-flavor #(vector (java.io.File. "/home/dave"))])
+
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/everything-transfer-handler">everything-transfer-handler</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (everything-transfer-handler handler)
+</pre>
+  <pre id="var-docstr">Handler that accepts all drops. For debugging.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/file-list-flavor">file-list-flavor</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Flavor for a list of java.io.File objects</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/html-flavor">html-flavor</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Flavor for HTML text</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/image-flavor">image-flavor</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Flavor for images as java.awt.Image</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/local-object-flavor">local-object-flavor</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (local-object-flavor class-or-value)
+</pre>
+  <pre id="var-docstr">Creates a flavor for moving raw Java objects between components within a
+single JVM instance. class-or-value is either the class of data, or an
+example value from which the class is taken.
+
+Examples:
+
+  ; Move Clojure vectors
+  (local-object-flavor [])
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/make-flavor">make-flavor</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (make-flavor mime-type rep-class)
+</pre>
+  <pre id="var-docstr">Construct a new data flavor with the given mime-type and representation class.
+
+Notes:
+
+  Run seesaw.dnd-explorer to experiment with flavors coming from
+  other apps.
+
+Examples:
+
+  ; HTML as a reader
+  (make-flavor "text/html" java.io.Reader)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/string-flavor">string-flavor</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Flavor for raw text</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/to-local">to-local</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to-local this value)
+</pre>
+  <pre id="var-docstr">Given an incoming value convert it to the expected local format. For example, a uri-list
+would return a vector of URI.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/to-raw-flavor">to-raw-flavor</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to-raw-flavor this)
+</pre>
+  <pre id="var-docstr">Return an instance of java.awt.datatransfer.DataFlavor for this.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/to-remote">to-remote</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to-remote this value)
+</pre>
+  <pre id="var-docstr">Given an outgoing value, convert it to the appropriate remote format.
+For example, a vector of URIs would be serialized as a uri-list.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.dnd/uri-list-flavor">uri-list-flavor</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Flavor for a list of java.net.URI objects. Note it's URI, not URL.
+With just java.net.URL it's possible to drop non-URL links, e.g. "about:config".</pre>
+  
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">Copyright 2011, Dave Ray</div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>
