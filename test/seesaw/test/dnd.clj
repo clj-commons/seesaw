@@ -26,13 +26,13 @@
     (= (local-object-flavor (class [])) (local-object-flavor []))))
 
 (describe uri-list-flavor
-  (it "implements to-remote to convert list of URLs to uri-list"
+  (it "implements to-remote to convert list of URIs to uri-list"
     (= "http://google.com\r\nhttp://github.com" 
        (to-remote uri-list-flavor 
-                  [(java.net.URL. "http://google.com")
-                   (java.net.URL. "http://github.com")])))
-  (it "implements to-local to convert uri-list to list of URLs"
-    (= [(java.net.URL. "http://google.com") (java.net.URL. "http://github.com")]
+                  [(java.net.URI. "http://google.com")
+                   (java.net.URI. "http://github.com")])))
+  (it "implements to-local to convert uri-list to list of URIs"
+    (= [(java.net.URI. "http://google.com") (java.net.URI. "http://github.com")]
        (to-local uri-list-flavor "http://google.com\r\nhttp://github.com" ))))
 
 (describe default-transferable

@@ -50,23 +50,23 @@
           ; No :finish needed
         })))
 
-; A list box that imports and exports URLs, like with a browser
+; A list box that imports and exports URIs, like with a browser
 (defn url-target []
   (listbox
-    :model [(java.net.URL. "http://github.com/daveray/seesaw")]
+    :model [(java.net.URI. "http://github.com/daveray/seesaw")]
     :drag-enabled? true
     :drop-mode :insert
     :transfer-handler 
       (dnd/default-transfer-handler 
         :import [dnd/uri-list-flavor (fn [{:keys [target data]}]
-                                      ; data is seq of java.net.URL
+                                      ; data is seq of java.net.URI
                                       (doseq [url data] 
                                         (.. target getModel (addElement url))))]
         :export {
           :actions (constantly :copy)
           :start   (fn [c] 
                      (let [url (selection c)] 
-                       [dnd/uri-list-flavor [url]]))
+                       [dnd/uri-list-flavor [url] ]))
           ; No :finish needed
         })))
 
@@ -96,7 +96,7 @@
         :items [ 
           (border-panel :border "Drag and Drop Text here"   :center (scrollable (string-target)))
           (border-panel :border "Drag and Drop Files here"  :center (scrollable (file-target)))
-          (border-panel :border "Drag and Drop URLs here"   :center (scrollable (url-target)))
+          (border-panel :border "Drag and Drop URIs here"   :center (scrollable (url-target)))
           (border-panel :border "Drag and Drop Images here" :center (image-target))
           ])))
 
