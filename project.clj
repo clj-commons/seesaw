@@ -12,7 +12,7 @@
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [com.miglayout/miglayout "3.7.4"]
                  [com.jgoodies/forms "1.2.1"]
-                 [j18n "1.0.0-SNAPSHOT"]]
+                 [j18n "1.0.0"]]
   :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
                      [lein-clojars "0.6.0"]
                      [org.clojars.rayne/autodoc "0.8.0-SNAPSHOT"]]
