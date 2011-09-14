@@ -12,6 +12,7 @@ _*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) and [the Seesaw
 
 Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it. It's an experiment to see what I can do to make user interface development funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
+_There are numerous Seesaw examples in `test/seesaw/test/examples`._
 
 ## TL;DR
 
