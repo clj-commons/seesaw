@@ -692,7 +692,8 @@
   javax.swing.JTree
   javax.swing.JProgressBar
   javax.swing.JSlider
-  javax.swing.JScrollBar)
+  javax.swing.JScrollBar
+  javax.swing.JSpinner)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
@@ -1834,6 +1835,25 @@
   { :seesaw {:class 'javax.swing.JComboBox }}
   [& args]
   (apply-options (construct javax.swing.JComboBox args) args (merge default-options combobox-options)))
+
+(defn- to-spinner-model [v]
+  (cond
+    (instance? javax.swing.SpinnerModel v) v
+    (sequential? v) (javax.swing.SpinnerListModel. v)))
+
+(def ^{:private true} spinner-options {
+  ; TODO This setter access should be a function in options.clj
+  :model (default-option :model 
+           (fn [s m] ((:setter (:model default-options)) s (to-spinner-model m)))
+                                            get-model)
+                                       })
+(defn spinner 
+  { :seesaw {:class 'javax.swing.JSpinner }}
+  [& args]
+  (apply-options 
+    (construct javax.swing.JSpinner args) 
+    args 
+    (merge default-options spinner-options)))
 
 ;*******************************************************************************
 ; Scrolling

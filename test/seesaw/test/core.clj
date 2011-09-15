@@ -796,6 +796,18 @@
       (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
       (expect (= 1 (.getSelectedItem model))))))
 
+(describe spinner {:focus true}
+  (it "should create a JSpinner"
+    (instance? javax.swing.JSpinner (spinner)))
+  (it "should set the model with the :model option"
+    (let [model (javax.swing.SpinnerListModel.)
+          s     (spinner :model model)]
+      (expect (= model (.getModel s)))))
+  (it "creates a list model from a sequence"
+    (let [s (spinner :model [1 2 3])
+          m (config s :model)]
+      (expect (instance? javax.swing.SpinnerListModel m)))))
+
 (describe table
   (it "should create a JTable"
     (= javax.swing.JTable (class (table))))
