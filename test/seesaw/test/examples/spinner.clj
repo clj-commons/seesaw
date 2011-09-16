@@ -14,9 +14,11 @@
   (frame 
     :title "Spinner Example"
     :content
-      (border-panel
-        :north "This is a spinner with some values"
-        :center (spinner :model (map #(str "Value" %) (range 0 100 5))))))
+      (vertical-panel
+        :items [(spinner) 
+                (spinner :model (map #(str "Value" %) (range 0 100 5)))
+                (spinner :model (java.util.Date.))
+                ])))
 
 
 (defn -main [& args]

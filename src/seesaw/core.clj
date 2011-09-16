@@ -1839,7 +1839,9 @@
 (defn- to-spinner-model [v]
   (cond
     (instance? javax.swing.SpinnerModel v) v
-    (sequential? v) (javax.swing.SpinnerListModel. v)))
+    (sequential? v)                        (javax.swing.SpinnerListModel. v)
+    (instance? java.util.Date v) (doto (javax.swing.SpinnerDateModel.) (.setValue ^java.util.Date v))
+    :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
 
 (def ^{:private true} spinner-options {
   ; TODO This setter access should be a function in options.clj
@@ -1848,6 +1850,25 @@
                                             get-model)
                                        })
 (defn spinner 
+  "Create a spinner (JSpinner). Additional options:
+
+    :model Instance of SpinnerModel, or one of the values described below.
+
+  Note that the current selection can be retrieved and set with the (selection) and
+  (selection!) functions.
+
+  The value of model can be one of the following:
+
+    * An instance of javax.swing.SpinnerModel
+    * A java.util.Date instance in which case the spinner starts at that date,
+      is unbounded, and moves by day.
+
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
+  "
   { :seesaw {:class 'javax.swing.JSpinner }}
   [& args]
   (apply-options 

@@ -806,7 +806,12 @@
   (it "creates a list model from a sequence"
     (let [s (spinner :model [1 2 3])
           m (config s :model)]
-      (expect (instance? javax.swing.SpinnerListModel m)))))
+      (expect (instance? javax.swing.SpinnerListModel m))))
+  (it "creates a date model from a java.util.Date"
+    (let [d (java.util.Date.)
+          s (spinner :model d)
+          m (config s :model)]
+      (expect (= d (.getValue m))))))
 
 (describe table
   (it "should create a JTable"
