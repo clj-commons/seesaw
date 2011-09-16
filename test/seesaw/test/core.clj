@@ -796,7 +796,26 @@
       (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
       (expect (= 1 (.getSelectedItem model))))))
 
-(describe spinner {:focus true}
+(describe spinner-model 
+  (it "should create a number spinner model"
+    (let [m (spinner-model 3.5 :from 1.5 :to 4.5 :by 0.5)]
+      (expect (instance? javax.swing.SpinnerNumberModel m))
+      (expect (= 3.5 (.getValue m)))
+      (expect (= 0.5 (.getStepSize m)))
+      (expect (= 4.5 (.getMaximum m)))
+      (expect (= 1.5 (.getMinimum m))))) 
+  (it "should create a date spinner model"
+      (let [s (java.util.Date. (long 0))
+            v (java.util.Date. (long (* 10 24 3600)))
+            e (java.util.Date. (long (* 20 24 3600)))
+            m (spinner-model v :from s :to e :by :day-of-month)]
+        (expect (instance? javax.swing.SpinnerDateModel m))
+        (expect (= java.util.Calendar/DAY_OF_MONTH (.getCalendarField m)))
+        (expect (= v (.getValue m)))
+        (expect (= s (.getStart m)))
+        (expect (= e (.getEnd m))))))
+
+(describe spinner
   (it "should create a JSpinner"
     (instance? javax.swing.JSpinner (spinner)))
   (it "should set the model with the :model option"
@@ -811,7 +830,13 @@
     (let [d (java.util.Date.)
           s (spinner :model d)
           m (config s :model)]
-      (expect (= d (.getValue m))))))
+      (expect (instance? javax.swing.SpinnerDateModel m))
+      (expect (= d (.getValue m)))))
+  (it "creates a numeric model from a number"
+    (let [s (spinner :model 3.3)
+          m (config s :model)]
+      (expect (instance? javax.swing.SpinnerNumberModel m))
+      (expect (= 3.3 (.getValue m))))))
 
 (describe table
   (it "should create a JTable"

@@ -1836,19 +1836,72 @@
   [& args]
   (apply-options (construct javax.swing.JComboBox args) args (merge default-options combobox-options)))
 
+(def ^{:private true} spinner-date-by-table 
+  (constant-map java.util.Calendar 
+    :era
+    :year
+    :month
+    :week-of-year
+    :week-of-month
+    :day-of-month
+    :day-of-year
+    :day-of-week
+    :day-of-week-in-month
+    :am-pm
+    :hour
+    :hour-of-day
+    :minute
+    :second
+    :millisecond))
+
+(defn spinner-model 
+  "A helper function for creating spinner models. Calls take the general
+  form:
+  
+      (spinner-model initial-value 
+        :from start-value :to end-value :by step)
+  
+  Values can be one of:
+
+    * java.util.Date where step is one of :day-of-week, etc. See
+      java.util.Calendar constants.
+    * a number
+
+  Any of the options beside the initial value may be omitted.
+
+  Note that on some platforms the :by parameter will be ignored for date
+  spinners.
+
+  See:
+    (seesaw.core/spinner)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerDateModel.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerNumberModel.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
+  "
+  [v & {:keys [from to by]}]
+  (cond
+    (number? v) (javax.swing.SpinnerNumberModel. v from to by)
+    (instance? java.util.Date v) 
+      (javax.swing.SpinnerDateModel. ^java.util.Date v
+                                     from to 
+                                     (spinner-date-by-table by))
+    :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
+
 (defn- to-spinner-model [v]
   (cond
     (instance? javax.swing.SpinnerModel v) v
     (sequential? v)                        (javax.swing.SpinnerListModel. v)
     (instance? java.util.Date v) (doto (javax.swing.SpinnerDateModel.) (.setValue ^java.util.Date v))
+    (number? v) (doto (javax.swing.SpinnerNumberModel.) (.setValue v))
     :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
 
 (def ^{:private true} spinner-options {
   ; TODO This setter access should be a function in options.clj
   :model (default-option :model 
-           (fn [s m] ((:setter (:model default-options)) s (to-spinner-model m)))
-                                            get-model)
-                                       })
+           (fn [s m] ((:setter (:model default-options)) 
+                                       s (to-spinner-model m))) 
+           get-model) })
+
 (defn spinner 
   "Create a spinner (JSpinner). Additional options:
 
@@ -1862,12 +1915,17 @@
     * An instance of javax.swing.SpinnerModel
     * A java.util.Date instance in which case the spinner starts at that date,
       is unbounded, and moves by day.
+    * A number giving the initial value for an unbounded number spinner
+    * A value returned by (seesaw.core/spinner-model)
 
   Notes:
     This function is compatible with (seesaw.core/with-widget).
 
   See:
-    http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerModel.html
+    (seesaw.core/spinner-model)
+    test/seesaw/test/examples/spinner.clj
   "
   { :seesaw {:class 'javax.swing.JSpinner }}
   [& args]
