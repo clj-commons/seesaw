@@ -1880,7 +1880,7 @@
   "
   [v & {:keys [from to by]}]
   (cond
-    (number? v) (javax.swing.SpinnerNumberModel. v from to by)
+    (number? v) (javax.swing.SpinnerNumberModel. v from to (or by 1))
     (instance? java.util.Date v) 
       (javax.swing.SpinnerDateModel. ^java.util.Date v
                                      from to 
@@ -1907,8 +1907,9 @@
 
     :model Instance of SpinnerModel, or one of the values described below.
 
-  Note that the current selection can be retrieved and set with the (selection) and
-  (selection!) functions.
+  Note that the value can be retrieved and set with the (selection) and
+  (selection!) functions. Listen to :selection to be notified of value 
+  changes.
 
   The value of model can be one of the following:
 

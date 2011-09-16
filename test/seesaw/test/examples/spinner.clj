@@ -15,8 +15,8 @@
     :title "Spinner Example"
     :content
       (vertical-panel
-        :items ["A default spinner"
-                (spinner) 
+        :items ["A default spinner (print value change to stdout)"
+                (spinner :listen [:selection (fn [e] (println (selection e)))]) 
                 "A spinner over a sequence of values"
                 (spinner :model (map #(str "Value" %) (range 0 100 5)))
                 "An unbounded spinner starting at a particular date"

@@ -71,6 +71,10 @@
     (it "returns the current value"
       (= 32 (selection (sc/slider :min 0 :max 100 :value 32)))))
 
+  (testing "when given a JSpinner"
+    (it "returns the current value"
+      (= 32 (selection (sc/spinner :model (sc/spinner-model 32 :from 30 :to 35))))))
+
   (testing "when given a JTextComponent"
     (it "returns nil when the selection is empty"
       (nil? (selection (javax.swing.JTextField. "HELLO"))))
@@ -126,6 +130,13 @@
   (testing "when given a JSlider and an argument"
     (it "sets the slider value to that argument"
       (let [s (sc/slider :min 0 :max 100 :value 0)
+            result (selection! s 32)]
+        (expect (= result s))
+        (expect (= 32 (.getValue s))))))
+
+  (testing "when given a JSpinner and an argument"
+    (it "sets the spinner value to that argument"
+      (let [s (sc/spinner :model (sc/spinner-model 30 :from 30 :to 35))
             result (selection! s 32)]
         (expect (= result s))
         (expect (= 32 (.getValue s))))))

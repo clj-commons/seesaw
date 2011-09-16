@@ -39,6 +39,10 @@
     (get-selection [target]     (vector (.getValue target)))
     (set-selection [target [v]] (doto target (.setValue v)))
 
+  javax.swing.JSpinner
+    (get-selection [target]     (vector (.getValue target)))
+    (set-selection [target [v]] (doto target (.setValue v)))
+
   javax.swing.JComboBox
     (get-selection [target]     (seq (.getSelectedObjects target)))
     (set-selection [target [v]] (doto target (.setSelectedItem v))))

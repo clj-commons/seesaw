@@ -42,12 +42,12 @@
   javax.swing.BoundedRangeModel
   javax.swing.JProgressBar
   javax.swing.JSlider
-  javax.swing.JSpinner
   javax.swing.JTabbedPane
   javax.swing.JViewport
   javax.swing.AbstractButton
   javax.swing.SingleSelectionModel
   javax.swing.SpinnerModel
+  javax.swing.JSpinner
   javax.swing.ButtonModel)
  
 (extend-listener-protocol AddActionListener add-action-listener addActionListener 
@@ -327,6 +327,7 @@
     (instance? javax.swing.JComboBox target)      :action-performed
     (instance? javax.swing.text.JTextComponent target) :caret-update
     (instance? java.awt.ItemSelectable target)    :item-state-changed
+    (instance? javax.swing.JSpinner target)       :state-changed
     :else event-name))
 
 (defn- preprocess-event-specs
