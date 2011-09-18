@@ -70,7 +70,8 @@
       :mouse-dragged 
         (fn [^java.awt.event.MouseEvent e]
           (let [p (.getPoint e)]
-            (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])))
+            (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])
+            (.setLocation last-point (.getPoint e))))
       :mouse-released
         finish)))
 
