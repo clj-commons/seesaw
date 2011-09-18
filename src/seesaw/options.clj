@@ -104,7 +104,7 @@
 
 (defn- apply-option
   [target ^Option opt v]
-  (if-let [setter (.setter opt)] 
+  (if-let [setter (:setter opt)] 
     (setter target v)
     (throw (IllegalArgumentException. (str "No setter found for option " (.name opt))))))
 
