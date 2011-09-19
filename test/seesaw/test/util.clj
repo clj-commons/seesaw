@@ -13,6 +13,13 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe illegal-argument
+  (it "throws a formatted illegal argument exception"
+    (try
+      (illegal-argument "This %s a message with code %d" "is" 99) false
+      (catch IllegalArgumentException e
+        (= "This is a message with code 99" (.getMessage e))))))
+
 (describe check-args
   (it "returns true if the condition is true"
     (check-args true "yes!"))

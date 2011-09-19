@@ -12,6 +12,11 @@
   (:require clojure.string [j18n.core :as j18n])
   (:import [java.net URL MalformedURLException]))
 
+(defn illegal-argument 
+  "Throw an illegal argument exception formatted as with (clojure.core/format)"
+  [fmt & args]
+  (throw (IllegalArgumentException. (apply format fmt args))))
+
 (defn check-args 
   [condition message]
   (if-not condition
