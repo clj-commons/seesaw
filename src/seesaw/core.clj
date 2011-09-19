@@ -15,7 +15,15 @@
   capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util options meta to-widget make-widget])
+  (:use [seesaw.util :only [illegal-argument to-seq check-args 
+                            constant-map resource to-dimension 
+                            to-insets to-url try-cast
+                            cond-doto]]
+        [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
+                               reapply-options get-option-value apply-options]]
+        [seesaw.meta :only [get-meta put-meta!]]
+        [seesaw.to-widget :only [to-widget*]]
+        [seesaw.make-widget :only [make-widget*]])
   (:require clojure.java.io
             clojure.set
             [seesaw color font border invoke timer selection 

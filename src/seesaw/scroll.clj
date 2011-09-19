@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for dealing with scrolling. Prefer (seesaw.core/scroll!)."
       :author "Dave Ray"}
   seesaw.scroll
-  (:use [seesaw.util]))
+  (:use [seesaw.util :only [illegal-argument check-args]]))
 
 (defn- scroll-rect-to-visible [^javax.swing.JComponent target rect]
   (when rect

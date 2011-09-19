@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.selection
-  (:use seesaw.util))
+  (:use [seesaw.util :only [check-args]]))
 
 (defprotocol Selection
   (get-selection [target])

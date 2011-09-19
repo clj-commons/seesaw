@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
       :author "Dave Ray"}
   seesaw.action
-  (:use [seesaw util icon keystroke meta options])
+  (:use [seesaw.util :only [resource]])
+  (:use [seesaw icon keystroke meta options])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************

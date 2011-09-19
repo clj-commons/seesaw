@@ -11,7 +11,9 @@
 (ns ^{:doc "MigLayout support for Seesaw"
       :author "Dave Ray"}
   seesaw.mig
-  (:use [seesaw core util options]))
+  (:use [seesaw.core :only [abstract-panel LayoutManipulation]]
+        [seesaw.options :only [default-option]]
+        [seesaw.util :only [cond-doto]]))
 
 ;*******************************************************************************
 ; MigLayout

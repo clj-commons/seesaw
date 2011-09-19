@@ -12,7 +12,7 @@
             use these implicitly through the :font option."
       :author "Dave Ray"}
   seesaw.font
-  (:use [seesaw util])
+  (:use [seesaw.util :only [constant-map resource]])
   (:import [java.awt Font]))
 
 (def ^{:private true} style-table (constant-map Font :bold :plain :italic))

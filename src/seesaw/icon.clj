@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for loading and creating icons."
       :author "Dave Ray"}
   seesaw.icon
-  (:use [seesaw util])
+  (:use [seesaw.util :only [resource to-url]])
   (:require [clojure.java.io :as jio])
   (:import [javax.swing ImageIcon]))
 

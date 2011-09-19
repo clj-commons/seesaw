@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for dealing with options."
       :author "Dave Ray"}
   seesaw.options
-  (:use [seesaw util meta]))
+  (:use [seesaw.meta :only [get-meta put-meta!]]
+        [seesaw.util :only [camelize illegal-argument resource check-args]]))
 
 (defrecord Option [name setter getter])
 

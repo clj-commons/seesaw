@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for creating widget borders."
       :author "Dave Ray"}
   seesaw.border
-  (:use seesaw.color)
+  (:use [seesaw.color :only [to-color]])
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]
            [java.awt Color]))

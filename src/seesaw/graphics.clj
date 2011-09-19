@@ -11,7 +11,9 @@
 (ns ^{:doc "Basic graphics functions to simplify use of Graphics2D."
       :author "Dave Ray"}
   seesaw.graphics
-  (:use [seesaw util color font])
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.font :only [to-font]]
+        [seesaw.util :only [illegal-argument]])
   (:import [java.awt Graphics2D RenderingHints]
            [java.awt.image BufferedImage]))
 

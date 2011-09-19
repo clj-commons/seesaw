@@ -14,8 +14,7 @@
   seesaw.bind
   (:refer-clojure :exclude [some])
   (:require [seesaw.core :as ssc])
-  (:use [seesaw util]
-        [clojure.string :only (capitalize split)]))
+  (:use [clojure.string :only (capitalize split)]))
 
 (defprotocol Bindable
   (subscribe [this handler])

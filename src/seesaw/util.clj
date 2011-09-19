@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.util
-  (:require clojure.string [j18n.core :as j18n])
+  (:require clojure.string 
+            [j18n.core :as j18n])
   (:import [java.net URL MalformedURLException]))
 
 (defn illegal-argument 

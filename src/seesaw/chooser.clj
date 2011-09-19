@@ -11,7 +11,9 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use [seesaw util options color])
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.options :only [default-option bean-option apply-options]]
+        [seesaw.util :only [illegal-argument]])
   (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
            [javax.swing JFileChooser]))
 

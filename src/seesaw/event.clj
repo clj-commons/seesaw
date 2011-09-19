@@ -12,7 +12,8 @@
             Use (seesaw.core/listen) instead."
       :author "Dave Ray"}
   seesaw.event
-  (:use [seesaw util meta])
+  (:use [seesaw.meta :only [put-meta! get-meta]]
+        [seesaw.util :only [camelize illegal-argument to-seq check-args]])
   (:import [javax.swing.event ChangeListener 
             CaretListener DocumentListener 
             ListSelectionListener 
