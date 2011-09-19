@@ -32,7 +32,7 @@
     (nil? v) nil
     (instance? java.awt.Image v) v
     (instance? javax.swing.ImageIcon v) (.getImage ^javax.swing.ImageIcon v)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make image from " v)))))
+    :else (illegal-argument "Don't know how to make image from %s" v)))
 
 ;*******************************************************************************
 ; Graphics context state
@@ -143,7 +143,7 @@
 })
 
 (defmacro path [opts & forms]
-  (when (not (vector? opts)) (throw (IllegalArgumentException. "path must start with vector of (possibly empty) options")))
+  (when (not (vector? opts)) (illegal-argument "path must start with vector of (possibly empty) options"))
   (let [p (gensym "path")]
     `(let [~p (java.awt.geom.Path2D$Double.)]
        ; Insert an initial moveTo to avoid needless exceptions
@@ -224,7 +224,7 @@
     (nil? v)    nil
     (number? v) (stroke :width v)
     (instance? java.awt.Stroke v) v
-    :else (throw (IllegalArgumentException. (str "Don't know how to make a stroke from " v)))))
+    :else (illegal-argument "Don't know how to make a stroke from %s" v)))
 
 (def ^{:private true} default-stroke (stroke))
 

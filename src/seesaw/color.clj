@@ -12,7 +12,7 @@
             in the core color options."
       :author "Dave Ray"}
   seesaw.color
-  (:use [seesaw.util :only (resource)])
+  (:use [seesaw.util :only (illegal-argument resource)])
   (:import [java.awt Color]))
 
 (def ^{:private true} color-names {
@@ -171,11 +171,11 @@
 
 (defn- decode [s]
   (if (not= (first s) \#)
-    (throw (IllegalArgumentException. (str "Invalid color code '" s "'")))
+    (illegal-argument "Invalid color code '%s'" s)
     (case (count s)
       4 (Color/decode (apply str \# (interleave (next s) (next s))))
       7 (Color/decode s)
-      (throw (IllegalArgumentException. (str "Invalid color code '" s "'"))))))
+      (illegal-argument "Invalid color code '%s'" s))))
 
 (defn color
   "Create a java.awt.Color object from args.

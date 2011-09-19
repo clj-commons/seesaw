@@ -65,8 +65,8 @@
         (~(or get-conv 'identity) (. ~target ~(getter-name bean-property-name)))))))
 
 (defn default-option 
-  ([name] (default-option name (fn [_ _] (throw (IllegalArgumentException. (str "No setter defined for option " name))))))
-  ([name setter] (default-option name setter (fn [_] (throw (IllegalArgumentException. (str "No getter defined for option " name))))))
+  ([name] (default-option name (fn [_ _] (illegal-argument "No setter defined for option %s" name))))
+  ([name setter] (default-option name setter (fn [_] (illegal-argument "No getter defined for option %s" name))))
   ([name setter getter] (Option. name setter getter)))
 
 (defn ignore-option
@@ -106,12 +106,12 @@
   [target ^Option opt v]
   (if-let [setter (:setter opt)] 
     (setter target v)
-    (throw (IllegalArgumentException. (str "No setter found for option " (.name opt))))))
+    (illegal-argument "No setter found for option %s" (:name opt))))
 
 (defn- ^Option lookup-option [handler-map name]
   (if-let [opt (get handler-map name)]
     opt
-    (throw (IllegalArgumentException. (str "Unknown option " name)))))
+    (illegal-argument "Unknown option %s" name)))
 
 (defn- apply-options*
   [target opts handler-map]
@@ -154,7 +154,7 @@
           getter (:getter option)]
       (if getter
         (getter target)
-        (throw (IllegalArgumentException. (str "No getter found for option " name)))))))
+        (illegal-argument "No getter found for option %s" name)))))
 
 (defn set-option-value
   ([target name value] (set-option-value target name (get-option-value-handlers target)))
@@ -163,5 +163,5 @@
           setter (:setter option)]
       (if setter
         (setter target value)
-        (throw (IllegalArgumentException. (str "No setter found for option " name)))))))
+        (illegal-argument "No setter found for option %s" name)))))
 

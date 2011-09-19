@@ -301,7 +301,7 @@
 (defn- get-or-install-handlers
   [target event-name]
   (let [event-group (event-group-table event-name)]
-    (if-not event-group (throw (IllegalArgumentException. (str "Unknown event type " event-name))))
+    (if-not event-group (illegal-argument "Unknown event type %s" event-name))
     (if-let [handlers (get-handlers* target (:name event-group))]
       handlers
       (install-group-handlers target event-group))))

@@ -93,7 +93,7 @@
 (defn- lookup-handler [handlers op]
   (if-let [h (handlers op)] 
     h
-    (throw (IllegalArgumentException. (str "Unknown scroll op " op)))))
+    (illegal-argument "Unknown scroll op %s" op)))
 
 (defn- canoncicalize-arg 
   "Take the arg to (scroll!*) and turn it into a vector of the form [op & args]"
@@ -107,7 +107,7 @@
         [:point (.x p) (.y p)])
     (keyword? arg)                     [arg]
     (vector? arg)                      arg
-    :else                              (throw (IllegalArgumentException. (str "Unknown scroll arg format" arg))))) 
+    :else                              (illegal-argument "Unknown scroll arg format %s" arg))) 
 
 (defprotocol ^{:private true} Scroll
   (scroll-to [this arg])) 

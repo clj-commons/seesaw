@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for dealing with drag and drop and data transfer."
       :author "Dave Ray"}
   seesaw.dnd
-  (:use [seesaw.util :only [constant-map]])
+  (:use [seesaw.util :only [constant-map illegal-argument]])
   (:require clojure.set
             clojure.string)
   (:import [java.awt.datatransfer DataFlavor
@@ -297,7 +297,7 @@
   (cond
     (instance? TransferHandler v) v
     (vector? v) (apply default-transfer-handler v)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make TransferHandler from: " v)))))
+    :else (illegal-argument "Don't know how to make TransferHandler from: %s" v)))
 
 (defn everything-transfer-handler 
   "Handler that accepts all drops. For debugging."

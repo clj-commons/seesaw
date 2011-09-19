@@ -80,6 +80,6 @@
     (instance? Cursor type) type
     (instance? java.awt.Image type) (apply custom-cursor type args)
     (instance? javax.swing.ImageIcon type) (apply cursor (.getImage ^javax.swing.ImageIcon type) args)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make cursor from " type)))))
+    :else (illegal-argument "Don't know how to make cursor from %s" type)))
 
 

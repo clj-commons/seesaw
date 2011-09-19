@@ -246,13 +246,14 @@
         (let [result (factory)]
           (if (instance? expected-class result)
             result
-            (throw (IllegalArgumentException. 
-                     (str (class result) " is not an instance of " expected-class)))))
+            (illegal-argument "%s is not an instance of %s"
+                              (class result) 
+                              expected-class)))
 
       :else 
-        (throw (IllegalArgumentException. 
-                 (str "Factory or instance " factory 
-                      " is not consistent with expected type " expected-class))))))
+        (illegal-argument 
+          "Factory or instance %s is not consistent with expected type %s" 
+          factory expected-class))))
 
 ;*******************************************************************************
 ; Generic widget stuff
@@ -517,8 +518,8 @@
 (let [table (constant-map SwingConstants :horizontal :vertical)]
   (defn- orientation-table [v]
     (or (table v)
-        (throw (IllegalArgumentException. 
-                (str ":orientation must be either :horizontal or :vertical. Got " v " instead."))))))
+        (illegal-argument 
+          ":orientation must be either :horizontal or :vertical. Got %s instead." v))))
 
 (defn- bounds-option-handler [^java.awt.Component target v]
   (cond
@@ -761,7 +762,7 @@
   (defn- list-selection-mode-handler [target v]
     (if-let [v (list-selection-mode-table v)]
       (set-selection-mode target v)
-      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys list-selection-mode-table)))))))
+      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table)))))
 
 (let [tree-selection-mode-table {
   :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
@@ -771,7 +772,7 @@
   (defn- tree-selection-mode-handler [target v]
     (if-let [v (tree-selection-mode-table v)]
       (set-selection-mode target v)
-      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys tree-selection-mode-table)))))))
+      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table)))))
 
 (declare paint-option-handler)
 
@@ -1439,7 +1440,7 @@
           as-widget (to-widget arg0)
           multi?    (or (coll? arg0) (seq? arg0))]
       (cond 
-        (nil? arg0) (throw (IllegalArgumentException. "First arg must not be nil"))
+        (nil? arg0) (illegal-argument "First arg must not be nil")
         as-doc      (get-text as-doc) 
         as-widget   (get-text as-widget)
         multi?      (map #(text %) arg0)
@@ -1500,7 +1501,7 @@
           :bold       (.addAttribute style StyleConstants/Bold (boolean v))
           :italic     (.addAttribute style StyleConstants/Italic (boolean v))
           :underline  (.addAttribute style StyleConstants/Underline (boolean v))
-          (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
+          (illegal-argument "Option %s is not supported in :styles" k))))))
 
 (def ^{:private true} styled-text-options (merge {
   :wrap-lines? (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2))
@@ -1880,7 +1881,7 @@
       (javax.swing.SpinnerDateModel. ^java.util.Date v
                                      from to 
                                      (spinner-date-by-table by))
-    :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
+    :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
 
 (defn- to-spinner-model [v]
   (cond
@@ -1888,7 +1889,7 @@
     (sequential? v)                        (javax.swing.SpinnerListModel. v)
     (instance? java.util.Date v) (doto (javax.swing.SpinnerDateModel.) (.setValue ^java.util.Date v))
     (number? v) (doto (javax.swing.SpinnerNumberModel.) (.setValue v))
-    :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
+    :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
 
 (def ^{:private true} spinner-options {
   :model (around-option (:model default-options) to-spinner-model identity)})
@@ -2119,7 +2120,7 @@
     (integer? value) (.setDividerLocation splitter ^Integer value)
     (ratio?   value) (divider-location! splitter (double value))
     (float?   value) (divider-location-proportional! splitter value)
-    :else (throw (IllegalArgumentException. (str "Expected integer or float, got " value))))
+    :else (illegal-argument "Expected integer or float, got %s" value))
   splitter)
 
 (def ^{:private true} splitter-options {
@@ -2307,7 +2308,7 @@
   (cond
     (instance? javax.swing.JPopupMenu arg) arg
     (fn? arg)                              (popup :items (arg event))
-    :else (throw (IllegalArgumentException. (str "Don't know how to make popup with " arg)))))
+    :else (illegal-argument "Don't know how to make popup with %s" arg)))
 
 (defn- popup-option-handler
   [^java.awt.Component target arg]
@@ -2436,7 +2437,7 @@
     (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (paint-option-handler c {:after v})
     (map? v) (do (put-meta! c paint-property v) (.repaint c))
-    :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
+    :else (illegal-argument "Expect map or function for :paint property")))
 
 (defn- paint-component-impl [^javax.swing.JComponent this ^java.awt.Graphics2D g]
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
@@ -2731,7 +2732,7 @@
       (do 
         (reset! result-atom result)
         (invoke-now (dispose! dlg)))
-      (throw (IllegalArgumentException. "Counld not find dialog meta data!")))))
+      (illegal-argument "Counld not find dialog meta data!"))))
 
 (defn custom-dialog
   "Create a dialog and display it.
@@ -2883,7 +2884,7 @@
         s (second args)]
     (cond
       (or (= n 0) (keyword? f))
-        (throw (IllegalArgumentException. "input requires at least one non-keyword arg"))
+        (illegal-argument "input requires at least one non-keyword arg")
       (= n 1)      (input-impl nil f {})
       (= n 2)      (input-impl f s {})
       (keyword? s) (input-impl nil f (drop 1 args))

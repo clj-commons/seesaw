@@ -57,6 +57,6 @@
     (or (instance? javax.swing.JList target) 
         (instance? javax.swing.JComboBox target)) (default-list-cell-renderer arg)
     (instance? javax.swing.JTree target) (default-tree-cell-renderer arg)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make cell renderer for" (class arg))))))
+    :else (illegal-argument "Don't know how to make cell renderer for %s" (class arg))))
       
 
