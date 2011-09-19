@@ -905,7 +905,7 @@
 
 (def ^{:private true}  border-layout-dirs 
   (constant-map BorderLayout :north :south :east :west :center))
-(def ^{:private true}  border-layout-dirs-r (reverse-map border-layout-dirs))
+(def ^{:private true}  border-layout-dirs-r (clojure.set/map-invert border-layout-dirs))
 
 (defn- border-panel-items-setter
   [panel items]
