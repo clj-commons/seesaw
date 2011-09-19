@@ -27,7 +27,7 @@
 
 (defn- strip-question-mark
   [^String s] 
-  (if (.endsWith ^String s "?")
+  (if (.endsWith s "?")
     (.substring s 0 (dec (count s)))
     s))
 
