@@ -1658,9 +1658,7 @@
       model)))
 
 (def ^{:private true} listbox-options {
-  ; TODO This setter access should be a function in options.clj
-  :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m)))
-                                            get-model)
+  :model             (around-option (:model default-options) to-list-model identity) 
   :renderer          (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
@@ -1807,10 +1805,7 @@
 
 (def ^{:private true} combobox-options {
   :editable? (bean-option :editable? javax.swing.JComboBox boolean)
-  :model     (default-option :model    
-               ; TODO this setter lookup should be a function in options.clj
-               (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m)))
-               get-model)
+  :model     (around-option (:model default-options) to-combobox-model identity)
   :renderer  (default-option :renderer 
                #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
                #(.getRenderer ^javax.swing.JComboBox %1)) 
@@ -1896,11 +1891,7 @@
     :else (throw (IllegalArgumentException. (str "Don't' know how to make spinner :model from " (class v))))))
 
 (def ^{:private true} spinner-options {
-  ; TODO This setter access should be a function in options.clj
-  :model (default-option :model 
-           (fn [s m] ((:setter (:model default-options)) 
-                                       s (to-spinner-model m))) 
-           get-model) })
+  :model (around-option (:model default-options) to-spinner-model identity)})
 
 (defn spinner 
   "Create a spinner (JSpinner). Additional options:

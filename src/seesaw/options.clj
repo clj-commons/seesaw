@@ -139,6 +139,14 @@
   [source-options]
   (into {} (for [k (keys source-options)] [k (ignore-option k)])))
 
+(defn around-option
+  [parent-option set-conv get-conv]
+  (default-option (:name parent-option)
+    (fn [target value]
+      ((:setter parent-option) target ((or set-conv identity) value)))
+    (fn [target]
+      ((or get-conv identity) ((:getter parent-option) target)))))
+
 (defn get-option-value 
   ([target name] (get-option-value target name (get-option-value-handlers target)))
   ([target name handlers]
@@ -147,4 +155,13 @@
       (if getter
         (getter target)
         (throw (IllegalArgumentException. (str "No getter found for option " name)))))))
+
+(defn set-option-value
+  ([target name value] (set-option-value target name (get-option-value-handlers target)))
+  ([target name value handlers]
+    (let [^Option option (get handlers name)
+          setter (:setter option)]
+      (if setter
+        (setter target value)
+        (throw (IllegalArgumentException. (str "No setter found for option " name)))))))
 
