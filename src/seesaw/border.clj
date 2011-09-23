@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for creating widget borders."
       :author "Dave Ray"}
   seesaw.border
-  (:use [seesaw.color :only [to-color]])
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.util :only [to-insets]])
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]
            [java.awt Color]))
@@ -40,6 +41,44 @@
   ([b] (to-border b))
   ([b0 b1] (BorderFactory/createCompoundBorder (to-border b1) (to-border b0)))
   ([b0 b1 & more] (reduce #(compound-border %1 %2) (compound-border b0 b1) more)))
+
+(defn custom-border 
+  "Define a custom border with the following properties:
+  
+    :paint A function that takes the same arguments as Border.paintBorder:
+             java.awt.Component c - The target component
+              java.awt.Graphics g - The graphics context to draw to
+                            int x - x position of border
+                            int y - y position of border
+                            int w - width of border
+                            int h - height of border
+ 
+    :insets Returns the insets of the border. Can be a zero-arg function that
+              returns something that is passed through (seesaw.util/to-insets)
+              or a constant value passed through the same. Defaults to 0.
+
+    :opaque? Whether the border is opaque. A constant truthy value or a zero-arg
+             function that returns a truthy value.
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/border/Border.html
+    (seesaw.util/to-insets)
+  "
+  [& args]
+  (let [{:keys [insets opaque? paint]} args
+        insets (cond 
+                 (fn? insets) insets
+                 :else (constantly insets))
+        opaque? (cond
+                  (fn? opaque?) opaque?
+                  :else (constantly opaque?))] 
+    (reify javax.swing.border.Border
+      (getBorderInsets [this c]
+        (to-insets (insets c)))
+      (isBorderOpaque [this]
+        (boolean (opaque?)))
+      (paintBorder [this c g x y w h]
+        (when paint (paint c g x y w h))))))
 
 (defn to-border 
   ([b] 
