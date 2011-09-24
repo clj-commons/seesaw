@@ -23,6 +23,24 @@
 (declare to-border)
 
 (defn empty-border 
+  "Create an empty border. The following properties are supported:
+  
+    :thickness The thickness of the border (all sides) in pixels. This property
+               is only used if :top, :bottom, etc are omitted. Defaults to 1.
+  
+    :top       Thickness of the top border in pixels. Defaults to 0.
+    :left      Thickness of the left border in pixels. Defaluts to 0.
+    :bottom    Thickness of the bottom border in pixels. Defaluts to 0.
+    :right     Thickness of the right border in pixels. Defaluts to 0.
+
+  Examples:
+
+      ; Create an empty 10 pixel border
+      (empty-border :thickness 10)
+
+      ; Create an empty border 5 pixels on top and left, 0 on other sides
+      (empty-border :left 5 :top 5)
+  "
   [& {:keys [thickness top left bottom right]}]
   (if (or top left bottom right)
     (BorderFactory/createEmptyBorder (or top 0) (or left 0) (or bottom 0) (or right 0))
@@ -30,6 +48,21 @@
       (BorderFactory/createEmptyBorder t t t t))))
 
 (defn line-border 
+  "Create a colored border with following properties:
+  
+    :color The color, passed through (seesaw.color/to-color). Defaults to black.
+    :thickness The thickness of the border in pixels. This property is only used
+               if :top, :bottom, etc are omitted. Defaults to 1.
+    :top       Thickness of the top border in pixels. Defaults to 0.
+    :left      Thickness of the left border in pixels. Defaluts to 0.
+    :bottom    Thickness of the bottom border in pixels. Defaluts to 0.
+    :right     Thickness of the right border in pixels. Defaluts to 0.
+ 
+  Examples: 
+    
+      ; Create a green border, 3 pixels on top, 5 pixels on the botttom
+      (line-border :color \"#0f0\" :top 3 :bottom 5)
+  "
   [& {:keys [color thickness top left bottom right] :or {thickness 1 color Color/BLACK}}]
   (if (or top left bottom right)
     (BorderFactory/createMatteBorder 
@@ -38,6 +71,17 @@
     (BorderFactory/createLineBorder (to-color color) thickness)))
 
 (defn compound-border
+  "Create a compount border from the given arguments. Order is from inner to outer.
+  Each argument is passed through (seesaw.border/to-border).
+  
+  Examples:
+    
+      ; Create an 4 pixel empty border, red line border, and title border.
+      (compound-border 4 (line-border :color :red :thickness 4) \"Title\")
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/BorderFactory.html
+  "
   ([b] (to-border b))
   ([b0 b1] (BorderFactory/createCompoundBorder (to-border b1) (to-border b0)))
   ([b0 b1 & more] (reduce #(compound-border %1 %2) (compound-border b0 b1) more)))
