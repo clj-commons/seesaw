@@ -50,6 +50,7 @@
     (nil? v) v
     (seq? v)  v
     (coll? v) (seq v)
+    (.isArray (class v)) (seq v)
     :else (seq [v])))
 
 (defn- constantize-keyword [k]

@@ -347,6 +347,21 @@
     (.dispose target))
   targets)
 
+(defn all-frames
+  "Returns a sequence of all of the frames (includes java.awt.Frame) known by the JVM.
+  
+  This function is really only useful for debugging and repl development, namely:
+ 
+    ; Clear out all frames 
+    (dispose! (all-frames))
+  
+  Otherwise, it is highly unreliable. Frames will hang around after disposal, pile up
+  and generally cause trouble.
+  
+  You've been warned."
+  []
+  (seq (java.awt.Frame/getFrames)))
+
 (defn repaint!
   "Request a repaint of one or a list of widget-able things.
 
