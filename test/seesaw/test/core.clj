@@ -1266,6 +1266,17 @@
         (expect (= c (select f [:#hi])))
         (expect (= p (select f ["#panel"])))))))
 
+(describe group-by-id
+  (it "should return a map of widgets, keyed by id"
+    (let [a (label :id :a)
+          b (button :id :b)
+          c (border-panel :north a :south b)
+          d (listbox :id :d)
+          e (grid-panel :items [c d])
+          f (frame :id :f :content e)
+          result (group-by-id f)]
+      (expect (= result {:a a :b b :d d :f f})))))
+
 (describe add!
   (testing "When called on a panel with a FlowLayout"
     (it "adds a widget to the end of the panel"

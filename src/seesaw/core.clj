@@ -3219,6 +3219,44 @@
           id? (and (nil? (second selector)) (seesaw.selector/id-selector? (first selector)))]
       (if id? (first result) result))))
 
+(defn group-by-id
+  "Group the widgets in a hierarchy starting at some root into a map
+  keyed by :id. Widgets with no id are ignored. If an id appears twice,
+  the 'later' widget wins.
+  
+    root is any (to-widget)-able object.
+  
+  Examples:
+  
+    Suppose you have a form with with widgets with ids :name, :address,
+    :phone, :city, :state, :zip.
+    You'd like to quickly grab all those widgets and do something with
+    them from an event handler:
+
+      (fn [event]
+        (let [{:keys [name address phone city state zip]} (group-by-id event)
+          ... do something ...))
+  
+    This is functionally equivalent to, but faster than:
+  
+      (let [name (select event [:#name])
+            address (select event [:#address])
+            phone (select event [:#phone])
+            ... and so on ...]
+          ... do something ...)
+
+  See:
+    (seesaw.core/select)
+  "
+  [root]
+  (reduce
+    (fn [m c]
+      (if-let [id (id-of c)]
+        (assoc m id c)
+        m))
+    {}
+    (select (to-widget root) [:*])))
+
 ;*******************************************************************************
 ; Widget layout manipulation
 
