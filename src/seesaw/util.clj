@@ -161,7 +161,11 @@
 
 (defn to-mnemonic-keycode
   "Convert a character to integer to a mnemonic keycode. In the case of char
-  input, generates the correct keycode even if it's lower case."
+  input, generates the correct keycode even if it's lower case.
+  
+  See:
+    java.awt.event.KeyEvent for list of keycodes
+    http://download.oracle.com/javase/6/docs/api/java/awt/event/KeyEvent.html"
   [v]
   (if (char? v) 
     (int (Character/toUpperCase v)) 

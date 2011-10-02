@@ -18,7 +18,7 @@
   (:use [seesaw.util :only [illegal-argument to-seq check-args 
                             constant-map resource to-dimension 
                             to-insets to-url try-cast
-                            cond-doto]]
+                            cond-doto to-mnemonic-keycode]]
         [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
                                reapply-options get-option-value apply-options]]
         [seesaw.meta :only [get-meta put-meta!]]
@@ -1311,6 +1311,7 @@
   :margin    (bean-option :margin javax.swing.AbstractButton to-insets)
 
   :group     (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1))
+  :mnemonic  (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode)
 })
 
 (defn- apply-button-defaults
@@ -1331,13 +1332,25 @@
       :margin    The button margins as insets. See (seesaw.util/to-insets)
       :group     A button-group that the button should be added to.
       :resource  A resource prefix (see below).
+      :mnemonic  The mnemonic for the button, either a character or a keycode.
+                  Usually allows the user to activate the button with alt-mnemonic.
+                  See (seesaw.util/to-mnemonic-keycode).
  
   Resources and i18n:
 
     A button's base properties can be set from a resource prefix, i.e. a namespace-
     qualified keyword that refers to a resource bundle loadable by j18n. 
 
+  Examples:
+
+    ; Create a button with text \"Next\" with alt-N mnemonic shortcut that shows
+    ; an alert when clicked.
+    (button :text \"Next\" 
+            :mnemonic \\N 
+            :listen [:action #(alert \"NEXT!\")])
+
   See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JButton.html
     (seesaw.core/button-group)"
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 

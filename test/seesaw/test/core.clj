@@ -725,7 +725,14 @@
     (let [a (action :handler println)
           b (button :action a)]
       (expect (= JButton (class b)))
-      (expect (= a (.getAction b))))))
+      (expect (= a (.getAction b)))))
+
+  (it "should set the :mnemonic of the button given an integer keycode"
+    (= 100 (.getMnemonic (button :mnemonic 100)))) 
+  (it "should set the :mnemonic of the button given a char"
+    (= (int \Y) (.getMnemonic (button :mnemonic \Y)))) 
+  (it "should set the :mnemonic of the button given a lower-case char"
+    (= (int \Z) (.getMnemonic (button :mnemonic \z)))))
 
 (describe toggle
   (it "should create a JToggleButton"
