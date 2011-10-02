@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
       :author "Dave Ray"}
   seesaw.action
-  (:use [seesaw.util :only [resource]])
+  (:use [seesaw.util :only [resource to-mnemonic-keycode]])
   (:use [seesaw icon keystroke meta options])
   (:import [javax.swing Action AbstractAction]))
 
@@ -36,8 +36,7 @@
   :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
   :mnemonic  (default-option :mnemonic 
                (fn [^Action a v]
-                 (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
-                   (.putValue a Action/MNEMONIC_KEY v)))) 
+                 (.putValue a Action/MNEMONIC_KEY (to-mnemonic-keycode v)))) 
   :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
   :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
 })

@@ -158,3 +158,12 @@
   (if (and (keyword? message) (namespace message))
     (j18n/resource message)
     (str message)))
+
+(defn to-mnemonic-keycode
+  "Convert a character to integer to a mnemonic keycode. In the case of char
+  input, generates the correct keycode even if it's lower case."
+  [v]
+  (if (char? v) 
+    (int (Character/toUpperCase v)) 
+    (int v)))
+

@@ -111,3 +111,11 @@
   (it "should return false for a non-atom"
     (not (atom? (ref nil)))))
 
+(describe to-mnemonic-keycode
+  (it "should pass through an integer key code"
+    (= 99 (to-mnemonic-keycode 99)))
+  (it "should convert a character to an integer key code"
+    (= (int \T) (to-mnemonic-keycode \T)))
+  (it "should convert a lower-case character to an integer key code"
+    (= (int \X) (to-mnemonic-keycode \x))))
+
