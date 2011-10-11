@@ -146,19 +146,27 @@
     (merge 
       (cond
         (instance? javax.swing.JList$DropLocation dl) 
-          { :index (.getIndex dl) :insert? (.isInsert dl) }
+          (let [^javax.swing.JList$DropLocation dl dl] 
+            { :index (.getIndex dl) 
+              :insert? (.isInsert dl) })
 
         (instance? javax.swing.JTable$DropLocation dl)
-          { :column (.getColumn dl)
-            :row    (.getRow dl)
-            :insert-column? (.isInsertColumn dl)
-            :insert-row?    (.isInsertRow dl) }
+          (let [^javax.swing.JTable$DropLocation dl dl] 
+            { :column (.getColumn dl)
+              :row    (.getRow dl)
+              :insert-column? (.isInsertColumn dl)
+              :insert-row?    (.isInsertRow dl) })
+
         (instance? javax.swing.text.JTextComponent$DropLocation dl)
-          { :bias (.getBias dl)
-            :index (.getIndex dl) }
+          (let [^javax.swing.text.JTextComponent$DropLocation dl dl] 
+            { :bias (.getBias dl)
+              :index (.getIndex dl) })
+        
         (instance? javax.swing.JTree$DropLocation dl)
-          { :index (.getChildIndex dl) 
-            :path  (.getPath dl) }
+          (let [^javax.swing.JTree$DropLocation dl dl] 
+            { :index (.getChildIndex dl) 
+              :path  (.getPath dl) })
+
         :else {})
       {:point [(.x pt) (.y pt)]})))
 
@@ -263,7 +271,7 @@
         (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
 
       (importData [^TransferHandler$TransferSupport support]
-        (if (.canImport this support)
+        (if (.canImport ^TransferHandler this support)
           (try 
             (let [[flavorful handler] (get-import-handler support import-pairs)
                   data                         (get-import-data support flavorful)

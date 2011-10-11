@@ -1886,7 +1886,7 @@
     :second
     :millisecond))
 
-(defn spinner-model 
+(defn ^javax.swing.SpinnerModel spinner-model 
   "A helper function for creating spinner models. Calls take the general
   form:
   
@@ -1912,6 +1912,7 @@
   "
   [v & {:keys [from to by]}]
   (cond
+    ; TODO Reflection here. Don't know how to get rid of it.
     (number? v) (javax.swing.SpinnerNumberModel. v from to (or by 1))
     (instance? java.util.Date v) 
       (javax.swing.SpinnerDateModel. ^java.util.Date v
@@ -1919,10 +1920,10 @@
                                      (spinner-date-by-table by))
     :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
 
-(defn- to-spinner-model [v]
+(defn- ^javax.swing.SpinnerModel to-spinner-model [v]
   (cond
     (instance? javax.swing.SpinnerModel v) v
-    (sequential? v)                        (javax.swing.SpinnerListModel. v)
+    (sequential? v)                        (javax.swing.SpinnerListModel. ^java.util.List v)
     (instance? java.util.Date v) (doto (javax.swing.SpinnerDateModel.) (.setValue ^java.util.Date v))
     (number? v) (doto (javax.swing.SpinnerNumberModel.) (.setValue v))
     :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
@@ -2607,6 +2608,8 @@
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
   :size         (bean-option :size java.awt.Window to-dimension)
   :visible?     (bean-option :visible? java.awt.Window boolean)
+  ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
+  ; base or interface.
   :transfer-handler (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
   :icon         (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)
 })

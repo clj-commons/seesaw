@@ -72,8 +72,8 @@
   ([x y w h] (java.awt.geom.Rectangle2D$Double.
                 (if (> w 0) x (+ x w)) 
                 (if (> h 0) y (+ y h))
-                (Math/abs w)
-                (Math/abs h)
+                (Math/abs (double w))
+                (Math/abs (double h))
                                         ))
   ([x y w] (rect x y w w)))
 
@@ -86,8 +86,8 @@
   ([x y w h rx ry] (java.awt.geom.RoundRectangle2D$Double.
                       (if (> w 0) x (+ x w)) 
                       (if (> h 0) y (+ y h))
-                      (Math/abs w)
-                      (Math/abs h)
+                      (Math/abs (double w))
+                      (Math/abs (double h))
                       rx ry))
   ([x y w h rx] (rounded-rect x y w h rx rx))
   ([x y w h] (rounded-rect x y w h 5)))
@@ -97,8 +97,8 @@
   ([x y w h]  (java.awt.geom.Ellipse2D$Double.
                       (if (> w 0) x (+ x w)) 
                       (if (> h 0) y (+ y h))
-                      (Math/abs w)
-                      (Math/abs h)))
+                      (Math/abs (double w))
+                      (Math/abs (double h))))
   ([x y w]  (ellipse x y w w)))
 
 (defn circle 
@@ -111,8 +111,8 @@
     (java.awt.geom.Arc2D$Double.
       (if (> w 0) x (+ x w)) 
       (if (> h 0) y (+ y h))
-      (Math/abs w)
-      (Math/abs h)
+      (Math/abs (double w))
+      (Math/abs (double h))
       start extent arc-type))
   ([x y w h start extent]
     (arc x y w h start extent java.awt.geom.Arc2D/OPEN)))
