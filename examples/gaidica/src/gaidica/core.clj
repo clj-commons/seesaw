@@ -9,54 +9,34 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns gaidica.core
-  (:require [clojure.zip :as zip]
-            [clojure.xml :as xml]
-            [clojure.contrib.zip-filter.xml :as zfx])
+  (:require [ororo.core :as storm])
   (:use [seesaw core border table mig]))
 
 (native!)
 
+(def api-key (atom ""))
 (def normal-font "ARIAL-12-PLAIN")
 (def title-font "ARIAL-14-BOLD")
 (def divider-color "#aaaaaa")
 
-(defn query-url [type value]
-  (str "http://api.wunderground.com/auto/wui/geo/" type "/index.xml?query=" (java.net.URLEncoder/encode value "UTF-8")))
-
-; TODO this XML stuff is nasty
 (defn get-text-forecasts [city]
-  (let [url (query-url "ForecastXML" city)
-        xml (xml/parse url)]
-    (for [day  (zfx/xml-> (zip/xml-zip xml) :txt_forecast :forecastday)]
-      {:title       (zfx/xml1-> day :title zfx/text) 
-       :description (zfx/xml1-> day :fcttext zfx/text) 
-       :icon        (zfx/xml1-> day :icons :icon_set :icon_url zfx/text)
-       :period      (zfx/xml1-> day :period zfx/text)})))
+  (get-in (storm/forecast @api-key city) [:txt_forecast :forecastday]))
 
-(defn get-city-info [city]
-  (let [url (query-url "GeoLookupXML" city)
-        xml (xml/parse url)]
-    { :webcams 
-      (for [cam (zfx/xml-> (zip/xml-zip xml) :webcams :cam)]
-        {:handle  (zfx/xml1-> cam :handle zfx/text) 
-         :lat     (zfx/xml1-> cam :lat zfx/text) 
-         :lon     (zfx/xml1-> cam :lon zfx/text) 
-         :updated (zfx/xml1-> cam :updated zfx/text)
-         :image   (zfx/xml1-> cam :CURRENTIMAGEURL zfx/text) })}))
+(defn get-webcams [city] (storm/webcams @api-key city))
 
 (defn make-forecast-entry [f]
   (mig-panel 
     :constraints ["" "[][grow, fill]" "[top][top]"]
     :border (line-border :bottom 1 :color divider-color)
     :items [
-      [(label :icon (:icon f))                   "span 1 2"]
+      [(label :icon (:icon_url f))                   "span 1 2"]
       [(label :text (:title f) :font title-font) "wrap"]
       [(text 
          :opaque? false 
          :multi-line? true 
          :wrap-lines? true 
          :editable? false 
-         :text (:description f)
+         :text (:fcttext f)
          :font normal-font)                         "wmin 10"]]))
 
 (defn make-forecast-entries [forecasts]
@@ -79,7 +59,7 @@
         [{:key :handle :text "Name" } 
          :lat :lon 
          {:key :updated :text "Last Updated"}
-         {:key :image :text "Image"}]]))
+         {:key :CURRENTIMAGEURL :text "Image"}]]))
 
 (defn make-webcam-panel []
   (let [webcam-table (make-webcam-table)
@@ -87,7 +67,7 @@
     (listen webcam-table :selection 
       (fn [e]
         (when-let [row (selection webcam-table)]
-          (config! image-label :icon (:image (value-at webcam-table row))))))
+          (config! image-label :icon (:CURRENTIMAGEURL (value-at webcam-table row))))))
     (border-panel 
       :id :webcam
       :border 5
@@ -108,9 +88,9 @@
         webcam-panel (select root [:#webcam])]
     (future 
       (let [forecasts (get-text-forecasts city)
-            city-info (get-city-info city)]
+            webcams (get-webcams city)]
         (invoke-later
-          (update-webcams webcam-panel (:webcams city-info))
+          (update-webcams webcam-panel webcams)
           (update-forecasts forecast-panel forecasts))))))
 
 (def refresh-action
@@ -143,6 +123,7 @@
                :center (make-tabs))))
 
 (defn -main [& args]
+  (reset! api-key (first args))
   (invoke-later (show! (app)))
   ; Avoid RejectedExecutionException in lein :(
   @(promise))
