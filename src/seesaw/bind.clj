@@ -13,7 +13,8 @@
       :author "Dave Ray"}
   seesaw.bind
   (:refer-clojure :exclude [some])
-  (:require [seesaw.core :as ssc])
+  (:require [seesaw.core :as ssc]
+            [seesaw.invoke :as invoke])
   (:use [clojure.string :only (capitalize split)]))
 
 (defprotocol Bindable
@@ -296,6 +297,54 @@
   (reify Bindable
     (subscribe [this handler] (throw (UnsupportedOperationException. "tee bindables don't support subscription")))
     (notify [this v] (doseq [b bindables] (notify b v)))))
+
+(defn notify-when*
+  [schedule-fn]
+  (let [handlers (atom [])]
+    (reify Bindable
+      (subscribe [this handler]
+        (swap! handlers conj handler))
+      (notify [this v]
+        (schedule-fn
+          (fn [] (doseq [h @handlers] (h v))))))))
+
+(defn notify-later 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-later). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+  
+  See:
+    (seesaw.invoke/invoke-later)
+  "
+  []
+  (notify-when* invoke/invoke-later*))
+
+(defn notify-soon 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-soon). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+ 
+  See:
+    (seesaw.invoke/invoke-soon)
+  "
+  []
+  (notify-when* invoke/invoke-soon*))
+
+(defn notify-now 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-now). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+
+  Note that sincel invoke-now is used, you're in danger of deadlocks. Be careful.
+  
+  See:
+    (seesaw.invoke/invoke-soon)
+  "
+  []
+  (notify-when* invoke/invoke-now*))
 
 (extend-protocol ToBindable
   javax.swing.JLabel

@@ -164,3 +164,38 @@
       (expect (= [1 2 3] @target))
       (expect (= @end @target)))))
 
+(describe notify-later
+  (it "passes incoming values to the swing thread with invoke-later"
+    (let [start (atom nil)
+          end   (atom nil)
+          p     (promise)]
+      (bind start
+            (notify-later)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (subscribe end (fn [v] (deliver p :got-it)))
+      (reset! start 99)
+      (expect (= :got-it @p))
+      (expect (= {:value 99 :edt? true} @end)))))
+
+(describe notify-soon
+  (it "passes incoming values to the swing thread with invoke-soon"
+    (let [start (atom nil)
+          end   (atom nil)]
+      (bind start
+            (notify-soon)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (ssc/invoke-now (reset! start 99))
+      (expect (= {:value 99 :edt? true} @end)))))
+
+(describe notify-now
+  (it "passes incoming values to the swing thread with invoke-now"
+    (let [start (atom nil)
+          end   (atom nil)]
+      (bind start
+            (notify-now)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (reset! start 99)
+      (expect (= {:value 99 :edt? true} @end)))))
