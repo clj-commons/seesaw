@@ -116,17 +116,18 @@
       (ssc/listen this :document
         (fn [e] (handler (get-document-text this)))))
     (notify [this v] 
-      (ssc/invoke-now 
-        (when-not (= v (get-document-text this))
-          (do
-            (.remove this 0 (.getLength this))
-            (.insertString this 0 (str v) nil)))))
+      (when-not (= v (get-document-text this))
+        (do
+          (.remove this 0 (.getLength this))
+          (.insertString this 0 (str v) nil))))
 
   javax.swing.BoundedRangeModel
     (subscribe [this handler]
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
-    (notify [this v] (ssc/invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
+    (notify [this v] 
+      (when-not (= v (.getValue this)) 
+        (.setValue this v))))
 
 (defn b-swap! 
   "Creates a bindable that swaps! an atom's value using the given function each
