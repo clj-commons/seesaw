@@ -111,6 +111,13 @@
           [k r o n] (when-not (= o n) (handler n)))))
     (notify [this v] (reset! this v))
 
+  clojure.lang.Agent
+    (subscribe [this handler]
+      (add-watch this (keyword (gensym "bindable-agent-watcher"))
+        (fn bindable-agen-watcher
+          [k r o n] (when-not (= o n) (handler n)))))
+    (notify [this v] (throw (IllegalStateException. "Can't notify an agent!")))
+
   javax.swing.text.Document
     (subscribe [this handler]
       (ssc/listen this :document
@@ -147,6 +154,44 @@
       (subscribe atom handler))
     (notify [this v] 
       (apply swap! atom f v args))))
+
+(defn- b-send*
+  [send-fn agent f & args]
+  (reify Bindable
+    (subscribe [this handler] 
+      (subscribe agent handler))
+    (notify [this v] 
+      (apply send-fn agent f v args))))
+
+(defn b-send
+  "Creates a bindable that (send)s to an agent using the given function each
+  time its input changes. That is, each time a new value comes in, 
+  (apply send agent f new-value args) is called.
+
+  This bindable's value (the current value of the atom) is subscribable.
+  
+  Example:
+  
+    ; Accumulate list of selections in a vector
+    (bind (selection my-list) (b-send my-agent conj))
+  "
+  [agent f & args]
+  (apply b-send* send agent f args))
+
+(defn b-send-off 
+  "Creates a bindable that (send-off)s to an agent using the given function each
+  time its input changes. That is, each time a new value comes in, 
+  (apply send agent f new-value args) is called.
+
+  This bindable's value (the current value of the atom) is subscribable.
+  
+  Example:
+  
+    ; Accumulate list of selections in a vector
+    (bind (selection my-list) (b-send-off my-agent conj))
+  "
+  [agent f & args]
+  (apply b-send* send-off agent f args))
 
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum

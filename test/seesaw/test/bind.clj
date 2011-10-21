@@ -86,7 +86,28 @@
             sl (ssc/slider :value @v)]
         (bind v (.getModel sl))
         (reset! v 20)
-        (expect (= (.getValue sl) 20))))))
+        (expect (= (.getValue sl) 20)))))
+
+  (testing "given an agent"
+
+    (it "should pass along changes to the agent's value"
+      (let [start (agent nil)
+            end   (atom nil)]
+        (bind start end)
+        (send start (constantly :called))
+        (await start)
+        (expect (= :called @start))
+        (expect (= :called @end))))
+
+    (it "should throw an exception if you try to notify an agent"
+      (let [start (atom nil)]
+        (bind start (agent nil))
+        (expect (try
+                  (reset! start 99)
+                  false
+                  ; Unfortunately, IllegalStateException gets wrapped by reset!
+                  (catch RuntimeException e
+                    (= IllegalStateException (class (.getCause e))))))))))
 
 (describe tee
   (it "creates a tee junction in a bind"
@@ -163,6 +184,30 @@
       (reset! start 3)
       (expect (= [1 2 3] @target))
       (expect (= @end @target)))))
+
+(describe b-send
+  (it "acts like send passing the old value, new value, and additional args to a function"
+    (let [start  (atom nil)
+          target (agent [])]
+      (bind start 
+            (b-send target conj) )
+      (reset! start 1)
+      (reset! start 2)
+      (reset! start 3)
+      (await target)
+      (expect (= [1 2 3] @target)))))
+
+(describe b-send-off
+  (it "acts like sendoff passing the old value, new value, and additional args to a function"
+    (let [start  (atom nil)
+          target (agent [])]
+      (bind start 
+            (b-send-off target conj) )
+      (reset! start 1)
+      (reset! start 2)
+      (reset! start 3)
+      (await target)
+      (expect (= [1 2 3] @target)))))
 
 (describe notify-later
   (it "passes incoming values to the swing thread with invoke-later"
