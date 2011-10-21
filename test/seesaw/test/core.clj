@@ -1273,6 +1273,17 @@
         (expect (= c (select f [:#hi])))
         (expect (= p (select f ["#panel"])))))))
 
+(describe select-with
+  (it "should return the equivalent of (partial select widget)"
+    (let [lbl (label :id :foo)
+          p (border-panel :center lbl)
+          $ (select-with p)]
+      (expect (= lbl ($ [:#foo])))))
+  (it "calling (to-widget) on the result should return the (to-widget input)"
+    (let [p (border-panel)
+          $ (select-with p)]
+      (expect (= p (to-widget $))))))
+
 (describe group-by-id
   (it "should return a map of widgets, keyed by id"
     (let [a (label :id :a)

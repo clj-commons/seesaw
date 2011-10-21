@@ -22,7 +22,7 @@
         [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
                                reapply-options get-option-value apply-options]]
         [seesaw.meta :only [get-meta put-meta!]]
-        [seesaw.to-widget :only [to-widget*]]
+        [seesaw.to-widget :only [ToWidget to-widget*]]
         [seesaw.make-widget :only [make-widget*]])
   (:require clojure.java.io
             clojure.set
@@ -3234,6 +3234,42 @@
           result (seesaw.selector/select root selector)
           id? (and (nil? (second selector)) (seesaw.selector/id-selector? (first selector)))]
       (if id? (first result) result))))
+
+(defrecord ^{:private true} SelectWith [widget]
+  clojure.lang.IFn
+  (invoke [this selector]
+    (select widget selector))
+  ToWidget
+  (to-widget* [this] widget))
+
+(defn select-with
+  "Returns an object with the following properties:
+  
+   * Equivalent to (partial seesaw.core/select (to-widget target)), i.e. it 
+     returns a function that performs a select on the target.
+   * Calling (to-widget) on it returns the same value as (to-widget target).
+  
+  This basically allows you to pack a widget and the select function into a single
+  package for convenience. For example:
+
+    (defn make-frame [] (frame ...))
+
+    (defn add-behaviors [$]
+      (let [widget-a ($ [:#widget-a])
+            buttons  ($ [:.button])
+            ...]
+        ...)
+      $)
+
+    (defn -main []
+      (-> (make-frame) select-with add-behaviors pack! show!))
+
+  See:
+    (seesaw.core/select)
+    (seesaw.core/to-widget)
+  "
+  [target]
+  (SelectWith. (to-widget target)))
 
 (defn group-by-id
   "Group the widgets in a hierarchy starting at some root into a map
