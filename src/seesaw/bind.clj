@@ -167,7 +167,7 @@
                                      (.replace "?" ""))
                                  #"\-"))))
 
-(defn property [^java.awt.Component target property-name]
+(defn property 
   "Returns a bindable (suitable to pass to seesaw.bind/bind) that
   connects to a property of a widget, e.g. :foreground, :enabled?,
   etc.
@@ -186,6 +186,7 @@
   See:
     (seesaw.bind/bind)
   "
+  [^java.awt.Component target property-name]
   (reify Bindable
     (subscribe [this handler] 
       (let [property-name (property-kw->java-name property-name)]
