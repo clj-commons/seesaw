@@ -19,6 +19,7 @@
                             constant-map resource to-dimension 
                             to-insets to-url try-cast
                             cond-doto to-mnemonic-keycode]]
+        [seesaw.config :only [Configurable config* config!*]]
         [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
                                reapply-options get-option-value apply-options]]
         [seesaw.meta :only [get-meta put-meta!]]
@@ -565,60 +566,10 @@
 
 ;*******************************************************************************
 ; Widget configuration stuff
-(defprotocol ^{:private true} Configurable
-  "A protocol for configuring and querying properties of an object. Client
-  code should use (seesaw.core/config!) and (seesaw.core/config) rather than
-  calling protocol methods directly.
-  
-  See:
-    (seesaw.core/config)
-    (seesaw.core/config!)
-  "
-  (config!* [target args] "Configure one or more options on target. Args is a list of key/value pairs. See (seesaw.core/config!)")
-  (config* [target name] "Retrieve the current value for the given named option. See (seesaw.core/config)"))
 
-(defn config
-  "Retrieve the value of an option from target. For example:
-  
-    (config button1 :text)
-    => \"I'm a button!\"
-  
-  Target must satisfy the Configurable protocol. In general, it may be a widget, 
-  or convertible to widget with (to-widget). For example, the target can be an event 
-  object.
+(def ^{:doc (str "Alias of seesaw.config/config:\n" (:doc (meta #'seesaw.config/config)))} config seesaw.config/config)
 
-  Returns the option value. 
-  Throws IllegalArgumentException if an unknown option is requested.
-
-  See:
-    (seesaw.core/config!)
-  "
-  [target name]
-  (config* target name))
-
-(defn config!
-  "Applies options in the argument list to one or more targets. For example:
-
-    (config! button1 :enabled? false :text \"I' disabled\")
-
-  or:
-
-    (config! [button1 button2] :enabled? false :text \"We're disabled\")
- 
-  Targets must satisfy the Configurable protocol. In general, they may be widgets, 
-  or convertible to widgets with (to-widget). For example, the target can be an event 
-  object.
-
-  Returns the input targets.
-  Throws IllegalArgumentException if an unknown option is encountered.
-
-  See:
-    (seesaw.core/config)
-  "
-  [targets & args]
-  (doseq [target (to-seq targets)]
-    (config!* target args))
-  targets)
+(def ^{:doc (str "Alias of seesaw.config/config!:\n" (:doc (meta #'seesaw.config/config!)))} config! seesaw.config/config!)
 
 ;*******************************************************************************
 ; Default options
