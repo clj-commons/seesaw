@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.tree
-  (:use [seesaw core tree]))
+  (:use [seesaw core tree])
+  (:require clojure.xml))
 
 (def source "http://www.4clojure.com/problems/rss")
 
