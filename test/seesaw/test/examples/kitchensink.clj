@@ -15,7 +15,7 @@
   (:import (javax.swing JFrame JLabel)
            (java.awt Color)))
 
-(def rss-url (clojure.java.io/resource "seesaw/examples/rss.gif"))
+(def rss-url (clojure.java.io/resource "seesaw/test/examples/rss.gif"))
 (def redditor "http://static.reddit.com/reddit.com.header.png")
 
 (defn make-frame []
@@ -130,7 +130,7 @@
 
     (listen (select f [:#check-me]) :selection ; or :item-state-changed
       (fn [e] 
-        (config! (select f [:#link]) :enabled? (first (selection e)))))
+        (config! (select f [:#link]) :enabled? (selection e))))
 
     (listen (select f [:#combo])  :selection ; or :item-state-changed
         (fn [e] (println (selection e))))
