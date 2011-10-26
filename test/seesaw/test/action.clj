@@ -24,11 +24,20 @@
       (expect (not (.getValue a Action/SELECTED_KEY)))
       (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))))
   (it "sets the mnemonic of the action given an integer key code"
-    (expect (= 99 (.getValue (action :mnemonic 99) Action/MNEMONIC_KEY))))
+    (let [m (.getValue (action :mnemonic 99) Action/MNEMONIC_KEY)] 
+      ; For Clojure 1.3, ensure that it's an Integer in there and not a Long
+      (expect (instance? java.lang.Integer m))
+      (expect (= 99 m))))
   (it "sets the mnemonic of the action given a character"
-    (expect (= (int \T) (.getValue (action :mnemonic \T) Action/MNEMONIC_KEY))))
+    (let [m (.getValue (action :mnemonic \T) Action/MNEMONIC_KEY)]
+      ; For Clojure 1.3, ensure that it's an Integer in there and not a Long
+      (expect (instance? java.lang.Integer m))
+      (expect (= (int \T) m))))
   (it "sets the mnemonic of the action given a lower-case character"
-    (expect (= (int \T) (.getValue (action :mnemonic \t) Action/MNEMONIC_KEY))))
+    (let [m (.getValue (action :mnemonic \t) Action/MNEMONIC_KEY)] 
+      ; For Clojure 1.3, ensure that it's an Integer in there and not a Long
+      (expect (instance? java.lang.Integer m))
+      (expect (= (int \T) m))))
   (it "calls the handler when actionPerformed is called"
     (let [called (atom false)
           f (fn [e] (reset! called true))

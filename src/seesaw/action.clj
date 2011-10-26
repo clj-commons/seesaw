@@ -36,7 +36,7 @@
   :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
   :mnemonic  (default-option :mnemonic 
                (fn [^Action a v]
-                 (.putValue a Action/MNEMONIC_KEY (to-mnemonic-keycode v)))) 
+                 (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
   :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
   :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
 })
