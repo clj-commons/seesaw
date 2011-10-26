@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.cells - Seesaw nil API documentation</title>
+    <title>seesaw.style - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,29 +52,58 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.style/apply-stylesheet">apply-stylesheet</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.cells</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.style</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.cells</span>))
+  (:require <span id="long-name">seesaw.style</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr">Functions for implementing custom cell renderers. Note that on
-many core functions (listbox, tree, combobox, etc) a render function
-can be given directly to the :renderer option.</pre>
+<pre id="namespace-docstr">Functions for styling apps. Prefer (seesaw.core/stylesheet) and friends.</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.style/apply-stylesheet">apply-stylesheet</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (apply-stylesheet root stylesheet)
+</pre>
+  <pre id="var-docstr">ALPHA - EXPERIMENTAL AND GUARANTEED TO CHANGE
 
+Apply a stylesheet to a widget hierarchy. A stylesheet is simple a map where
+the keys are selectors and the values are maps from widget properties to
+values. For example,
+
+  (apply-stylesheet frame {
+    [:#foo]       { :text "hi" }
+    [:.important] { :background :red } })
+
+Applying a stylesheet is a one-time operation. It does not set up any
+kind of monitoring. Thus, if you make a change to a widget that would
+affect the rules that apply to it (say, by changing its :class) you'll
+need to reapply the stylesheet.
+
+See:
+  (seesaw.core/config!)
+  (seesaw.core/select)
+</pre>
+  
+  
+  
+</div>
 
 
 </div>

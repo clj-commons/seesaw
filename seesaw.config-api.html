@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.cells - Seesaw nil API documentation</title>
+    <title>seesaw.config - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,29 +52,129 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.config/Configurable">Configurable</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.config/config">config</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.config/config!">config!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.config/config!*">config!*</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.config/config*">config*</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.cells</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.config</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.cells</span>))
+  (:require <span id="long-name">seesaw.config</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr">Functions for implementing custom cell renderers. Note that on
-many core functions (listbox, tree, combobox, etc) a render function
-can be given directly to the :renderer option.</pre>
+<pre id="namespace-docstr">Functions for configuring widgets. Prefer (seesaw.core/config) and friends.</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.config/Configurable">Configurable</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">A protocol for configuring and querying properties of an object. Client
+code should use (seesaw.core/config!) and (seesaw.core/config) rather than
+calling protocol methods directly.
 
+See:
+  (seesaw.core/config)
+  (seesaw.core/config!)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.config/config">config</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (config target name)
+</pre>
+  <pre id="var-docstr">Retrieve the value of an option from target. For example:
+
+  (config button1 :text)
+  =&gt; "I'm a button!"
+
+Target must satisfy the Configurable protocol. In general, it may be a widget, 
+or convertible to widget with (to-widget). For example, the target can be an event 
+object.
+
+Returns the option value. 
+Throws IllegalArgumentException if an unknown option is requested.
+
+See:
+  (seesaw.core/config!)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.config/config!">config!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (config! targets &amp; args)
+</pre>
+  <pre id="var-docstr">Applies options in the argument list to one or more targets. For example:
+
+   (config! button1 :enabled? false :text "I' disabled")
+
+ or:
+
+   (config! [button1 button2] :enabled? false :text "We're disabled")
+
+ Targets must satisfy the Configurable protocol. In general, they may be widgets, 
+ or convertible to widgets with (to-widget). For example, the target can be an event 
+ object.
+
+ Returns the input targets.
+ Throws IllegalArgumentException if an unknown option is encountered.
+
+ See:
+   (seesaw.core/config)
+ </pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.config/config!*">config!*</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (config!* target args)
+</pre>
+  <pre id="var-docstr">Configure one or more options on target. Args is a list of key/value pairs. See (seesaw.core/config!)</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.config/config*">config*</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (config* target name)
+</pre>
+  <pre id="var-docstr">Retrieve the current value for the given named option. See (seesaw.core/config)</pre>
+  
+  
+  
+</div>
 
 
 </div>
