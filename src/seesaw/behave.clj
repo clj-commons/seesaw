@@ -13,7 +13,8 @@
            or just a pain to implement."
       :author "Dave Ray"}
   seesaw.behave
-  (:use [seesaw core util]))
+  (:use [seesaw core]
+        [seesaw.util :only [to-seq]]))
 
 (defn when-focused-select-all
   "A helper function which adds a \"select all when focus gained\" behavior to one
@@ -70,7 +71,8 @@
       :mouse-dragged 
         (fn [^java.awt.event.MouseEvent e]
           (let [p (.getPoint e)]
-            (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])))
+            (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])
+            (.setLocation last-point (.getPoint e))))
       :mouse-released
         finish)))
 

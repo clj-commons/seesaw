@@ -13,6 +13,13 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe illegal-argument
+  (it "throws a formatted illegal argument exception"
+    (try
+      (illegal-argument "This %s a message with code %d" "is" 99) false
+      (catch IllegalArgumentException e
+        (= "This is a message with code 99" (.getMessage e))))))
+
 (describe check-args
   (it "returns true if the condition is true"
     (check-args true "yes!"))
@@ -80,8 +87,8 @@
   (it "should return a new Dimension if input is [width :by height]"
     (let [d (to-dimension [1 :by 2])]
       (expect (= java.awt.Dimension (class d)))
-      (expect (= 1 (.getWidth d)))
-      (expect (= 2 (.getHeight d))))))
+      (expect (= 1 (.width d)))
+      (expect (= 2 (.height d))))))
 
 (describe to-insets
   (it "should throw an exception if it doesn't know what to do"
@@ -104,7 +111,11 @@
   (it "should return false for a non-atom"
     (not (atom? (ref nil)))))
 
-(describe reverse-map
-  (it "should reverse a map"
-    (= {1 :a 2 :b} (reverse-map {:a 1 :b 2}))))
+(describe to-mnemonic-keycode
+  (it "should pass through an integer key code"
+    (= 99 (to-mnemonic-keycode 99)))
+  (it "should convert a character to an integer key code"
+    (= (int \T) (to-mnemonic-keycode \T)))
+  (it "should convert a lower-case character to an integer key code"
+    (= (int \X) (to-mnemonic-keycode \x))))
 

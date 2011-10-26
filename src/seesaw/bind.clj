@@ -13,9 +13,9 @@
       :author "Dave Ray"}
   seesaw.bind
   (:refer-clojure :exclude [some])
-  (:require [seesaw.core :as ssc])
-  (:use [seesaw util]
-        [clojure.string :only (capitalize split)]))
+  (:require [seesaw.core :as ssc]
+            [seesaw.invoke :as invoke])
+  (:use [clojure.string :only (capitalize split)]))
 
 (defprotocol Bindable
   (subscribe [this handler])
@@ -111,22 +111,30 @@
           [k r o n] (when-not (= o n) (handler n)))))
     (notify [this v] (reset! this v))
 
+  clojure.lang.Agent
+    (subscribe [this handler]
+      (add-watch this (keyword (gensym "bindable-agent-watcher"))
+        (fn bindable-agen-watcher
+          [k r o n] (when-not (= o n) (handler n)))))
+    (notify [this v] (throw (IllegalStateException. "Can't notify an agent!")))
+
   javax.swing.text.Document
     (subscribe [this handler]
       (ssc/listen this :document
         (fn [e] (handler (get-document-text this)))))
     (notify [this v] 
-      (ssc/invoke-now 
-        (when-not (= v (get-document-text this))
-          (do
-            (.remove this 0 (.getLength this))
-            (.insertString this 0 (str v) nil)))))
+      (when-not (= v (get-document-text this))
+        (do
+          (.remove this 0 (.getLength this))
+          (.insertString this 0 (str v) nil))))
 
   javax.swing.BoundedRangeModel
     (subscribe [this handler]
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
-    (notify [this v] (ssc/invoke-now (when-not (= v (.getValue this)) (.setValue this v)))))
+    (notify [this v] 
+      (when-not (= v (.getValue this)) 
+        (.setValue this v))))
 
 (defn b-swap! 
   "Creates a bindable that swaps! an atom's value using the given function each
@@ -146,6 +154,44 @@
       (subscribe atom handler))
     (notify [this v] 
       (apply swap! atom f v args))))
+
+(defn- b-send*
+  [send-fn agent f & args]
+  (reify Bindable
+    (subscribe [this handler] 
+      (subscribe agent handler))
+    (notify [this v] 
+      (apply send-fn agent f v args))))
+
+(defn b-send
+  "Creates a bindable that (send)s to an agent using the given function each
+  time its input changes. That is, each time a new value comes in, 
+  (apply send agent f new-value args) is called.
+
+  This bindable's value (the current value of the atom) is subscribable.
+  
+  Example:
+  
+    ; Accumulate list of selections in a vector
+    (bind (selection my-list) (b-send my-agent conj))
+  "
+  [agent f & args]
+  (apply b-send* send agent f args))
+
+(defn b-send-off 
+  "Creates a bindable that (send-off)s to an agent using the given function each
+  time its input changes. That is, each time a new value comes in, 
+  (apply send agent f new-value args) is called.
+
+  This bindable's value (the current value of the atom) is subscribable.
+  
+  Example:
+  
+    ; Accumulate list of selections in a vector
+    (bind (selection my-list) (b-send-off my-agent conj))
+  "
+  [agent f & args]
+  (apply b-send* send-off agent f args))
 
 (def ^{:private true} short-property-keywords-to-long-map
      {:min :minimum
@@ -168,7 +214,7 @@
                                      (.replace "?" ""))
                                  #"\-"))))
 
-(defn property [^java.awt.Component target property-name]
+(defn property 
   "Returns a bindable (suitable to pass to seesaw.bind/bind) that
   connects to a property of a widget, e.g. :foreground, :enabled?,
   etc.
@@ -187,6 +233,7 @@
   See:
     (seesaw.bind/bind)
   "
+  [^java.awt.Component target property-name]
   (reify Bindable
     (subscribe [this handler] 
       (let [property-name (property-kw->java-name property-name)]
@@ -296,6 +343,54 @@
   (reify Bindable
     (subscribe [this handler] (throw (UnsupportedOperationException. "tee bindables don't support subscription")))
     (notify [this v] (doseq [b bindables] (notify b v)))))
+
+(defn notify-when*
+  [schedule-fn]
+  (let [handlers (atom [])]
+    (reify Bindable
+      (subscribe [this handler]
+        (swap! handlers conj handler))
+      (notify [this v]
+        (schedule-fn
+          (fn [] (doseq [h @handlers] (h v))))))))
+
+(defn notify-later 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-later). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+  
+  See:
+    (seesaw.invoke/invoke-later)
+  "
+  []
+  (notify-when* invoke/invoke-later*))
+
+(defn notify-soon 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-soon). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+ 
+  See:
+    (seesaw.invoke/invoke-soon)
+  "
+  []
+  (notify-when* invoke/invoke-soon*))
+
+(defn notify-now 
+  "Creates a bindable that notifies its subscribers (next in chain) on the
+  swing thread using (seesaw.invoke/invoke-now). You should use this to
+  ensure that things happen on the right thread, e.g. (seesaw.bind/property)
+  and (seesaw.bind/selection).
+
+  Note that sincel invoke-now is used, you're in danger of deadlocks. Be careful.
+  
+  See:
+    (seesaw.invoke/invoke-soon)
+  "
+  []
+  (notify-when* invoke/invoke-now*))
 
 (extend-protocol ToBindable
   javax.swing.JLabel

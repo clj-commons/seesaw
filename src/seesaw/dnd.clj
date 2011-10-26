@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for dealing with drag and drop and data transfer."
       :author "Dave Ray"}
   seesaw.dnd
-  (:use [seesaw.util :only [constant-map]])
+  (:use [seesaw.util :only [constant-map illegal-argument]])
   (:require clojure.set
             clojure.string)
   (:import [java.awt.datatransfer DataFlavor
@@ -92,7 +92,7 @@
 (def ^{:doc "Flavor for images as java.awt.Image" } image-flavor DataFlavor/imageFlavor)
 (def ^{:doc "Flavor for raw text" } string-flavor DataFlavor/stringFlavor)
 
-(defn default-transferable 
+(defn ^Transferable default-transferable 
   "Constructs a transferable given a vector of alternating flavor/value pairs.
   If a value is a function, i.e. (fn? value) is true, then then function is 
   called with no arguments when the value is requested for its corresponding 
@@ -146,19 +146,27 @@
     (merge 
       (cond
         (instance? javax.swing.JList$DropLocation dl) 
-          { :index (.getIndex dl) :insert? (.isInsert dl) }
+          (let [^javax.swing.JList$DropLocation dl dl] 
+            { :index (.getIndex dl) 
+              :insert? (.isInsert dl) })
 
         (instance? javax.swing.JTable$DropLocation dl)
-          { :column (.getColumn dl)
-            :row    (.getRow dl)
-            :insert-column? (.isInsertColumn dl)
-            :insert-row?    (.isInsertRow dl) }
+          (let [^javax.swing.JTable$DropLocation dl dl] 
+            { :column (.getColumn dl)
+              :row    (.getRow dl)
+              :insert-column? (.isInsertColumn dl)
+              :insert-row?    (.isInsertRow dl) })
+
         (instance? javax.swing.text.JTextComponent$DropLocation dl)
-          { :bias (.getBias dl)
-            :index (.getIndex dl) }
+          (let [^javax.swing.text.JTextComponent$DropLocation dl dl] 
+            { :bias (.getBias dl)
+              :index (.getIndex dl) })
+        
         (instance? javax.swing.JTree$DropLocation dl)
-          { :index (.getChildIndex dl) 
-            :path  (.getPath dl) }
+          (let [^javax.swing.JTree$DropLocation dl dl] 
+            { :index (.getChildIndex dl) 
+              :path  (.getPath dl) })
+
         :else {})
       {:point [(.x pt) (.y pt)]})))
 
@@ -263,7 +271,7 @@
         (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
 
       (importData [^TransferHandler$TransferSupport support]
-        (if (.canImport this support)
+        (if (.canImport ^TransferHandler this support)
           (try 
             (let [[flavorful handler] (get-import-handler support import-pairs)
                   data                         (get-import-data support flavorful)
@@ -297,7 +305,7 @@
   (cond
     (instance? TransferHandler v) v
     (vector? v) (apply default-transfer-handler v)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make TransferHandler from: " v)))))
+    :else (illegal-argument "Don't know how to make TransferHandler from: %s" v)))
 
 (defn everything-transfer-handler 
   "Handler that accepts all drops. For debugging."

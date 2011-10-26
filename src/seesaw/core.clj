@@ -15,7 +15,16 @@
   capability or makes them easier to use."
       :author "Dave Ray"}
   seesaw.core
-  (:use [seesaw util options meta to-widget make-widget])
+  (:use [seesaw.util :only [illegal-argument to-seq check-args 
+                            constant-map resource to-dimension 
+                            to-insets to-url try-cast
+                            cond-doto to-mnemonic-keycode]]
+        [seesaw.config :only [Configurable config* config!*]]
+        [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
+                               reapply-options get-option-value apply-options]]
+        [seesaw.meta :only [get-meta put-meta!]]
+        [seesaw.to-widget :only [ToWidget to-widget*]]
+        [seesaw.make-widget :only [make-widget*]])
   (:require clojure.java.io
             clojure.set
             [seesaw color font border invoke timer selection 
@@ -37,6 +46,7 @@
 
 (def #^{:macro true :doc "Alias for seesaw.invoke/invoke-now"} invoke-now #'seesaw.invoke/invoke-now)
 (def #^{:macro true :doc "Alias for seesaw.invoke/invoke-later"} invoke-later #'seesaw.invoke/invoke-later)
+(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-soon"} invoke-soon #'seesaw.invoke/invoke-later)
 
 (defn native!
   "Set native look and feel and other options to try to make things look right.
@@ -246,13 +256,14 @@
         (let [result (factory)]
           (if (instance? expected-class result)
             result
-            (throw (IllegalArgumentException. 
-                     (str (class result) " is not an instance of " expected-class)))))
+            (illegal-argument "%s is not an instance of %s"
+                              (class result) 
+                              expected-class)))
 
       :else 
-        (throw (IllegalArgumentException. 
-                 (str "Factory or instance " factory 
-                      " is not consistent with expected type " expected-class))))))
+        (illegal-argument 
+          "Factory or instance %s is not consistent with expected type %s" 
+          factory expected-class))))
 
 ;*******************************************************************************
 ; Generic widget stuff
@@ -337,6 +348,21 @@
   (doseq [#^java.awt.Window target (map to-root (to-seq targets))]
     (.dispose target))
   targets)
+
+(defn all-frames
+  "Returns a sequence of all of the frames (includes java.awt.Frame) known by the JVM.
+  
+  This function is really only useful for debugging and repl development, namely:
+ 
+    ; Clear out all frames 
+    (dispose! (all-frames))
+  
+  Otherwise, it is highly unreliable. Frames will hang around after disposal, pile up
+  and generally cause trouble.
+  
+  You've been warned."
+  []
+  (seq (java.awt.Frame/getFrames)))
 
 (defn repaint!
   "Request a repaint of one or a list of widget-able things.
@@ -517,8 +543,8 @@
 (let [table (constant-map SwingConstants :horizontal :vertical)]
   (defn- orientation-table [v]
     (or (table v)
-        (throw (IllegalArgumentException. 
-                (str ":orientation must be either :horizontal or :vertical. Got " v " instead."))))))
+        (illegal-argument 
+          ":orientation must be either :horizontal or :vertical. Got %s instead." v))))
 
 (defn- bounds-option-handler [^java.awt.Component target v]
   (cond
@@ -540,60 +566,10 @@
 
 ;*******************************************************************************
 ; Widget configuration stuff
-(defprotocol ^{:private true} Configurable
-  "A protocol for configuring and querying properties of an object. Client
-  code should use (seesaw.core/config!) and (seesaw.core/config) rather than
-  calling protocol methods directly.
-  
-  See:
-    (seesaw.core/config)
-    (seesaw.core/config!)
-  "
-  (config!* [target args] "Configure one or more options on target. Args is a list of key/value pairs. See (seesaw.core/config!)")
-  (config* [target name] "Retrieve the current value for the given named option. See (seesaw.core/config)"))
 
-(defn config
-  "Retrieve the value of an option from target. For example:
-  
-    (config button1 :text)
-    => \"I'm a button!\"
-  
-  Target must satisfy the Configurable protocol. In general, it may be a widget, 
-  or convertible to widget with (to-widget). For example, the target can be an event 
-  object.
+(def ^{:doc (str "Alias of seesaw.config/config:\n" (:doc (meta #'seesaw.config/config)))} config seesaw.config/config)
 
-  Returns the option value. 
-  Throws IllegalArgumentException if an unknown option is requested.
-
-  See:
-    (seesaw.core/config!)
-  "
-  [target name]
-  (config* target name))
-
-(defn config!
-  "Applies options in the argument list to one or more targets. For example:
-
-    (config! button1 :enabled? false :text \"I' disabled\")
-
-  or:
-
-    (config! [button1 button2] :enabled? false :text \"We're disabled\")
- 
-  Targets must satisfy the Configurable protocol. In general, they may be widgets, 
-  or convertible to widgets with (to-widget). For example, the target can be an event 
-  object.
-
-  Returns the input targets.
-  Throws IllegalArgumentException if an unknown option is encountered.
-
-  See:
-    (seesaw.core/config)
-  "
-  [targets & args]
-  (doseq [target (to-seq targets)]
-    (config!* target args))
-  targets)
+(def ^{:doc (str "Alias of seesaw.config/config!:\n" (:doc (meta #'seesaw.config/config!)))} config! seesaw.config/config!)
 
 ;*******************************************************************************
 ; Default options
@@ -692,7 +668,8 @@
   javax.swing.JTree
   javax.swing.JProgressBar
   javax.swing.JSlider
-  javax.swing.JScrollBar)
+  javax.swing.JScrollBar
+  javax.swing.JSpinner)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
@@ -760,7 +737,7 @@
   (defn- list-selection-mode-handler [target v]
     (if-let [v (list-selection-mode-table v)]
       (set-selection-mode target v)
-      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys list-selection-mode-table)))))))
+      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table)))))
 
 (let [tree-selection-mode-table {
   :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
@@ -770,7 +747,7 @@
   (defn- tree-selection-mode-handler [target v]
     (if-let [v (tree-selection-mode-table v)]
       (set-selection-mode target v)
-      (throw (IllegalArgumentException. (str "Unknown selection-mode. Must be one of " (keys tree-selection-mode-table)))))))
+      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table)))))
 
 (declare paint-option-handler)
 
@@ -903,7 +880,7 @@
 
 (def ^{:private true}  border-layout-dirs 
   (constant-map BorderLayout :north :south :east :west :center))
-(def ^{:private true}  border-layout-dirs-r (reverse-map border-layout-dirs))
+(def ^{:private true}  border-layout-dirs-r (clojure.set/map-invert border-layout-dirs))
 
 (defn- border-panel-items-setter
   [panel items]
@@ -1286,6 +1263,7 @@
   :margin    (bean-option :margin javax.swing.AbstractButton to-insets)
 
   :group     (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1))
+  :mnemonic  (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode)
 })
 
 (defn- apply-button-defaults
@@ -1306,13 +1284,25 @@
       :margin    The button margins as insets. See (seesaw.util/to-insets)
       :group     A button-group that the button should be added to.
       :resource  A resource prefix (see below).
+      :mnemonic  The mnemonic for the button, either a character or a keycode.
+                  Usually allows the user to activate the button with alt-mnemonic.
+                  See (seesaw.util/to-mnemonic-keycode).
  
   Resources and i18n:
 
     A button's base properties can be set from a resource prefix, i.e. a namespace-
     qualified keyword that refers to a resource bundle loadable by j18n. 
 
+  Examples:
+
+    ; Create a button with text \"Next\" with alt-N mnemonic shortcut that shows
+    ; an alert when clicked.
+    (button :text \"Next\" 
+            :mnemonic \\N 
+            :listen [:action #(alert \"NEXT!\")])
+
   See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JButton.html
     (seesaw.core/button-group)"
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 
@@ -1438,7 +1428,7 @@
           as-widget (to-widget arg0)
           multi?    (or (coll? arg0) (seq? arg0))]
       (cond 
-        (nil? arg0) (throw (IllegalArgumentException. "First arg must not be nil"))
+        (nil? arg0) (illegal-argument "First arg must not be nil")
         as-doc      (get-text as-doc) 
         as-widget   (get-text as-widget)
         multi?      (map #(text %) arg0)
@@ -1499,7 +1489,7 @@
           :bold       (.addAttribute style StyleConstants/Bold (boolean v))
           :italic     (.addAttribute style StyleConstants/Italic (boolean v))
           :underline  (.addAttribute style StyleConstants/Underline (boolean v))
-          (throw (IllegalArgumentException. (str "Option " k " is not supported in :styles"))))))))
+          (illegal-argument "Option %s is not supported in :styles" k))))))
 
 (def ^{:private true} styled-text-options (merge {
   :wrap-lines? (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2))
@@ -1657,9 +1647,7 @@
       model)))
 
 (def ^{:private true} listbox-options {
-  ; TODO This setter access should be a function in options.clj
-  :model             (default-option :model (fn [lb m] ((:setter (:model default-options)) lb (to-list-model m)))
-                                            get-model)
+  :model             (around-option (:model default-options) to-list-model identity) 
   :renderer          (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
@@ -1806,10 +1794,7 @@
 
 (def ^{:private true} combobox-options {
   :editable? (bean-option :editable? javax.swing.JComboBox boolean)
-  :model     (default-option :model    
-               ; TODO this setter lookup should be a function in options.clj
-               (fn [lb m] ((:setter (:model default-options)) lb (to-combobox-model m)))
-               get-model)
+  :model     (around-option (:model default-options) to-combobox-model identity)
   :renderer  (default-option :renderer 
                #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
                #(.getRenderer ^javax.swing.JComboBox %1)) 
@@ -1834,6 +1819,102 @@
   { :seesaw {:class 'javax.swing.JComboBox }}
   [& args]
   (apply-options (construct javax.swing.JComboBox args) args (merge default-options combobox-options)))
+
+(def ^{:private true} spinner-date-by-table 
+  (constant-map java.util.Calendar 
+    :era
+    :year
+    :month
+    :week-of-year
+    :week-of-month
+    :day-of-month
+    :day-of-year
+    :day-of-week
+    :day-of-week-in-month
+    :am-pm
+    :hour
+    :hour-of-day
+    :minute
+    :second
+    :millisecond))
+
+(defn ^javax.swing.SpinnerModel spinner-model 
+  "A helper function for creating spinner models. Calls take the general
+  form:
+  
+      (spinner-model initial-value 
+        :from start-value :to end-value :by step)
+  
+  Values can be one of:
+
+    * java.util.Date where step is one of :day-of-week, etc. See
+      java.util.Calendar constants.
+    * a number
+
+  Any of the options beside the initial value may be omitted.
+
+  Note that on some platforms the :by parameter will be ignored for date
+  spinners.
+
+  See:
+    (seesaw.core/spinner)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerDateModel.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerNumberModel.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
+  "
+  [v & {:keys [from to by]}]
+  (cond
+    ; TODO Reflection here. Don't know how to get rid of it.
+    (number? v) (javax.swing.SpinnerNumberModel. v from to (or by 1))
+    (instance? java.util.Date v) 
+      (javax.swing.SpinnerDateModel. ^java.util.Date v
+                                     from to 
+                                     (spinner-date-by-table by))
+    :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
+
+(defn- ^javax.swing.SpinnerModel to-spinner-model [v]
+  (cond
+    (instance? javax.swing.SpinnerModel v) v
+    (sequential? v)                        (javax.swing.SpinnerListModel. ^java.util.List v)
+    (instance? java.util.Date v) (doto (javax.swing.SpinnerDateModel.) (.setValue ^java.util.Date v))
+    (number? v) (doto (javax.swing.SpinnerNumberModel.) (.setValue v))
+    :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
+
+(def ^{:private true} spinner-options {
+  :model (around-option (:model default-options) to-spinner-model identity)})
+
+(defn spinner 
+  "Create a spinner (JSpinner). Additional options:
+
+    :model Instance of SpinnerModel, or one of the values described below.
+
+  Note that the value can be retrieved and set with the (selection) and
+  (selection!) functions. Listen to :selection to be notified of value 
+  changes.
+
+  The value of model can be one of the following:
+
+    * An instance of javax.swing.SpinnerModel
+    * A java.util.Date instance in which case the spinner starts at that date,
+      is unbounded, and moves by day.
+    * A number giving the initial value for an unbounded number spinner
+    * A value returned by (seesaw.core/spinner-model)
+
+  Notes:
+    This function is compatible with (seesaw.core/with-widget).
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SpinnerModel.html
+    (seesaw.core/spinner-model)
+    test/seesaw/test/examples/spinner.clj
+  "
+  { :seesaw {:class 'javax.swing.JSpinner }}
+  [& args]
+  (apply-options 
+    (construct javax.swing.JSpinner args) 
+    args 
+    (merge default-options spinner-options)))
 
 ;*******************************************************************************
 ; Scrolling
@@ -2028,7 +2109,7 @@
     (integer? value) (.setDividerLocation splitter ^Integer value)
     (ratio?   value) (divider-location! splitter (double value))
     (float?   value) (divider-location-proportional! splitter value)
-    :else (throw (IllegalArgumentException. (str "Expected integer or float, got " value))))
+    :else (illegal-argument "Expected integer or float, got %s" value))
   splitter)
 
 (def ^{:private true} splitter-options {
@@ -2216,7 +2297,7 @@
   (cond
     (instance? javax.swing.JPopupMenu arg) arg
     (fn? arg)                              (popup :items (arg event))
-    :else (throw (IllegalArgumentException. (str "Don't know how to make popup with " arg)))))
+    :else (illegal-argument "Don't know how to make popup with %s" arg)))
 
 (defn- popup-option-handler
   [^java.awt.Component target arg]
@@ -2345,7 +2426,7 @@
     (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
     (fn? v)  (paint-option-handler c {:after v})
     (map? v) (do (put-meta! c paint-property v) (.repaint c))
-    :else (throw (IllegalArgumentException. "Expect map or function for :paint property"))))
+    :else (illegal-argument "Expect map or function for :paint property")))
 
 (defn- paint-component-impl [^javax.swing.JComponent this ^java.awt.Graphics2D g]
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
@@ -2479,6 +2560,8 @@
   :minimum-size (bean-option :minimum-size  java.awt.Window to-dimension)
   :size         (bean-option :size java.awt.Window to-dimension)
   :visible?     (bean-option :visible? java.awt.Window boolean)
+  ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
+  ; base or interface.
   :transfer-handler (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
   :icon         (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)
 })
@@ -2640,7 +2723,7 @@
       (do 
         (reset! result-atom result)
         (invoke-now (dispose! dlg)))
-      (throw (IllegalArgumentException. "Counld not find dialog meta data!")))))
+      (illegal-argument "Counld not find dialog meta data!"))))
 
 (defn custom-dialog
   "Create a dialog and display it.
@@ -2792,7 +2875,7 @@
         s (second args)]
     (cond
       (or (= n 0) (keyword? f))
-        (throw (IllegalArgumentException. "input requires at least one non-keyword arg"))
+        (illegal-argument "input requires at least one non-keyword arg")
       (= n 1)      (input-impl nil f {})
       (= n 2)      (input-impl f s {})
       (keyword? s) (input-impl nil f (drop 1 args))
@@ -3103,6 +3186,80 @@
           result (seesaw.selector/select root selector)
           id? (and (nil? (second selector)) (seesaw.selector/id-selector? (first selector)))]
       (if id? (first result) result))))
+
+(defrecord ^{:private true} SelectWith [widget]
+  clojure.lang.IFn
+  (invoke [this selector]
+    (select widget selector))
+  ToWidget
+  (to-widget* [this] widget))
+
+(defn select-with
+  "Returns an object with the following properties:
+  
+   * Equivalent to (partial seesaw.core/select (to-widget target)), i.e. it 
+     returns a function that performs a select on the target.
+   * Calling (to-widget) on it returns the same value as (to-widget target).
+  
+  This basically allows you to pack a widget and the select function into a single
+  package for convenience. For example:
+
+    (defn make-frame [] (frame ...))
+
+    (defn add-behaviors [$]
+      (let [widget-a ($ [:#widget-a])
+            buttons  ($ [:.button])
+            ...]
+        ...)
+      $)
+
+    (defn -main []
+      (-> (make-frame) select-with add-behaviors pack! show!))
+
+  See:
+    (seesaw.core/select)
+    (seesaw.core/to-widget)
+  "
+  [target]
+  (SelectWith. (to-widget target)))
+
+(defn group-by-id
+  "Group the widgets in a hierarchy starting at some root into a map
+  keyed by :id. Widgets with no id are ignored. If an id appears twice,
+  the 'later' widget wins.
+  
+    root is any (to-widget)-able object.
+  
+  Examples:
+  
+    Suppose you have a form with with widgets with ids :name, :address,
+    :phone, :city, :state, :zip.
+    You'd like to quickly grab all those widgets and do something with
+    them from an event handler:
+
+      (fn [event]
+        (let [{:keys [name address phone city state zip]} (group-by-id event)
+          ... do something ...))
+  
+    This is functionally equivalent to, but faster than:
+  
+      (let [name (select event [:#name])
+            address (select event [:#address])
+            phone (select event [:#phone])
+            ... and so on ...]
+          ... do something ...)
+
+  See:
+    (seesaw.core/select)
+  "
+  [root]
+  (reduce
+    (fn [m c]
+      (if-let [id (id-of c)]
+        (assoc m id c)
+        m))
+    {}
+    (select (to-widget root) [:*])))
 
 ;*******************************************************************************
 ; Widget layout manipulation

@@ -11,7 +11,9 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use [seesaw util options color])
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.options :only [default-option bean-option apply-options]]
+        [seesaw.util :only [illegal-argument]])
   (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
            [javax.swing JFileChooser]))
 
@@ -52,14 +54,17 @@
   (doseq [f filters]
     (.addChoosableFileFilter chooser
       (cond
-        (instance? FileFilter f) f
+        (instance? FileFilter f) 
+          f
+
         (and (sequential? f) (sequential? (second f)))
-        (FileNameExtensionFilter. (first f) (into-array (second f)))
+          (FileNameExtensionFilter. (first f) (into-array (second f)))
+
         (and (sequential? f) (fn? (second f)))
-        (apply file-filter f)
+          (apply file-filter f)
+
         :else
-        (throw (IllegalArgumentException.
-                 (str "not a valid filter: " f)))))))
+          (illegal-argument "not a valid filter: %s" f)))))
 
 (def ^{:private true} file-chooser-options {
   :dir (default-option :dir

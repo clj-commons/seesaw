@@ -8,7 +8,8 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns seesaw.table)
+(ns seesaw.table
+  (:use [seesaw.util :only [illegal-argument]]))
 
 (defn- normalize-column [c]
   (cond 
@@ -27,7 +28,7 @@
   (cond
     (map? row)    (unpack-row-map col-key-map row)
     (vector? row) (object-array (concat row [nil]))
-    :else         (throw (IllegalArgumentException. (str "row must be a map or vector, got " (type row))))))
+    :else         (illegal-argument "row must be a map or vector, got %s" (type row))))
 
 (defn- insert-at [row-vec pos item] 
   (apply conj (subvec row-vec 0 pos) item (subvec row-vec pos)))
@@ -137,7 +138,7 @@
     (instance? javax.swing.table.TableModel v) v
     ; TODO replace with (to-widget) so (value-at) works with events and stuff
     (instance? javax.swing.JTable v) (.getModel ^javax.swing.JTable v)
-    :else (throw (IllegalArgumentException. (str "Can't get table model from " v)))))
+    :else (illegal-argument "Can't get table model from %s" v)))
 
 (defn- single-value-at
   [^javax.swing.table.TableModel model col-key-map row]

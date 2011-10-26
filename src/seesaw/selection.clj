@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.selection
-  (:use seesaw.util))
+  (:use [seesaw.util :only [check-args]]))
 
 (defprotocol Selection
   (get-selection [target])
@@ -36,6 +36,10 @@
       target)
 
   javax.swing.JSlider
+    (get-selection [target]     (vector (.getValue target)))
+    (set-selection [target [v]] (doto target (.setValue v)))
+
+  javax.swing.JSpinner
     (get-selection [target]     (vector (.getValue target)))
     (set-selection [target [v]] (doto target (.setValue v)))
 

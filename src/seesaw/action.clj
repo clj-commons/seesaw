@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
       :author "Dave Ray"}
   seesaw.action
-  (:use [seesaw util icon keystroke meta options])
+  (:use [seesaw.util :only [resource to-mnemonic-keycode]])
+  (:use [seesaw icon keystroke meta options])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
@@ -35,8 +36,7 @@
   :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
   :mnemonic  (default-option :mnemonic 
                (fn [^Action a v]
-                 (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
-                   (.putValue a Action/MNEMONIC_KEY v)))) 
+                 (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
   :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
   :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
 })
@@ -44,7 +44,7 @@
 (defn action 
   "Construct a new Action object. Supports the following properties:
 
-    :enabled? Whether the action is enabled
+    :enabled?  Whether the action is enabled
     :selected? Whether the action is selected (for use with radio buttons, 
                toggle buttons, etc.
     :name      The name of the action, i.e. the text that will be displayed
@@ -54,7 +54,9 @@
     :tip       The action's tooltip
     :icon      The action's icon. See (seesaw.core/icon)
     :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
-    :mnemonic  A character associated with the action.
+    :mnemonic  The mnemonic for the button, either a character or a keycode.
+                Usually allows the user to activate the button with alt-mnemonic.
+                See (seesaw.util/to-mnemonic-keycode).
     :handler   A single-argument function that performs whatever operations are
                associated with the action. The argument is a ActionEvent instance.
 

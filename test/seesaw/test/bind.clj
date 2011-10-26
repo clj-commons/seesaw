@@ -86,7 +86,31 @@
             sl (ssc/slider :value @v)]
         (bind v (.getModel sl))
         (reset! v 20)
-        (expect (= (.getValue sl) 20))))))
+        (expect (= (.getValue sl) 20)))))
+
+  (testing "given an agent"
+
+    (it "should pass along changes to the agent's value"
+      (let [start (agent nil)
+            end   (atom nil)]
+        (bind start end)
+        (send start (constantly :called))
+        (await start)
+        (expect (= :called @start))
+        (expect (= :called @end))))
+
+    (it "should throw an exception if you try to notify an agent"
+      (let [start (atom nil)]
+        (bind start (agent nil))
+        (expect (try
+                  (reset! start 99)
+                  false
+                  ; In Clojure 1.3, the exception propagates correctly
+                  (catch IllegalStateException e
+                    true)
+                  ; Unfortunately, in Clojure 1.2, IllegalStateException gets wrapped by reset!
+                  (catch RuntimeException e
+                    (= IllegalStateException (class (.getCause e))))))))))
 
 (describe tee
   (it "creates a tee junction in a bind"
@@ -164,3 +188,62 @@
       (expect (= [1 2 3] @target))
       (expect (= @end @target)))))
 
+(describe b-send
+  (it "acts like send passing the old value, new value, and additional args to a function"
+    (let [start  (atom nil)
+          target (agent [])]
+      (bind start 
+            (b-send target conj) )
+      (reset! start 1)
+      (reset! start 2)
+      (reset! start 3)
+      (await target)
+      (expect (= [1 2 3] @target)))))
+
+(describe b-send-off
+  (it "acts like sendoff passing the old value, new value, and additional args to a function"
+    (let [start  (atom nil)
+          target (agent [])]
+      (bind start 
+            (b-send-off target conj) )
+      (reset! start 1)
+      (reset! start 2)
+      (reset! start 3)
+      (await target)
+      (expect (= [1 2 3] @target)))))
+
+(describe notify-later
+  (it "passes incoming values to the swing thread with invoke-later"
+    (let [start (atom nil)
+          end   (atom nil)
+          p     (promise)]
+      (bind start
+            (notify-later)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (subscribe end (fn [v] (deliver p :got-it)))
+      (reset! start 99)
+      (expect (= :got-it @p))
+      (expect (= {:value 99 :edt? true} @end)))))
+
+(describe notify-soon
+  (it "passes incoming values to the swing thread with invoke-soon"
+    (let [start (atom nil)
+          end   (atom nil)]
+      (bind start
+            (notify-soon)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (ssc/invoke-now (reset! start 99))
+      (expect (= {:value 99 :edt? true} @end)))))
+
+(describe notify-now
+  (it "passes incoming values to the swing thread with invoke-now"
+    (let [start (atom nil)
+          end   (atom nil)]
+      (bind start
+            (notify-now)
+            (transform (fn [v] {:value v :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))
+            end)
+      (reset! start 99)
+      (expect (= {:value 99 :edt? true} @end)))))

@@ -23,6 +23,9 @@
   (it "can create a bold font"
     (let [f (font :style :bold )]
       (expect (= Font/BOLD (.getStyle f)))))
+  (it "can create a bold & italic font"
+    (let [f (font :style #{:bold :italic} )]
+      (expect (= (bit-or Font/BOLD Font/ITALIC) (.getStyle f)))))
   (it "can create a plain font"
     (let [f (font)]
       (expect (= Font/PLAIN (.getStyle f)))))

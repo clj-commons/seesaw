@@ -53,3 +53,22 @@
       (expect (= "expected text" (.getText l)))
       (expect (= "expected name" (.getName l))))))
 
+(describe around-option
+  (it "calls the provided converter after calling the getter from the wrapped option"
+    (= 100 (get-option-value nil 
+                             :foo 
+                             {:foo (around-option 
+                                     (default-option :foo identity (constantly 99))
+                                     identity 
+                                     inc)})))
+  (it "calls the provided converter before calling the setter of the wrapped option"
+    (let [result (atom nil)]
+      (set-option-value nil 
+                        :bar 
+                        100
+                        {:bar (around-option
+                                (default-option :foo #(reset! result %2))
+                                inc
+                                identity)})
+      (expect (= 101 @result)))))
+

@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.to-widget
-  (:use [seesaw util icon])
+  (:use [seesaw.util :only [try-cast]])
   (:import [java.awt Dimension]
            [javax.swing Box JLabel JButton]))
 

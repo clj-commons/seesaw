@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for dealing with options."
       :author "Dave Ray"}
   seesaw.options
-  (:use [seesaw util meta]))
+  (:use [seesaw.meta :only [get-meta put-meta!]]
+        [seesaw.util :only [camelize illegal-argument resource check-args]]))
 
 (defrecord Option [name setter getter])
 
@@ -27,7 +28,7 @@
 
 (defn- strip-question-mark
   [^String s] 
-  (if (.endsWith ^String s "?")
+  (if (.endsWith s "?")
     (.substring s 0 (dec (count s)))
     s))
 
@@ -65,8 +66,8 @@
         (~(or get-conv 'identity) (. ~target ~(getter-name bean-property-name)))))))
 
 (defn default-option 
-  ([name] (default-option name (fn [_ _] (throw (IllegalArgumentException. (str "No setter defined for option " name))))))
-  ([name setter] (default-option name setter (fn [_] (throw (IllegalArgumentException. (str "No getter defined for option " name))))))
+  ([name] (default-option name (fn [_ _] (illegal-argument "No setter defined for option %s" name))))
+  ([name setter] (default-option name setter (fn [_] (illegal-argument "No getter defined for option %s" name))))
   ([name setter getter] (Option. name setter getter)))
 
 (defn ignore-option
@@ -104,14 +105,14 @@
 
 (defn- apply-option
   [target ^Option opt v]
-  (if-let [setter (.setter opt)] 
+  (if-let [setter (:setter opt)] 
     (setter target v)
-    (throw (IllegalArgumentException. (str "No setter found for option " (.name opt))))))
+    (illegal-argument "No setter found for option %s" (:name opt))))
 
 (defn- ^Option lookup-option [handler-map name]
   (if-let [opt (get handler-map name)]
     opt
-    (throw (IllegalArgumentException. (str "Unknown option " name)))))
+    (illegal-argument "Unknown option %s" name)))
 
 (defn- apply-options*
   [target opts handler-map]
@@ -139,6 +140,14 @@
   [source-options]
   (into {} (for [k (keys source-options)] [k (ignore-option k)])))
 
+(defn around-option
+  [parent-option set-conv get-conv]
+  (default-option (:name parent-option)
+    (fn [target value]
+      ((:setter parent-option) target ((or set-conv identity) value)))
+    (fn [target]
+      ((or get-conv identity) ((:getter parent-option) target)))))
+
 (defn get-option-value 
   ([target name] (get-option-value target name (get-option-value-handlers target)))
   ([target name handlers]
@@ -146,5 +155,14 @@
           getter (:getter option)]
       (if getter
         (getter target)
-        (throw (IllegalArgumentException. (str "No getter found for option " name)))))))
+        (illegal-argument "No getter found for option %s" name)))))
+
+(defn set-option-value
+  ([target name value] (set-option-value target name (get-option-value-handlers target)))
+  ([target name value handlers]
+    (let [^Option option (get handlers name)
+          setter (:setter option)]
+      (if setter
+        (setter target value)
+        (illegal-argument "No setter found for option %s" name)))))
 
