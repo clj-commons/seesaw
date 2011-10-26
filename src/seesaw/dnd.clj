@@ -92,7 +92,7 @@
 (def ^{:doc "Flavor for images as java.awt.Image" } image-flavor DataFlavor/imageFlavor)
 (def ^{:doc "Flavor for raw text" } string-flavor DataFlavor/stringFlavor)
 
-(defn default-transferable 
+(defn ^Transferable default-transferable 
   "Constructs a transferable given a vector of alternating flavor/value pairs.
   If a value is a function, i.e. (fn? value) is true, then then function is 
   called with no arguments when the value is requested for its corresponding 

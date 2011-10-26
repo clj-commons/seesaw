@@ -87,8 +87,8 @@
   (it "should return a new Dimension if input is [width :by height]"
     (let [d (to-dimension [1 :by 2])]
       (expect (= java.awt.Dimension (class d)))
-      (expect (= 1 (.getWidth d)))
-      (expect (= 2 (.getHeight d))))))
+      (expect (= 1 (.width d)))
+      (expect (= 2 (.height d))))))
 
 (describe to-insets
   (it "should throw an exception if it doesn't know what to do"

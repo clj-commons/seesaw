@@ -105,7 +105,10 @@
         (expect (try
                   (reset! start 99)
                   false
-                  ; Unfortunately, IllegalStateException gets wrapped by reset!
+                  ; In Clojure 1.3, the exception propagates correctly
+                  (catch IllegalStateException e
+                    true)
+                  ; Unfortunately, in Clojure 1.2, IllegalStateException gets wrapped by reset!
                   (catch RuntimeException e
                     (= IllegalStateException (class (.getCause e))))))))))
 

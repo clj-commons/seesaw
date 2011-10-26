@@ -229,37 +229,37 @@
   (it "creates horizontal glue for :fill-h"
     (let [c (make-widget :fill-h)]
       (expect (isa? (class c) javax.swing.Box$Filler ))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))))
+      (expect (= 32767.0 (.. c getMaximumSize getWidth)))))
   (it "creates vertical glue for :fill-v"
     (let [c (make-widget :fill-v)]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))))
+      (expect (= 32767.0 (.. c getMaximumSize getHeight)))))
   (it "creates a vertical strut for [:fill-v N]"
     (let [c (make-widget [:fill-v 99])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))
-      (expect (= 99 (.. c getMaximumSize getHeight)))
-      (expect (= 99 (.. c getPreferredSize getHeight)))))
+      (expect (= 32767.0 (.. c getMaximumSize getWidth)))
+      (expect (= 99.0 (.. c getMaximumSize getHeight)))
+      (expect (= 99.0 (.. c getPreferredSize getHeight)))))
   (it "creates a horizontal strut for [:fill-h N]"
     (let [c (make-widget [:fill-h 88])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))
-      (expect (= 88 (.. c getMaximumSize getWidth)))
-      (expect (= 88 (.. c getPreferredSize getWidth)))))
+      (expect (= 32767.0 (.. c getMaximumSize getHeight)))
+      (expect (= 88.0 (.. c getMaximumSize getWidth)))
+      (expect (= 88.0 (.. c getPreferredSize getWidth)))))
   (it "creates a rigid area for a Dimension"
     (let [c (make-widget (Dimension. 12 34))]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight)))))
+      (expect (= 12.0 (.. c getMaximumSize getWidth)))
+      (expect (= 34.0 (.. c getMaximumSize getHeight)))
+      (expect (= 12.0 (.. c getPreferredSize getWidth)))
+      (expect (= 34.0 (.. c getPreferredSize getHeight)))))
   (it "creates a rigid area for a [N :by N]"
     (let [c (make-widget [12 :by 34])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight))))))
+      (expect (= 12.0 (.. c getMaximumSize getWidth)))
+      (expect (= 34.0 (.. c getMaximumSize getHeight)))
+      (expect (= 12.0 (.. c getPreferredSize getWidth)))
+      (expect (= 34.0 (.. c getPreferredSize getHeight))))))
 
 (describe to-widget
   (it "returns nil for unknown inputs"
@@ -489,11 +489,11 @@
     (let [[[w0 c0] [w1 c1] & more] (realize-grid-bag-constraints [[:first :weightx 99 :weighty 555 :gridx :relative] [:second :weightx 100 :anchor :baseline]])]
       (expect (nil? more))
       (expect (= :first w0))
-      (expect (= 99 (.weightx c0)))
-      (expect (= 555 (.weighty c0)))
+      (expect (= 99.0 (.weightx c0)))
+      (expect (= 555.0 (.weighty c0)))
       (expect (= :second w1))
-      (expect (= 100 (.weightx c1)))
-      (expect (= 555 (.weighty c1))))))
+      (expect (= 100.0 (.weightx c1)))
+      (expect (= 555.0 (.weighty c1))))))
 
 (describe form-panel
   (it "should create a JPanel with a GridBagLayout"
@@ -504,7 +504,7 @@
           gbcs (.getConstraints (.getLayout p) w)]
       (expect (instance? JLabel w))
       (expect (= java.awt.GridBagConstraints (class gbcs)))
-      (expect (= 999 (.weighty gbcs))))))
+      (expect (= 999.0 (.weighty gbcs))))))
 
 (describe "for an arbitrary widget"
   (it "should support the :font property"
