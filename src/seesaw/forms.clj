@@ -139,7 +139,7 @@
     (apply-options builder opts
                    (merge builder-options ignore-layout-options))
     (doto (.getPanel builder)
-      (apply-options opts (merge @#'seesaw.core/default-options
+      (apply-options opts (merge seesaw.core/default-options
                                  ignore-layout-options
                                  ignore-builder-options)))))
 
