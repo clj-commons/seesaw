@@ -26,20 +26,20 @@
 
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
-(def ^{:private true} action-options {
-  :enabled?  (bean-option :enabled? Action boolean)
-  :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
-  :name      (action-property-option :name Action/NAME resource)
-  :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)
-  :tip       (action-property-option :tip Action/SHORT_DESCRIPTION str)
-  :icon      (action-property-option :icon Action/SMALL_ICON icon)
-  :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
-  :mnemonic  (default-option :mnemonic 
-               (fn [^Action a v]
-                 (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
-  :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
-  :resource  (resource-option :resource [:name :command :tip :icon :key :mnemonic])
-})
+(def ^{:private true} action-options 
+  (option-map
+    (bean-option :enabled? Action boolean)
+    (action-property-option :selected? Action/SELECTED_KEY boolean)
+    (action-property-option :name Action/NAME resource)
+    (action-property-option :command Action/ACTION_COMMAND_KEY str)
+    (action-property-option :tip Action/SHORT_DESCRIPTION str)
+    (action-property-option :icon Action/SMALL_ICON icon)
+    (action-property-option :key Action/ACCELERATOR_KEY keystroke)
+    (default-option :mnemonic 
+      (fn [^Action a v]
+        (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
+    (default-option :handler #(put-meta! %1 action-handler-property %2))
+    (resource-option :resource [:name :command :tip :icon :key :mnemonic])))
 
 (defn action 
   "Construct a new Action object. Supports the following properties:

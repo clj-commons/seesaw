@@ -16,7 +16,7 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.options :only (bean-option default-option apply-options ignore-options)]
+    [seesaw.options :only (bean-option default-option apply-options ignore-options option-map)]
     [seesaw.util :only (resource)]))
 
 (defprotocol ComponentSpec
@@ -91,18 +91,20 @@
       (.setRowGroupingEnabled builder false))))
 
 (def ^{:private true} layout-options
-  {:column-groups (default-option :column-groups #(.setColumnGroups %1 (into-array (map int-array %2))))})
+  (option-map
+    (default-option :column-groups #(.setColumnGroups %1 (into-array (map int-array %2))))))
 
 (def ^{:private true} ignore-layout-options
   (ignore-options layout-options))
 
 (def ^{:private true} builder-options
-  {:items                  (default-option :items #(doseq [item %2] (append item %1)))
-   :default-dialog-border? (default-option :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1)))
-   :default-row-spec       (bean-option :default-row-spec DefaultFormBuilder)
-   :leading-column-offset  (bean-option :leading-column-offset DefaultFormBuilder)
-   :line-gap-size          (bean-option :line-gap-size DefaultFormBuilder)
-   :paragraph-gap-size     (bean-option :paragraph-gap-size DefaultFormBuilder)})
+  (option-map
+    (default-option :items #(doseq [item %2] (append item %1)))
+    (default-option :default-dialog-border? #(when %2 (.setDefaultDialogBorder %1)))
+    (bean-option :default-row-spec DefaultFormBuilder)
+    (bean-option :leading-column-offset DefaultFormBuilder)
+    (bean-option :line-gap-size DefaultFormBuilder)
+    (bean-option :paragraph-gap-size DefaultFormBuilder)))
 
 (def ^{:private true} ignore-builder-options
   (ignore-options builder-options))

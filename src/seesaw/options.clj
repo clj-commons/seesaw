@@ -148,6 +148,11 @@
     (fn [target]
       ((or get-conv identity) ((:getter parent-option) target)))))
 
+(defn option-map 
+  "Construct an option map from a list of options."
+  [& opts]
+  (into {} (map (juxt :name identity) opts)))
+
 (defn get-option-value 
   ([target name] (get-option-value target name (get-option-value-handlers target)))
   ([target name handlers]
