@@ -892,7 +892,7 @@
   (let [layout (.getLayout panel)]
     (map #(vector % (border-layout-dirs-r (get-constraint layout panel %))) (.getComponents panel))))
 
-(def ^{:private true} border-layout-options 
+(def border-panel-options 
   (merge 
     default-options
     (option-map
@@ -933,14 +933,14 @@
   
     http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
+  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
-  (abstract-panel (BorderLayout.) border-layout-options opts))
+  (abstract-panel (BorderLayout.) border-panel-options opts))
 
 ;*******************************************************************************
 ; Card
 
-(def ^{:private true} card-panel-options 
+(def card-panel-options 
   (merge
     default-options
     (option-map
@@ -961,7 +961,7 @@
     (seesaw.core/show-card!)
     http://download.oracle.com/javase/6/docs/api/java/awt/CardLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
+  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
   (abstract-panel (java.awt.CardLayout.) card-panel-options opts))
 
@@ -984,7 +984,7 @@
 (def ^{:private true} flow-align-table
   (constant-map FlowLayout :left :right :leading :trailing :center))
 
-(def ^{:private true} flow-panel-options 
+(def flow-panel-options 
   (merge
     default-options
     (option-map 
@@ -1004,7 +1004,7 @@
 
   See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html 
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
+  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
   (abstract-panel (FlowLayout.) flow-panel-options opts))
 
@@ -1016,10 +1016,14 @@
   :vertical   BoxLayout/Y_AXIS 
 })
 
+(def box-panel-options default-options)
+
 (defn box-panel
-  { :seesaw {:class 'javax.swing.JPanel }}
+  { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
-  (abstract-panel #(BoxLayout. % (dir box-layout-dir-table)) default-options opts))
+  (abstract-panel #(BoxLayout. % (dir box-layout-dir-table)) box-panel-options opts))
+
+(def horizontal-panel-options box-panel-options)
 
 (defn horizontal-panel 
   "Create a panel where widgets are arranged horizontally. Options:
@@ -1030,6 +1034,8 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts] (apply box-panel :horizontal opts))
+
+(def vertical-panel-options box-panel-options)
 
 (defn vertical-panel
   "Create a panel where widgets are arranged vertically Options:
@@ -1044,7 +1050,7 @@
 ;*******************************************************************************
 ; Grid
 
-(def ^{:private true} grid-panel-options 
+(def grid-panel-options 
   (merge
     default-options
     (option-map 
@@ -1143,7 +1149,7 @@
       (add-widget panel widget constraints)))
   (handle-structure-change panel))
 
-(def ^{:private true} form-panel-options 
+(def form-panel-options 
   (merge
     default-options
     (option-map
@@ -1178,7 +1184,7 @@
 ;*******************************************************************************
 ; Labels
 
-(def ^{:private true} label-options 
+(def label-options 
   (merge
     default-options
     (option-map
@@ -1227,13 +1233,11 @@
     (config* [target name] (get-option-value target name))
     (config!* [target args] (reapply-options target args default-options)))
 
-(def ^{:private true} button-group-options 
-  (merge
-    default-options
-    (option-map
-      (default-option :buttons 
-        #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b))
-        #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1))))))
+(def button-group-options 
+  (option-map
+    (default-option :buttons 
+      #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b))
+      #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1)))))
 
 (defn button-group
   "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
@@ -1269,7 +1273,7 @@
   [& opts]
   (apply-options (ButtonGroup.) opts button-group-options))
 
-(def ^{:private true} button-options 
+(def button-options 
   (merge
     default-options
     (option-map
@@ -1318,6 +1322,8 @@
   [& args] 
   (apply-options (construct javax.swing.JButton args) args button-options))
 
+(def toggle-options button-options)
+
 (defn toggle   
   "Same as (seesaw.core/button), but creates a toggle button. Use :selected? option
   to set initial state.
@@ -1326,7 +1332,9 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JToggleButton }} 
   [& args] 
-  (apply-options (construct javax.swing.JToggleButton args) args button-options))
+  (apply-options (construct javax.swing.JToggleButton args) args toggle-options))
+
+(def checkbox-options button-options)
 
 (defn checkbox 
   "Same as (seesaw.core/button), but creates a checkbox. Use :selected? option
@@ -1336,7 +1344,9 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JCheckBox }} 
   [& args] 
-  (apply-options (construct javax.swing.JCheckBox args) args button-options))
+  (apply-options (construct javax.swing.JCheckBox args) args checkbox-options))
+
+(def radio-options button-options)
 
 (defn radio    
   "Same as (seesaw.core/button), but creates a radio button. Use :selected? option
@@ -1346,11 +1356,11 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JRadioButton }} 
   [& args] 
-  (apply-options (construct javax.swing.JRadioButton args) args button-options))
+  (apply-options (construct javax.swing.JRadioButton args) args radio-options))
 
 ;*******************************************************************************
 ; Text widgets
-(def ^{:private true} text-options 
+(def text-options 
   (merge
     default-options
     (option-map
@@ -1365,14 +1375,14 @@
       (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
       (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword))))
 
-(def ^{:private true} text-field-options 
+(def text-field-options 
   (merge 
     text-options 
     (option-map
       (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table)
       (bean-option :columns javax.swing.JTextField))))
 
-(def ^{:private true} text-area-options 
+(def text-area-options 
   (merge 
     text-options
     (option-map
@@ -1506,7 +1516,7 @@
           :underline  (.addAttribute style StyleConstants/Underline (boolean v))
           (illegal-argument "Option %s is not supported in :styles" k))))))
 
-(def ^{:private true} styled-text-options 
+(def styled-text-options 
   (merge 
     text-options
     (option-map
@@ -1568,7 +1578,7 @@
 ;*******************************************************************************
 ; JPasswordField
 
-(def ^{:private true} password-options 
+(def password-options 
   (merge 
     text-field-options
     (option-map
@@ -1626,7 +1636,7 @@
 ;*******************************************************************************
 ; JEditorPane
 
-(def ^{:private true} editor-pane-options 
+(def editor-pane-options 
   (merge
     default-options
     (option-map
@@ -1663,7 +1673,7 @@
         (.addElement model x))
       model)))
 
-(def ^{:private true} listbox-options 
+(def listbox-options 
   (merge
     default-options
     (option-map
@@ -1711,7 +1721,7 @@
   :all-columns        javax.swing.JTable/AUTO_RESIZE_ALL_COLUMNS
 })
 
-(def ^{:private true} table-options 
+(def table-options 
   (merge
     default-options
     (option-map
@@ -1771,7 +1781,7 @@
 ;*******************************************************************************
 ; JTree
 
-(def ^{:private true} tree-options 
+(def tree-options 
   (merge
     default-options
     (option-map
@@ -1817,7 +1827,7 @@
         (.setSelectedItem model (first xs)))
       model)))
 
-(def ^{:private true} combobox-options 
+(def combobox-options 
   (merge
     default-options
     (option-map
@@ -1907,7 +1917,7 @@
     (number? v) (doto (javax.swing.SpinnerNumberModel.) (.setValue v))
     :else (illegal-argument "Don't' know how to make spinner :model from %s" (class v))))
 
-(def ^{:private true} spinner-options 
+(def spinner-options 
   (merge
     default-options
     (option-map
@@ -1967,7 +1977,7 @@
 (defn- set-scrollable-corner [k ^JScrollPane w v]
   (.setCorner w (scrollable-corner-constants k) (make-widget v)))
 
-(def ^{:private true} scrollable-options 
+(def scrollable-options 
   (merge 
     default-options
     (option-map
@@ -2141,7 +2151,7 @@
     :else (illegal-argument "Expected integer or float, got %s" value))
   splitter)
 
-(def ^{:private true} splitter-options 
+(def splitter-options 
   (merge
     default-options
     (option-map
@@ -2175,6 +2185,8 @@
     opts
     splitter-options))
 
+(def left-right-split-options splitter-options)
+
 (defn left-right-split 
   "Create a left/right (horizontal) splitpane with the given widgets. See
   (seesaw.core/splitter) for additional options. Options are given after
@@ -2190,6 +2202,8 @@
   "
   { :seesaw {:class 'javax.swing.JSplitPane }}
   [left right & args] (apply splitter :left-right left right args))
+
+(def top-bottom-split-options splitter-options)
 
 (defn top-bottom-split 
   "Create a top/bottom (vertical) split pane with the given widgets. See
@@ -2209,7 +2223,7 @@
 
 ;*******************************************************************************
 ; Separator
-(def ^{:private true} separator-options 
+(def separator-options 
   (merge
     default-options
     (option-map
@@ -2231,7 +2245,7 @@
 ;*******************************************************************************
 ; Menus
 
-(def ^{:private true} menu-item-options 
+(def menu-item-options 
   (merge
     button-options 
     (option-map
@@ -2243,11 +2257,15 @@
   [& args] 
   (apply-options (javax.swing.JMenuItem.) args menu-item-options))
 
+(def checkbox-menu-item-options menu-item-options)
+
 (defn checkbox-menu-item 
   "Create a checked menu item for use in (seesaw.core/menu). Supports same options as
   (seesaw.core/button)"
   [& args] 
-  (apply-options (javax.swing.JCheckBoxMenuItem.) args menu-item-options))
+  (apply-options (javax.swing.JCheckBoxMenuItem.) args checkbox-menu-item-options))
+
+(def radio-menu-item-options menu-item-options)
 
 (defn 
   radio-menu-item    
@@ -2257,7 +2275,7 @@
   Notes:
     Use (seesaw.core/button-group) or the :group option to enforce mutual exclusion
     across menu items."
-  [& args] (apply-options (javax.swing.JRadioButtonMenuItem.) args menu-item-options))
+  [& args] (apply-options (javax.swing.JRadioButtonMenuItem.) args radio-menu-item-options))
 
 (defn- ^javax.swing.JMenuItem to-menu-item
   [item]
@@ -2269,7 +2287,7 @@
       (if (instance? String item)
         (javax.swing.JMenuItem. ^String item)))))
 
-(def ^{:private true} menu-options 
+(def menu-options 
   (merge
     button-options
     (option-map
@@ -2298,7 +2316,7 @@
   [& opts]
   (apply-options (construct javax.swing.JMenu opts) opts menu-options))
 
-(def ^{:private true} popup-options 
+(def popup-options 
   (merge
     default-options
     (option-map
@@ -2374,7 +2392,7 @@
   [items]
   (map #(if (= % :separator) (javax.swing.JToolBar$Separator.) %) items))
 
-(def ^{:private true} toolbar-options 
+(def toolbar-options 
   (merge
     default-options
     (option-map
@@ -2422,7 +2440,7 @@
         title-cmp (.setTabComponentAt index title-cmp))))
   tp)
 
-(def ^{:private true} tabbed-panel-options 
+(def tabbed-panel-options 
   (merge
     default-options
     (option-map
@@ -2540,7 +2558,7 @@
       `(apply-default-opts (paintable-proxy ~cls) ~(dissoc opts :paint)))
     (@#'seesaw.core/paint-option-handler ~paint))))
 
-(def ^{:private true} canvas-options 
+(def canvas-options 
   (merge
     default-options
     (option-map
@@ -2587,7 +2605,7 @@
     :else (let [^javax.swing.ImageIcon i (make-icon value)]
             (.getImage i))))
 
-(def ^{:private true} frame-options 
+(def frame-options 
   (option-map
     (default-option ::with) ; ignore ::with option inserted by (with-widget)
     (resource-option :resource [:title :icon])
@@ -2702,7 +2720,7 @@
   :toolkit     java.awt.Dialog$ModalityType/TOOLKIT_MODAL
 })
 
-(def ^{:private true} custom-dialog-options 
+(def custom-dialog-options 
   (merge 
     frame-options
     (option-map
@@ -3047,7 +3065,7 @@
 ;*******************************************************************************
 ; Slider
 
-(def ^{:private true} slider-options 
+(def slider-options 
   (merge
     default-options
     (option-map
@@ -3111,7 +3129,7 @@
 
 ;*******************************************************************************
 ; Progress Bar
-(def ^{:private true} progress-bar-options 
+(def progress-bar-options 
   (merge
     default-options
     (option-map
