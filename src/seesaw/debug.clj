@@ -14,7 +14,7 @@
   (:require [seesaw.core :as core]))
 
 
-(def ^{:private true} error-frame 
+(defonce ^{:private true} error-frame 
   (delay
     (core/frame
       :title "Seesaw - Unhandled Exception"
@@ -41,10 +41,9 @@
 (defn- set-error-frame-content [frame event ^java.lang.Throwable throwable]
   (let [h (core/select frame [:#header])
         e (core/select frame [:#event])
-        t (core/select frame [:#throwable])
-        source (core/to-widget event)]
+        t (core/select frame [:#throwable])]
     (-> h
-      (core/text! (format "Unhandled exception from %s" (if source (core/id-of source) "unknown"))))
+      (core/text! (format "Unhandled exception at %s" (java.util.Date.))))
     (->
       (core/text! e (str event))
       (core/scroll! :to :top))
@@ -64,7 +63,7 @@
     core/show!
     (core/move! :to-front)))
 
-(def ^{:private true :tag seesaw.ExceptionHandler} handler (seesaw.ExceptionHandler.))
+(defonce ^{:private true :tag seesaw.ExceptionHandler} handler (seesaw.ExceptionHandler.))
 
 (defn debug! 
   "Install a custom exception handler which displays a window with event and
