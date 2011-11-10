@@ -15,8 +15,37 @@
   seesaw.swingx
   (:use [seesaw.util :only [to-uri resource]]
         [seesaw.icon :only [icon]]
-        [seesaw.core :only [construct button-options default-options ConfigIcon get-icon set-icon]]
+        [seesaw.core :only [construct default-options button-options label-options ConfigIcon get-icon set-icon]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option]]))
+
+(def xlabel-options
+  (merge
+    label-options
+    (option-map
+      ; TODO xlabel text-alignment, painter, etc
+      (bean-option [:wrap-lines? :line-wrap?] org.jdesktop.swingx.JXLabel boolean)
+      (bean-option :text-rotation org.jdesktop.swingx.JXLabel))))
+
+(defn xlabel
+  "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
+  supports wrapped text, rotation, etc. Additional options:
+  
+    :wrap-lines? When true, text is wrapped to fit
+    :text-rotation Rotation of text in radians
+
+  Examples:
+
+    (xlabel :text        \"This is really a very very very very very very long label\"
+            :wrap-lines? true
+            :rotation    (Math/toRadians 90.0))
+
+  See:
+    (seesaw.core/label)
+    (seesaw.core/label-options)
+    (seesaw.swingx/xlabel-options)
+  "
+  [& args]
+  (apply-options (construct org.jdesktop.swingx.JXLabel args) args xlabel-options))
 
 (def hyperlink-options
   (merge

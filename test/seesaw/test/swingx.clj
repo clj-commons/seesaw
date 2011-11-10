@@ -16,6 +16,18 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe xlabel
+  (it "creates a JXLabel"
+    (instance? org.jdesktop.swingx.JXLabel (xlabel)))
+  (it "can set text"
+    (= "HI" (core/text (xlabel :text "HI"))))
+  (it "does not wrap lines by default"
+    (not (core/config (xlabel :text "HI") :wrap-lines?)))
+  (it "can set wrap-lines? option"
+    (core/config (xlabel :wrap-lines? true) :wrap-lines?))
+  (it "can set rotation option"
+    (= (Math/toRadians 60.0) (core/config (xlabel :text-rotation (Math/toRadians 60.0)) :text-rotation))))
+
 (describe hyperlink
   (it "creates a JXHyperlink with a URI"
     (let [hl (hyperlink :uri (java.net.URI. "http://google.com"))]
