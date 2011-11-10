@@ -11,8 +11,31 @@
 (ns ^{:doc "File chooser and other common dialogs."
       :author "Dave Ray"}
   seesaw.chooser
-  (:use [seesaw util options color])
-  (:import [javax.swing JFileChooser]))
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.options :only [default-option bean-option apply-options option-map]]
+        [seesaw.util :only [illegal-argument]])
+  (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
+           [javax.swing JFileChooser]))
+
+(defn file-filter
+  "Create a FileFilter.
+  
+  Arguments:
+  
+    description - description of this filter, will show up in the
+                  filter-selection box when opening a file choosing dialog.
+
+    accept - a function taking a java.awt.File
+             returning true if the file should be shown,
+             false otherwise.
+  "
+  [description accept]
+  (proxy [FileFilter] []
+    (accept [file]
+      (if (accept file)
+        true false))
+    (getDescription []
+      description)))
 
 (def ^{:private true} file-chooser-types {
   :open   JFileChooser/OPEN_DIALOG
@@ -26,19 +49,32 @@
   :files-and-dirs JFileChooser/FILES_AND_DIRECTORIES
 })
 
-(def ^{:private true} file-chooser-options {
-  :dir (default-option :dir
-         (fn [^JFileChooser chooser dir] 
-           (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
-                                            (java.io.File. (str dir))))))
-  :multi? (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
-  :selection-mode (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
-  :filters (default-option :filters 
-             #(doseq [[name exts] %2]
-                (.setFileFilter 
-                  ^JFileChooser %1 
-                  (javax.swing.filechooser.FileNameExtensionFilter. name (into-array exts)))))
-})
+(defn set-file-filters [^JFileChooser chooser filters]
+  (.resetChoosableFileFilters chooser)
+  (doseq [f filters]
+    (.addChoosableFileFilter chooser
+      (cond
+        (instance? FileFilter f) 
+          f
+
+        (and (sequential? f) (sequential? (second f)))
+          (FileNameExtensionFilter. (first f) (into-array (second f)))
+
+        (and (sequential? f) (fn? (second f)))
+          (apply file-filter f)
+
+        :else
+          (illegal-argument "not a valid filter: %s" f)))))
+
+(def ^{:private true} file-chooser-options 
+  (option-map
+    (default-option :dir
+      (fn [^JFileChooser chooser dir] 
+        (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
+                                          (java.io.File. (str dir))))))
+    (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
+    (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
+    (default-option :filters set-file-filters)))
 
 (def ^{:private true} last-dir (atom nil))
 
@@ -77,8 +113,16 @@
     :multi?  If true, multi-selection is enabled and a seq of files is returned.
     :selection-mode The file selection mode: :files-only, :dirs-only and :files-and-dirs.
                     Defaults to :files-only
-    :filters A seq of lists where each list contains a filter name and a seq of
-             extensions as strings for that filter. Default: [].
+    :filters A seq of either:
+               
+               A seq that contains a filter name and a seq of
+               extensions as strings for that filter.
+               
+               A seq that contains a filter name and a function 
+               to be used as accept function. (see file-filter)
+
+               A FileFilter. (see file-filter)
+
     :remember-directory? Flag specifying whether to remember the directory for future
                          file-input invocations in case of successful exit. Default: true.
     :success-fn  Function which will be called with the JFileChooser and the File which
@@ -94,7 +138,9 @@
     (choose-file)
 
     ; ask & return including a filter for image files
-    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]]])
+    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]
+                           [\"Folders\" #(.isDirectory %)]
+                           (file-filter \"All files\" (constantly true))]])
 
     ; ask & return absolute file path as string
     (choose-file :success-fn (fn [fc file] (.getAbsolutePath file)))
@@ -142,4 +188,3 @@
                    :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent (if (keyword? parent) nil parent)]
     (javax.swing.JColorChooser/showDialog parent title (to-color color))))
-

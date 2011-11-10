@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.keystroke
+  (:use [seesaw.util :only [illegal-argument]])
   (:import [javax.swing KeyStroke]
            [java.awt Toolkit]
            [java.awt.event InputEvent])
@@ -45,5 +46,5 @@
     (char? arg) (KeyStroke/getKeyStroke ^Character arg)
     :else (if-let [ks (KeyStroke/getKeyStroke ^String (preprocess-descriptor (str arg)))]
             ks
-            (throw (IllegalArgumentException. (str "Invalid keystroke descriptor: " arg))))))
+            (illegal-argument "Invalid keystroke descriptor: %s" arg))))
 

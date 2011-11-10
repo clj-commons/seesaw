@@ -86,3 +86,27 @@
         (expect (= "Outer" (.. b getOutsideBorder getTitle)))
         (expect (= "Inner" (.. b getInsideBorder getTitle))))))
 
+(describe custom-border
+  (it "creates a custom border implementation"
+    (instance? javax.swing.border.Border (custom-border)))
+  (it "returns integer insets"
+    (let [b (custom-border :insets 3)]
+      (expect (= (Insets. 3 3 3 3) (.getBorderInsets b nil)))))
+  (it "returns static vector insets"
+    (let [b (custom-border :insets [1 2 3 4])]
+      (expect (= (Insets. 1 2 3 4) (.getBorderInsets b nil)))))
+  (it "calls a insets function"
+    (let [b (custom-border :insets (constantly [1 2 3 4]))]
+      (expect (= (Insets. 1 2 3 4) (.getBorderInsets b nil)))))
+  (it "returns constant opaque? value"
+    (let [b (custom-border :opaque? true)]
+      (expect (.isBorderOpaque b))))
+  (it "returns function opaque? value"
+    (let [b (custom-border :opaque? (constantly true))]
+      (expect (.isBorderOpaque b))))
+  (it "calls provided paint function"
+    (let [called (atom false)
+          b (custom-border :paint (fn [c g x y w h] (reset! called true)))]
+      (.paintBorder b nil nil 0 0 0 0)
+      (expect @called))))
+

@@ -9,8 +9,14 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.util
-  (:require clojure.string)
+  (:require clojure.string 
+            [j18n.core :as j18n])
   (:import [java.net URL MalformedURLException]))
+
+(defn illegal-argument 
+  "Throw an illegal argument exception formatted as with (clojure.core/format)"
+  [fmt & args]
+  (throw (IllegalArgumentException. ^String (apply format fmt args))))
 
 (defn check-args 
   [condition message]
@@ -44,6 +50,7 @@
     (nil? v) v
     (seq? v)  v
     (coll? v) (seq v)
+    (.isArray (class v)) (seq v)
     :else (seq [v])))
 
 (defn- constantize-keyword [k]
@@ -109,7 +116,7 @@
     (instance? java.awt.Dimension v) v
     (and (vector? v) (= 3 (count v)) (= :by (second v)))
       (let [[w by h] v] (java.awt.Dimension. w h))
-    :else (throw (IllegalArgumentException. "v must be a Dimension or [w :by h]"))))
+    :else (illegal-argument "v must be a Dimension or [w :by h] got " v)))
 
 (defn to-insets
   [v]
@@ -118,7 +125,7 @@
     (number? v) (java.awt.Insets. v v v v)
     (vector? v) (let [[top left bottom right] v]
                   (java.awt.Insets. top left (or bottom top) (or right left)))
-    :else (throw (IllegalArgumentException. (str "Don't know how to create insets from " v)))))
+    :else (illegal-argument "Don't know how to create insets from %s" v)))
 
 (defprotocol Children 
   "A protocol for retrieving the children of a widget as a seq. 
@@ -146,8 +153,21 @@
     children
     root))
 
-(defn reverse-map 
-  "Reverse the direction of a map"
-  [m]
-  (into {} (for [[k v] m] [v k])))
+(defn resource
+  [message]
+  (if (and (keyword? message) (namespace message))
+    (j18n/resource message)
+    (str message)))
+
+(defn ^Integer to-mnemonic-keycode
+  "Convert a character to integer to a mnemonic keycode. In the case of char
+  input, generates the correct keycode even if it's lower case.
+  
+  See:
+    java.awt.event.KeyEvent for list of keycodes
+    http://download.oracle.com/javase/6/docs/api/java/awt/event/KeyEvent.html"
+  [v]
+  (if (char? v) 
+    (int (Character/toUpperCase ^Character v)) 
+    (int v)))
 

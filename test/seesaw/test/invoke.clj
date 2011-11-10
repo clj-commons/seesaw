@@ -17,6 +17,19 @@
   (it "should execute code on the swing thread, wait, and return the result"
     (invoke-now (javax.swing.SwingUtilities/isEventDispatchThread))))
 
+(describe invoke-soon
+  (it "should execute code and return the result immediately if executed on the swing thread"
+    (= {:foo :hi :edt? true} 
+       (invoke-now 
+        (invoke-soon {:foo :hi :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))))
+
+  (it "should send code to the swing thread for later execution and return nil immediately
+      if not called on the swing thread"
+    (let [p (promise)] 
+      (expect (nil? (invoke-soon 
+        (deliver p {:edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))))
+      (expect (= {:edt? true} @p)))))
+
 (describe signaller
   (it "should not invoke a call if one is already in flight"
     (let [call-count (atom 0)

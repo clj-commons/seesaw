@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions for dealing with Swing Actions. Prefer (seesaw.core/action)."
       :author "Dave Ray"}
   seesaw.action
-  (:use [seesaw util icon keystroke meta options])
+  (:use [seesaw.util :only [resource to-mnemonic-keycode]])
+  (:use [seesaw icon keystroke meta options])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
@@ -25,25 +26,25 @@
 
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
-(def ^{:private true} action-options {
-  :enabled?  (bean-option :enabled? Action boolean)
-  :selected? (action-property-option :selected? Action/SELECTED_KEY boolean)
-  :name      (action-property-option :name Action/NAME str)
-  :command   (action-property-option :command Action/ACTION_COMMAND_KEY str)
-  :tip       (action-property-option :tip Action/SHORT_DESCRIPTION str)
-  :icon      (action-property-option :icon Action/SMALL_ICON icon)
-  :key       (action-property-option :key Action/ACCELERATOR_KEY keystroke)
-  :mnemonic  (default-option :mnemonic 
-               (fn [^Action a v]
-                 (let [v (if (char? v) (int (Character/toUpperCase (char v))) (int v))]
-                   (.putValue a Action/MNEMONIC_KEY v)))) 
-  :handler   (default-option :handler #(put-meta! %1 action-handler-property %2))
-})
+(def ^{:private true} action-options 
+  (option-map
+    (bean-option :enabled? Action boolean)
+    (action-property-option :selected? Action/SELECTED_KEY boolean)
+    (action-property-option :name Action/NAME resource)
+    (action-property-option :command Action/ACTION_COMMAND_KEY str)
+    (action-property-option :tip Action/SHORT_DESCRIPTION str)
+    (action-property-option :icon Action/SMALL_ICON icon)
+    (action-property-option :key Action/ACCELERATOR_KEY keystroke)
+    (default-option :mnemonic 
+      (fn [^Action a v]
+        (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
+    (default-option :handler #(put-meta! %1 action-handler-property %2))
+    (resource-option :resource [:name :command :tip :icon :key :mnemonic])))
 
 (defn action 
   "Construct a new Action object. Supports the following properties:
 
-    :enabled? Whether the action is enabled
+    :enabled?  Whether the action is enabled
     :selected? Whether the action is selected (for use with radio buttons, 
                toggle buttons, etc.
     :name      The name of the action, i.e. the text that will be displayed
@@ -53,7 +54,9 @@
     :tip       The action's tooltip
     :icon      The action's icon. See (seesaw.core/icon)
     :key       A keystroke associated with the action. See (seesaw.keystroke/keystroke).
-    :mnemonic  A character associated with the action.
+    :mnemonic  The mnemonic for the button, either a character or a keycode.
+                Usually allows the user to activate the button with alt-mnemonic.
+                See (seesaw.util/to-mnemonic-keycode).
     :handler   A single-argument function that performs whatever operations are
                associated with the action. The argument is a ActionEvent instance.
 

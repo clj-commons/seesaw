@@ -11,7 +11,9 @@
 (ns ^{:doc "Basic graphics functions to simplify use of Graphics2D."
       :author "Dave Ray"}
   seesaw.graphics
-  (:use [seesaw util color font])
+  (:use [seesaw.color :only [to-color]]
+        [seesaw.font :only [to-font]]
+        [seesaw.util :only [illegal-argument]])
   (:import [java.awt Graphics2D RenderingHints]
            [java.awt.image BufferedImage]))
 
@@ -32,7 +34,7 @@
     (nil? v) nil
     (instance? java.awt.Image v) v
     (instance? javax.swing.ImageIcon v) (.getImage ^javax.swing.ImageIcon v)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make image from " v)))))
+    :else (illegal-argument "Don't know how to make image from %s" v)))
 
 ;*******************************************************************************
 ; Graphics context state
@@ -70,8 +72,8 @@
   ([x y w h] (java.awt.geom.Rectangle2D$Double.
                 (if (> w 0) x (+ x w)) 
                 (if (> h 0) y (+ y h))
-                (Math/abs w)
-                (Math/abs h)
+                (Math/abs (double w))
+                (Math/abs (double h))
                                         ))
   ([x y w] (rect x y w w)))
 
@@ -84,8 +86,8 @@
   ([x y w h rx ry] (java.awt.geom.RoundRectangle2D$Double.
                       (if (> w 0) x (+ x w)) 
                       (if (> h 0) y (+ y h))
-                      (Math/abs w)
-                      (Math/abs h)
+                      (Math/abs (double w))
+                      (Math/abs (double h))
                       rx ry))
   ([x y w h rx] (rounded-rect x y w h rx rx))
   ([x y w h] (rounded-rect x y w h 5)))
@@ -95,8 +97,8 @@
   ([x y w h]  (java.awt.geom.Ellipse2D$Double.
                       (if (> w 0) x (+ x w)) 
                       (if (> h 0) y (+ y h))
-                      (Math/abs w)
-                      (Math/abs h)))
+                      (Math/abs (double w))
+                      (Math/abs (double h))))
   ([x y w]  (ellipse x y w w)))
 
 (defn circle 
@@ -109,8 +111,8 @@
     (java.awt.geom.Arc2D$Double.
       (if (> w 0) x (+ x w)) 
       (if (> h 0) y (+ y h))
-      (Math/abs w)
-      (Math/abs h)
+      (Math/abs (double w))
+      (Math/abs (double h))
       start extent arc-type))
   ([x y w h start extent]
     (arc x y w h start extent java.awt.geom.Arc2D/OPEN)))
@@ -143,7 +145,7 @@
 })
 
 (defmacro path [opts & forms]
-  (when (not (vector? opts)) (throw (IllegalArgumentException. "path must start with vector of (possibly empty) options")))
+  (when (not (vector? opts)) (illegal-argument "path must start with vector of (possibly empty) options"))
   (let [p (gensym "path")]
     `(let [~p (java.awt.geom.Path2D$Double.)]
        ; Insert an initial moveTo to avoid needless exceptions
@@ -224,7 +226,7 @@
     (nil? v)    nil
     (number? v) (stroke :width v)
     (instance? java.awt.Stroke v) v
-    :else (throw (IllegalArgumentException. (str "Don't know how to make a stroke from " v)))))
+    :else (illegal-argument "Don't know how to make a stroke from %s" v)))
 
 (def ^{:private true} default-stroke (stroke))
 

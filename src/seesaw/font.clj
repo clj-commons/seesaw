@@ -12,10 +12,14 @@
             use these implicitly through the :font option."
       :author "Dave Ray"}
   seesaw.font
-  (:use [seesaw util])
+  (:use [seesaw.util :only [constant-map resource]])
   (:import [java.awt Font]))
 
 (def ^{:private true} style-table (constant-map Font :bold :plain :italic))
+(defn- get-style-mask [v]
+  (if (keyword? v)
+    (get-style-mask [v])
+    (reduce bit-or 0 (map style-table v))))
 
 (def ^{:private true} name-table (constant-map Font :monospaced :serif :sans-serif))
 
@@ -31,18 +35,33 @@
 
     :name   The name of the font. Besides string values, also possible are 
             any of :monospaced, :serif, :sans-serif.
-    :style  The style. One of :bold, :plain, :italic. Default: :plain.
+    :style  The style. One of :bold, :plain, :italic, or a set of those values
+            to combine them. Default: :plain.
     :size   The size of the font. Default: 12.
     :from   A Font from which to derive the new Font.
 
    Returns a java.awt.Font instance.
-    "
+
+  Examples:
+
+    ; Create a font from a font-spec (see JavaDocs)
+    (font \"ARIAL-ITALIC-20\")
+
+    ; Create a 12 pt bold and italic monospace
+    (font :style #{:bold :italic} :name :monospaced)
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/java/awt/Font.html
+  "
   [& args]
   (if (= 1 (count args))
-    (Font/decode (str (first args)))
+    (let [v (first args)]
+      (if (and (keyword? v) (namespace v))
+        (Font/decode (resource v))
+        (Font/decode (str v))))
     (let [{:keys [style size from] :as opts} args
           font-name (:name opts)
-          font-style (get style-table (or style :plain))
+          font-style (get-style-mask (or style :plain))
           font-size (or size 12)
           ^Font from (to-font from)]
       (if from

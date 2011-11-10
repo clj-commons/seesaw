@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for creating Swing cursors."
       :author "Dave Ray"}
   seesaw.cursor
-  (:use seesaw.util)
+  (:use [seesaw.util :only [constant-map illegal-argument]])
   (:import [java.awt Cursor Toolkit]))
 
 (def ^{:private true} built-in-cursor-map 
@@ -80,6 +80,6 @@
     (instance? Cursor type) type
     (instance? java.awt.Image type) (apply custom-cursor type args)
     (instance? javax.swing.ImageIcon type) (apply cursor (.getImage ^javax.swing.ImageIcon type) args)
-    :else (throw (IllegalArgumentException. (str "Don't know how to make cursor from " type)))))
+    :else (illegal-argument "Don't know how to make cursor from %s" type)))
 
 

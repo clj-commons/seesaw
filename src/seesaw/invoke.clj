@@ -21,6 +21,12 @@
        (SwingUtilities/invokeAndWait invoker))
      @result)))
 
+(defn invoke-soon* 
+  [f & args]
+  (if (SwingUtilities/isEventDispatchThread)
+    (apply f args)
+    (apply invoke-later* f args)))
+
 (defmacro invoke-later 
   "Equivalent to SwingUtilities/invokeLater. Executes the given body sometime
   in the future on the Swing UI thread. For example,
@@ -55,6 +61,22 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeAndWait(java.lang.Runnable) 
   "
   [& body] `(invoke-now*   (fn [] ~@body)))
+
+(defmacro invoke-soon
+  "Execute code on the swing event thread (EDT) as soon as possible. That is:
+
+    * If the current thread is the EDT, executes body and returns the result
+    * Otherise, passes body to (seesaw.core/invoke-later) and returns nil
+
+  Notes:
+
+    (seesaw.core/invoke-soon) is an alias of this macro.
+
+  See:
+    (seesaw.core/invoke-later)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/SwingUtilities.html#invokeLater(java.lang.Runnable) 
+  "
+  [& body] `(invoke-soon* (fn [] ~@body)))
 
 (defn signaller 
   "Returns a function that conditionally queues the given function (+ args) on 

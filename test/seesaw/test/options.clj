@@ -9,8 +9,9 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.options
-  (:use seesaw.options)
-  (:use [lazytest.describe :only (describe it testing)]
+  (:require [j18n.core :as j18n])
+  (:use seesaw.options
+        [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
 (describe apply-options
@@ -41,4 +42,33 @@
       (catch IllegalArgumentException e true)))
   (it "uses the getter of an option to retrieve a value"
     (= "hi" (get-option-value (javax.swing.JPanel.) :text {:text (default-option :text nil (constantly "hi"))}))))
+
+(describe resource-option
+  (it "has a setter that applies options using values from resource bundle"
+    (let [l  (apply-options (javax.swing.JLabel.) 
+                          [:resource ::resource-option] 
+                          {:resource (resource-option :resource [:text :name])
+                            :text (bean-option :text javax.swing.JLabel)
+                            :name (bean-option :name javax.swing.JLabel) })]
+      (expect (= "expected text" (.getText l)))
+      (expect (= "expected name" (.getName l))))))
+
+(describe around-option
+  (it "calls the provided converter after calling the getter from the wrapped option"
+    (= 100 (get-option-value nil 
+                             :foo 
+                             {:foo (around-option 
+                                     (default-option :foo identity (constantly 99))
+                                     identity 
+                                     inc)})))
+  (it "calls the provided converter before calling the setter of the wrapped option"
+    (let [result (atom nil)]
+      (set-option-value nil 
+                        :bar 
+                        100
+                        {:bar (around-option
+                                (default-option :foo #(reset! result %2))
+                                inc
+                                identity)})
+      (expect (= 101 @result)))))
 

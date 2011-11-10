@@ -9,54 +9,46 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns gaidica.core
-  (:require [clojure.zip :as zip]
-            [clojure.xml :as xml]
-            [clojure.contrib.zip-filter.xml :as zfx])
+  (:require [ororo.core :as storm]
+            [seesaw.bind :as bind]
+            [clojure.string :as string])
   (:use [seesaw core border table mig]))
 
 (native!)
 
+;; Data retrieval stuff -----------------------------------
+
+(def api-key (atom ""))
+
+(defn get-text-forecasts [city]
+  (get-in (storm/forecast @api-key city) [:txt_forecast :forecastday]))
+
+(defn get-webcams [city] (storm/webcams @api-key city))
+
+(defn get-rad-sat [city] 
+  { :radar     (storm/radar @api-key city)
+    :satellite (storm/satellite @api-key city)}) 
+
+;; Widget construction stuff -----------------------------------
+;; No behavior here, just building widgets
+
 (def normal-font "ARIAL-12-PLAIN")
 (def title-font "ARIAL-14-BOLD")
 (def divider-color "#aaaaaa")
-
-(defn query-url [type value]
-  (str "http://api.wunderground.com/auto/wui/geo/" type "/index.xml?query=" (java.net.URLEncoder/encode value "UTF-8")))
-
-; TODO this XML stuff is nasty
-(defn get-text-forecasts [city]
-  (let [url (query-url "ForecastXML" city)
-        xml (xml/parse url)]
-    (for [day  (zfx/xml-> (zip/xml-zip xml) :txt_forecast :forecastday)]
-      {:title       (zfx/xml1-> day :title zfx/text) 
-       :description (zfx/xml1-> day :fcttext zfx/text) 
-       :icon        (zfx/xml1-> day :icons :icon_set :icon_url zfx/text)
-       :period      (zfx/xml1-> day :period zfx/text)})))
-
-(defn get-city-info [city]
-  (let [url (query-url "GeoLookupXML" city)
-        xml (xml/parse url)]
-    { :webcams 
-      (for [cam (zfx/xml-> (zip/xml-zip xml) :webcams :cam)]
-        {:handle  (zfx/xml1-> cam :handle zfx/text) 
-         :lat     (zfx/xml1-> cam :lat zfx/text) 
-         :lon     (zfx/xml1-> cam :lon zfx/text) 
-         :updated (zfx/xml1-> cam :updated zfx/text)
-         :image   (zfx/xml1-> cam :CURRENTIMAGEURL zfx/text) })}))
 
 (defn make-forecast-entry [f]
   (mig-panel 
     :constraints ["" "[][grow, fill]" "[top][top]"]
     :border (line-border :bottom 1 :color divider-color)
     :items [
-      [(label :icon (:icon f))                   "span 1 2"]
+      [(label :icon (:icon_url f))               "span 1 2"]
       [(label :text (:title f) :font title-font) "wrap"]
       [(text 
          :opaque? false 
          :multi-line? true 
          :wrap-lines? true 
          :editable? false 
-         :text (:description f)
+         :text (:fcttext f)
          :font normal-font)                         "wmin 10"]]))
 
 (defn make-forecast-entries [forecasts]
@@ -68,9 +60,6 @@
     :constraints ["" "[grow, fill]"] 
     :items (make-forecast-entries forecasts)))
 
-(defn update-forecasts [forecast-panel forecasts]
-  (config! forecast-panel :items (make-forecast-entries forecasts)))
-
 (defn make-webcam-table [] 
   (table 
     :id :webcam-table 
@@ -79,42 +68,28 @@
         [{:key :handle :text "Name" } 
          :lat :lon 
          {:key :updated :text "Last Updated"}
-         {:key :image :text "Image"}]]))
+         {:key :CURRENTIMAGEURL :text "Image"}]]))
 
 (defn make-webcam-panel []
-  (let [webcam-table (make-webcam-table)
-        image-label  (label :text "")]
-    (listen webcam-table :selection 
-      (fn [e]
-        (when-let [row (selection webcam-table)]
-          (config! image-label :icon (:image (value-at webcam-table row))))))
-    (border-panel 
-      :id :webcam
-      :border 5
-      :center (top-bottom-split
-                (scrollable webcam-table)
-                (scrollable image-label)
-                :divider-location 1/2))))
+  (border-panel 
+    :id :webcam
+    :border 5
+    :center (top-bottom-split
+              (scrollable (make-webcam-table))
+              (scrollable (label :id :webcam-image :text ""))
+              :divider-location 1/2)))
 
-(defn update-webcams [webcam-panel webcams]
-  (let [t (select webcam-panel [:#webcam-table])]
-    (clear! t)
-    (apply insert-at! t (interleave (iterate identity 0) webcams))))
-
-(defn refresh-action-handler [e] 
-  (let [root (to-frame e)
-        city (text (select root [:#city]))
-        forecast-panel (select root [:#forecast])
-        webcam-panel (select root [:#webcam])]
-    (future 
-      (let [forecasts (get-text-forecasts city)
-            city-info (get-city-info city)]
-        (invoke-later
-          (update-webcams webcam-panel (:webcams city-info))
-          (update-forecasts forecast-panel forecasts))))))
-
-(def refresh-action
-  (action :name "Refresh" :key "menu R" :handler refresh-action-handler))
+(defn make-radar-panel []
+  (border-panel
+    :id :radar
+    :border 5
+    :center 
+      (scrollable 
+        (grid-panel :columns 2 
+          :items [(label :id :radar-image :text "")
+                  (label :id :sat-image :text "")
+                  (label :id :sat-ir4-image :text "")
+                  (label :id :sat-vis-image :text "")]))))
 
 (defn make-toolbar []
   (border-panel
@@ -123,25 +98,111 @@
     :west   (label :text "City:" :font title-font)
     :center (text 
               :id   :city
-              :text "Ann Arbor,MI" 
-              :action refresh-action)))
+              :class :refresh
+              :text "Ann Arbor,MI")))
 
 (defn make-tabs []
   (tabbed-panel
     :tabs [{ :title "Forecast" :content (make-forecast-panel []) }
-           { :title "Webcams"  :content (make-webcam-panel) }]))
+           { :title "Webcams"  :content (make-webcam-panel) }
+           { :title "Radar/Satellite" :content (make-radar-panel) }]))
 
 
-(defn app []
+(defn make-frame 
+  []
   (frame
     :title "Gaidica"
     :size  [600 :by 600]
     :on-close :exit
-    :menubar (menubar :items [(menu :text "View" :items [refresh-action])])
+    :menubar (menubar :items [(menu :text "View" :items [(menu-item :class :refresh)])])
     :content (border-panel
+               :border 5
+               :hgap 5
+               :vgap 5
                :north  (make-toolbar)
-               :center (make-tabs))))
+               :center (make-tabs)
+               :south (label :id :status :text "Ready"))))
+
+;; Behavior stuff -----------------------------------
+;; Use selectors and friends to hook behaviors to the widgets built above.
+
+(def panel-behaviors
+  [{ :name      "Forecast"
+     :data-fn   get-text-forecasts
+     :update-fn (fn [root forecasts] 
+                  (config! (select root [:#forecast]) 
+                           :items (make-forecast-entries forecasts))) }
+
+   { :name      "Webcams"
+     :data-fn   get-webcams
+     :update-fn (fn [root webcams]
+                  (let [t (select root [:#webcam-table])]
+                    (clear! t)
+                    (apply insert-at! t (interleave (iterate identity 0) webcams)))) }
+   
+   { :name      "Radar/Satellite"
+     :data-fn   get-rad-sat 
+     :update-fn (fn [root {:keys [radar satellite]}]
+                  (config! (select root [:#radar-image]) :icon (:image_url radar))
+                  (config! (select root [:#sat-image]) :icon (:image_url satellite)) 
+                  (config! (select root [:#sat-ir4-image]) :icon (:image_url_ir4 satellite)) 
+                  (config! (select root [:#sat-vis-image]) :icon (:image_url_vis satellite))) 
+    }])
+
+(def active-requests (atom #{}))
+
+; schedule data requests for each panel (:data-fn) and call UI update functions
+; (:update-fn) with results, in the UI thread!
+(defn refresh-action-handler [e] 
+  (let [root (to-frame e)
+        city (text (select root [:#city]))]
+    (doseq [{:keys [name data-fn update-fn]} panel-behaviors]
+      (future 
+        (swap! active-requests conj name)
+        (let [data (data-fn city)]
+          (swap! active-requests disj name)
+          (invoke-later
+            (update-fn root data)))))))
+
+(def refresh-action
+  (action :name "Refresh" :key "menu R" :handler refresh-action-handler))
+
+(defn add-behaviors 
+  [root]
+  ; As active requests change, update the status bar
+  (bind/bind
+    active-requests
+    (bind/transform #(if (empty? %) "Ready" (str "Refreshing: " (string/join ", " %))))
+    (bind/property (select root [:#status]) :text))
+
+  ; Use binding to map selection changes in the table to update the
+  ; displayed image
+  (bind/bind
+    (bind/selection (select root [:#webcam-table]))
+    (bind/transform 
+      #(-> (select root [:#webcam-table])
+         (value-at %) 
+         :CURRENTIMAGEURL))
+    (bind/property (select root [:#webcam-image]) :icon))
+  
+  ; Use refresh-action as the action for everything marked with class
+  ; :refresh.
+  (config! (select root [:.refresh]) :action refresh-action)
+
+  root)
+
+;; Behavior stuff -----------------------------------
 
 (defn -main [& args]
-  (invoke-later (show! (app))))
+  (when-not (first args)
+    (println "Usage: gaidica <wunderground-api-key>")
+    (System/exit 1))
+  (reset! api-key (first args))
+  (invoke-later 
+    (-> 
+      (make-frame)
+      add-behaviors
+      show!))
+  ; Avoid RejectedExecutionException in lein :(
+  @(promise))
 

@@ -229,37 +229,37 @@
   (it "creates horizontal glue for :fill-h"
     (let [c (make-widget :fill-h)]
       (expect (isa? (class c) javax.swing.Box$Filler ))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))))
+      (expect (= 32767.0 (.. c getMaximumSize getWidth)))))
   (it "creates vertical glue for :fill-v"
     (let [c (make-widget :fill-v)]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))))
+      (expect (= 32767.0 (.. c getMaximumSize getHeight)))))
   (it "creates a vertical strut for [:fill-v N]"
     (let [c (make-widget [:fill-v 99])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getWidth)))
-      (expect (= 99 (.. c getMaximumSize getHeight)))
-      (expect (= 99 (.. c getPreferredSize getHeight)))))
+      (expect (= 32767.0 (.. c getMaximumSize getWidth)))
+      (expect (= 99.0 (.. c getMaximumSize getHeight)))
+      (expect (= 99.0 (.. c getPreferredSize getHeight)))))
   (it "creates a horizontal strut for [:fill-h N]"
     (let [c (make-widget [:fill-h 88])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 32767 (.. c getMaximumSize getHeight)))
-      (expect (= 88 (.. c getMaximumSize getWidth)))
-      (expect (= 88 (.. c getPreferredSize getWidth)))))
+      (expect (= 32767.0 (.. c getMaximumSize getHeight)))
+      (expect (= 88.0 (.. c getMaximumSize getWidth)))
+      (expect (= 88.0 (.. c getPreferredSize getWidth)))))
   (it "creates a rigid area for a Dimension"
     (let [c (make-widget (Dimension. 12 34))]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight)))))
+      (expect (= 12.0 (.. c getMaximumSize getWidth)))
+      (expect (= 34.0 (.. c getMaximumSize getHeight)))
+      (expect (= 12.0 (.. c getPreferredSize getWidth)))
+      (expect (= 34.0 (.. c getPreferredSize getHeight)))))
   (it "creates a rigid area for a [N :by N]"
     (let [c (make-widget [12 :by 34])]
       (expect (isa? (class c) javax.swing.Box$Filler))
-      (expect (= 12 (.. c getMaximumSize getWidth)))
-      (expect (= 34 (.. c getMaximumSize getHeight)))
-      (expect (= 12 (.. c getPreferredSize getWidth)))
-      (expect (= 34 (.. c getPreferredSize getHeight))))))
+      (expect (= 12.0 (.. c getMaximumSize getWidth)))
+      (expect (= 34.0 (.. c getMaximumSize getHeight)))
+      (expect (= 12.0 (.. c getPreferredSize getWidth)))
+      (expect (= 34.0 (.. c getPreferredSize getHeight))))))
 
 (describe to-widget
   (it "returns nil for unknown inputs"
@@ -295,7 +295,7 @@
            actual# (config ~t ~key)]
        (expect (= expected# actual#))))))
 
-(describe config
+(describe config 
   (it "throws IllegalArgumentException for an unknown option"
     (try
       (config (text "HI") :textish)
@@ -305,6 +305,17 @@
     (= :foo (config (text :id :foo) :id)))
   (it "can retrieve the :class of a widget"
     (= #{"foo"} (config (text :class :foo) :class)))
+
+  (verify-config (text :drag-enabled? true) :drag-enabled? true)
+  (verify-config (tree :drag-enabled? true) :drag-enabled? true)
+  (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
+  (verify-config (table :drag-enabled? true) :drag-enabled? true)
+
+  (verify-config (text :drop-mode :insert) :drop-mode :insert)
+  (verify-config (tree :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (listbox :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+  (verify-config (table :drop-mode :on-or-insert) :drop-mode :on-or-insert)
+
   (verify-config (text :text "HI") :text "HI")
   (verify-config (button :text "button") :text "button")
   (verify-config (label :text "label") :text "label")
@@ -478,11 +489,11 @@
     (let [[[w0 c0] [w1 c1] & more] (realize-grid-bag-constraints [[:first :weightx 99 :weighty 555 :gridx :relative] [:second :weightx 100 :anchor :baseline]])]
       (expect (nil? more))
       (expect (= :first w0))
-      (expect (= 99 (.weightx c0)))
-      (expect (= 555 (.weighty c0)))
+      (expect (= 99.0 (.weightx c0)))
+      (expect (= 555.0 (.weighty c0)))
       (expect (= :second w1))
-      (expect (= 100 (.weightx c1)))
-      (expect (= 555 (.weighty c1))))))
+      (expect (= 100.0 (.weightx c1)))
+      (expect (= 555.0 (.weighty c1))))))
 
 (describe form-panel
   (it "should create a JPanel with a GridBagLayout"
@@ -493,7 +504,7 @@
           gbcs (.getConstraints (.getLayout p) w)]
       (expect (instance? JLabel w))
       (expect (= java.awt.GridBagConstraints (class gbcs)))
-      (expect (= 999 (.weighty gbcs))))))
+      (expect (= 999.0 (.weighty gbcs))))))
 
 (describe "for an arbitrary widget"
   (it "should support the :font property"
@@ -714,7 +725,14 @@
     (let [a (action :handler println)
           b (button :action a)]
       (expect (= JButton (class b)))
-      (expect (= a (.getAction b))))))
+      (expect (= a (.getAction b)))))
+
+  (it "should set the :mnemonic of the button given an integer keycode"
+    (= 100 (.getMnemonic (button :mnemonic 100)))) 
+  (it "should set the :mnemonic of the button given a char"
+    (= (int \Y) (.getMnemonic (button :mnemonic \Y)))) 
+  (it "should set the :mnemonic of the button given a lower-case char"
+    (= (int \Z) (.getMnemonic (button :mnemonic \z)))))
 
 (describe toggle
   (it "should create a JToggleButton"
@@ -784,6 +802,48 @@
           model (.getModel lb)]
       (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
       (expect (= 1 (.getSelectedItem model))))))
+
+(describe spinner-model 
+  (it "should create a number spinner model"
+    (let [m (spinner-model 3.5 :from 1.5 :to 4.5 :by 0.5)]
+      (expect (instance? javax.swing.SpinnerNumberModel m))
+      (expect (= 3.5 (.getValue m)))
+      (expect (= 0.5 (.getStepSize m)))
+      (expect (= 4.5 (.getMaximum m)))
+      (expect (= 1.5 (.getMinimum m))))) 
+  (it "should create a date spinner model"
+      (let [s (java.util.Date. (long 0))
+            v (java.util.Date. (long (* 10 24 3600)))
+            e (java.util.Date. (long (* 20 24 3600)))
+            m (spinner-model v :from s :to e :by :day-of-month)]
+        (expect (instance? javax.swing.SpinnerDateModel m))
+        (expect (= java.util.Calendar/DAY_OF_MONTH (.getCalendarField m)))
+        (expect (= v (.getValue m)))
+        (expect (= s (.getStart m)))
+        (expect (= e (.getEnd m))))))
+
+(describe spinner
+  (it "should create a JSpinner"
+    (instance? javax.swing.JSpinner (spinner)))
+  (it "should set the model with the :model option"
+    (let [model (javax.swing.SpinnerListModel.)
+          s     (spinner :model model)]
+      (expect (= model (.getModel s)))))
+  (it "creates a list model from a sequence"
+    (let [s (spinner :model [1 2 3])
+          m (config s :model)]
+      (expect (instance? javax.swing.SpinnerListModel m))))
+  (it "creates a date model from a java.util.Date"
+    (let [d (java.util.Date.)
+          s (spinner :model d)
+          m (config s :model)]
+      (expect (instance? javax.swing.SpinnerDateModel m))
+      (expect (= d (.getValue m)))))
+  (it "creates a numeric model from a number"
+    (let [s (spinner :model 3.3)
+          m (config s :model)]
+      (expect (instance? javax.swing.SpinnerNumberModel m))
+      (expect (= 3.3 (.getValue m))))))
 
 (describe table
   (it "should create a JTable"
@@ -1060,6 +1120,10 @@
     (let [c (label :text "HI")
           f (frame :content c)]
       (expect (= c (.getContentPane f)))))
+  (it "should set the frame's icon from an image"
+    (let [i (buffered-image 16 16)
+          f (frame :icon i)]
+      (expect (= i (.getIconImage f)))))
   (it "should, by default, set location by platform to true"
     (.isLocationByPlatform (frame))))
 
@@ -1208,6 +1272,28 @@
             f (frame :title "select by id" :content p)]
         (expect (= c (select f [:#hi])))
         (expect (= p (select f ["#panel"])))))))
+
+(describe select-with
+  (it "should return the equivalent of (partial select widget)"
+    (let [lbl (label :id :foo)
+          p (border-panel :center lbl)
+          $ (select-with p)]
+      (expect (= lbl ($ [:#foo])))))
+  (it "calling (to-widget) on the result should return the (to-widget input)"
+    (let [p (border-panel)
+          $ (select-with p)]
+      (expect (= p (to-widget $))))))
+
+(describe group-by-id
+  (it "should return a map of widgets, keyed by id"
+    (let [a (label :id :a)
+          b (button :id :b)
+          c (border-panel :north a :south b)
+          d (listbox :id :d)
+          e (grid-panel :items [c d])
+          f (frame :id :f :content e)
+          result (group-by-id f)]
+      (expect (= result {:a a :b b :d d :f f})))))
 
 (describe add!
   (testing "When called on a panel with a FlowLayout"
