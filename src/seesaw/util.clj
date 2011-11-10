@@ -11,7 +11,7 @@
 (ns seesaw.util
   (:require clojure.string 
             [j18n.core :as j18n])
-  (:import [java.net URL MalformedURLException]))
+  (:import [java.net URL URI MalformedURLException URISyntaxException]))
 
 (defn illegal-argument 
   "Throw an illegal argument exception formatted as with (clojure.core/format)"
@@ -109,6 +109,14 @@
     (URL. (str s))
     (catch MalformedURLException e nil))))
 
+(defn ^URI to-uri [s]
+  "Try to make a java.net.URI from s"
+  (cond
+    (instance? URI s) s
+    (instance? URL s) (.toURI ^URL s)
+    :else (try
+            (URI. (str s))
+            (catch URISyntaxException e nil))))
 
 (defn to-dimension
   [v]
