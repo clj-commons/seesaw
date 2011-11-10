@@ -230,7 +230,7 @@
   `~(concat form [::with factory]))
 
 (declare construct-impl)
-(defn- construct 
+(defn construct 
   "Use the ::with option to create a new widget, ensuring the
    result is consistent with the given expected class. If there's no 
    ::with option, just fallback to a default instance of the expected
