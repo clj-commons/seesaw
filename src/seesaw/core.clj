@@ -580,11 +580,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} SetIcon (set-icon [this v]))
+(defprotocol ConfigIcon 
+  (set-icon [this v])
+  (get-icon [this]))
 
-(extend-protocol SetIcon
-  javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
-  javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
+(extend-protocol ConfigIcon
+  javax.swing.JLabel 
+    (set-icon [this v] (.setIcon this (make-icon v)))
+    (get-icon [this] (.getIcon this))
+
+  javax.swing.AbstractButton 
+    (set-icon [this v] (.setIcon this (make-icon v)))
+    (get-icon [this] (.getIcon this)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
@@ -791,7 +798,7 @@
     (default-option :popup #(popup-option-handler %1 %2))
     (default-option :paint #(paint-option-handler %1 %2))
 
-    (default-option :icon set-icon)
+    (default-option :icon set-icon get-icon)
     (default-option :action set-action)
     (default-option :text set-text get-text)
     (default-option :model set-model get-model)
