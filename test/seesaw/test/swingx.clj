@@ -28,6 +28,16 @@
   (it "can set rotation option"
     (= (Math/toRadians 60.0) (core/config (xlabel :text-rotation (Math/toRadians 60.0)) :text-rotation))))
 
+(describe busy-label
+  (it "creates a JXBusyLabel"
+    (instance? org.jdesktop.swingx.JXBusyLabel (busy-label)))
+  (it ":busy? defaults to false"
+    (not (core/config (busy-label) :busy?)))
+  (it "can set :busy?"
+    (core/config (busy-label :busy? true) :busy?))
+  (it "can set the text of the label"
+    (= "Processing" (core/text (busy-label :text "Processing")))))
+
 (describe hyperlink
   (it "creates a JXHyperlink with a URI"
     (let [hl (hyperlink :uri (java.net.URI. "http://google.com"))]

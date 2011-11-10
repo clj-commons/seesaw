@@ -26,6 +26,9 @@
       (bean-option [:wrap-lines? :line-wrap?] org.jdesktop.swingx.JXLabel boolean)
       (bean-option :text-rotation org.jdesktop.swingx.JXLabel))))
 
+;*******************************************************************************
+; XLabel 
+
 (defn xlabel
   "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
   supports wrapped text, rotation, etc. Additional options:
@@ -47,6 +50,38 @@
   [& args]
   (apply-options (construct org.jdesktop.swingx.JXLabel args) args xlabel-options))
 
+;*******************************************************************************
+; BusyLabel 
+
+(def busy-label-options
+  (merge
+    label-options
+    (option-map
+      ; TODO busy-label text-alignment, painter, etc
+      (bean-option :busy? org.jdesktop.swingx.JXBusyLabel boolean))))
+
+(defn busy-label
+  "Creates a org.jdesktop.swingx.JXBusyLabel which is a label that shows
+  'busy' status with a spinner, kind of like an indeterminate progress bar. 
+  Additional options:
+  
+    :busy? Whether busy status should be shown or not. Defaults to false.
+
+  Examples:
+
+    (busy-label :text \"Processing ...\"
+                :busy? true)
+
+  See:
+    (seesaw.core/label)
+    (seesaw.core/label-options)
+    (seesaw.swingx/busy-label-options)
+  "
+  [& args]
+  (apply-options (construct org.jdesktop.swingx.JXBusyLabel args) args busy-label-options))
+
+;*******************************************************************************
+; Hyperlink 
 (def hyperlink-options
   (merge
     button-options
