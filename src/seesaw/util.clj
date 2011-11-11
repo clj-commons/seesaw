@@ -23,7 +23,13 @@
   (if-not condition
     (throw (IllegalArgumentException. ^String message))
     true))
-  
+
+(defn root-cause
+  [^Throwable e]
+  (if-let [cause (.getCause e)]
+    (root-cause cause)
+    e))
+
 (defmacro cond-doto
   "Spawn of (cond) and (doto). Works like (doto), but each form has a condition
    which controls whether it is executed. Returns x.

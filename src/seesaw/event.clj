@@ -301,6 +301,7 @@
 
 (defn- get-or-install-handlers
   [target event-name]
+  (check-args (keyword? event-name) (str "Event name is not a keyword: " event-name))
   (let [event-group (event-group-table event-name)]
     (if-not event-group (illegal-argument "Unknown event type %s" event-name))
     (if-let [handlers (get-handlers* target (:name event-group))]
@@ -317,10 +318,6 @@
   [listeners k l]
   (update-in listeners [k] (partial remove #{l})))
 
-(defn- expand-multi-events
-  [target event-name]
-  (get-in event-groups [event-name :events] (to-seq event-name)))
-
 (defn- resolve-event-aliases
   [target event-name]
   (cond
@@ -335,9 +332,25 @@
     (instance? javax.swing.JSpinner target)       :state-changed
     :else event-name))
 
+(defn- expand-multi-events
+  "Expands an event spec into a seq of event names. This handles multi-event cases 
+  which can currently happen in two ways:
+  
+    * The caller provided a set of event names, e.g. #{:mouse-pressed :mouse-released}
+    * The caller provided a 'composite' event name like :mouse
+  "
+  [target event-spec]
+  (get-in event-groups [event-spec :events] (to-seq event-spec)))
+
 (defn- preprocess-event-specs
-  "take name/fn pairs in listen arg list and resolve aliases
-   and stuff"
+  "take spec/fn pairs in listen arg list and expand multi-events, etc. For example:
+  
+    [:foo handler0 #{:bar :yum} handler1]
+  
+  becomes 
+  
+    [:foo handler0 :bar handler1 :yum handler1]
+  "
   [target args]
   (mapcat 
     (fn [[a b]] (for [n (to-seq a)] [n b]))
@@ -345,20 +358,9 @@
           en (expand-multi-events target ens)]
       [en f])))
 
-(defn- remove-listener
-  "Remove one or more listener function from target which were
-   previously added with (listen)"
-  [targets & more]
-  (doseq [target (to-seq targets)
-          [event-name event-fn] (preprocess-event-specs target more)]
-    ; TODO no need to install handlers if they're not already there.
-    (let [event-name (resolve-event-aliases target event-name)
-          handlers (get-or-install-handlers target event-name)
-          final-method-name (get event-method-table event-name event-name)]
-      (swap! handlers unappend-listener final-method-name event-fn)))
-    targets)
-
 (defn- get-sub-targets
+  "Expand targets into individual event sources. For example, a button-group is treated
+  as the list of buttons it contains."
   [targets]
   (reduce
     (fn [result target]
@@ -378,6 +380,46 @@
   (add-listener 
     [this event-name event-handler] 
     nil))
+
+(defn- single-target-listen-impl
+  "Takes:
+ 
+   * a single target
+   * a raw-event-name (a keyword, set or keyword that eventually maps to a set 
+     of events, like :mouse)
+   * an event handler function
+  
+  doall *must* be called to ensure all side-effects occur.
+
+  Installs handlers in the target and returns a seq of functions which reverse
+  this operation."
+  [target raw-event-name event-fn]
+  (check-args (fn? event-fn) (str "Event handler for " raw-event-name " is not a function"))
+  (doall 
+    (for [event-name (->> (expand-multi-events target raw-event-name)
+                          (map #(resolve-event-aliases target %)))] 
+      (let [handlers          (get-or-install-handlers target event-name)
+            final-method-name (get event-method-table event-name event-name)]
+        (swap! handlers append-listener final-method-name event-fn)
+        (fn []
+          (swap! handlers unappend-listener final-method-name event-fn))))))
+
+(defn- multi-target-listen-impl
+  "Save as single-target-listen-impl, except that handlers are installed on multiple
+  targets. 
+  
+  Returns seq of functions that reverse the operation."
+  
+  ([targets raw-event-name event-fn]
+    (apply concat 
+      (for [target targets] 
+        (if-let [hook-result (add-listener target raw-event-name event-fn)]
+          [hook-result]
+          (single-target-listen-impl target raw-event-name event-fn)))))
+
+  ([targets raw-event-name event-fn & more]
+   (concat (multi-target-listen-impl targets raw-event-name event-fn)
+           (apply multi-target-listen-impl targets more))))
 
 (defn listen
   "
@@ -414,17 +456,9 @@
   *not* retrievable from the event object.
   "
   [targets & more]
-  (check-args (even? (count more)) "List of event name/handler pairs must have even length")
-  (doseq [target (get-sub-targets (to-seq targets))
-          [event-name event-fn] (partition 2 more)]
-    (check-args (fn? event-fn) (str "Event handler for " event-name " is not a function"))
-    (if-not (add-listener target event-name event-fn) 
-      (doseq [event-name (->> (expand-multi-events target event-name)
-                              (map #(resolve-event-aliases target %)))] 
-        (check-args (keyword? event-name) (str "Event name is not a keyword: " event-name))
-        (let [handlers (get-or-install-handlers target event-name)
-              final-method-name (get event-method-table event-name event-name)]
-          (swap! handlers append-listener final-method-name event-fn)))))
-  (fn [] (apply remove-listener targets more)))
-
+  (check-args (even? (count more)) 
+              "List of event name/handler pairs must have even length")
+  (let [all-targets (get-sub-targets (to-seq targets))
+        remove-fns  (apply multi-target-listen-impl all-targets more)]
+    (apply juxt remove-fns)))
 
