@@ -15,7 +15,12 @@
   seesaw.swingx
   (:use [seesaw.util :only [to-uri resource]]
         [seesaw.icon :only [icon]]
-        [seesaw.core :only [construct default-options button-options label-options ConfigIcon get-icon set-icon]]
+        [seesaw.selection :only [Selection]]
+        [seesaw.event :only [EventHook]]
+        [seesaw.core :only [construct 
+                            default-options button-options label-options 
+                            ConfigIcon get-icon set-icon
+                            config config!]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option]]))
 
 (def xlabel-options
@@ -197,4 +202,56 @@
     (construct org.jdesktop.swingx.JXTaskPaneContainer args) 
     args 
     task-pane-container-options))
+
+;*******************************************************************************
+; Color Selection Button
+
+(def color-selection-button-options
+  (merge
+    button-options
+    {:selection (:background button-options)}))
+
+(defn color-selection-button 
+  "Creates a color selection button. In addition to normal button options,
+  supports:
+  
+    :selection A color value. See (seesaw.color/to-color)
+
+  The currently selected color canbe retrieved with (seesaw.core/selection). 
+
+  Examples:
+
+    (def b (color-selection-button :selection :aliceblue))
+
+    (selection! b java.awt.Color/RED)
+
+    (listen b :selection 
+      (fn [e]
+        (println \"Selected color changed to \")))
+
+  See:
+    (seesaw.swingx/color-selection-button-options)
+    (seesaw.color/color)
+  "
+  [& args]
+  (apply-options 
+    (construct org.jdesktop.swingx.JXColorSelectionButton args) 
+    args 
+    color-selection-button-options))
+
+(extend-protocol Selection
+  org.jdesktop.swingx.JXColorSelectionButton
+    (get-selection [this] [(config this :selection)])
+    (set-selection [this [v]] (config! this :selection v)))
+
+(extend-protocol EventHook
+  org.jdesktop.swingx.JXColorSelectionButton
+    (add-listener [this event-name event-fn]
+      (condp = event-name
+        :selection (do (.addPropertyChangeListener 
+                     this "background"
+                     (reify java.beans.PropertyChangeListener
+                       (propertyChange [this e] (event-fn e))))
+                     this)
+        nil)))
 

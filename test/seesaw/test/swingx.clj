@@ -64,3 +64,26 @@
     (let [tpc (task-pane-container)]
       (expect (instance? org.jdesktop.swingx.JXTaskPaneContainer tpc)))))
 
+(describe color-selection-button
+  (it "creates a JXColorSelectionButton"
+    (instance? org.jdesktop.swingx.JXColorSelectionButton (color-selection-button)))
+  (it "can set the initial color"
+    (expect (= java.awt.Color/RED 
+               (core/config 
+                 (color-selection-button :selection java.awt.Color/RED)
+                 :selection))))
+  (it "can retrieve the current selection with (seesaw.core/selection)"
+    (expect (= java.awt.Color/RED 
+               (core/selection 
+                 (color-selection-button :selection java.awt.Color/RED)))))
+  (it "can set the current selection with (seesaw.core/selection!)"
+    (let [csb (color-selection-button)]
+      (core/selection! csb java.awt.Color/BLACK)
+      (expect (= java.awt.Color/BLACK (core/selection csb)))))
+  (it "fires :selection event when selection changes"
+    (let [called (atom nil)
+          csb (color-selection-button :listen [:selection (fn [e] (reset! called e))])]
+      (core/selection! csb java.awt.Color/YELLOW)
+      (expect @called)
+      (expect (= csb (core/to-widget @called))))))
+

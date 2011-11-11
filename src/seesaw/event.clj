@@ -317,11 +317,15 @@
   [listeners k l]
   (update-in listeners [k] (partial remove #{l})))
 
+(defn- expand-multi-events
+  [target event-name]
+  (get-in event-groups [event-name :events] (to-seq event-name)))
+
 (defn- resolve-event-aliases
   [target event-name]
   (cond
-    (not= :selection event-name) (get-in event-groups [event-name :events] event-name)
     ; Re-route to right listener type for :selection on various widget types
+    (not= :selection event-name) event-name
     (instance? javax.swing.JList target)          :list-selection
     (instance? javax.swing.JTable target)         :list-selection
     (instance? javax.swing.JTree target)          :tree-selection
@@ -337,8 +341,9 @@
   [target args]
   (mapcat 
     (fn [[a b]] (for [n (to-seq a)] [n b]))
-    (for [[en f] (partition 2 args)]
-      [(resolve-event-aliases target en) f])))
+    (for [[ens f] (partition 2 args)
+          en (expand-multi-events target ens)]
+      [en f])))
 
 (defn- remove-listener
   "Remove one or more listener function from target which were
@@ -347,7 +352,8 @@
   (doseq [target (to-seq targets)
           [event-name event-fn] (preprocess-event-specs target more)]
     ; TODO no need to install handlers if they're not already there.
-    (let [handlers (get-or-install-handlers target event-name)
+    (let [event-name (resolve-event-aliases target event-name)
+          handlers (get-or-install-handlers target event-name)
           final-method-name (get event-method-table event-name event-name)]
       (swap! handlers unappend-listener final-method-name event-fn)))
     targets)
@@ -363,7 +369,16 @@
           (conj result target)))  
     []
     targets))
-    
+
+(defprotocol EventHook
+  (add-listener [this event-name event-handler]))
+
+(extend-protocol EventHook
+  Object
+  (add-listener 
+    [this event-name event-handler] 
+    nil))
+
 (defn listen
   "
   *note: use seesaw.core/listen rather than calling this directly*
@@ -401,12 +416,15 @@
   [targets & more]
   (check-args (even? (count more)) "List of event name/handler pairs must have even length")
   (doseq [target (get-sub-targets (to-seq targets))
-          [event-name event-fn] (preprocess-event-specs target more)]
-    (check-args (keyword? event-name) (str "Event name is not a keyword: " event-name))
+          [event-name event-fn] (partition 2 more)]
     (check-args (fn? event-fn) (str "Event handler for " event-name " is not a function"))
-    (let [handlers (get-or-install-handlers target event-name)
-          final-method-name (get event-method-table event-name event-name)]
-      (swap! handlers append-listener final-method-name event-fn)))
+    (if-not (add-listener target event-name event-fn) 
+      (doseq [event-name (->> (expand-multi-events target event-name)
+                              (map #(resolve-event-aliases target %)))] 
+        (check-args (keyword? event-name) (str "Event name is not a keyword: " event-name))
+        (let [handlers (get-or-install-handlers target event-name)
+              final-method-name (get event-method-table event-name event-name)]
+          (swap! handlers append-listener final-method-name event-fn)))))
   (fn [] (apply remove-listener targets more)))
 
 
