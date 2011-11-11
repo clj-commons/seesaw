@@ -94,3 +94,15 @@
       (core/selection! csb java.awt.Color/YELLOW)
       (expect (nil? @called)))))
 
+(describe header
+  (it "creates a JXHeader"
+    (instance? org.jdesktop.swingx.JXHeader (header)))
+  (it "can set a title"
+    (= "The title" (core/config (header :title "The title") :title)))
+  (it "can set a description"
+    (= "The description" (core/config (header :description "The description") :description)))
+  (it "can set an icon"
+    (let [i (icon/icon (graphics/buffered-image 16 16))
+          h (header :icon i)]
+      (expect (= i (core/config h :icon))))))
+

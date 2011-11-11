@@ -251,3 +251,42 @@
         :selection (listen-to-property this "background" event-fn)
         nil)))
 
+;*******************************************************************************
+; Header
+
+(extend-protocol ConfigIcon
+  org.jdesktop.swingx.JXHeader
+    (get-icon [this]   (.getIcon this))
+    (set-icon [this v] (.setIcon this (icon v))))
+
+(def header-options
+  (merge
+    default-options 
+    (option-map
+      (bean-option :title org.jdesktop.swingx.JXHeader resource)
+      (default-option :icon set-icon get-icon)
+      (bean-option :description org.jdesktop.swingx.JXHeader resource))))
+
+(defn header 
+  "Creates a header which consists of a title, description (supports basic HTML)
+  and an icon. Additional options:
+ 
+    :title The title. May be a resource.
+    :description The description. Supports basic HTML (3.2). May be a resource.
+    :icon The icon. May be a resource.
+
+  Examples:
+
+    (header :title \"This is a title\" 
+            :description \"<html>A <b>description</b> with some 
+                          <i>italics</i></html>\" 
+            :icon \"http://url/to/icon.png\")
+
+  See:
+    (seesaw.swingx/header-options)
+  "
+  [& args]
+  (apply-options 
+    (construct org.jdesktop.swingx.JXHeader args) 
+    args 
+    header-options))
