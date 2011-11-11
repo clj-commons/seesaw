@@ -85,5 +85,12 @@
           csb (color-selection-button :listen [:selection (fn [e] (reset! called e))])]
       (core/selection! csb java.awt.Color/YELLOW)
       (expect @called)
-      (expect (= csb (core/to-widget @called))))))
+      (expect (= csb (core/to-widget @called)))))
+  (it "can remove selection event listener"
+    (let [called (atom nil)
+          csb (color-selection-button)
+          remove-fn (core/listen csb :selection (fn [e] (reset! called e)))]
+      (remove-fn)
+      (core/selection! csb java.awt.Color/YELLOW)
+      (expect (nil? @called)))))
 

@@ -16,7 +16,7 @@
   (:use [seesaw.util :only [to-uri resource]]
         [seesaw.icon :only [icon]]
         [seesaw.selection :only [Selection]]
-        [seesaw.event :only [EventHook]]
+        [seesaw.event :only [EventHook listen-to-property]]
         [seesaw.core :only [construct 
                             default-options button-options label-options 
                             ConfigIcon get-icon set-icon
@@ -248,10 +248,6 @@
   org.jdesktop.swingx.JXColorSelectionButton
     (add-listener [this event-name event-fn]
       (condp = event-name
-        :selection (do (.addPropertyChangeListener 
-                     this "background"
-                     (reify java.beans.PropertyChangeListener
-                       (propertyChange [this e] (event-fn e))))
-                     this)
+        :selection (listen-to-property this "background" event-fn)
         nil)))
 

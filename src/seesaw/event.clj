@@ -462,3 +462,14 @@
         remove-fns  (apply multi-target-listen-impl all-targets more)]
     (apply juxt remove-fns)))
 
+(defn listen-to-property 
+  "List to propertyChange events on a target for a particular named property.
+  List (listen), returns a function that, when called removes the installed
+  listener."
+  [target property event-fn]
+  (let [listener (reify java.beans.PropertyChangeListener
+                   (propertyChange [this e] (event-fn e)))] 
+    (.addPropertyChangeListener target property listener)
+    (fn []
+      (.removePropertyChangeListener target property listener))))
+
