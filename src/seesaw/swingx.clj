@@ -15,13 +15,14 @@
   seesaw.swingx
   (:use [seesaw.util :only [to-uri resource]]
         [seesaw.icon :only [icon]]
-        [seesaw.selection :only [Selection]]
+        [seesaw.selection :only [Selection ViewModelIndexConversion]]
         [seesaw.event :only [EventHook listen-to-property]]
         [seesaw.core :only [construct 
-                            default-options button-options label-options 
+                            default-options button-options label-options
+                            listbox-options
                             ConfigIcon get-icon set-icon
                             config config!]]
-        [seesaw.options :only [option-map bean-option apply-options default-option resource-option]]))
+        [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]]))
 
 (def xlabel-options
   (merge
@@ -290,3 +291,63 @@
     (construct org.jdesktop.swingx.JXHeader args) 
     args 
     header-options))
+
+;*******************************************************************************
+; JXList
+
+(def ^ {:private true} sort-order-table 
+  { :ascending javax.swing.SortOrder/ASCENDING 
+    :descending javax.swing.SortOrder/DESCENDING})
+
+; Override view/model index conversion so that the default selection
+; handler from JList will work.
+(extend-protocol ViewModelIndexConversion
+  org.jdesktop.swingx.JXList 
+    (index-to-model [this index] (.convertIndexToModel this index))
+    (index-to-view [this index] (.convertIndexToView this index)))
+
+(def xlistbox-options
+  (merge
+    listbox-options
+    (option-map
+      ; When the model is changed, make sure the sort order is preserved
+      ; Otherwise, it doesn't look like :sort-with is working.
+      (default-option :model 
+        (fn [c v]
+          (let [old (.getSortOrder c)]
+            ((:setter (:model listbox-options)) c v)
+            (.setSortOrder c old)))
+        (:getter (:model listbox-options)))
+      
+      (bean-option :sort-order org.jdesktop.swingx.JXList sort-order-table)
+
+      (default-option :sort-with
+        (fn [^org.jdesktop.swingx.JXList c v]
+          (doto c
+            (.setComparator v)
+            (.setSortOrder javax.swing.SortOrder/ASCENDING)))
+        (fn [^org.jdesktop.swingx.JXList c]
+          (.getComparator c))))))
+
+(defn xlistbox
+  "Create a JXList which is basically an improved (seesaw.core/listbox).
+  Additional capabilities include sorting, searching, and highlighting.
+  Beyond listbox, has the following additional options:
+  
+    :sort-with A comparator (like <, >, etc) used to sort the items in the
+               model.
+    :sort-order :ascending or descending
+ 
+  By default, ctrl/cmd-F is bound to the search function. 
+
+  Examples:
+  
+  See:
+    (seesaw.core/listbox)
+  "
+  [& args]
+  (apply-options
+    (doto (construct org.jdesktop.swingx.JXList args)
+      (.setAutoCreateRowSorter true))
+    args
+    xlistbox-options))

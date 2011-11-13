@@ -106,3 +106,25 @@
           h (header :icon i)]
       (expect (= i (core/config h :icon))))))
 
+(describe xlistbox
+  (it "creates a JXList"
+    (instance? org.jdesktop.swingx.JXList (xlistbox)))
+  (it "creates a JXList with a default model"
+    (let [lb (xlistbox :model [1 2 3])]
+      (expect (= 3 (.getSize (core/config lb :model))))))
+  (it "takes a comparator to auto-sort the view"
+    (let [lb (xlistbox :sort-with < :model [2 1 3 0])]
+      (expect (= 3 (.convertIndexToModel lb 0)))))
+  (it "does not sort by default"
+    (let [lb (xlistbox :model [2 1 3 0])]
+      (expect (= 0 (.convertIndexToModel lb 0)))))
+  (it "can set the sort order"
+    (let [lb (xlistbox :sort-order :ascending)]
+      (expect (= javax.swing.SortOrder/ASCENDING (.getSortOrder lb)))
+      (core/config! lb :sort-order :descending)
+      (expect (= javax.swing.SortOrder/DESCENDING (.getSortOrder lb)))))
+  (it "can get the selection when sorted"
+    (let [lb (xlistbox :sort-with < :model [2 1 3 0])]
+      (core/selection! lb 2)
+      (expect (= 2 (core/selection lb))))))
+
