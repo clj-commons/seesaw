@@ -117,6 +117,19 @@
           h (f)]
       (expect (= i (.getIcon h))))))
 
+(describe h-shade
+  (it "returns a function that creates a highlighter with always predicate"
+    (let [f (h-shade)
+          h1 (f) ]
+      (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
+      (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
+
+  (it "returns a function that creates a highlight with given predicate"
+    (let [f (h-shade)
+          h1 (f :never) ]
+      (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
+      (expect (= (p-built-in :never) (.getHighlightPredicate h1))))))
+
 (describe xlabel
   (it "creates a JXLabel"
     (instance? org.jdesktop.swingx.JXLabel (xlabel)))

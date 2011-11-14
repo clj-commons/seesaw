@@ -123,6 +123,14 @@
         (to-p p)
         (icon i)))))
 
+(defn h-shade
+  []
+  (fn self 
+    ([]  (self :always))
+    ([p] 
+      (org.jdesktop.swingx.decorator.ShadingColorHighlighter.
+        (to-p p)))))
+
 ;*******************************************************************************
 ; XLabel 
 
