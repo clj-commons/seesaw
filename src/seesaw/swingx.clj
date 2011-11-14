@@ -10,7 +10,9 @@
 
 (ns ^{:doc "SwingX integration. Unfortunately, SwingX is hosted on java.net which means
            it looks abandoned most of the time. Downloads are here 
-           http://java.net/downloads/swingx/releases/1.6/"
+           http://java.net/downloads/swingx/releases/1.6/
+           
+           This is an incomplete wrapper. If something's missing that you want, just ask."
       :author "Dave Ray"}
   seesaw.swingx
   (:require [seesaw.color])
@@ -20,7 +22,7 @@
         [seesaw.event :only [EventHook listen-to-property]]
         [seesaw.core :only [construct to-widget
                             default-options button-options label-options
-                            listbox-options tree-options
+                            listbox-options tree-options table-options
                             ConfigIcon get-icon set-icon
                             config config!]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]]))
@@ -423,4 +425,39 @@
       (.setRolloverEnabled true))
     args
     xtree-options)) 
+
+;*******************************************************************************
+; JXTable
+
+(def xtable-options
+  (merge
+    table-options
+    (option-map
+      (bean-option :column-control-visible? org.jdesktop.swingx.JXTable boolean)
+      (bean-option :column-margin org.jdesktop.swingx.JXTable))))
+
+(defn xtable
+  "Create a JXTable which is basically an improved (seesaw.core/table).
+  Additional capabilities include searching, sorting and highlighting.
+  Beyond table, has the following additional options:
+
+    :column-control-visible? Show column visibility control in upper right corner.
+                             Defaults to true.
+    :column-margin           Set margin between cells in pixels
+
+  By default, ctrl/cmd-F is bound to the search function. 
+
+  Examples:
+  
+  See:
+    (seesaw.core/table-options)
+    (seesaw.core/table)
+  "
+  [& args]
+  (apply-options
+    (doto (construct org.jdesktop.swingx.JXTable args)
+      (.setRolloverEnabled true)
+      (.setColumnControlVisible true))
+    args
+    xtable-options)) 
 

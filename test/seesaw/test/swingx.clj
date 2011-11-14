@@ -150,5 +150,23 @@
 
 (describe xtree
   (it "creates a JXTree"
-    (instance? org.jdesktop.swingx.JXTree (xtree))))
+    (instance? org.jdesktop.swingx.JXTree (xtree)))
+  (it "creates a JXTree with rollover enabled"
+    (.isRolloverEnabled (xtree)))
+  )
+
+(describe xtable
+  (it "creates a JTable"
+    (instance? org.jdesktop.swingx.JXTable (xtable)))
+  (it "creates a JXTable with rollover enabled"
+    (.isRolloverEnabled (xtable)))
+  (it "creates a JXTable with column control visible"
+    (.isColumnControlVisible (xtable)))
+  (it "creates a sortable JXTable"
+    (.isSortable (xtable)))
+  (it "can show the column control"
+    (not (core/config (xtable :column-control-visible? false) :column-control-visible?)))
+  (it "can set the column margin"
+    (= 99 (core/config (xtable :column-margin 99) :column-margin)))
+  )
 
