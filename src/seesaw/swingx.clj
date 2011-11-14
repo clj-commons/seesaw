@@ -13,11 +13,12 @@
            http://java.net/downloads/swingx/releases/1.6/"
       :author "Dave Ray"}
   seesaw.swingx
+  (:require [seesaw.color])
   (:use [seesaw.util :only [to-uri resource]]
         [seesaw.icon :only [icon]]
         [seesaw.selection :only [Selection ViewModelIndexConversion]]
         [seesaw.event :only [EventHook listen-to-property]]
-        [seesaw.core :only [construct 
+        [seesaw.core :only [construct to-widget
                             default-options button-options label-options
                             listbox-options
                             ConfigIcon get-icon set-icon
@@ -351,3 +352,45 @@
       (.setAutoCreateRowSorter true))
     args
     xlistbox-options))
+
+;*******************************************************************************
+; JXTitledPanel
+
+(def titled-panel-options
+  (merge
+    default-options
+    (option-map
+      (resource-option :resource [:title :title-color])
+      (bean-option :title org.jdesktop.swingx.JXTitledPanel resource)
+      (bean-option [:title-color :title-foreground] org.jdesktop.swingx.JXTitledPanel seesaw.color/to-color)
+      (bean-option [:content :content-container] org.jdesktop.swingx.JXTitledPanel to-widget)
+      (bean-option :right-decoration org.jdesktop.swingx.JXTitledPanel to-widget)   
+      (bean-option :left-decoration org.jdesktop.swingx.JXTitledPanel to-widget))))
+
+(defn titled-panel 
+  "Creates a panel with a title and content. Has the following properties:
+
+    :content The content widget. Passed through (seesaw.core/to-widget)
+    :title   The text of the title. May be a resource.
+    :title-color Text color. Passed through (seesaw.color/to-color). May
+             be resource.
+    :left-decoration Decoration widget on left of title. 
+    :right-decoration Decoration widget on right of title.
+    :resource Set :title and :title-color from a resource bundle
+
+  Examples:
+    
+    (titled-panel :title \"Error\" 
+                  :title-color :red
+                  :content (xlabel :wrap-lines? true
+                                   :text \"An error occurred!\"))
+
+  See:
+    (seesaw.core/listbox)
+  "
+  [& args]
+  (apply-options
+    (construct org.jdesktop.swingx.JXTitledPanel args) 
+    args
+    titled-panel-options))
+

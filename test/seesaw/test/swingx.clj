@@ -128,3 +128,21 @@
       (core/selection! lb 2)
       (expect (= 2 (core/selection lb))))))
 
+(describe titled-panel
+  (it "creates a JXTitledPanel"
+    (instance? org.jdesktop.swingx.JXTitledPanel (titled-panel)))
+  (it "sets the :title of the panel"
+    (= "HI" (.getTitle (titled-panel :title "HI"))))
+  (it "sets the :title-color of the panel"
+    (= java.awt.Color/RED (.getTitleForeground (titled-panel :title-color :red))))
+  (it "sets the :content of the panel"
+    (let [c (core/label "HI")
+          tp (titled-panel :content c)]
+      (expect (= c (.getContentContainer tp)))))
+  (it "sets the left and right decorations of the panel"
+    (let [left (core/label "HI")
+          right (core/button :text "BYE")
+          tp (titled-panel :left-decoration left :right-decoration right)]
+      (expect (= left (.getLeftDecoration tp)))
+      (expect (= right (.getRightDecoration tp))))))
+
