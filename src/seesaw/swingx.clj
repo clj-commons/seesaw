@@ -16,7 +16,7 @@
       :author "Dave Ray"}
   seesaw.swingx
   (:require [seesaw.color])
-  (:use [seesaw.util :only [to-uri resource]]
+  (:use [seesaw.util :only [to-uri resource constant-map illegal-argument]]
         [seesaw.icon :only [icon]]
         [seesaw.selection :only [Selection ViewModelIndexConversion]]
         [seesaw.event :only [EventHook listen-to-property]]
@@ -25,7 +25,81 @@
                             listbox-options tree-options table-options
                             ConfigIcon get-icon set-icon
                             config config!]]
-        [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]]))
+        [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]])
+  (:import [org.jdesktop.swingx.decorator
+              HighlightPredicate
+              HighlightPredicate$AndHighlightPredicate
+              HighlightPredicate$OrHighlightPredicate
+              HighlightPredicate$NotHighlightPredicate
+              HighlightPredicate$EqualsHighlightPredicate
+              HighlightPredicate$IdentifierHighlightPredicate
+              HighlightPredicate$ColumnHighlightPredicate
+              HighlightPredicate$RowGroupHighlightPredicate
+              HighlightPredicate$DepthHighlightPredicate
+              HighlightPredicate$TypeHighlightPredicate]))
+
+;*******************************************************************************
+; Highlighter Predicates 
+
+(def p-built-in
+  (constant-map HighlightPredicate
+                :always
+                :never
+                :even
+                :odd
+                :integer-negative
+                :editable
+                :read-only
+                :has-focus
+                :is-folder
+                :is-leaf
+                :rollover-row))
+
+(declare p-pattern)
+(defn- to-p [v]
+  (cond
+    (instance? HighlightPredicate v) v
+    (instance? java.util.regex.Pattern v) (p-pattern v)
+    (keyword? v) (p-built-in v)
+    :else (illegal-argument "Don't know how to make predicate from %s" v)))
+
+(defn p-and [& args]
+  (HighlightPredicate$AndHighlightPredicate. 
+                      (map to-p args)))
+
+(defn p-or [& args]
+  (HighlightPredicate$OrHighlightPredicate. 
+                      (map to-p args)))
+
+(defn p-not [p]
+  (HighlightPredicate$NotHighlightPredicate. (to-p p)))
+
+(defn p-type [class]
+  (HighlightPredicate$TypeHighlightPredicate. class))
+
+(defn p-eq [value]
+  (HighlightPredicate$EqualsHighlightPredicate. value))
+
+(defn p-column-names [& names]
+  (HighlightPredicate$IdentifierHighlightPredicate. (to-array names)))
+
+(defn p-column-indexes [& indexes]
+  (HighlightPredicate$ColumnHighlightPredicate. (int-array indexes)))
+
+(defn p-row-group [lines-per-group]
+  (HighlightPredicate$RowGroupHighlightPredicate. lines-per-group))
+
+(defn p-depths [& depths]
+  (HighlightPredicate$DepthHighlightPredicate. (int-array depths)))
+
+(defn p-pattern [pattern & {:keys [test-column highlight-column]}]
+  (org.jdesktop.swingx.decorator.PatternPredicate. 
+    pattern
+    (or test-column -1)
+    (or highlight-column -1)))
+
+;*******************************************************************************
+; XLabel 
 
 (def xlabel-options
   (merge
@@ -34,9 +108,6 @@
       ; TODO xlabel text-alignment, painter, etc
       (bean-option [:wrap-lines? :line-wrap?] org.jdesktop.swingx.JXLabel boolean)
       (bean-option :text-rotation org.jdesktop.swingx.JXLabel))))
-
-;*******************************************************************************
-; XLabel 
 
 (defn xlabel
   "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 

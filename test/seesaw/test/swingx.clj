@@ -16,6 +16,66 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe p-built-in
+  (it "returns built-in predicates by key"
+    (= org.jdesktop.swingx.decorator.HighlightPredicate/ROLLOVER_ROW (p-built-in :rollover-row))))
+
+(describe p-and
+  (it "creates an AndHighlightPredicate with the given parts"
+    (let [expected-parts [:always :never :even :odd]
+          a (apply p-and expected-parts)
+          actual-parts (seq (.getHighlightPredicates a))]
+      (expect (= actual-parts (map p-built-in expected-parts)))))
+  (it "auto-converts regex to pattern predicate"
+    (let [pat #"yum"
+          p (p-and pat)]
+      (expect (= pat (.getPattern (first (.getHighlightPredicates p))))))))
+
+(describe p-or
+  (it "creates an OrHighlightPredicate with the given parts"
+    (let [expected-parts [:rollover-row :always :even :odd]
+          a (apply p-or expected-parts)
+          actual-parts (seq (.getHighlightPredicates a))]
+      (expect (= actual-parts (map p-built-in expected-parts))))))
+
+(describe p-not
+  (it "creates a NotHighlightPredicate with the given target"
+    (= (p-built-in :even) (.getHighlightPredicate (p-not :even)))))
+
+(describe p-type
+  (it "creates a TypeHighlightPredicate with the given class"
+    (= String (.getType (p-type String)))))
+
+(describe p-eq
+  (it "creates a EqualsHighlightPredicate with the given value"
+    (= "HOWDY" (.getCompareValue (p-eq "HOWDY")))))
+
+(describe p-column-names
+  (it "creates a IdentifierHighlighPredicate with the given column ids"
+    (= ["a" :b 3] (->> (p-column-names "a" :b 3) .getIdentifiers seq))))
+
+(describe p-column-indexes
+  (it "creates a ColumnHighlighPredicate with the given column indexes"
+    (= [1 2 4] (->> (p-column-indexes 1 2 4) .getColumns seq))))
+
+(describe p-row-group
+  (it "creates a RowGroupHighlightPredicate with the given count"
+    (= 6 (.getLinesPerGroup (p-row-group 6)))))
+
+(describe p-depths
+  (it "creates a DepthHighlighPredicate with the given depths"
+    (= [1 2 4] (->> (p-depths 1 2 4) .getDepths seq))))
+
+(describe p-pattern
+  (it "creates a PatternHighlighPredicate with the given pattern"
+    (let [pat #"hi"] 
+      (expect (= pat (.getPattern (p-pattern pat))))))
+
+  (it "creates a PatternHighlighPredicate with the given pattern and columns"
+    (let [pat (p-pattern #"hi" :test-column 123 :highlight-column 456)] 
+      (expect (= 123 (.getTestColumn pat)))
+      (expect (= 456 (.getHighlightColumn pat))))))
+
 (describe xlabel
   (it "creates a JXLabel"
     (instance? org.jdesktop.swingx.JXLabel (xlabel)))
@@ -167,6 +227,5 @@
   (it "can show the column control"
     (not (core/config (xtable :column-control-visible? false) :column-control-visible?)))
   (it "can set the column margin"
-    (= 99 (core/config (xtable :column-margin 99) :column-margin)))
-  )
+    (= 99 (core/config (xtable :column-margin 99) :column-margin))))
 
