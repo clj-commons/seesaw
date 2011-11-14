@@ -56,7 +56,7 @@
                 :rollover-row))
 
 (declare p-pattern)
-(defn- to-p [v]
+(defn- ^HighlightPredicate to-p [v]
   (cond
     (instance? HighlightPredicate v) v
     (instance? java.util.regex.Pattern v) (p-pattern v)
@@ -97,6 +97,31 @@
     pattern
     (or test-column -1)
     (or highlight-column -1)))
+
+;*******************************************************************************
+; Highlighters
+
+(defn h-color
+  [& {:keys [foreground background 
+             selected-background selected-foreground]}]
+  (fn self 
+    ([]  (self :always))
+    ([p] 
+      (org.jdesktop.swingx.decorator.ColorHighlighter. 
+        (to-p p)
+        (seesaw.color/to-color background)
+        (seesaw.color/to-color foreground)
+        (seesaw.color/to-color selected-background)
+        (seesaw.color/to-color selected-foreground)))))
+
+(defn h-icon
+  [i]
+  (fn self 
+    ([]  (self :always))
+    ([p] 
+      (org.jdesktop.swingx.decorator.IconHighlighter. 
+        (to-p p)
+        (icon i)))))
 
 ;*******************************************************************************
 ; XLabel 

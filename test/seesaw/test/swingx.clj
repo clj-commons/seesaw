@@ -76,6 +76,47 @@
       (expect (= 123 (.getTestColumn pat)))
       (expect (= 456 (.getHighlightColumn pat))))))
 
+(describe h-color
+  (it "returns a function that creates a highlighter with always predicate"
+    (let [f (h-color)
+          h1 (f) ]
+      (expect (instance? org.jdesktop.swingx.decorator.ColorHighlighter h1))
+      (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
+
+  (it "returns a function that creates a highlight with given predicate"
+    (let [f (h-color)
+          h1 (f :never) ]
+      (expect (instance? org.jdesktop.swingx.decorator.ColorHighlighter h1))
+      (expect (= (p-built-in :never) (.getHighlightPredicate h1)))))
+  (it "can control the color of the highlighter"
+    (let [f (h-color :background java.awt.Color/RED
+                     :foreground java.awt.Color/ORANGE
+                     :selected-background java.awt.Color/GREEN
+                     :selected-foreground java.awt.Color/BLUE)
+          h (f)]
+      (expect (= java.awt.Color/RED (.getBackground h)))
+      (expect (= java.awt.Color/ORANGE (.getForeground h)))
+      (expect (= java.awt.Color/GREEN (.getSelectedBackground h)))
+      (expect (= java.awt.Color/BLUE (.getSelectedForeground h))))))
+
+(describe h-icon
+  (it "returns a function that creates a highlighter with always predicate"
+    (let [f (h-icon nil)
+          h1 (f) ]
+      (expect (instance? org.jdesktop.swingx.decorator.IconHighlighter h1))
+      (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
+
+  (it "returns a function that creates a highlight with given predicate"
+    (let [f (h-icon nil)
+          h1 (f :never) ]
+      (expect (instance? org.jdesktop.swingx.decorator.IconHighlighter h1))
+      (expect (= (p-built-in :never) (.getHighlightPredicate h1)))))
+  (it "can control the icon of the highlighter"
+    (let [i (icon/icon (graphics/buffered-image 16 16))
+          f (h-icon i)
+          h (f)]
+      (expect (= i (.getIcon h))))))
+
 (describe xlabel
   (it "creates a JXLabel"
     (instance? org.jdesktop.swingx.JXLabel (xlabel)))
