@@ -109,6 +109,8 @@
 (describe xlistbox
   (it "creates a JXList"
     (instance? org.jdesktop.swingx.JXList (xlistbox)))
+  (it "creates a JXList with rollover enabled"
+    (.isRolloverEnabled (xlistbox)))
   (it "creates a JXList with a default model"
     (let [lb (xlistbox :model [1 2 3])]
       (expect (= 3 (.getSize (core/config lb :model))))))

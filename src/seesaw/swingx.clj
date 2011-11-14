@@ -349,7 +349,8 @@
   [& args]
   (apply-options
     (doto (construct org.jdesktop.swingx.JXList args)
-      (.setAutoCreateRowSorter true))
+      (.setAutoCreateRowSorter true)
+      (.setRolloverEnabled true))
     args
     xlistbox-options))
 
