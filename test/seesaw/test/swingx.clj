@@ -148,3 +148,7 @@
       (expect (= left (.getLeftDecoration tp)))
       (expect (= right (.getRightDecoration tp))))))
 
+(describe xtree
+  (it "creates a JXTree"
+    (instance? org.jdesktop.swingx.JXTree (xtree))))
+

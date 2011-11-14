@@ -20,7 +20,7 @@
         [seesaw.event :only [EventHook listen-to-property]]
         [seesaw.core :only [construct to-widget
                             default-options button-options label-options
-                            listbox-options
+                            listbox-options tree-options
                             ConfigIcon get-icon set-icon
                             config config!]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]]))
@@ -394,4 +394,33 @@
     (construct org.jdesktop.swingx.JXTitledPanel args) 
     args
     titled-panel-options))
+
+;*******************************************************************************
+; JXTree
+
+(def xtree-options
+  (merge
+    tree-options
+    (option-map)))
+
+(defn xtree
+  "Create a JXTree which is basically an improved (seesaw.core/tree).
+  Additional capabilities include searching, and highlighting.
+  Beyond tree, has the following additional options:
+ 
+
+  By default, ctrl/cmd-F is bound to the search function. 
+
+  Examples:
+  
+  See:
+    (seesaw.core/tree-options)
+    (seesaw.core/tree)
+  "
+  [& args]
+  (apply-options
+    (doto (construct org.jdesktop.swingx.JXTree args)
+      (.setRolloverEnabled true))
+    args
+    xtree-options)) 
 
