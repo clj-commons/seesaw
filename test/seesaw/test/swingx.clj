@@ -130,6 +130,21 @@
       (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
       (expect (= (p-built-in :never) (.getHighlightPredicate h1))))))
 
+(defmacro verify-highlighter-host [widget]
+  `(let [w# ~widget
+         hl# (org.jdesktop.swingx.decorator.HighlighterFactory/createSimpleStriping)]
+     (set-highlighters w# [hl#])
+     (expect (= [hl#] (get-highlighters w#)))
+     (set-highlighters w# [])
+     (expect (= nil (get-highlighters w#)))
+     (add-highlighter w# hl#)
+     (expect (= [hl#] (get-highlighters w#)))
+     (remove-highlighter w# hl#)
+     (expect (= nil (get-highlighters w#)))
+     (core/config! w# :highlighters [hl#])
+     (expect (= [hl#] (core/config w# :highlighters)))
+     true))
+
 (describe xlabel
   (it "creates a JXLabel"
     (instance? org.jdesktop.swingx.JXLabel (xlabel)))
@@ -242,7 +257,9 @@
   (it "can get the selection when sorted"
     (let [lb (xlistbox :sort-with < :model [2 1 3 0])]
       (core/selection! lb 2)
-      (expect (= 2 (core/selection lb))))))
+      (expect (= 2 (core/selection lb)))))
+  (it "is a highlighter host"
+    (verify-highlighter-host (xlistbox))))
 
 (describe titled-panel
   (it "creates a JXTitledPanel"
@@ -267,7 +284,8 @@
     (instance? org.jdesktop.swingx.JXTree (xtree)))
   (it "creates a JXTree with rollover enabled"
     (.isRolloverEnabled (xtree)))
-  )
+  (it "is a highlighter host"
+    (verify-highlighter-host (xtree))))
 
 (describe xtable
   (it "creates a JTable"
@@ -281,5 +299,7 @@
   (it "can show the column control"
     (not (core/config (xtable :column-control-visible? false) :column-control-visible?)))
   (it "can set the column margin"
-    (= 99 (core/config (xtable :column-margin 99) :column-margin))))
+    (= 99 (core/config (xtable :column-margin 99) :column-margin)))
+  (it "is a highlighter host"
+    (verify-highlighter-host (xtable))))
 

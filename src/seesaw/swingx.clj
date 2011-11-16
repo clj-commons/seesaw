@@ -27,6 +27,7 @@
                             config config!]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]])
   (:import [org.jdesktop.swingx.decorator
+              Highlighter
               HighlightPredicate
               HighlightPredicate$AndHighlightPredicate
               HighlightPredicate$OrHighlightPredicate
@@ -130,6 +131,45 @@
     ([p] 
       (org.jdesktop.swingx.decorator.ShadingColorHighlighter.
         (to-p p)))))
+
+(defprotocol HighlighterHost 
+  (get-highlighters* [this])
+  (set-highlighters* [this hs])
+  (add-highlighter* [this h])
+  (remove-highlighter* [this h]))
+
+(defmacro default-highlighter-host
+  [class]
+  `(extend-protocol HighlighterHost
+     ~class
+      (~'get-highlighters* [this#]
+         (. this# ~'getHighlighters))
+      (~'set-highlighters* [this# hs#]
+         (. this# ~'setHighlighters hs#))
+      (~'add-highlighter* [this# h#]
+         (. this# ~'addHighlighter h#))
+      (~'remove-highlighter* [this# h#]
+         (. this# ~'removeHighlighter h#))))
+
+(defn get-highlighters [target]
+  (seq (get-highlighters* (to-widget target))))
+
+(defn set-highlighters [target hs]
+  (set-highlighters* (to-widget target)
+                     (into-array Highlighter hs))
+  target)
+
+(defn add-highlighter [target hl]
+  (add-highlighter* (to-widget target) hl)
+  target)
+
+(defn remove-highlighter [target hl]
+  (remove-highlighter* (to-widget target) hl)
+  target)
+
+(def highlighter-host-options
+  (option-map
+    (default-option :highlighters set-highlighters get-highlighters)))
 
 ;*******************************************************************************
 ; XLabel 
@@ -413,9 +453,12 @@
     (index-to-model [this index] (.convertIndexToModel this index))
     (index-to-view [this index] (.convertIndexToView this index)))
 
+(default-highlighter-host org.jdesktop.swingx.JXList)
+
 (def xlistbox-options
   (merge
     listbox-options
+    highlighter-host-options
     (option-map
       ; When the model is changed, make sure the sort order is preserved
       ; Otherwise, it doesn't look like :sort-with is working.
@@ -504,9 +547,12 @@
 ;*******************************************************************************
 ; JXTree
 
+(default-highlighter-host org.jdesktop.swingx.JXTree)
+
 (def xtree-options
   (merge
     tree-options
+    highlighter-host-options
     (option-map)))
 
 (defn xtree
@@ -533,9 +579,12 @@
 ;*******************************************************************************
 ; JXTable
 
+(default-highlighter-host org.jdesktop.swingx.JXTable)
+
 (def xtable-options
   (merge
     table-options
+    highlighter-host-options
     (option-map
       (bean-option :column-control-visible? org.jdesktop.swingx.JXTable boolean)
       (bean-option :column-margin org.jdesktop.swingx.JXTable))))
