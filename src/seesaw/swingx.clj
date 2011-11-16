@@ -21,6 +21,12 @@
         [seesaw.selection :only [Selection ViewModelIndexConversion]]
         [seesaw.event :only [EventHook listen-to-property]]
         [seesaw.core :only [construct to-widget
+                            abstract-panel
+                            border-panel-options
+                            flow-panel-options
+                            box-layout box-panel-options
+                            grid-layout grid-panel-options
+                            card-panel-options
                             default-options button-options label-options
                             listbox-options tree-options table-options
                             ConfigIcon get-icon set-icon
@@ -644,4 +650,46 @@
       (.setColumnControlVisible true))
     args
     xtable-options)) 
+
+
+;*******************************************************************************
+; JXPanel
+
+(def xpanel-options
+  (option-map
+    (bean-option :alpha org.jdesktop.swingx.JXPanel)))
+
+(defn- abstract-xpanel [layout layout-options {:as opts}]
+  (abstract-panel 
+    layout
+    (merge layout-options xpanel-options)
+    (assoc opts :seesaw.core/with org.jdesktop.swingx.JXPanel)))
+
+(defn xxyz-panel [& opts]
+  (abstract-xpanel nil default-options opts))
+
+(defn xborder-panel [& opts]
+  (abstract-xpanel (java.awt.BorderLayout.) border-panel-options opts))
+
+(defn xflow-panel [& opts]
+  (abstract-xpanel (java.awt.FlowLayout.) flow-panel-options opts))
+
+(defn xflow-panel [& opts]
+  (abstract-xpanel (java.awt.FlowLayout.) flow-panel-options opts))
+
+
+(defn xhorizontal-panel [& opts]
+  (abstract-xpanel (box-layout :horizontal) box-panel-options opts))
+
+(defn xvertical-panel [& opts]
+  (abstract-xpanel (box-layout :vertical) box-panel-options opts))
+
+(defn xgrid-panel 
+  [& {:keys [rows columns] :as opts}]
+  (abstract-xpanel (grid-layout rows columns) 
+                  grid-panel-options
+                  opts))
+
+(defn xcard-panel [& opts]
+  (abstract-xpanel (java.awt.CardLayout.) card-panel-options opts))
 

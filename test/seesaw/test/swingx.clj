@@ -322,3 +322,36 @@
   (it "is a highlighter host"
     (verify-highlighter-host (xtable))))
 
+(describe xborder-panel
+  (it "creates a JXPanel with border-panel"
+    (expect (instance? java.awt.BorderLayout 
+                       (.getLayout (xborder-panel :alpha 0.5))))))
+
+(describe xflow-panel
+  (it "creates a JXPanel with flow-panel"
+    (expect (instance? java.awt.FlowLayout 
+                       (.getLayout (xflow-panel :alpha 0.5))))))
+
+(describe xhorizontal-panel
+  (it "creates a JXPanel with horizontal-panel"
+    (expect (instance? javax.swing.BoxLayout 
+                       (.getLayout (xhorizontal-panel :alpha 0.5))))))
+
+(describe xvertical-panel
+  (it "creates a JXPanel with vertical-panel"
+    (expect (instance? javax.swing.BoxLayout 
+                       (.getLayout (xvertical-panel :alpha 0.5))))))
+
+(describe xgrid-panel
+  (it "creates a JXPanel with grid-panel"
+    (expect (instance? java.awt.GridLayout
+                       (.getLayout (xgrid-panel :alpha 0.5))))))
+
+(describe xxyz-panel
+  (it "creates a JXPanel with xyz-panel"
+    (expect (nil? (.getLayout (xxyz-panel :alpha 0.5))))))
+
+(describe xcard-panel
+  (it "creates a JXPanel with card-panel"
+    (expect (instance? java.awt.CardLayout
+                       (.getLayout (xcard-panel :alpha 0.5))))))
