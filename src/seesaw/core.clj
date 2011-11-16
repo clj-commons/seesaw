@@ -1025,10 +1025,12 @@
 
 (def box-panel-options default-options)
 
+(defn box-layout [dir] #(BoxLayout. % (dir box-layout-dir-table)))
+
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
-  (abstract-panel #(BoxLayout. % (dir box-layout-dir-table)) box-panel-options opts))
+  (abstract-panel (box-layout dir) box-panel-options opts))
 
 (def horizontal-panel-options box-panel-options)
 
@@ -1061,8 +1063,13 @@
   (merge
     default-options
     (option-map 
+      (ignore-option :rows)
+      (ignore-option :columns)
       (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2))
       (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)))))
+
+(defn grid-layout [rows columns]
+  (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
 
 (defn grid-panel
   "Create a panel where widgets are arranged horizontally. Options:
@@ -1080,11 +1087,9 @@
   { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns] 
       :as opts}]
-  (let [columns (or columns (if rows 0 1))
-        layout  (GridLayout. (or rows 0) columns 0 0)]
-    (abstract-panel layout 
-                    grid-panel-options
-                    (dissoc opts :rows :columns))))
+  (abstract-panel (grid-layout rows columns) 
+                  grid-panel-options
+                  opts))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout
