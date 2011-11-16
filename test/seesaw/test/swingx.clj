@@ -138,6 +138,17 @@
       (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
       (expect (= (p-built-in :never) (.getHighlightPredicate h1))))))
 
+(describe h-simple-striping
+  (it "returns an simple striping"
+    (let [h (h-simple-striping)]
+      (expect (instance? org.jdesktop.swingx.decorator.Highlighter h))))
+  (it "returns an simple striping with color"
+    (let [h (h-simple-striping :background :red)]
+      (expect (instance? org.jdesktop.swingx.decorator.Highlighter h))))
+  (it "returns an simple striping with lines-per-stripe"
+    (let [h (h-simple-striping :lines-per-stripe 6)]
+      (expect (instance? org.jdesktop.swingx.decorator.Highlighter h)))))
+
 (defmacro verify-highlighter-host [widget]
   `(let [w# ~widget
          hl# (org.jdesktop.swingx.decorator.HighlighterFactory/createSimpleStriping)]

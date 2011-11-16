@@ -28,6 +28,7 @@
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]])
   (:import [org.jdesktop.swingx.decorator
               Highlighter
+              HighlighterFactory
               HighlightPredicate
               HighlightPredicate$AndHighlightPredicate
               HighlightPredicate$OrHighlightPredicate
@@ -141,6 +142,27 @@
       (org.jdesktop.swingx.decorator.ShadingColorHighlighter.
         (to-p p)))))
 
+(defn h-simple-striping
+  [& {:keys [background lines-per-stripe]}]
+  (cond
+    (and background lines-per-stripe)
+      (HighlighterFactory/createSimpleStriping 
+        (seesaw.color/to-color background) lines-per-stripe)
+    background     
+      (HighlighterFactory/createSimpleStriping (seesaw.color/to-color background))
+    lines-per-stripe 
+      (HighlighterFactory/createSimpleStriping lines-per-stripe)
+    :else 
+      (HighlighterFactory/createSimpleStriping)))
+
+(defn ^Highlighter to-highlighter [v]
+  (cond
+    (instance? Highlighter v) v
+    (= :shade v) (h-shade)
+    (= :alternate-striping v) (HighlighterFactory/createAlternateStriping)
+    (= :simple-striping v)    (h-simple-striping)
+    :else (illegal-argument "Don't know how to make highlighter from %s" v)))
+
 (defprotocol HighlighterHost 
   (get-highlighters* [this])
   (set-highlighters* [this hs])
@@ -165,11 +187,11 @@
 
 (defn set-highlighters [target hs]
   (set-highlighters* (to-widget target)
-                     (into-array Highlighter hs))
+                     (into-array Highlighter (map to-highlighter hs)))
   target)
 
 (defn add-highlighter [target hl]
-  (add-highlighter* (to-widget target) hl)
+  (add-highlighter* (to-widget target) (to-highlighter hl))
   target)
 
 (defn remove-highlighter [target hl]
