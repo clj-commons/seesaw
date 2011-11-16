@@ -76,6 +76,14 @@
       (expect (= 123 (.getTestColumn pat)))
       (expect (= 456 (.getHighlightColumn pat))))))
 
+(describe p-fn
+  (it "creates a Highlighter that calls a two-arg function"
+    (let [called (atom false)
+          p (p-fn (fn [_ _] (reset! called true)))]
+      (expect (instance? org.jdesktop.swingx.decorator.HighlightPredicate p))
+      (.isHighlighted p nil nil)
+      (expect @called))))
+
 (describe h-color
   (it "returns a function that creates a highlighter with always predicate"
     (let [f (h-color)

@@ -57,12 +57,21 @@
                 :rollover-row))
 
 (declare p-pattern)
+(declare p-fn)
+
 (defn- ^HighlightPredicate to-p [v]
   (cond
     (instance? HighlightPredicate v) v
     (instance? java.util.regex.Pattern v) (p-pattern v)
     (keyword? v) (p-built-in v)
+    (fn? v) (p-fn v)
     :else (illegal-argument "Don't know how to make predicate from %s" v)))
+
+(defn p-fn [f]
+  (reify
+    HighlightPredicate
+    (isHighlighted [this renderer adapter]
+      (boolean (f renderer adapter)))))
 
 (defn p-and [& args]
   (HighlightPredicate$AndHighlightPredicate. 
