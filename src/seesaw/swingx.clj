@@ -209,6 +209,37 @@
     (default-option :highlighters set-highlighters get-highlighters)))
 
 ;*******************************************************************************
+; XButton
+
+(def button-x-options
+  (merge
+    button-options
+    (option-map
+      (bean-option :background-painter org.jdesktop.swingx.JXButton)
+      (bean-option :foreground-painter org.jdesktop.swingx.JXButton)
+      (bean-option :paint-border-insets? org.jdesktop.swingx.JXButton boolean))))
+
+(defn button-x
+  "Creates a org.jdesktop.swingx.JXButton which is an improved (button) that 
+  supports painters. Supports these additional options:
+  
+
+    :foreground-painter The foreground painter
+    :background-painter The background painter
+    :paint-border-insets? Default to true. If false painter paints entire
+        background.
+
+  Examples:
+
+  See:
+    (seesaw.core/button)
+    (seesaw.core/button-options)
+    (seesaw.swingx/button-x-options)
+  "
+  [& args]
+  (apply-options (construct org.jdesktop.swingx.JXButton args) args button-x-options))
+
+;*******************************************************************************
 ; XLabel 
 
 (def label-x-options
@@ -217,7 +248,9 @@
     (option-map
       ; TODO label-x text-alignment, painter, etc
       (bean-option [:wrap-lines? :line-wrap?] org.jdesktop.swingx.JXLabel boolean)
-      (bean-option :text-rotation org.jdesktop.swingx.JXLabel))))
+      (bean-option :text-rotation org.jdesktop.swingx.JXLabel)
+      (bean-option :background-painter org.jdesktop.swingx.JXLabel)
+      (bean-option :foreground-painter org.jdesktop.swingx.JXLabel))))
 
 (defn label-x
   "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
@@ -548,6 +581,7 @@
     default-options
     (option-map
       (resource-option :resource [:title :title-color])
+      (bean-option :painter org.jdesktop.swingx.JXTitledPanel)
       (bean-option :title org.jdesktop.swingx.JXTitledPanel resource)
       (bean-option [:title-color :title-foreground] org.jdesktop.swingx.JXTitledPanel seesaw.color/to-color)
       (bean-option [:content :content-container] org.jdesktop.swingx.JXTitledPanel to-widget)
@@ -564,6 +598,7 @@
     :left-decoration Decoration widget on left of title. 
     :right-decoration Decoration widget on right of title.
     :resource Set :title and :title-color from a resource bundle
+    :painter Painter used on the title
 
   Examples:
     

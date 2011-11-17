@@ -164,6 +164,19 @@
      (expect (= [hl#] (core/config w# :highlighters)))
      true))
 
+(describe button-x
+  (it "creates a JXButton"
+    (instance? org.jdesktop.swingx.JXButton (button-x)))
+  (it "can set text"
+    (= "HI" (core/text (button-x :text "HI"))))
+  (it "can set painters"
+    (let [p (org.jdesktop.swingx.painter.BusyPainter.)]
+      (expect (= p (core/config 
+                     (button-x :background-painter p) 
+                     :background-painter)))
+      (expect (= p (core/config 
+                     (button-x :foreground-painter p) 
+                     :foreground-painter))))))
 (describe label-x
   (it "creates a JXLabel"
     (instance? org.jdesktop.swingx.JXLabel (label-x)))
@@ -174,7 +187,15 @@
   (it "can set wrap-lines? option"
     (core/config (label-x :wrap-lines? true) :wrap-lines?))
   (it "can set rotation option"
-    (= (Math/toRadians 60.0) (core/config (label-x :text-rotation (Math/toRadians 60.0)) :text-rotation))))
+    (= (Math/toRadians 60.0) (core/config (label-x :text-rotation (Math/toRadians 60.0)) :text-rotation)))
+  (it "can set painters"
+    (let [p (org.jdesktop.swingx.painter.BusyPainter.)]
+      (expect (= p (core/config 
+                     (label-x :background-painter p) 
+                     :background-painter)))
+      (expect (= p (core/config 
+                     (label-x :foreground-painter p) 
+                     :foreground-painter))))))
 
 (describe busy-label
   (it "creates a JXBusyLabel"
