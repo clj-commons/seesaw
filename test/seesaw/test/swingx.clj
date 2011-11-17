@@ -84,20 +84,20 @@
       (.isHighlighted p nil nil)
       (expect @called))))
 
-(describe h-color
+(describe hl-color
   (it "returns a function that creates a highlighter with always predicate"
-    (let [f (h-color)
+    (let [f (hl-color)
           h1 (f) ]
       (expect (instance? org.jdesktop.swingx.decorator.ColorHighlighter h1))
       (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
 
   (it "returns a function that creates a highlight with given predicate"
-    (let [f (h-color)
+    (let [f (hl-color)
           h1 (f :never) ]
       (expect (instance? org.jdesktop.swingx.decorator.ColorHighlighter h1))
       (expect (= (p-built-in :never) (.getHighlightPredicate h1)))))
   (it "can control the color of the highlighter"
-    (let [f (h-color :background java.awt.Color/RED
+    (let [f (hl-color :background java.awt.Color/RED
                      :foreground java.awt.Color/ORANGE
                      :selected-background java.awt.Color/GREEN
                      :selected-foreground java.awt.Color/BLUE)
@@ -107,46 +107,46 @@
       (expect (= java.awt.Color/GREEN (.getSelectedBackground h)))
       (expect (= java.awt.Color/BLUE (.getSelectedForeground h))))))
 
-(describe h-icon
+(describe hl-icon
   (it "returns a function that creates a highlighter with always predicate"
-    (let [f (h-icon nil)
+    (let [f (hl-icon nil)
           h1 (f) ]
       (expect (instance? org.jdesktop.swingx.decorator.IconHighlighter h1))
       (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
 
   (it "returns a function that creates a highlight with given predicate"
-    (let [f (h-icon nil)
+    (let [f (hl-icon nil)
           h1 (f :never) ]
       (expect (instance? org.jdesktop.swingx.decorator.IconHighlighter h1))
       (expect (= (p-built-in :never) (.getHighlightPredicate h1)))))
   (it "can control the icon of the highlighter"
     (let [i (icon/icon (graphics/buffered-image 16 16))
-          f (h-icon i)
+          f (hl-icon i)
           h (f)]
       (expect (= i (.getIcon h))))))
 
-(describe h-shade
+(describe hl-shade
   (it "returns a function that creates a highlighter with always predicate"
-    (let [f (h-shade)
+    (let [f (hl-shade)
           h1 (f) ]
       (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
       (expect (= (p-built-in :always) (.getHighlightPredicate h1)))))
 
   (it "returns a function that creates a highlight with given predicate"
-    (let [f (h-shade)
+    (let [f (hl-shade)
           h1 (f :never) ]
       (expect (instance? org.jdesktop.swingx.decorator.ShadingColorHighlighter h1))
       (expect (= (p-built-in :never) (.getHighlightPredicate h1))))))
 
-(describe h-simple-striping
+(describe hl-simple-striping
   (it "returns an simple striping"
-    (let [h (h-simple-striping)]
+    (let [h (hl-simple-striping)]
       (expect (instance? org.jdesktop.swingx.decorator.Highlighter h))))
   (it "returns an simple striping with color"
-    (let [h (h-simple-striping :background :red)]
+    (let [h (hl-simple-striping :background :red)]
       (expect (instance? org.jdesktop.swingx.decorator.Highlighter h))))
   (it "returns an simple striping with lines-per-stripe"
-    (let [h (h-simple-striping :lines-per-stripe 6)]
+    (let [h (hl-simple-striping :lines-per-stripe 6)]
       (expect (instance? org.jdesktop.swingx.decorator.Highlighter h)))))
 
 (defmacro verify-highlighter-host [widget]

@@ -118,7 +118,7 @@
 ;*******************************************************************************
 ; Highlighters
 
-(defn h-color
+(defn hl-color
   [& {:keys [foreground background 
              selected-background selected-foreground]}]
   (fn self 
@@ -131,7 +131,7 @@
         (seesaw.color/to-color selected-background)
         (seesaw.color/to-color selected-foreground)))))
 
-(defn h-icon
+(defn hl-icon
   [i]
   (fn self 
     ([]  (self :always))
@@ -140,7 +140,7 @@
         (to-p p)
         (icon i)))))
 
-(defn h-shade
+(defn hl-shade
   []
   (fn self 
     ([]  (self :always))
@@ -148,7 +148,7 @@
       (org.jdesktop.swingx.decorator.ShadingColorHighlighter.
         (to-p p)))))
 
-(defn h-simple-striping
+(defn hl-simple-striping
   [& {:keys [background lines-per-stripe]}]
   (cond
     (and background lines-per-stripe)
@@ -164,9 +164,9 @@
 (defn ^Highlighter to-highlighter [v]
   (cond
     (instance? Highlighter v) v
-    (= :shade v) (h-shade)
+    (= :shade v) (hl-shade)
     (= :alternate-striping v) (HighlighterFactory/createAlternateStriping)
-    (= :simple-striping v)    (h-simple-striping)
+    (= :simple-striping v)    (hl-simple-striping)
     :else (illegal-argument "Don't know how to make highlighter from %s" v)))
 
 (defprotocol HighlighterHost 
