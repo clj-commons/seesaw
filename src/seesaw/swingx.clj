@@ -211,15 +211,15 @@
 ;*******************************************************************************
 ; XLabel 
 
-(def xlabel-options
+(def label-x-options
   (merge
     label-options
     (option-map
-      ; TODO xlabel text-alignment, painter, etc
+      ; TODO label-x text-alignment, painter, etc
       (bean-option [:wrap-lines? :line-wrap?] org.jdesktop.swingx.JXLabel boolean)
       (bean-option :text-rotation org.jdesktop.swingx.JXLabel))))
 
-(defn xlabel
+(defn label-x
   "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
   supports wrapped text, rotation, etc. Additional options:
   
@@ -228,17 +228,17 @@
 
   Examples:
 
-    (xlabel :text        \"This is really a very very very very very very long label\"
+    (label-x :text        \"This is really a very very very very very very long label\"
             :wrap-lines? true
             :rotation    (Math/toRadians 90.0))
 
   See:
     (seesaw.core/label)
     (seesaw.core/label-options)
-    (seesaw.swingx/xlabel-options)
+    (seesaw.swingx/label-x-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXLabel args) args xlabel-options))
+  (apply-options (construct org.jdesktop.swingx.JXLabel args) args label-x-options))
 
 ;*******************************************************************************
 ; BusyLabel 
@@ -492,7 +492,7 @@
 
 (default-highlighter-host org.jdesktop.swingx.JXList)
 
-(def xlistbox-options
+(def listbox-x-options
   (merge
     listbox-options
     highlighter-host-options
@@ -516,7 +516,7 @@
         (fn [^org.jdesktop.swingx.JXList c]
           (.getComparator c))))))
 
-(defn xlistbox
+(defn listbox-x
   "Create a JXList which is basically an improved (seesaw.core/listbox).
   Additional capabilities include sorting, searching, and highlighting.
   Beyond listbox, has the following additional options:
@@ -538,7 +538,7 @@
       (.setAutoCreateRowSorter true)
       (.setRolloverEnabled true))
     args
-    xlistbox-options))
+    listbox-x-options))
 
 ;*******************************************************************************
 ; JXTitledPanel
@@ -569,7 +569,7 @@
     
     (titled-panel :title \"Error\" 
                   :title-color :red
-                  :content (xlabel :wrap-lines? true
+                  :content (label-x :wrap-lines? true
                                    :text \"An error occurred!\"))
 
   See:
@@ -586,13 +586,13 @@
 
 (default-highlighter-host org.jdesktop.swingx.JXTree)
 
-(def xtree-options
+(def tree-x-options
   (merge
     tree-options
     highlighter-host-options
     (option-map)))
 
-(defn xtree
+(defn tree-x
   "Create a JXTree which is basically an improved (seesaw.core/tree).
   Additional capabilities include searching, and highlighting.
   Beyond tree, has the following additional options:
@@ -611,14 +611,14 @@
     (doto (construct org.jdesktop.swingx.JXTree args)
       (.setRolloverEnabled true))
     args
-    xtree-options)) 
+    tree-x-options)) 
 
 ;*******************************************************************************
 ; JXTable
 
 (default-highlighter-host org.jdesktop.swingx.JXTable)
 
-(def xtable-options
+(def table-x-options
   (merge
     table-options
     highlighter-host-options
@@ -626,7 +626,7 @@
       (bean-option :column-control-visible? org.jdesktop.swingx.JXTable boolean)
       (bean-option :column-margin org.jdesktop.swingx.JXTable))))
 
-(defn xtable
+(defn table-x
   "Create a JXTable which is basically an improved (seesaw.core/table).
   Additional capabilities include searching, sorting and highlighting.
   Beyond table, has the following additional options:
@@ -649,47 +649,43 @@
       (.setRolloverEnabled true)
       (.setColumnControlVisible true))
     args
-    xtable-options)) 
+    table-x-options)) 
 
 
 ;*******************************************************************************
 ; JXPanel
 
-(def xpanel-options
+(def panel-x-options
   (option-map
     (bean-option :alpha org.jdesktop.swingx.JXPanel)))
 
-(defn- abstract-xpanel [layout layout-options {:as opts}]
+(defn- abstract-panel-x [layout layout-options {:as opts}]
   (abstract-panel 
     layout
-    (merge layout-options xpanel-options)
+    (merge layout-options panel-x-options)
     (assoc opts :seesaw.core/with org.jdesktop.swingx.JXPanel)))
 
-(defn xxyz-panel [& opts]
-  (abstract-xpanel nil default-options opts))
+(defn xyz-panel-x [& opts]
+  (abstract-panel-x nil default-options opts))
 
-(defn xborder-panel [& opts]
-  (abstract-xpanel (java.awt.BorderLayout.) border-panel-options opts))
+(defn border-panel-x [& opts]
+  (abstract-panel-x (java.awt.BorderLayout.) border-panel-options opts))
 
-(defn xflow-panel [& opts]
-  (abstract-xpanel (java.awt.FlowLayout.) flow-panel-options opts))
+(defn flow-panel-x [& opts]
+  (abstract-panel-x (java.awt.FlowLayout.) flow-panel-options opts))
 
-(defn xflow-panel [& opts]
-  (abstract-xpanel (java.awt.FlowLayout.) flow-panel-options opts))
+(defn horizontal-panel-x [& opts]
+  (abstract-panel-x (box-layout :horizontal) box-panel-options opts))
 
+(defn vertical-panel-x [& opts]
+  (abstract-panel-x (box-layout :vertical) box-panel-options opts))
 
-(defn xhorizontal-panel [& opts]
-  (abstract-xpanel (box-layout :horizontal) box-panel-options opts))
-
-(defn xvertical-panel [& opts]
-  (abstract-xpanel (box-layout :vertical) box-panel-options opts))
-
-(defn xgrid-panel 
+(defn grid-panel-x 
   [& {:keys [rows columns] :as opts}]
-  (abstract-xpanel (grid-layout rows columns) 
+  (abstract-panel-x (grid-layout rows columns) 
                   grid-panel-options
                   opts))
 
-(defn xcard-panel [& opts]
-  (abstract-xpanel (java.awt.CardLayout.) card-panel-options opts))
+(defn card-panel-x [& opts]
+  (abstract-panel-x (java.awt.CardLayout.) card-panel-options opts))
 

@@ -164,17 +164,17 @@
      (expect (= [hl#] (core/config w# :highlighters)))
      true))
 
-(describe xlabel
+(describe label-x
   (it "creates a JXLabel"
-    (instance? org.jdesktop.swingx.JXLabel (xlabel)))
+    (instance? org.jdesktop.swingx.JXLabel (label-x)))
   (it "can set text"
-    (= "HI" (core/text (xlabel :text "HI"))))
+    (= "HI" (core/text (label-x :text "HI"))))
   (it "does not wrap lines by default"
-    (not (core/config (xlabel :text "HI") :wrap-lines?)))
+    (not (core/config (label-x :text "HI") :wrap-lines?)))
   (it "can set wrap-lines? option"
-    (core/config (xlabel :wrap-lines? true) :wrap-lines?))
+    (core/config (label-x :wrap-lines? true) :wrap-lines?))
   (it "can set rotation option"
-    (= (Math/toRadians 60.0) (core/config (xlabel :text-rotation (Math/toRadians 60.0)) :text-rotation))))
+    (= (Math/toRadians 60.0) (core/config (label-x :text-rotation (Math/toRadians 60.0)) :text-rotation))))
 
 (describe busy-label
   (it "creates a JXBusyLabel"
@@ -254,31 +254,31 @@
           h (header :icon i)]
       (expect (= i (core/config h :icon))))))
 
-(describe xlistbox
+(describe listbox-x
   (it "creates a JXList"
-    (instance? org.jdesktop.swingx.JXList (xlistbox)))
+    (instance? org.jdesktop.swingx.JXList (listbox-x)))
   (it "creates a JXList with rollover enabled"
-    (.isRolloverEnabled (xlistbox)))
+    (.isRolloverEnabled (listbox-x)))
   (it "creates a JXList with a default model"
-    (let [lb (xlistbox :model [1 2 3])]
+    (let [lb (listbox-x :model [1 2 3])]
       (expect (= 3 (.getSize (core/config lb :model))))))
   (it "takes a comparator to auto-sort the view"
-    (let [lb (xlistbox :sort-with < :model [2 1 3 0])]
+    (let [lb (listbox-x :sort-with < :model [2 1 3 0])]
       (expect (= 3 (.convertIndexToModel lb 0)))))
   (it "does not sort by default"
-    (let [lb (xlistbox :model [2 1 3 0])]
+    (let [lb (listbox-x :model [2 1 3 0])]
       (expect (= 0 (.convertIndexToModel lb 0)))))
   (it "can set the sort order"
-    (let [lb (xlistbox :sort-order :ascending)]
+    (let [lb (listbox-x :sort-order :ascending)]
       (expect (= javax.swing.SortOrder/ASCENDING (.getSortOrder lb)))
       (core/config! lb :sort-order :descending)
       (expect (= javax.swing.SortOrder/DESCENDING (.getSortOrder lb)))))
   (it "can get the selection when sorted"
-    (let [lb (xlistbox :sort-with < :model [2 1 3 0])]
+    (let [lb (listbox-x :sort-with < :model [2 1 3 0])]
       (core/selection! lb 2)
       (expect (= 2 (core/selection lb)))))
   (it "is a highlighter host"
-    (verify-highlighter-host (xlistbox))))
+    (verify-highlighter-host (listbox-x))))
 
 (describe titled-panel
   (it "creates a JXTitledPanel"
@@ -298,60 +298,60 @@
       (expect (= left (.getLeftDecoration tp)))
       (expect (= right (.getRightDecoration tp))))))
 
-(describe xtree
+(describe tree-x
   (it "creates a JXTree"
-    (instance? org.jdesktop.swingx.JXTree (xtree)))
+    (instance? org.jdesktop.swingx.JXTree (tree-x)))
   (it "creates a JXTree with rollover enabled"
-    (.isRolloverEnabled (xtree)))
+    (.isRolloverEnabled (tree-x)))
   (it "is a highlighter host"
-    (verify-highlighter-host (xtree))))
+    (verify-highlighter-host (tree-x))))
 
-(describe xtable
+(describe table-x
   (it "creates a JTable"
-    (instance? org.jdesktop.swingx.JXTable (xtable)))
+    (instance? org.jdesktop.swingx.JXTable (table-x)))
   (it "creates a JXTable with rollover enabled"
-    (.isRolloverEnabled (xtable)))
+    (.isRolloverEnabled (table-x)))
   (it "creates a JXTable with column control visible"
-    (.isColumnControlVisible (xtable)))
+    (.isColumnControlVisible (table-x)))
   (it "creates a sortable JXTable"
-    (.isSortable (xtable)))
+    (.isSortable (table-x)))
   (it "can show the column control"
-    (not (core/config (xtable :column-control-visible? false) :column-control-visible?)))
+    (not (core/config (table-x :column-control-visible? false) :column-control-visible?)))
   (it "can set the column margin"
-    (= 99 (core/config (xtable :column-margin 99) :column-margin)))
+    (= 99 (core/config (table-x :column-margin 99) :column-margin)))
   (it "is a highlighter host"
-    (verify-highlighter-host (xtable))))
+    (verify-highlighter-host (table-x))))
 
-(describe xborder-panel
+(describe border-panel-x
   (it "creates a JXPanel with border-panel"
     (expect (instance? java.awt.BorderLayout 
-                       (.getLayout (xborder-panel :alpha 0.5))))))
+                       (.getLayout (border-panel-x :alpha 0.5))))))
 
-(describe xflow-panel
+(describe flow-panel-x
   (it "creates a JXPanel with flow-panel"
     (expect (instance? java.awt.FlowLayout 
-                       (.getLayout (xflow-panel :alpha 0.5))))))
+                       (.getLayout (flow-panel-x :alpha 0.5))))))
 
-(describe xhorizontal-panel
+(describe horizontal-panel-x
   (it "creates a JXPanel with horizontal-panel"
     (expect (instance? javax.swing.BoxLayout 
-                       (.getLayout (xhorizontal-panel :alpha 0.5))))))
+                       (.getLayout (horizontal-panel-x :alpha 0.5))))))
 
-(describe xvertical-panel
+(describe vertical-panel-x
   (it "creates a JXPanel with vertical-panel"
     (expect (instance? javax.swing.BoxLayout 
-                       (.getLayout (xvertical-panel :alpha 0.5))))))
+                       (.getLayout (vertical-panel-x :alpha 0.5))))))
 
-(describe xgrid-panel
+(describe grid-panel-x
   (it "creates a JXPanel with grid-panel"
     (expect (instance? java.awt.GridLayout
-                       (.getLayout (xgrid-panel :alpha 0.5))))))
+                       (.getLayout (grid-panel-x :alpha 0.5))))))
 
-(describe xxyz-panel
+(describe xyz-panel-x
   (it "creates a JXPanel with xyz-panel"
-    (expect (nil? (.getLayout (xxyz-panel :alpha 0.5))))))
+    (expect (nil? (.getLayout (xyz-panel-x :alpha 0.5))))))
 
-(describe xcard-panel
+(describe card-panel-x
   (it "creates a JXPanel with card-panel"
     (expect (instance? java.awt.CardLayout
-                       (.getLayout (xcard-panel :alpha 0.5))))))
+                       (.getLayout (card-panel-x :alpha 0.5))))))
