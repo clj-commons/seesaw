@@ -1,7 +1,13 @@
 (ns seesaw.test.examples.game-of-life
-  (:use [seesaw.core]
-        [seesaw.graphics]))
+  (:use [seesaw.debug]
+        [seesaw.core]
+        [seesaw.graphics]
+        [seesaw.behave]
+        [seesaw.border])
+  (:require [clojure.java.io :as jio]
+            [seesaw.dnd :as dnd]))
 
+(debug!)
 ; Adapted from http://tech.puredanger.com/2011/11/17/clojure-and-processing/
 ; lein run -m seesaw.test.examples.game-of-life
 
@@ -29,28 +35,62 @@
   (iterate step initial-world))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell file reading 
+
+(defn load-cell-file 
+  "Parse a cell file from  http://www.bitstorm.org/gameoflife/lexicon/cells/
+
+    !Name: T-nosed_p4
+    !
+    .....O.....
+    .....O.....
+    ....OOO....
+    ...........
+    ...........
+    ...........
+    ...OOOOO...
+    ..O.OOO.O..
+    ..O.O.O.O..
+    .OO.O.O.OO.
+    O..OO.OO..O
+    OO.......OO
+  "
+  [readerable]
+  (with-open [r (jio/reader readerable)]
+    (let [lines (line-seq r) 
+          name (first lines)
+          grid (drop 2 lines)]
+      (->> grid
+        (map-indexed (fn [y s] 
+                       (map-indexed (fn [x c] 
+                                      (if (= \O c) [x y])) 
+                                    s)))
+        (apply concat)
+        (filter identity)
+        (into #{})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UI
 
-(def types 
-  { :glider  #{[0 1] [1 2] [2 0] [2 1] [2 2]}
-    :blinker #{[3 3] [3 4] [3 5]}
-    :chicken-wire #{[5 5] [6 5]
-                                [7 6] [8 6]} 
-    :ten-cell-row (into #{} (for [i (range 10)] [16 (+ i 11)])) })
+(def glider #{[0 1] [1 2] [2 0] [2 1] [2 2]})
+(def worlds (atom (life glider)))
 
-(def worlds (atom (life (:glider types))))
+(defn reset [new-cells]
+  (reset! worlds (life new-cells)))
 
-(defn reset [type]
-  (reset! worlds (life (types type))))
+(defn draw-grid [c g [minx miny maxx maxy :as bounds] cells]
+  (let [cols (- maxx minx)
+        rows (- maxy miny)
+        cellw (/ (width c) cols)
+        cellh (/ (height c) rows)]
 
-(defn draw-grid [c g rows cols cells]
-  (let [cellw (/ (width c) cols)
-        cellh (/ (height c) cols)]
-    (doseq [x (range rows)
-            y (range cols)]
+    (doseq [x (range minx maxx)
+            y (range miny maxy)]
       (draw g
-            (rect (* x cellw) (* y cellh) cellw cellh)
-            (style :background (if (contains? cells [x y]) "#F03232"))))))
+            (rect (* (- x minx) cellw) (* (- y miny) cellh) cellw cellh)
+            (style :background (cond
+                                 (contains? cells [x y]) "#F03232"
+                                 (not= (even? x) (even? y)) "#323232"))))))
 
 (defn make-ui [on-close]
   (frame 
@@ -58,12 +98,27 @@
     :on-close on-close
     :size [300 :by 300]
     :content (border-panel
-               :north (toolbar :items ["Type: " (combobox :id :type :model (keys types))])
-               :center (canvas 
-                        :id :canvas 
-                        :background :black
-                        :paint #(draw-grid %1 %2 32 32 (first @worlds)))
-               :south (slider :id :period :min 50 :max 1000 :value 250 :inverted? true))))
+               :border 5 :hgap 5 :vgap 5
+               :north  "Drag and Drop .cell file URLs on this window"
+               :center (canvas :id :canvas 
+                               :background :black
+                               :border (line-border :thickness 2 :color :black))
+               :east   (slider :id :size 
+                               :min 8 
+                               :max 256 
+                               :value 32 
+                               :orientation :vertical
+                               :tip "Adjust grid size")
+               :south  (toolbar :floatable? false 
+                                :items [(label :id :link
+                                               :tip "Open cell file library in browser"
+                                               :text "Cell file library"
+                                               :foreground :blue
+                                               :cursor :hand)
+                                        :separator
+                                        "Period (ms) " (spinner 
+                                                          :id :period 
+                                                          :model (spinner-model 250 :from 50 :to 1000 :by 25))]))))
 
 (defn add-behaviors [root]
   (let [c      (select root [:#canvas])
@@ -71,12 +126,39 @@
                         (swap! worlds #(drop 1 %)) 
                         (repaint! c))
                       :delay 250
-                      :start? true)] 
+                      :start? true)
+        bounds (atom [0 0 32 32])
+        drop-fn (fn [{:keys [data]}] (reset (load-cell-file (first data))))] 
+    ; Clean up timer on close (useful in repl)
     (listen root   :window-closing (fn [_] (.stop t)))
-    (listen (select root [:#type]) :selection (fn [e] 
-                                                (reset (selection e))
-                                                (repaint! c)))
-    (listen (select root [:#period]) :change (fn [e] (.setDelay t (selection e)))))
+
+    ; Handle dropped uris and files
+    (config! root :transfer-handler [:import [dnd/uri-list-flavor  drop-fn
+                                              dnd/file-list-flavor drop-fn]])
+
+    ; Resize the grid when the size slider changes
+    (listen (select root [:#size]) :change 
+      (fn [e] 
+        (let [v (selection e)] 
+          (swap! bounds #(vector (first %) (second %) v v)))))
+
+    ; When mouse is dragged, pan the grid (kinda crappy due to scaling)
+    (when-mouse-dragged c
+      :drag (fn [e [dx dy]]
+              (swap! bounds (fn [[x0 y0 x1 y1]] 
+                              [(- x0 dx) (- y0 dy) (- x1 dx) (- y1 dy)]))))
+    ; Draw the grid using current bounds
+    (config! c :paint #(draw-grid %1 %2 @bounds (first @worlds)))
+
+    ; Make a fake link
+    (listen (select root [:#link])
+      :mouse-clicked (fn [_] 
+                       (.. (java.awt.Desktop/getDesktop) (browse (java.net.URI. "http://www.bitstorm.org/gameoflife/lexicon/cells/")))))
+
+    ; When the period changes, adjust the timer
+    (listen (select root [:#period]) :change 
+      (fn [e] (.setDelay t (selection e)))))
+
   root)
 
 (defn app [on-close]
