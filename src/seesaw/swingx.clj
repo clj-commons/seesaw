@@ -554,9 +554,10 @@
   Additional capabilities include sorting, searching, and highlighting.
   Beyond listbox, has the following additional options:
   
-    :sort-with A comparator (like <, >, etc) used to sort the items in the
-               model.
-    :sort-order :ascending or descending
+    :sort-with    A comparator (like <, >, etc) used to sort the items in the
+                  model.
+    :sort-order   :ascending or descending
+    :highlighters A list of highlighters
  
   By default, ctrl/cmd-F is bound to the search function. 
 
@@ -632,6 +633,7 @@
   Additional capabilities include searching, and highlighting.
   Beyond tree, has the following additional options:
  
+    :highlighters A list of highlighters
 
   By default, ctrl/cmd-F is bound to the search function. 
 
@@ -669,6 +671,7 @@
     :column-control-visible? Show column visibility control in upper right corner.
                              Defaults to true.
     :column-margin           Set margin between cells in pixels
+    :highlighters            A list of highlighters
 
   By default, ctrl/cmd-F is bound to the search function. 
 
