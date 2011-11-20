@@ -129,26 +129,22 @@
                       :start? true)
         bounds (atom [0 0 32 32])
         drop-fn (fn [{:keys [data]}] (reset (load-cell-file (first data))))] 
-    ; Clean up timer on close (useful in repl)
-    (listen root   :window-closing (fn [_] (.stop t)))
 
     ; Handle dropped uris and files
     (config! root :transfer-handler [:import [dnd/uri-list-flavor  drop-fn
                                               dnd/file-list-flavor drop-fn]])
+    
+    ; Draw the grid using current bounds
+    (config! c :paint #(draw-grid %1 %2 @bounds (first @worlds)))
+
+    ; Clean up timer on close (useful in repl)
+    (listen root   :window-closing (fn [_] (.stop t)))
 
     ; Resize the grid when the size slider changes
-    (listen (select root [:#size]) :change 
+    (listen (select root [:#size]) :selection 
       (fn [e] 
         (let [v (selection e)] 
           (swap! bounds #(vector (first %) (second %) v v)))))
-
-    ; When mouse is dragged, pan the grid (kinda crappy due to scaling)
-    (when-mouse-dragged c
-      :drag (fn [e [dx dy]]
-              (swap! bounds (fn [[x0 y0 x1 y1]] 
-                              [(- x0 dx) (- y0 dy) (- x1 dx) (- y1 dy)]))))
-    ; Draw the grid using current bounds
-    (config! c :paint #(draw-grid %1 %2 @bounds (first @worlds)))
 
     ; Make a fake link
     (listen (select root [:#link])
@@ -156,8 +152,14 @@
                        (.. (java.awt.Desktop/getDesktop) (browse (java.net.URI. "http://www.bitstorm.org/gameoflife/lexicon/cells/")))))
 
     ; When the period changes, adjust the timer
-    (listen (select root [:#period]) :change 
-      (fn [e] (.setDelay t (selection e)))))
+    (listen (select root [:#period]) :selection 
+      (fn [e] (.setDelay t (selection e)))) 
+
+    ; When mouse is dragged, pan the grid (kinda crappy due to scaling)
+    (when-mouse-dragged c
+      :drag (fn [e [dx dy]]
+              (swap! bounds (fn [[x0 y0 x1 y1]] 
+                              [(- x0 dx) (- y0 dy) (- x1 dx) (- y1 dy)])))))
 
   root)
 
