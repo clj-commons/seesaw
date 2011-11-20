@@ -230,7 +230,7 @@
   `~(concat form [::with factory]))
 
 (declare construct-impl)
-(defn- construct 
+(defn construct 
   "Use the ::with option to create a new widget, ensuring the
    result is consistent with the given expected class. If there's no 
    ::with option, just fallback to a default instance of the expected
@@ -580,11 +580,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} SetIcon (set-icon [this v]))
+(defprotocol ConfigIcon 
+  (set-icon [this v])
+  (get-icon [this]))
 
-(extend-protocol SetIcon
-  javax.swing.JLabel (set-icon [this v] (.setIcon this (make-icon v)))
-  javax.swing.AbstractButton (set-icon [this v] (.setIcon this (make-icon v))))
+(extend-protocol ConfigIcon
+  javax.swing.JLabel 
+    (set-icon [this v] (.setIcon this (make-icon v)))
+    (get-icon [this] (.getIcon this))
+
+  javax.swing.AbstractButton 
+    (set-icon [this v] (.setIcon this (make-icon v)))
+    (get-icon [this] (.getIcon this)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
@@ -791,7 +798,7 @@
     (default-option :popup #(popup-option-handler %1 %2))
     (default-option :paint #(paint-option-handler %1 %2))
 
-    (default-option :icon set-icon)
+    (default-option :icon set-icon get-icon)
     (default-option :action set-action)
     (default-option :text set-text get-text)
     (default-option :model set-model get-model)
@@ -1018,10 +1025,12 @@
 
 (def box-panel-options default-options)
 
+(defn box-layout [dir] #(BoxLayout. % (dir box-layout-dir-table)))
+
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
-  (abstract-panel #(BoxLayout. % (dir box-layout-dir-table)) box-panel-options opts))
+  (abstract-panel (box-layout dir) box-panel-options opts))
 
 (def horizontal-panel-options box-panel-options)
 
@@ -1054,8 +1063,13 @@
   (merge
     default-options
     (option-map 
+      (ignore-option :rows)
+      (ignore-option :columns)
       (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2))
       (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)))))
+
+(defn grid-layout [rows columns]
+  (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
 
 (defn grid-panel
   "Create a panel where widgets are arranged horizontally. Options:
@@ -1073,11 +1087,9 @@
   { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns] 
       :as opts}]
-  (let [columns (or columns (if rows 0 1))
-        layout  (GridLayout. (or rows 0) columns 0 0)]
-    (abstract-panel layout 
-                    grid-panel-options
-                    (dissoc opts :rows :columns))))
+  (abstract-panel (grid-layout rows columns) 
+                  grid-panel-options
+                  opts))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout

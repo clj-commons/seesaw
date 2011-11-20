@@ -9,9 +9,11 @@
             :distribution :repo
             :comments "same as Clojure"}
   :warn-on-reflection true
+
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [com.miglayout/miglayout "3.7.4"]
                  [com.jgoodies/forms "1.2.1"]
+                 [org.swinglabs/swingx "1.6.1"]
                  [j18n "1.0.0"]]
   :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
                      [lein-clojars "0.6.0"]

@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.event
-  (:use seesaw.event)
+  (:use seesaw.event
+        [seesaw.util :only [root-cause]])
   (:require [seesaw.core :as sc])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
@@ -110,25 +111,36 @@
       (listen :something-something (fn [_]))
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException if its first arguments isn't an event source"
     (try
       (listen :something-something (fn [_]) :another)
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException if a handler isn't a function"
     (try
       (listen (javax.swing.JPanel.) :mouse "foo")
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException for unknown event types"
     (try
       (listen (JPanel.) :something-something (fn [_]))
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]
@@ -291,4 +303,17 @@
       (listen tree :tree-will-expand #(reset! will-expand %)
                    :tree-will-collapse #(reset! will-collapse %))
       (expect (not (or @will-expand @will-collapse))))))
+
+(describe listen-to-property
+  (it "registers a property change listener"
+    (let [b (javax.swing.JButton.)
+          called (atom nil)
+          remove-fn (listen-to-property b "text"
+                                        (fn [e] (reset! called e)))]
+      (.setText b "HI")
+      (expect @called)
+      (reset! called nil)
+      (remove-fn)
+      (.setText b "BYE")
+      (expect (nil? @called)))))
 

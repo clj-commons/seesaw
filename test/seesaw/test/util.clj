@@ -76,6 +76,15 @@
   (it "returns nil if (str input) is not a valid URL"
     (nil? (to-url "not a URL"))))
 
+(describe to-uri
+  (it "returns its input if it is already a URI object"
+    (let [u (java.net.URI. "http://google.com")]
+      (expect (identical? u (to-uri u)))))
+  (it "returns a URI if (str input) is a valid URI"
+    (= "http://darevay.com" (-> (to-uri "http://darevay.com") .toString )))
+  (it "returns nil if (str input) is not a valid URI"
+    (nil? (to-url "not a URI"))))
+
 (describe to-dimension
   (it "should throw an exception if it doesn't know what to do"
     (try
