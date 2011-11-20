@@ -304,3 +304,16 @@
                    :tree-will-collapse #(reset! will-collapse %))
       (expect (not (or @will-expand @will-collapse))))))
 
+(describe listen-to-property
+  (it "registers a property change listener"
+    (let [b (javax.swing.JButton.)
+          called (atom nil)
+          remove-fn (listen-to-property b "text"
+                                        (fn [e] (reset! called e)))]
+      (.setText b "HI")
+      (expect @called)
+      (reset! called nil)
+      (remove-fn)
+      (.setText b "BYE")
+      (expect (nil? @called)))))
+

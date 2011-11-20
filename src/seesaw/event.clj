@@ -372,14 +372,32 @@
     []
     targets))
 
-(defprotocol EventHook
-  (add-listener [this event-name event-handler]))
+(defmulti listen-for-named-event
+  "*experimental and subject to change*
 
-(extend-protocol EventHook
-  Object
-  (add-listener 
-    [this event-name event-handler] 
-    nil))
+  A multi-method that allows the set of events in the (listen) to be extended or
+  for an existing event to be extended to a new type. Basically performs
+  double-dispatch on the type of the target and the name of the event.
+
+  This multi-method is an extension point, but is not meant to be called directly
+  by client code.
+
+  Register the given event handler on this for the given event
+  name which is a keyword like :selection, etc. If the handler
+  is registered, returns a zero-arg function that undoes the
+  listener. Otherwise, must return nil indicating that no listener
+  was registered, i.e. this doesn't support the given event.
+
+  TODO try using this to implement all of the event system rather than the mess
+  above.
+
+  See:
+    (seesaw.swingx/color-selection-button) for an example.
+  "
+  (fn [this event-name event-fn] [(type this) event-name]))
+
+; Default impl just returns nil indicating no special handling for the event.
+(defmethod listen-for-named-event :default [this event-name event-fn] nil)
 
 (defn- single-target-listen-impl
   "Takes:
@@ -413,7 +431,7 @@
   ([targets raw-event-name event-fn]
     (apply concat 
       (for [target targets] 
-        (if-let [hook-result (add-listener target raw-event-name event-fn)]
+        (if-let [hook-result (listen-for-named-event target raw-event-name event-fn)]
           [hook-result]
           (single-target-listen-impl target raw-event-name event-fn)))))
 

@@ -19,7 +19,7 @@
   (:use [seesaw.util :only [to-uri resource constant-map illegal-argument]]
         [seesaw.icon :only [icon]]
         [seesaw.selection :only [Selection ViewModelIndexConversion]]
-        [seesaw.event :only [EventHook listen-to-property]]
+        [seesaw.event :only [listen-for-named-event listen-to-property]]
         [seesaw.core :only [construct to-widget
                             abstract-panel
                             border-panel-options
@@ -457,17 +457,17 @@
     args 
     color-selection-button-options))
 
+; Extend selection and selection event stuff for color button.
+
 (extend-protocol Selection
   org.jdesktop.swingx.JXColorSelectionButton
     (get-selection [this] [(config this :selection)])
     (set-selection [this [v]] (config! this :selection v)))
 
-(extend-protocol EventHook
-  org.jdesktop.swingx.JXColorSelectionButton
-    (add-listener [this event-name event-fn]
-      (condp = event-name
-        :selection (listen-to-property this "background" event-fn)
-        nil)))
+(defmethod listen-for-named-event 
+  [org.jdesktop.swingx.JXColorSelectionButton :selection]
+  [this event-name event-fn]
+  (listen-to-property this "background" event-fn))
 
 ;*******************************************************************************
 ; Header
