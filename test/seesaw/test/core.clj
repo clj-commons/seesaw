@@ -843,7 +843,15 @@
     (let [s (spinner :model 3.3)
           m (config s :model)]
       (expect (instance? javax.swing.SpinnerNumberModel m))
-      (expect (= 3.3 (.getValue m))))))
+      (expect (= 3.3 (.getValue m)))))
+  (it "supports the :selection event"
+    (let [s (spinner :model [1 2 3])
+          called (atom nil)] 
+      (listen s :selection (fn [e] (reset! called e)))
+      (selection! s 2)
+      (expect (= 2 (selection s)))
+      (expect @called)))
+  )
 
 (describe table
   (it "should create a JTable"
