@@ -292,6 +292,32 @@
           (doseq [h (:handlers @state)]
             (h new-value)))))))
 
+(defn b-do*
+  "Creates a bindable that takes an incoming value v, executes
+  (f v args) and does nothing further. That is, it's the end of the binding
+  chain.
+  
+  See:
+    (seesaw.bind/bind)
+    (seesaw.bind/b-do)"
+  [f & args]
+  (reify Bindable
+    (subscribe [this handler]
+      (throw (UnsupportedOperationException. "Can't subscribe to b-do*")))
+    (notify [this v]
+      (apply f v args))))
+
+(defmacro b-do
+  "Macro helper for (seesaw.bind/b-do*). Takes a single-argument fn-style
+  binding vector and a body. When a new value is received it is passed
+  to the binding and the body is executes. The result is discarded.
+  
+  See:
+    (seesaw.bind/b-do*)
+  "
+  [bindings & body]
+  `(b-do* (fn ~bindings ~@body)))
+
 (defn some
   "Executes a preducate on incoming value. If the predicate returns a truthy
   value, that value is passed on to the next bindable in the chain. Otherwise,
