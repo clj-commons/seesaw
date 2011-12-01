@@ -10,18 +10,40 @@
 
 (ns seesaw.tree)
 
+(defprotocol TreeModelEventSource
+  (fire-event
+    [this event-type source path-to-node]
+    "Dispatches a TreeModelEvent to all model listeners. event-type is one of
+     :tree-nodes-changed, :tree-nodes-inserted, :tree-nodes-removed or
+     :tree-structure-changed."))
+
 (defn simple-tree-model
   "Create a simple, read-only TreeModel for use with seesaw.core/tree.
    The arguments are the same as clojure.core/tree-seq."
   [branch? children root]
-  (reify javax.swing.tree.TreeModel
-    (getRoot [this] root)
-    (getChildCount [this parent] (count (children parent)))
-    (getChild [this parent index] (nth (children parent) index))
-    (getIndexOfChild [this parent child] 
-      (first (keep-indexed #(when (= %2 child) %1) (children parent))))
-    (isLeaf [this node] (not (branch? node)))
-    (addTreeModelListener [this listener])
-    (removeTreeModelListener [this listener])
-    (valueForPathChanged [this path newValue])))
+  (let [listeners (atom #{})]
+    (reify
+      javax.swing.tree.TreeModel
+      (getRoot [this] root)
+      (getChildCount [this parent] (count (children parent)))
+      (getChild [this parent index] (nth (children parent) index))
+      (getIndexOfChild [this parent child] 
+        (first (keep-indexed #(when (= %2 child) %1) (children parent))))
+      (isLeaf [this node] (not (branch? node)))
+      (addTreeModelListener [this listener]
+        (swap! listeners conj listener))
+      (removeTreeModelListener [this listener]
+        (swap! listeners disj listener))
+      (valueForPathChanged [this path newValue])
+
+      TreeModelEventSource
+      (fire-event [this event-type source path-to-node]
+        (let [handler (condp = event-type
+                        :tree-nodes-changed     #(.treeNodesChanged %1 %2)
+                        :tree-nodes-inserted    #(.treeNodesInserted %1 %2)
+                        :tree-nodes-removed     #(.treeNodesRemoved %1 %2)
+                        :tree-structure-changed #(.treeStructureChanged %1 %2))
+              event (javax.swing.event.TreeModelEvent. source (object-array path-to-node))]
+          (doseq [listener @listeners]
+            (handler listener event)))))))
 

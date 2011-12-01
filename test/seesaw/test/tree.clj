@@ -10,6 +10,7 @@
 
 (ns seesaw.test.tree
   (:use seesaw.tree)
+  (:use [seesaw.core :only [listen]])
   (:use [lazytest.describe :only (describe it testing given)]
         [lazytest.expect :only (expect)]))
 
@@ -32,4 +33,27 @@
     (it "should retrieve the index of a child"
       (= [0 1 2] (map #(.getIndexOfChild m "dir" %) [1 2 3])))))
 
-
+(describe fire-event
+  (it "fires events of the correct type"
+    (let [m (simple-tree-model (constantly true) (constantly nil) :x)
+          nodes-changed (atom nil)
+          nodes-inserted (atom nil)
+          nodes-removed (atom nil)
+          structure-changed (atom nil)
+          ; dummy args
+          event-source :foo
+          path-to-node [:bar]]
+      (listen m
+        :tree-nodes-changed #(reset! nodes-changed %)
+        :tree-nodes-inserted #(reset! nodes-inserted %)
+        :tree-nodes-removed #(reset! nodes-removed %)
+        :tree-structure-changed #(reset! structure-changed %))
+      (expect (not (or @nodes-changed @nodes-inserted @nodes-removed @structure-changed)))
+      (fire-event m :tree-nodes-changed event-source path-to-node)
+      (expect @nodes-changed)
+      (fire-event m :tree-nodes-inserted event-source path-to-node)
+      (expect @nodes-inserted)
+      (fire-event m :tree-nodes-removed event-source path-to-node)
+      (expect @nodes-removed)
+      (fire-event m :tree-structure-changed event-source path-to-node)
+      (expect @structure-changed))))
