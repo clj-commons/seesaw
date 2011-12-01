@@ -24,5 +24,5 @@
     :page-title "Seesaw API Documentation"
     :copyright "Copyright 2011, Dave Ray"
     :load-except-list [#"seesaw/examples"]}
-  :java-source-path "src")
+  :java-source-path "jvm")
 
