@@ -17,7 +17,7 @@
   (:import [javax.swing.event ChangeListener 
             CaretListener DocumentListener 
             ListSelectionListener 
-            TreeSelectionListener TreeExpansionListener TreeWillExpandListener]
+            TreeSelectionListener TreeExpansionListener TreeWillExpandListener TreeModelListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener 
                           MouseListener MouseMotionListener MouseWheelListener
@@ -191,6 +191,12 @@
     :class   TreeWillExpandListener
     :events  #{:tree-will-expand :tree-will-collapse}
     :install #(.addTreeWillExpandListener ^javax.swing.JTree %1 ^TreeWillExpandListener %2)
+  }
+  :tree-model {
+    :name    :tree-model
+    :class   TreeModelListener
+    :events  #{:tree-nodes-changed :tree-nodes-inserted :tree-nodes-removed :tree-structure-changed}
+    :install #(.addTreeModelListener ^javax.swing.tree.TreeModel %1 ^TreeModelListener %2)
   }
 
   :drag-source {

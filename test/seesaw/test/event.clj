@@ -302,7 +302,28 @@
           will-collapse (atom false)]
       (listen tree :tree-will-expand #(reset! will-expand %)
                    :tree-will-collapse #(reset! will-collapse %))
-      (expect (not (or @will-expand @will-collapse))))))
+      (expect (not (or @will-expand @will-collapse)))))
+  (it "can register a tree model listener"
+      (let [root (javax.swing.tree.DefaultMutableTreeNode.)
+            child (javax.swing.tree.DefaultMutableTreeNode.)
+            model (javax.swing.tree.DefaultTreeModel. root)
+            nodes-changed (atom nil)
+            nodes-inserted (atom nil)
+            nodes-removed (atom nil)
+            structure-changed (atom nil)]
+      (listen model :tree-nodes-changed #(reset! nodes-changed %)
+                    :tree-nodes-inserted #(reset! nodes-inserted %)
+                    :tree-nodes-removed #(reset! nodes-removed %)
+                    :tree-structure-changed #(reset! structure-changed %))
+      (expect (not (or @nodes-changed @nodes-inserted @nodes-removed @structure-changed)))
+      (.nodeChanged model root)
+      (expect @nodes-changed)
+      (.insertNodeInto model child root 0)
+      (expect @nodes-inserted)
+      (.removeNodeFromParent model child)
+      (expect @nodes-removed)
+      (.nodeStructureChanged model root)
+      (expect @structure-changed))))
 
 (describe listen-to-property
   (it "registers a property change listener"
