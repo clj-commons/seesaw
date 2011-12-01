@@ -14,6 +14,15 @@
   (:use [lazytest.describe :only (describe it testing given)]
         [lazytest.expect :only (expect)]))
 
+(defn- tree-listener
+  "Dummy TreeModelListener that calls handler with the received event."
+  [handler]
+  (reify javax.swing.event.TreeModelListener
+    (treeNodesChanged [this e] (handler e))
+    (treeNodesInserted [this e] (handler e))
+    (treeNodesRemoved [this e] (handler e))
+    (treeStructureChanged [this e] (handler e))))
+
 (describe simple-tree-model
   (given [branch? (fn [node] (= node "dir"))
         children (fn [node] (when (= node "dir") [1 2 3]))
@@ -31,7 +40,23 @@
     (it "should return a child by index"
       (= [1 2 3] (map #(.getChild m "dir" %) (range 3))))
     (it "should retrieve the index of a child"
-      (= [0 1 2] (map #(.getIndexOfChild m "dir" %) [1 2 3])))))
+      (= [0 1 2] (map #(.getIndexOfChild m "dir" %) [1 2 3])))
+    (it "should allow a listener to be added"
+      (let [called (atom nil)]
+        (.addTreeModelListener m (tree-listener #(reset! called %)))
+        (fire-event m :tree-nodes-changed :foo [:bar])
+        (expect @called)))
+    (it "should allow a listener to be removed"
+      (let [called-a (atom nil)
+            called-b (atom nil)
+            listener-a (tree-listener #(reset! called-a %))
+            listener-b (tree-listener #(reset! called-b %))]
+        (.addTreeModelListener m listener-a)
+        (.addTreeModelListener m listener-b)
+        (.removeTreeModelListener m listener-a)
+        (fire-event m :tree-nodes-changed :foo [:bar])
+        (expect (not @called-a))
+        (expect @called-b)))))
 
 (describe fire-event
   (it "fires events of the correct type"
