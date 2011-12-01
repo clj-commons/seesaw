@@ -5,7 +5,8 @@
         [seesaw.behave]
         [seesaw.border])
   (:require [clojure.java.io :as jio]
-            [seesaw.dnd :as dnd]))
+            [seesaw.dnd :as dnd]
+            [seesaw.bind :as b]))
 
 (debug!)
 ; Adapted from http://tech.puredanger.com/2011/11/17/clojure-and-processing/
@@ -141,10 +142,9 @@
     (listen root   :window-closing (fn [_] (.stop t)))
 
     ; Resize the grid when the size slider changes
-    (listen (select root [:#size]) :selection 
-      (fn [e] 
-        (let [v (selection e)] 
-          (swap! bounds #(vector (first %) (second %) v v)))))
+    (b/bind
+      (b/selection (select root [:#size]))
+      (b/b-swap! bounds #(vector (first %1) (second %1) %2 %2)))
 
     ; Make a fake link
     (listen (select root [:#link])
