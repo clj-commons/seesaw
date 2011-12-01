@@ -21,7 +21,7 @@
   "Create a simple, read-only TreeModel for use with seesaw.core/tree.
    The arguments are the same as clojure.core/tree-seq."
   [branch? children root]
-  (let [listeners (atom #{})]
+  (let [listeners (atom [])]
     (reify
       javax.swing.tree.TreeModel
       (getRoot [this] root)
