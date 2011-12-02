@@ -10,16 +10,17 @@ Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens 
 
 ## Features
 
-* Construct widgets with simple functions, e.g. `(listbox :model (range 100))`
+* [Construct widgets](https://github.com/daveray/seesaw/wiki/Widgets) with simple functions, e.g. `(listbox :model (range 100))`
 * Support for all of Swing's built-in widgets as well as SwingX.
-* Support for all of Swing's layout managers as well as MigLayout, adn JGoodies Forms
+* Support for all of Swing's layout managers as well as MigLayout, and JGoodies Forms
 * Convenient shortcuts for most properties. For example, `:background :blue` or `:background "#00f"`, or `:size [640 :by 480]`.
-* CSS-style selectors with same syntax as [Enlive](https://github.com/cgrand/enlive).
-* Unified, extensible event API
-* Unified, extensible selection API
-* Widget binding, i.e. map changes from one widget into one or more others in a more functional style
-* Graphics
-* i18n
+* [CSS-style selectors](https://github.com/daveray/seesaw/wiki/Selectors) with same syntax as [Enlive](https://github.com/cgrand/enlive).
+* Unified, extensible [event API](https://github.com/daveray/seesaw/wiki/Handling-events)
+* Unified, extensible [selection API](https://github.com/daveray/seesaw/wiki/Handling-selection)
+* [Widget binding](http://blog.darevay.com/2011/07/seesaw-widget-binding/), i.e. map changes from one widget into one or more others in a more functional style. Also integrates with Clojure's reference types.
+* [Graphics](https://github.com/daveray/seesaw/wiki/Graphics)
+* [i18n](https://github.com/daveray/seesaw/wiki/Resource-bundles-and-i18n)
+* An extensive [test suite](https://github.com/daveray/seesaw/tree/master/test/seesaw/test)
 
 _There are numerous Seesaw examples in [test/seesaw/test/examples](https://github.com/daveray/seesaw/tree/master/test/seesaw/test/examples)._
 
