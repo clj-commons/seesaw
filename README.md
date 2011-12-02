@@ -4,13 +4,22 @@ There's now a [Google Group] (https://groups.google.com/group/seesaw-clj) for di
 
 # Seesaw: Clojure + UI
 
-_"killing CamelCase, proxy and reify, one class at a time"_
-
 _*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs] (http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
-
+t
 Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it. It's an experiment to see what I can do to make user interface development funner in Clojure. It's kinda inspired by [Shoes](http://shoesrb.com/), [Stuart Sierra's Swing posts](http://stuartsierra.com/tag/swing), etc. [clojure.contrib.swing-utils](http://richhickey.github.com/clojure-contrib/swing-utils-api.html) is useful, but minimal and still means a lot of "Java-in-Clojure" coding.
 
-_There are numerous Seesaw examples in `test/seesaw/test/examples`._
+## Features
+
+* Simplified construction of UIs with Swing's layout managers as well as MigLayout, or JGoodies Forms.
+* Convenient shortcuts for most properties. For example, `:background :blue` or `:background "#00f"`
+* CSS-style selectors
+* Simplified event registration
+* Widget binding, i.e. map changes from one widget into one or more others in a more functional style
+* Unified selection mechanism
+* Graphics
+* i18n
+
+_There are numerous Seesaw examples in [test/seesaw/test/examples](https://github.com/daveray/seesaw/tree/master/test/seesaw/test/examples)._
 
 ## TL;DR
 
