@@ -10,12 +10,14 @@ Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens 
 
 ## Features
 
-* Simplified construction of UIs with Swing's layout managers as well as MigLayout, or JGoodies Forms.
-* Convenient shortcuts for most properties. For example, `:background :blue` or `:background "#00f"`
-* CSS-style selectors
-* Simplified event registration
+* Construct widgets with simple functions, e.g. `(listbox :model (range 100))`
+* Support for all of Swing's built-in widgets as well as SwingX.
+* Support for all of Swing's layout managers as well as MigLayout, adn JGoodies Forms
+* Convenient shortcuts for most properties. For example, `:background :blue` or `:background "#00f"`, or `:size [640 :by 480]`.
+* CSS-style selectors with same syntax as [Enlive](https://github.com/cgrand/enlive).
+* Unified, extensible event API
+* Unified, extensible selection API
 * Widget binding, i.e. map changes from one widget into one or more others in a more functional style
-* Unified selection mechanism
 * Graphics
 * i18n
 
