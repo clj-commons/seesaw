@@ -2624,7 +2624,15 @@
     (default-option :id seesaw.selector/id-of!)
     (default-option :class seesaw.selector/class-of!)
     (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
-    (bean-option [:content :content-pane] javax.swing.JFrame make-widget)
+    (default-option 
+      :content
+      (fn [^javax.swing.JFrame f v] 
+        (doto f
+          (.setContentPane (make-widget v))
+          .invalidate
+          .validate
+          .repaint))
+      (fn [^javax.swing.JFrame f] (.getContentPane f)))
     (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
 
     (bean-option :title java.awt.Frame resource)
