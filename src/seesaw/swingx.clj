@@ -20,7 +20,7 @@
         [seesaw.icon :only [icon]]
         [seesaw.selection :only [Selection ViewModelIndexConversion]]
         [seesaw.event :only [listen-for-named-event listen-to-property]]
-        [seesaw.core :only [construct to-widget
+        [seesaw.core :only [construct to-widget make-widget
                             abstract-panel
                             border-panel-options
                             flow-panel-options
@@ -585,9 +585,9 @@
       (bean-option :painter org.jdesktop.swingx.JXTitledPanel)
       (bean-option :title org.jdesktop.swingx.JXTitledPanel resource)
       (bean-option [:title-color :title-foreground] org.jdesktop.swingx.JXTitledPanel seesaw.color/to-color)
-      (bean-option [:content :content-container] org.jdesktop.swingx.JXTitledPanel to-widget)
-      (bean-option :right-decoration org.jdesktop.swingx.JXTitledPanel to-widget)   
-      (bean-option :left-decoration org.jdesktop.swingx.JXTitledPanel to-widget))))
+      (bean-option [:content :content-container] org.jdesktop.swingx.JXTitledPanel make-widget)
+      (bean-option :right-decoration org.jdesktop.swingx.JXTitledPanel make-widget)   
+      (bean-option :left-decoration org.jdesktop.swingx.JXTitledPanel make-widget))))
 
 (defn titled-panel 
   "Creates a panel with a title and content. Has the following properties:

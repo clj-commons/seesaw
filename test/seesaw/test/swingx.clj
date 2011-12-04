@@ -312,6 +312,9 @@
     (let [c (core/label "HI")
           tp (titled-panel :content c)]
       (expect (= c (.getContentContainer tp)))))
+  (it "passes :content through make-widget"
+    (let [tp (titled-panel :content "HI")]
+      (expect (instance? javax.swing.JLabel (.getContentContainer tp)))))
   (it "sets the left and right decorations of the panel"
     (let [left (core/label "HI")
           right (core/button :text "BYE")
