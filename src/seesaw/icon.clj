@@ -19,12 +19,27 @@
 ; Icons
 
 (defn ^javax.swing.Icon icon 
+  "Loads an icon. The parameter p can be any of the following:
+  
+    nil              - returns nil
+    javax.swing.Icon - returns the icon
+    java.awt.Image   - returns an ImageIcon around the image
+    java.net.URL     - Load the icon from the given URL
+    an i18n keyword  - Load the icon from the resource bundle
+    classpath path string  - Load the icon from the classpath
+    URL string       - Load the icon from the given URL
+    java.io.File     - Load the icon from the File
+
+  This is the function used to process the :icon property on most widgets
+  and windows. Thus, any of these values may be used for the :icon property.
+  "
   [p]
   (cond
     (nil? p) nil 
     (instance? javax.swing.Icon p)   p
     (instance? java.awt.Image p)     (ImageIcon. ^java.awt.Image p)
     (instance? java.net.URL p)       (ImageIcon. ^java.net.URL p)
+    (instance? java.io.File p)       (ImageIcon. (.getAbsolutePath ^java.io.File p))
     (and (keyword? p) (namespace p)) (icon (resource p))
     :else
       (if-let [url (jio/resource (str p))]
