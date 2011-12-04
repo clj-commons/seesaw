@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.border
   (:use [seesaw.color :only [to-color]]
-        [seesaw.util :only [to-insets]])
+        [seesaw.util  :only [to-insets resource]])
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]
            [java.awt Color]))
@@ -124,13 +124,34 @@
       (paintBorder [this c g x y w h]
         (when paint (paint c g x y w h))))))
 
-(defn to-border 
+(defn to-border
+  "Construct a border. The border returned depends on the input:
+
+    nil - returns nil
+    a Border - returns b
+    a number - returns an empty border with the given thickness
+    a vector or list - returns a compound border by applying to-border
+                       to each element, inner to outer.
+    a i18n keyword   - returns a titled border using the given resource
+    a string         - returns a titled border using the given stirng
+
+  If given more than one argument, a compound border is created by applying
+  to-border to each argument, inner to outer.
+
+
+  Note:
+
+  to-border is used implicitly by the :border option supported by all widgets
+  to it is rarely necessary to call directly.
+  "
   ([b] 
     (cond
-      (instance? Border b) b
-      (integer? b)         (empty-border :thickness b)
-      (coll? b)            (apply to-border b)
-      true                 (BorderFactory/createTitledBorder (str b))))
+      (nil? b)                         nil
+      (instance? Border b)             b
+      (integer? b)                     (empty-border :thickness b)
+      (coll? b)                        (apply to-border b)
+      (and (keyword? b) (namespace b)) (to-border (resource b))
+      :else                            (BorderFactory/createTitledBorder (str b))))
   ([b & args]
     (apply compound-border b args)))
 
