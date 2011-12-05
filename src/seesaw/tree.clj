@@ -54,7 +54,7 @@
               :tree-nodes-removed
               (javax.swing.event.TreeModelEvent. tree-model 
                                                  (ensure-array parent-path)
-                                                 (into-array Integer/TYPE indices)
+                                                 (int-array indices)
                                                  (ensure-array children))))
 
 (defn node-removed 
@@ -74,7 +74,7 @@
                   (map #(.getIndexOfChild tree-model parent %) children)) ]
     (javax.swing.event.TreeModelEvent. tree-model 
                                        (ensure-array parent-path)
-                                       (if indices (into-array Integer/TYPE indices))
+                                       (if indices (int-array indices))
                                        (ensure-array children))))
 
 (defn nodes-inserted 
