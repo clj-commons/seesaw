@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.chooser
   (:use [seesaw.color :only [to-color]]
-        [seesaw.options :only [default-option bean-option apply-options]]
+        [seesaw.options :only [default-option bean-option apply-options option-map]]
         [seesaw.util :only [illegal-argument]])
   (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
            [javax.swing JFileChooser]))
@@ -66,15 +66,15 @@
         :else
           (illegal-argument "not a valid filter: %s" f)))))
 
-(def ^{:private true} file-chooser-options {
-  :dir (default-option :dir
-         (fn [^JFileChooser chooser dir] 
-           (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
-                                            (java.io.File. (str dir))))))
-  :multi? (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
-  :selection-mode (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
-  :filters (default-option :filters set-file-filters)
-})
+(def ^{:private true} file-chooser-options 
+  (option-map
+    (default-option :dir
+      (fn [^JFileChooser chooser dir] 
+        (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
+                                          (java.io.File. (str dir))))))
+    (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
+    (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
+    (default-option :filters set-file-filters)))
 
 (def ^{:private true} last-dir (atom nil))
 

@@ -66,6 +66,8 @@
       (expect (= in (.. b (getInsideBorder) (getInsideBorder)))))))
 
 (describe to-border
+  (it "returns nil given nil"
+    (nil? (to-border nil)))
   (it "returns input if it's already a border"
     (let [b (line-border)]
       (expect (= b (to-border b)))))
@@ -73,6 +75,10 @@
     (let [b (to-border 11)]
       (expect (= EmptyBorder (class b)))
       (expect (= (Insets. 11 11 11 11) (.getBorderInsets b)))))
+  (it "returns a titled border using a resource bundle if given an i18n keyword"
+    (let [b (to-border ::titled-border-test)]
+      (expect (= TitledBorder (class b)))
+      (expect (= "Test value from border.properties" (.getTitle b)))))
   (it "returns a titled border using str if it doesn't know what to do"
     (let [b (to-border "Test")]
       (expect (= TitledBorder (class b)))

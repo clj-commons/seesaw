@@ -843,7 +843,15 @@
     (let [s (spinner :model 3.3)
           m (config s :model)]
       (expect (instance? javax.swing.SpinnerNumberModel m))
-      (expect (= 3.3 (.getValue m))))))
+      (expect (= 3.3 (.getValue m)))))
+  (it "supports the :selection event"
+    (let [s (spinner :model [1 2 3])
+          called (atom nil)] 
+      (listen s :selection (fn [e] (reset! called e)))
+      (selection! s 2)
+      (expect (= 2 (selection s)))
+      (expect @called)))
+  )
 
 (describe table
   (it "should create a JTable"
@@ -1237,7 +1245,14 @@
       (expect (= 40 (.getMinimum s)))
       (expect (= 99 (.getMaximum s)))
       (expect (= 55 (.getValue s)))))
-          
+
+  (it "supports the :selection event"
+    (let [s (slider)
+          called (atom nil)] 
+      (listen s :selection (fn [e] (reset! called e)))
+      (selection! s 49)
+      (expect @called)))
+
   (verify-config (slider :snap-to-ticks? true) :snap-to-ticks? true)
   (verify-config (slider :snap-to-ticks? false) :snap-to-ticks? false)
   (verify-config (slider :paint-ticks? true) :paint-ticks? true)
@@ -1245,8 +1260,7 @@
   (verify-config (slider :paint-track? true) :paint-track? true)
   (verify-config (slider :paint-track? false) :paint-track? false)
   (verify-config (slider :inverted? true) :inverted? true)
-  (verify-config (slider :inverted? false) :inverted? false)
-          )
+  (verify-config (slider :inverted? false) :inverted? false))
 
 (describe progress-bar
   (it "should create a JProgressBar"

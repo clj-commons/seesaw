@@ -112,6 +112,22 @@
                   (catch RuntimeException e
                     (= IllegalStateException (class (.getCause e))))))))))
 
+(describe b-do*
+  (it "executes a function with a single argument and ends a chain"
+    (let [start (atom 0)
+          called (atom nil) ]
+      (bind start (b-do* #(reset! called %)))
+      (reset! start 5)
+      (expect (= 5 @called)))))
+
+(describe b-do
+  (it "executes body with a single argument and ends a chain"
+    (let [start (atom [1 2])
+          called (atom nil)]
+      (bind start (b-do [[a b]] (reset! called (+ a b))))
+      (reset! start [3 4])
+      (expect (= 7 @called)))))
+
 (describe tee
   (it "creates a tee junction in a bind"
     (let [start (atom 0)

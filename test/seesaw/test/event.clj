@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.event
-  (:use seesaw.event)
+  (:use seesaw.event
+        [seesaw.util :only [root-cause]])
   (:require [seesaw.core :as sc])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
@@ -110,25 +111,36 @@
       (listen :something-something (fn [_]))
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException if its first arguments isn't an event source"
     (try
       (listen :something-something (fn [_]) :another)
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException if a handler isn't a function"
     (try
       (listen (javax.swing.JPanel.) :mouse "foo")
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "throws IllegalArgumentException for unknown event types"
     (try
       (listen (JPanel.) :something-something (fn [_]))
       false
       (catch IllegalArgumentException e
-        true)))
+        true)
+      ; TODO 1.2 event wrapping
+      (catch RuntimeException e
+        (instance? IllegalArgumentException (root-cause e)))))
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]
@@ -290,5 +302,39 @@
           will-collapse (atom false)]
       (listen tree :tree-will-expand #(reset! will-expand %)
                    :tree-will-collapse #(reset! will-collapse %))
-      (expect (not (or @will-expand @will-collapse))))))
+      (expect (not (or @will-expand @will-collapse)))))
+  (it "can register a tree model listener"
+      (let [root (javax.swing.tree.DefaultMutableTreeNode.)
+            child (javax.swing.tree.DefaultMutableTreeNode.)
+            model (javax.swing.tree.DefaultTreeModel. root)
+            nodes-changed (atom nil)
+            nodes-inserted (atom nil)
+            nodes-removed (atom nil)
+            structure-changed (atom nil)]
+      (listen model :tree-nodes-changed #(reset! nodes-changed %)
+                    :tree-nodes-inserted #(reset! nodes-inserted %)
+                    :tree-nodes-removed #(reset! nodes-removed %)
+                    :tree-structure-changed #(reset! structure-changed %))
+      (expect (not (or @nodes-changed @nodes-inserted @nodes-removed @structure-changed)))
+      (.nodeChanged model root)
+      (expect @nodes-changed)
+      (.insertNodeInto model child root 0)
+      (expect @nodes-inserted)
+      (.removeNodeFromParent model child)
+      (expect @nodes-removed)
+      (.nodeStructureChanged model root)
+      (expect @structure-changed))))
+
+(describe listen-to-property
+  (it "registers a property change listener"
+    (let [b (javax.swing.JButton.)
+          called (atom nil)
+          remove-fn (listen-to-property b "text"
+                                        (fn [e] (reset! called e)))]
+      (.setText b "HI")
+      (expect @called)
+      (reset! called nil)
+      (remove-fn)
+      (.setText b "BYE")
+      (expect (nil? @called)))))
 

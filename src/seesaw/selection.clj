@@ -11,6 +11,15 @@
 (ns seesaw.selection
   (:use [seesaw.util :only [check-args]]))
 
+;TODO put this somewhere
+; I think this is generally useful, but the main reason for its existence is
+; to reuse the JList selection implementation in swingx' JXList. It adds 
+; sorting and filter which obviously changes the mapping between view/model
+; indexes.
+(defprotocol ViewModelIndexConversion
+  (index-to-model [this index])
+  (index-to-view [this index]))
+
 (defprotocol Selection
   (get-selection [target])
   (set-selection [target args]))
@@ -62,10 +71,15 @@
 (defn- jlist-set-selection
   ([^javax.swing.JList target values]
     (if (seq values)
-      (let [indices (list-model-indices (.getModel target) values)]
+      (let [indices (map #(index-to-view target %) (list-model-indices (.getModel target) values))]
         (.setSelectedIndices target (int-array indices)))
       (.clearSelection target))
    target))
+
+(extend-protocol ViewModelIndexConversion
+  javax.swing.JList 
+    (index-to-model [this index] index)
+    (index-to-view [this index] index))
 
 (extend-protocol Selection
   javax.swing.JList
