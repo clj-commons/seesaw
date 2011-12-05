@@ -2,7 +2,7 @@
   :description "A Swing wrapper/DSL for Clojure. You want seesaw.core, FYI. See http://seesaw-clj.org for more info."
   :url "http://seesaw-clj.org"
   :mailing-list {:name "seesaw-clj"
-                 :achive "https://groups.google.com/group/seesaw-clj"
+                 :archive "https://groups.google.com/group/seesaw-clj"
                  :post "seesaw-clj@googlegroups.com"}
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
