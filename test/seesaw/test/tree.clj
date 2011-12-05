@@ -44,7 +44,7 @@
     (it "should allow a listener to be added"
       (let [called (atom nil)]
         (.addTreeModelListener m (tree-listener #(reset! called %)))
-        (fire-event m :tree-nodes-changed :foo [:bar])
+        (node-changed m [(.getRoot m)])
         (expect @called)))
     (it "should allow a listener to be removed"
       (let [called-a (atom nil)
@@ -54,31 +54,64 @@
         (.addTreeModelListener m listener-a)
         (.addTreeModelListener m listener-b)
         (.removeTreeModelListener m listener-a)
-        (fire-event m :tree-nodes-changed :foo [:bar])
+        (node-changed m [(.getRoot m)])
         (expect (not @called-a))
         (expect @called-b)))))
 
+(defn- make-test-model []
+  (simple-tree-model #(.isDirectory %) #(.listFiles %) (java.io.File. ".")))
+
 (describe fire-event
-  (it "fires events of the correct type"
-    (let [m (simple-tree-model (constantly true) (constantly nil) :x)
-          nodes-changed (atom nil)
-          nodes-inserted (atom nil)
-          nodes-removed (atom nil)
-          structure-changed (atom nil)
-          ; dummy args
-          event-source :foo
-          path-to-node [:bar]]
-      (listen m
-        :tree-nodes-changed #(reset! nodes-changed %)
-        :tree-nodes-inserted #(reset! nodes-inserted %)
-        :tree-nodes-removed #(reset! nodes-removed %)
-        :tree-structure-changed #(reset! structure-changed %))
-      (expect (not (or @nodes-changed @nodes-inserted @nodes-removed @structure-changed)))
-      (fire-event m :tree-nodes-changed event-source path-to-node)
-      (expect @nodes-changed)
-      (fire-event m :tree-nodes-inserted event-source path-to-node)
-      (expect @nodes-inserted)
-      (fire-event m :tree-nodes-removed event-source path-to-node)
-      (expect @nodes-removed)
-      (fire-event m :tree-structure-changed event-source path-to-node)
-      (expect @structure-changed))))
+  (it "fires nodes-changed events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-changed #(reset! e %))
+      (nodes-changed m [root] (map #(.getChild m root %) (range 4)))
+      (expect (not (nil? @e)))))
+  (it "fires node-changed events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-changed #(reset! e %))
+      (node-changed m [root])
+      (expect (not (nil? @e)))))
+  (it "fires nodes-inserted events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-inserted #(reset! e %))
+      (nodes-inserted m [root] (map #(.getChild m root %) (range 4)))
+      (expect (not (nil? @e)))))
+  (it "fires node-inserted events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-inserted #(reset! e %))
+      (node-inserted m [root])
+      (expect (not (nil? @e)))))
+
+  (it "fires node-structure-changed events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-structure-changed #(reset! e %))
+      (node-structure-changed m [root])
+      (expect (not (nil? @e)))))
+
+  (it "fires nodes-removed events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-removed #(reset! e %))
+      (nodes-removed m [root] (range 1 4) (map #(.getChild m root %) (range 1 4)))
+      (expect (not (nil? @e)))))
+
+  (it "fires node-removed events"
+    (let [m (make-test-model)
+          e (atom nil)
+          root (.getRoot m)]
+      (listen m :tree-nodes-removed #(reset! e %))
+      (node-removed m [root] 2 (.getChild m root 2))
+      (expect (not (nil? @e))))))
+
