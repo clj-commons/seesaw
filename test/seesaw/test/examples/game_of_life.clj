@@ -1,5 +1,5 @@
 (ns seesaw.test.examples.game-of-life
-  (:use [seesaw.debug]
+  (:use [seesaw.dev]
         [seesaw.core]
         [seesaw.graphics]
         [seesaw.behave]

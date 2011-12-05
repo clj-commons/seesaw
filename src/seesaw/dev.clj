@@ -8,9 +8,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns ^{:doc "Functions to aid in debugging."
+(ns ^{:doc "Functions to aid development of Seesaw apps."
       :author "Dave Ray"} 
-  seesaw.debug
+  seesaw.dev
   (:require [seesaw.core :as core]))
 
 
