@@ -1277,6 +1277,12 @@
     ; Check A
     (selection bg (select root [:#a]))
 
+    ; Listen for selection changes. Note that the selection MAY BE NIL!
+    (listen bg :selection 
+      (fn [e]
+        (if-let [s (selection e)]
+          (println \"Selected \" (text s)))))
+
   Returns an instance of javax.swing.ButtonGroup
 
   See:
