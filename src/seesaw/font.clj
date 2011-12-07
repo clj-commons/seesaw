@@ -12,7 +12,7 @@
             use these implicitly through the :font option."
       :author "Dave Ray"}
   seesaw.font
-  (:use [seesaw.util :only [constant-map resource]])
+  (:use [seesaw.util :only [constant-map resource resource-key?]])
   (:import [java.awt Font]))
 
 (def ^{:private true} style-table (constant-map Font :bold :plain :italic))
@@ -56,7 +56,7 @@
   [& args]
   (if (= 1 (count args))
     (let [v (first args)]
-      (if (and (keyword? v) (namespace v))
+      (if (resource-key? v)
         (Font/decode (resource v))
         (Font/decode (str v))))
     (let [{:keys [style size from] :as opts} args

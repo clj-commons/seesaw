@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.border
   (:use [seesaw.color :only [to-color]]
-        [seesaw.util  :only [to-insets resource]])
+        [seesaw.util  :only [to-insets resource resource-key?]])
   (:import [javax.swing BorderFactory]
            [javax.swing.border Border]
            [java.awt Color]))
@@ -146,12 +146,12 @@
   "
   ([b] 
     (cond
-      (nil? b)                         nil
-      (instance? Border b)             b
-      (integer? b)                     (empty-border :thickness b)
-      (coll? b)                        (apply to-border b)
-      (and (keyword? b) (namespace b)) (to-border (resource b))
-      :else                            (BorderFactory/createTitledBorder (str b))))
+      (nil? b)             nil
+      (instance? Border b) b
+      (integer? b)         (empty-border :thickness b)
+      (coll? b)            (apply to-border b)
+      (resource-key? b)    (to-border (resource b))
+      :else                (BorderFactory/createTitledBorder (str b))))
   ([b & args]
     (apply compound-border b args)))
 

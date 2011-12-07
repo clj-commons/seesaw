@@ -16,8 +16,8 @@
       :author "Dave Ray"}
   seesaw.core
   (:use [seesaw.util :only [illegal-argument to-seq check-args 
-                            constant-map resource to-dimension 
-                            to-insets to-url try-cast
+                            constant-map resource resource-key?
+                            to-dimension to-insets to-url try-cast
                             cond-doto to-mnemonic-keycode]]
         [seesaw.config :only [Configurable config* config!*]]
         [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
@@ -622,10 +622,10 @@
 
 (defn- convert-text-value [v]
   (cond
-    (nil? v)    v
-    (string? v) v
-    (number? v) (str v)
-    (and (keyword? v) (namespace v)) (resource v)
+    (nil? v)          v
+    (string? v)       v
+    (number? v)       (str v)
+    (resource-key? v) (resource v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
     ; TODO This line is unreachable because the IOFactory protocol is
     ; extended to Object, i.e. satisfies? above will *always* return

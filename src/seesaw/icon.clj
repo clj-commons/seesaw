@@ -11,7 +11,7 @@
 (ns ^{:doc "Functions for loading and creating icons."
       :author "Dave Ray"}
   seesaw.icon
-  (:use [seesaw.util :only [resource to-url]])
+  (:use [seesaw.util :only [resource resource-key? to-url]])
   (:require [clojure.java.io :as jio])
   (:import [javax.swing ImageIcon]))
 
@@ -36,11 +36,11 @@
   [p]
   (cond
     (nil? p) nil 
-    (instance? javax.swing.Icon p)   p
-    (instance? java.awt.Image p)     (ImageIcon. ^java.awt.Image p)
-    (instance? java.net.URL p)       (ImageIcon. ^java.net.URL p)
-    (instance? java.io.File p)       (ImageIcon. (.getAbsolutePath ^java.io.File p))
-    (and (keyword? p) (namespace p)) (icon (resource p))
+    (instance? javax.swing.Icon p) p
+    (instance? java.awt.Image p)   (ImageIcon. ^java.awt.Image p)
+    (instance? java.net.URL p)     (ImageIcon. ^java.net.URL p)
+    (instance? java.io.File p)     (ImageIcon. (.getAbsolutePath ^java.io.File p))
+    (resource-key? p)              (icon (resource p))
     :else
       (if-let [url (jio/resource (str p))]
         (icon url)

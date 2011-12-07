@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.keystroke
-  (:use [seesaw.util :only [illegal-argument resource]])
+  (:use [seesaw.util :only [illegal-argument resource resource-key?]])
   (:import [javax.swing KeyStroke]
            [java.awt Toolkit]
            [java.awt.event InputEvent])
@@ -43,10 +43,10 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)"
   [arg]
   (cond 
-    (nil? arg) nil
+    (nil? arg)                nil
     (instance? KeyStroke arg) arg
-    (char? arg) (KeyStroke/getKeyStroke ^Character arg)
-    (and (keyword? arg) (namespace arg)) (keystroke (resource arg))
+    (char? arg)               (KeyStroke/getKeyStroke ^Character arg)
+    (resource-key? arg)       (keystroke (resource arg))
     :else (if-let [ks (KeyStroke/getKeyStroke ^String (preprocess-descriptor (str arg)))]
             ks
             (illegal-argument "Invalid keystroke descriptor: %s" arg))))

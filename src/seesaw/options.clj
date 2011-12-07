@@ -12,7 +12,8 @@
       :author "Dave Ray"}
   seesaw.options
   (:use [seesaw.meta :only [get-meta put-meta!]]
-        [seesaw.util :only [camelize illegal-argument resource check-args]]))
+        [seesaw.util :only [camelize illegal-argument check-args
+                            resource resource-key?]]))
 
 (defrecord Option [name setter getter])
 
@@ -92,7 +93,7 @@
   (default-option 
     option-name 
     (fn [target value]
-      {:pre [(keyword? value) (namespace value)]}
+      {:pre [(resource-key? value)]}
       (let [nspace (namespace value)
             prefix (name value)]
             (reapply-options

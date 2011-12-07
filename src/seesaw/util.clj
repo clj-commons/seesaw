@@ -167,9 +167,14 @@
     children
     root))
 
+(defn resource-key?
+  "Returns true if v is a i18n resource key, i.e. a namespaced keyword"
+  [v]
+  (and (keyword? v) (namespace v)))
+
 (defn resource
   [message]
-  (if (and (keyword? message) (namespace message))
+  (if (resource-key? message)
     (j18n/resource message)
     (str message)))
 
@@ -188,8 +193,8 @@
     http://download.oracle.com/javase/6/docs/api/java/awt/event/KeyEvent.html"
   [v]
   (cond 
-    (and (keyword? v) (namespace v)) (to-mnemonic-keycode (resource v))
-    (string? v) (to-mnemonic-keycode (.charAt v 0))
-    (char? v) (int (Character/toUpperCase ^Character v))
-    :else (int v)))
+    (resource-key? v) (to-mnemonic-keycode (resource v))
+    (string? v)       (to-mnemonic-keycode (.charAt v 0))
+    (char? v)         (int (Character/toUpperCase ^Character v))
+    :else             (int v)))
 

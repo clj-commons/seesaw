@@ -128,3 +128,9 @@
   (it "should convert a lower-case character to an integer key code"
     (= (int \X) (to-mnemonic-keycode \x))))
 
+(describe resource-key?
+  (it "returns true for resource keywords"
+    (resource-key? ::hello))
+  (it "returns false for non-resource keywords"
+    (not (resource-key? :hello))))
+
