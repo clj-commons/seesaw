@@ -9,7 +9,9 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.action
-  (:use seesaw.action)
+  (:use [seesaw.action]
+        [seesaw.core :only [config]]
+        [seesaw.keystroke :only [keystroke]])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import [javax.swing Action]))
@@ -57,5 +59,27 @@
   (it "handles the :enabled? option"
     (not (.isEnabled (action :enabled? false))))
   (it "handles the :selected? option"
-    (.getValue (action :selected? true) Action/SELECTED_KEY)))
+    (.getValue (action :selected? true) Action/SELECTED_KEY))
+
+  (it "loads resources by convention with :resource option"
+    (let [a (action :resource ::my-action)]
+      (expect (instance? javax.swing.Icon (config a :icon)))
+      (expect (= (int \X) (config a :mnemonic)))
+      (expect (= "A command" (config a :command)))
+      (expect (= "A name" (config a :name)))
+      (expect (= "A tip" (config a :tip)))
+      (expect (= (keystroke "ctrl C") (config a :key)))))
+
+  (it "loads :icon from a resource"
+    (expect (instance? javax.swing.Icon (config (action :icon ::my-action.icon) :icon))))
+  (it "loads :mnemonic from a resource"
+    (expect (= (int \X) (config (action :mnemonic ::my-action.mnemonic) :mnemonic))))
+  (it "loads :command from a resource"
+    (expect (= "A command" (config (action :command ::my-action.command) :command))))
+  (it "loads :name from a resource"
+    (expect (= "A name" (config (action :name ::my-action.name) :name))))
+  (it "loads :key from a resource"
+    (expect (= (keystroke "ctrl C") (config (action :key ::my-action.key) :key))))
+  (it "loads :tip from a resource"
+    (expect (= "A tip" (config (action :tip ::my-action.tip) :tip)))))
 

@@ -175,13 +175,21 @@
 
 (defn ^Integer to-mnemonic-keycode
   "Convert a character to integer to a mnemonic keycode. In the case of char
-  input, generates the correct keycode even if it's lower case.
+  input, generates the correct keycode even if it's lower case. Input argument 
+  can be:
+
+  * i18n resource keyword - only first char is used
+  * string - only first char is used
+  * char   - lower or upper case
+  * int    - key event code
   
   See:
     java.awt.event.KeyEvent for list of keycodes
     http://download.oracle.com/javase/6/docs/api/java/awt/event/KeyEvent.html"
   [v]
-  (if (char? v) 
-    (int (Character/toUpperCase ^Character v)) 
-    (int v)))
+  (cond 
+    (and (keyword? v) (namespace v)) (to-mnemonic-keycode (resource v))
+    (string? v) (to-mnemonic-keycode (.charAt v 0))
+    (char? v) (int (Character/toUpperCase ^Character v))
+    :else (int v)))
 
