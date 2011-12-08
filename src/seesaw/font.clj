@@ -13,7 +13,21 @@
       :author "Dave Ray"}
   seesaw.font
   (:use [seesaw.util :only [constant-map resource resource-key?]])
-  (:import [java.awt Font]))
+  (:import [java.awt Font GraphicsEnvironment]))
+
+(defn font-families
+  "Returns a seq of strings naming the font families on the system. These
+  are the names that are valid in :name option (seesaw.font/font) as well
+  as in font descriptor strings like \"Arial-BOLD-20\"
+  
+  See:
+    (seesaw.core/font)
+  "
+  ([] (font-families nil))
+  ([locale]
+    (-> (GraphicsEnvironment/getLocalGraphicsEnvironment) 
+      (.getAvailableFontFamilyNames locale)
+      seq)))
 
 (def ^{:private true} style-table (constant-map Font :bold :plain :italic))
 (defn- get-style-mask [v]
@@ -34,7 +48,8 @@
   Options are:
 
     :name   The name of the font. Besides string values, also possible are 
-            any of :monospaced, :serif, :sans-serif.
+            any of :monospaced, :serif, :sans-serif. See (seesaw.font/font-families)
+            to get a system-specific list of all valid values.
     :style  The style. One of :bold, :plain, :italic, or a set of those values
             to combine them. Default: :plain.
     :size   The size of the font. Default: 12.
@@ -51,6 +66,7 @@
     (font :style #{:bold :italic} :name :monospaced)
 
   See:
+    (seesaw.font/font-families)
     http://download.oracle.com/javase/6/docs/api/java/awt/Font.html
   "
   [& args]
@@ -58,7 +74,7 @@
     (let [v (first args)]
       (if (resource-key? v)
         (Font/decode (resource v))
-        (Font/decode (str v))))
+        (Font/decode (name v))))
     (let [{:keys [style size from] :as opts} args
           font-name (:name opts)
           font-style (get-style-mask (or style :plain))
