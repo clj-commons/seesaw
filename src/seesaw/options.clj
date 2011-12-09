@@ -172,3 +172,4 @@
         (setter target value)
         (illegal-argument "No setter found for option %s" name)))))
 
+(def options-for get-option-value-handlers)

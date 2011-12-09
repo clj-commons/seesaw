@@ -12,7 +12,8 @@
       :author "Dave Ray"} 
   seesaw.dev
   (:require [seesaw.core :as core]
-            [seesaw.event :as ev]))
+            [seesaw.event :as ev]
+            [seesaw.options :as opt]))
 
 
 (defonce ^{:private true} error-frame 
@@ -84,6 +85,17 @@
         (and f (not installed?)) (do (.push q (.setHandler handler f)) true)
         (and (not f) installed?) (do (.setHandler handler nil) false)
         :else                    false)))))
+
+(defn show-options
+  "Given an object, print information about the options it supports. These
+  are all the options you can legally pass to (seesaw.core/config) and
+  friends."
+  [v]
+  (printf "%s%n" (.getName (class v)))
+  (doseq [{:keys [name setter]} (sort-by :name (vals (opt/options-for v)))]
+    (printf "  %s%s%n" 
+            name
+            (if-not setter " [ro]" ""))))
 
 (defn show-events
   "Given a class or instance, print information about all supported events.
