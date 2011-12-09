@@ -227,6 +227,30 @@
   }
 })
 
+(def ^{:private true} event-groups-by-listener-class
+  (into {}
+        (for [{:keys [class] :as group} (vals event-groups)]
+          [class group])))
+
+(defn- get-listener-class [m]
+  (let [[arg] (.getParameterTypes m)]
+    (if (and arg (.startsWith (.getName m) "add"))
+      arg)))
+
+(defn- ^Class ensure-class [v]
+  (if (class? v)
+    v
+    (class v)))
+
+(defn events-for
+  [v]
+  (->> (.getMethods (ensure-class v)) 
+    (map get-listener-class)
+    (filter identity)
+    (map event-groups-by-listener-class)
+    (filter identity)
+    (map #(dissoc % :install))))
+
 ; Kind of a hack. Re-route methods with renamed events (due to collisions like
 ; valueChanged()) back to their real names.
 (def ^{:private true} event-method-table (merge {

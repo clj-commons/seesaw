@@ -11,7 +11,8 @@
 (ns ^{:doc "Functions to aid development of Seesaw apps."
       :author "Dave Ray"} 
   seesaw.dev
-  (:require [seesaw.core :as core]))
+  (:require [seesaw.core :as core]
+            [seesaw.event :as ev]))
 
 
 (defonce ^{:private true} error-frame 
@@ -83,4 +84,23 @@
         (and f (not installed?)) (do (.push q (.setHandler handler f)) true)
         (and (not f) installed?) (do (.setHandler handler nil) false)
         :else                    false)))))
+
+(defn show-events
+  "Given a class or instance, print information about all supported events.
+   From there, you can look up javadocs, etc.
+  
+  Examples:
+  
+    (show-events javax.swing.JButton)
+    ... lots of output ...
+  
+    (show-events (button))
+    ... lots of output ...
+  "
+  [v]
+  (doseq [{:keys [name ^Class class events]} (->> (ev/events-for v)  
+                                               (sort-by :name))]
+    (printf "%s [%s]%n" name (.getName class))
+    (doseq [e (sort events)]
+      (printf "  %s%n" e))))
 
