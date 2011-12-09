@@ -533,6 +533,10 @@
     (= SwingConstants/BOTTOM (.getVerticalAlignment (label :valign :bottom)))))
 
 (describe text!
+  (it "should throw IllegalArgumentException if it doesn't know what to do"
+    (try
+      (do (text! (border-panel) "no") false)
+      (catch IllegalArgumentException e true)))
   (it "should set the text of the document in a document event"
     (let [doc (javax.swing.text.PlainDocument.)
           evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
@@ -573,8 +577,16 @@
     (try
       (do (text nil) false)
       (catch IllegalArgumentException e true)))
+  (it "should throw IllegalArgumentException if it doesn't know what to do"
+    (try
+      (do (text (border-panel)) false)
+      (catch IllegalArgumentException e true)))
   (it "should return the text of a single text widget argument"
     (= "HI" (text (text "HI"))))
+  (it "should return the text of the selection in a combobox"
+    (let [cb (combobox :model ["a" "b"])]
+      (selection! cb "a")
+      (expect (= "a" (text cb)))))
   (it "should return the text of a text Document argument"
     (let [d (javax.swing.text.PlainDocument.)]
       (.insertString d 0 "HI" nil)

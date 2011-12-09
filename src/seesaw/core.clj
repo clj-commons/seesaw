@@ -604,6 +604,11 @@
   Object
     (set-text* [this v] (set-text* (to-widget this) v))
     (get-text* [this] (get-text* (to-widget this)))
+  java.awt.Component 
+    (set-text* [this v] 
+      (illegal-argument "%s does not support (seesaw.core/text!)" (class this)))
+    (get-text* [this]
+      (illegal-argument "%s does not support (seesaw.core/text)" (class this)))
   javax.swing.JLabel
     (set-text* [this v] (.setText this v))
     (get-text* [this] (.getText this))
@@ -618,7 +623,12 @@
     (get-text* [this] (get-text* (.getDocument this)))
   javax.swing.text.JTextComponent
     (set-text* [this v] (.setText this v))
-    (get-text* [this] (.getText this)))
+    (get-text* [this] (.getText this))
+  javax.swing.JComboBox
+    (set-text* [this v] )
+    (get-text* [this] 
+      (if-let [i (selection this)]
+        (str i))))
 
 (defn- convert-text-value [v]
   (cond
@@ -1863,7 +1873,8 @@
     :renderer Cell renderer used for display. See (seesaw.cells/to-cell-renderer).
 
   Note that the current selection can be retrieved and set with the (selection) and
-  (selection!) functions.
+  (selection!) functions. Calling (seesaw.core/text) on a combobox will return
+  (str (selection cb)). (seesaw.core/text!) is not supported.
 
   Notes:
     This function is compatible with (seesaw.core/with-widget).
