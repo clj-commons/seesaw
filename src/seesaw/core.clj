@@ -688,6 +688,9 @@
   javax.swing.JScrollBar
   javax.swing.JSpinner)
 
+(def ^{:doc "Default handler for the :model option. Delegates to the ConfigModel protocol"} 
+  model-option (default-option :model set-model get-model))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
 (defprotocol ^{:private true} ConfigDragEnabled
@@ -811,7 +814,6 @@
     (default-option :icon set-icon get-icon)
     (default-option :action set-action)
     (default-option :text set-text get-text)
-    (default-option :model set-model get-model)
     (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
     (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
 
@@ -1305,6 +1307,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (resource-option :resource base-resource-options)
       (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
       (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
@@ -1392,6 +1395,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (resource-option :resource (concat base-resource-options 
                                         [:caret-color :disabled-text-color :selected-text-color :selection-color]))
       (bean-option :editable? javax.swing.text.JTextComponent boolean)
@@ -1705,7 +1709,7 @@
   (merge
     default-options
     (option-map
-      (around-option (:model default-options) to-list-model identity) 
+      (around-option model-option to-list-model identity) 
       (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
@@ -1753,6 +1757,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :model javax.swing.JTable to-table-model)
       (default-option :show-grid? 
                                 #(.setShowGrid ^javax.swing.JTable %1 (boolean %2))
@@ -1813,6 +1818,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :editable? javax.swing.JTree boolean)
       (default-option :renderer
                       #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2))
@@ -1860,7 +1866,7 @@
     default-options
     (option-map
       (bean-option :editable? javax.swing.JComboBox boolean)
-      (around-option (:model default-options) to-combobox-model identity)
+      (around-option model-option to-combobox-model identity)
       (default-option :renderer 
                       #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
                       #(.getRenderer ^javax.swing.JComboBox %1)))))
@@ -1950,7 +1956,7 @@
   (merge
     default-options
     (option-map
-      (around-option (:model default-options) to-spinner-model identity))))
+      (around-option model-option to-spinner-model identity))))
 
 (defn spinner 
   "Create a spinner (JSpinner). Additional options:
@@ -3106,6 +3112,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :orientation javax.swing.JSlider orientation-table)
       (bean-option :value javax.swing.JSlider)
       (bean-option [:min :minimum] javax.swing.JSlider)
@@ -3170,6 +3177,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :orientation javax.swing.JProgressBar orientation-table)
       (bean-option :value javax.swing.JProgressBar)
       (bean-option [:min :minimum] javax.swing.JProgressBar)
