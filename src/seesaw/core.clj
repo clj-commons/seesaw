@@ -659,6 +659,9 @@
   javax.swing.JTextField (set-action [this v] (.setAction this v))
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
+(def ^{:doc "Default handler for the :action option. Internal use."} 
+  action-option (default-option :action set-action))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set/getModel is a common method on many types, but not in any common interface :(
 
@@ -812,7 +815,6 @@
     (default-option :paint #(paint-option-handler %1 %2))
 
     (default-option :icon set-icon get-icon)
-    (default-option :action set-action)
     (default-option :text set-text get-text)
     (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
     (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
@@ -1308,6 +1310,7 @@
     default-options
     (option-map
       model-option
+      action-option
       (resource-option :resource base-resource-options)
       (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
       (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
@@ -1396,6 +1399,7 @@
     default-options
     (option-map
       model-option
+      action-option
       (resource-option :resource (concat base-resource-options 
                                         [:caret-color :disabled-text-color :selected-text-color :selection-color]))
       (bean-option :editable? javax.swing.text.JTextComponent boolean)
@@ -1865,6 +1869,7 @@
   (merge
     default-options
     (option-map
+      action-option
       (bean-option :editable? javax.swing.JComboBox boolean)
       (around-option model-option to-combobox-model identity)
       (default-option :renderer 
