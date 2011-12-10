@@ -110,16 +110,16 @@
     (setter target v)
     (illegal-argument "No setter found for option %s" (:name opt))))
 
-(defn- ^Option lookup-option [handler-map name]
+(defn- ^Option lookup-option [target handler-map name]
   (if-let [opt (get handler-map name)]
     opt
-    (illegal-argument "Unknown option %s" name)))
+    (illegal-argument "%s does not support the %s option" (class target) name)))
 
 (defn- apply-options*
   [target opts handler-map]
   (let [pairs (if (map? opts) opts (partition 2 opts))] 
     (doseq [[k v] pairs]
-      (let [opt (lookup-option handler-map k)]
+      (let [opt (lookup-option target handler-map k)]
         (apply-option target opt v))))
   target)
 
@@ -161,7 +161,7 @@
           getter (:getter option)]
       (if getter
         (getter target)
-        (illegal-argument "No getter found for option %s" name)))))
+        (illegal-argument "Option %s cannot be read from %s" name (class target))))))
 
 (defn set-option-value
   ([target name value] (set-option-value target name (get-option-value-handlers target)))
@@ -170,6 +170,6 @@
           setter (:setter option)]
       (if setter
         (setter target value)
-        (illegal-argument "No setter found for option %s" name)))))
+        (illegal-argument "Option %s cannot be set on %s" name (class target))))))
 
 (def options-for get-option-value-handlers)
