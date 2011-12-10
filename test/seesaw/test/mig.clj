@@ -21,7 +21,14 @@
           l (.getLayout p)]
       (expect (= "wrap 4" (.getLayoutConstraints l)))
       (expect (= "[fill]" (.getColumnConstraints l)))
-      (expect (= "[nogrid]" (.getRowConstraints l))))))
+      (expect (= "[nogrid]" (.getRowConstraints l)))))
+  (it "should support the usual default options"
+    (mig-panel :id :mig 
+               :class :classy 
+               :opaque? false
+               :listen [:mouse-clicked (fn [_])]
+               :foreground :red
+               :background :black)))
 
 (describe replace!
   (testing "when called on a panel with a mig layout"
