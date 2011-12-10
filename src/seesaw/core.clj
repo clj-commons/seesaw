@@ -585,6 +585,13 @@
   (get-icon [this]))
 
 (extend-protocol ConfigIcon
+  ; most things don't have icons...
+  java.awt.Component 
+    (set-icon [this v] 
+      (illegal-argument "%s does not support the :icon option" (class this)))
+    (get-icon [this]
+      (illegal-argument "%s does not support the :icon option" (class this)))
+
   javax.swing.JLabel 
     (set-icon [this v] (.setIcon this (make-icon v)))
     (get-icon [this] (.getIcon this))
@@ -814,8 +821,11 @@
     (default-option :popup #(popup-option-handler %1 %2))
     (default-option :paint #(paint-option-handler %1 %2))
 
+    ; TODO I'd like to push these down but cells.clj uses them on non-attached
+    ; widgets.
     (default-option :icon set-icon get-icon)
     (default-option :text set-text get-text)
+
     (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
     (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
 
