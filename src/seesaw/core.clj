@@ -27,7 +27,7 @@
         [seesaw.make-widget :only [make-widget*]])
   (:require clojure.java.io
             clojure.set
-            [seesaw color font border invoke timer selection 
+            [seesaw color font border invoke timer selection value
              event selector icon action cells table graphics cursor scroll dnd])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants DropMode
@@ -3496,4 +3496,25 @@
   [container old-widget new-widget]
   (handle-structure-change 
     (replace!-impl (to-widget container) (to-widget old-widget) (make-widget new-widget))))
+
+
+;*******************************************************************************
+; Widget "value"
+
+(defn value 
+  "Return the 'value' of a widget. Basically, there are two possibilities:
+  
+    * It's a container: A map of widget values keyed by :id is built
+        recursively from all its children.
+    * The 'natural' value for the widget is returned, usually the text,
+      or the current selection of the widget.
+
+  See:
+    (seesaw.core/selection)
+    (seesaw.core/group-by-id)
+  
+  This idea is shamelessly borrowed from Clarity https://github.com/stathissideris/clarity
+  " 
+  [target]
+  (seesaw.value/value* (or (to-widget target) target)))
 
