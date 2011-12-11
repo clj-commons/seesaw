@@ -23,15 +23,13 @@
   java.awt.Container
     (container?* [this] true)
     (value* [this]
-      (reduce 
-        (fn [m c]
-          (cond
-            (container?* c) (merge m (value* c))
-            :else (if-let [id (sor/id-of c)]
-                    (assoc m id (value* c))
-                    m)))
-        {}
-        (util/children this)))
+      (into {} (->> (sor/select this [:*])
+                 (remove container?*)            ; don't recurse
+                 (filter #(satisfies? Value %))  ; skip unhandled
+                 (map (fn [c]
+                        (if-let [id (sor/id-of c)] ; only things with :id
+                          [id (value* c)])))
+                 (filter identity))))
 
   javax.swing.JLabel
     (container?* [this] false)
