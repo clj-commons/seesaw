@@ -16,7 +16,7 @@
         seesaw.font
         seesaw.graphics
         seesaw.cells
-        [seesaw.util :only (to-dimension children)]
+        [seesaw.util :only (to-dimension children root-cause)]
         [seesaw.color :only (color)])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
@@ -1320,6 +1320,25 @@
           f (frame :id :f :content e)
           result (group-by-id f)]
       (expect (= result {:a a :b b :d d :f f})))))
+
+(describe with-widgets
+  (it "should create a binding for the :id of each new widget"
+    (let [a-value 99
+          b-value 100
+          c-value 101] 
+      (with-widgets [(vector :id :a :value a-value)
+                     (vector :id :b :value b-value)
+                     (vector :value c-value :id :c)]
+        (expect (= a [:id :a :value a-value]))
+        (expect (= b [:id :b :value b-value]))
+        (expect (= c [:value c-value :id :c])))))
+  (it "should throw IllegalArgumentException for a missing :id"
+    (try
+      (eval `(with-widgets [(vector :value 99)])) false
+      (catch IllegalArgumentException e true)
+      ; IllegalArgumentException may be wrapped.
+      (catch Exception e
+        (instance? IllegalArgumentException (root-cause e))))))
 
 (describe add!
   (testing "When called on a panel with a FlowLayout"

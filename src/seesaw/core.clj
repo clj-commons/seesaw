@@ -3389,6 +3389,40 @@
     {}
     (select (to-widget root) [:*])))
 
+(defmacro with-widgets 
+  "Macro to ease construction of multiple widgets. The first argument
+  is a vector of widget constructor forms, each with an :id option.
+  The name of the value of each :id is used to generate a binding in
+  the scope of the macro.
+  
+  Examples:
+  
+    (with-widgets [(label :id :foo :text \"foo\")
+                   (button :id :bar :text \"bar\")]
+       ...)
+  
+    ; is equivalent to 
+    (let [foo (label :id :foo :text \"foo\")
+          bar (button :id :bar :text \"bar\")]
+       ...)
+
+  Notes:
+  
+  If you're looking for something like this to reduce boilerplate with
+  selectors on multiple widgets, see (seesaw.core/group-by-id).
+
+  See:
+    (seesaw.core/group-by-id) 
+  "
+  [widgets & body]
+  `(let [~@(mapcat (fn [[f & args :as widget]]
+                      (if-let [id (:id (apply hash-map args))]
+                        [(symbol (name id)) widget]
+                        (illegal-argument "No :id specified for widget in %s"
+                              (pr-str widget))))
+             widgets)]
+     ~@body))
+
 ;*******************************************************************************
 ; Widget layout manipulation
 
