@@ -13,11 +13,13 @@
   seesaw.value
   (:require [seesaw.selection :as sel]
             [seesaw.selector :as sor]
+            [seesaw.config :as cfg]
             [seesaw.util :as util]))
 
 (defprotocol Value
   (container?* [this])
-  (value* [this]))
+  (value* [this])
+  (value!* [this v]))
 
 (extend-protocol Value
   java.awt.Container
@@ -30,18 +32,26 @@
                         (if-let [id (sor/id-of c)] ; only things with :id
                           [id (value* c)])))
                  (filter identity))))
+    (value!* [this value-map]
+      (doseq [w (sor/select this [:*])]
+        (if-let [new-value (value-map (sor/id-of w))]
+          (value!* w new-value)))
+      this)
 
   javax.swing.JLabel
     (container?* [this] false)
     (value* [this] (.getText this))
+    (value!* [this v] (cfg/config!* this [:text v]))
 
   javax.swing.text.JTextComponent
     (container?* [this] false)
     (value* [this] (.getText this))
+    (value!* [this v] (cfg/config!* this [:text v]))
 
   javax.swing.JComboBox
     (container?* [this] false)
     (value* [this] (sel/selection this)) 
+    (value!* [this v] (sel/selection! this v)) 
 
   javax.swing.JList
     (container?* [this] false)
@@ -50,22 +60,27 @@
   javax.swing.AbstractButton
     (container?* [this] false)
     (value* [this] (.isSelected this)) 
+    (value!* [this v] (doto this (.setSelected (boolean v)))) 
 
   javax.swing.ButtonGroup
     (container?* [this] false)
     (value* [this] (sel/selection this)) 
+    (value!* [this v] (sel/selection! this v)) 
   
   javax.swing.JSpinner
     (container?* [this] false)
     (value* [this] (sel/selection this)) 
+    (value!* [this v] (sel/selection! this v)) 
 
   javax.swing.JSlider
     (container?* [this] false)
     (value* [this] (.getValue this)) 
+    (value!* [this v] (doto this (.setValue v))) 
 
   javax.swing.JProgressBar
     (container?* [this] false)
     (value* [this] (.getValue this)) 
+    (value!* [this v] (doto this (.setValue v))) 
 
   ; TODO Tree?
   ; TODO Table?

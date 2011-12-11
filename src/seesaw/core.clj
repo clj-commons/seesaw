@@ -3536,7 +3536,9 @@
 ; Widget "value"
 
 (defn value 
-  "Return the 'value' of a widget. Basically, there are two possibilities:
+  "Return the 'value' of a widget. target is passed through (to-widget) as usual.
+  
+  Basically, there are two possibilities:
   
     * It's a container: A map of widget values keyed by :id is built
         recursively from all its children.
@@ -3544,6 +3546,7 @@
       or the current selection of the widget.
 
   See:
+    (seesaw.core/value!)
     (seesaw.core/selection)
     (seesaw.core/group-by-id)
   
@@ -3551,4 +3554,33 @@
   " 
   [target]
   (seesaw.value/value* (or (to-widget target) target)))
+
+(defn value!
+  "Set the 'value' of a widget. This is the dual of (seesaw.core/value). target
+  is passed through (to-widget) as usual.
+
+  Basically, there are two possibilities:
+  
+    * target is a container: The value is a map of widget values keyed by :id. These
+        values are applied to all descendants of target.
+    * otherwise, v is a new 'natural' value for the widget, usually the text,
+      or the current selection of the widget.
+
+  In either case (to-widget target) is returned.
+
+  Examples:
+
+    Imagine there's widget :foo, :bar, :yum in frame f:
+
+      (value! f {:foo \"new foo text\" :bar 99 :yum \"new yum text\"})
+
+  See:
+    (seesaw.core/value)
+    (seesaw.core/selection)
+    (seesaw.core/group-by-id)
+ 
+  This idea is shamelessly borrowed from Clarity https://github.com/stathissideris/clarity
+  "
+  [target v]
+  (seesaw.value/value!* (or (to-widget target) target) v))
 

@@ -69,3 +69,60 @@
   (it "returns the text of a text field"
     (= "hi" (value* (javax.swing.JTextField. "hi"))))) 
 
+(describe value!*
+  (it "sets the values of widgets with a map keyed by id for containers"
+    (let [a (label :id :a :text "")
+          b (text  :id :b :text "")
+          c (text :id :c :text "unchanged")
+          p (horizontal-panel :items [a 
+                                      (vertical-panel :id :foo :items [b c]) ])
+          f (frame :content p)]
+      (expect (= f (value!* f {:a "A" :b "B"})))
+      (expect (= {:a "A" :b "B" :c "unchanged"} (value* f)))))
+
+  (it "sets the value of a progress-bar"
+    (= 99 (-> (progress-bar :min 0 :max 100 :value 98)
+            (value!* 99)
+            value*)))
+
+  (it "sets the value of a slider"
+    (= 99 (-> (slider :min 0 :max 100 :value 98)
+            (value!* 99)
+            value*)))
+
+  (it "sets the selection of a spinner"
+    (= 101 (-> (spinner :model [99 100 101 102])
+             (value!* 101)
+             value)))
+
+  (it "sets the selection of a button-y thing (checkbox, button, menu, etc)"
+    (expect (not (-> (button :selected? true)
+              (value!* false)
+              value*)))
+    (expect (-> (button :selected? false)
+              (value!* true)
+              value*)))
+
+  (it "sets the selection of a combobox"
+    (let [cb (combobox :model ["a" "b" "c"])] 
+      (expect (= "a" (selection cb)))
+      (value!* cb "c")
+      (expect (= "c" (value* cb)))))
+  (it "sets the selection of button-group"
+    (let [a (radio)
+          b (radio)
+          g (button-group :buttons [a b])]
+      (expect (nil? (selection g)))
+      (value!* g b)
+      (expect (= b (value* g)))))
+  (it "sets the text of an editor-pane"
+    (= "bar" (-> (editor-pane) (value!* "bar") text)))
+  (it "sets the text of a styled-text"
+    (= "bar" (-> (styled-text) (value!* "bar") text)))
+  (it "sets the text of a text area"
+    (= "bar" (-> (text :multi-line? true) (value!* "bar") text)))
+  (it "sets the text of a text field"
+    (= "bar" (-> (text) (value!* "bar") text)))
+  (it "sets the text of a label"
+    (= "bar" (-> (label) (value!* "bar") text))))
+
