@@ -8,7 +8,8 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns seesaw.test.examples.popup
-  (:use [seesaw core border]))
+  (:use [seesaw core border]
+        seesaw.test.examples.example))
 
 ; An example of adding a popup (i.e. right-click/context) menu to a component.
 
@@ -21,7 +22,7 @@
   [event]
   [(str "HI-" (rand)) "BYE"])
 
-(defn app []
+(defexample []
   (frame :title "Popup Menu Example" :width 500 :height 300
     :content 
       (left-right-split 
@@ -36,8 +37,5 @@
                :popup dynamic-popup)
         :divider-location 1/2)))
 
-(defn -main [& args]
-  (invoke-later (show! (app))))
-
-;(-main)
+;(run :dispose)
 

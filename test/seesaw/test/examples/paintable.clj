@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.paintable
-  (:use [seesaw core graphics]))
+  (:use [seesaw core graphics]
+        seesaw.test.examples.example))
 
 (defn draw-a-red-x 
   "Draw a red X on a widget with the given graphics context"
@@ -26,17 +27,13 @@
   (flow-panel 
     :border 5
     :items [
-      (label           :text "I'm a good label!" :font "ARIAL-BOLD-40" :foreground "#00AA00")
-      (paintable label :text "I'm a bad label!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)
+      (label            :text "I'm a good label!" :font "ARIAL-BOLD-40" :foreground "#00AA00")
+      (paintable label  :text "I'm a bad label!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)
       (paintable button :text "I'm a bad button!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)]))
 
-(defn -main [& args]
-  (invoke-later
-    (->
-      (frame :title "Seesaw (paintable) example"
-             :content (content))
-      pack!
-      show!)))
+(defexample []
+  (frame :title "Seesaw (paintable) example"
+         :content (content)))
 
-;(-main)
+;(run :dispose)
 

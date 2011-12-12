@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.table
-  (:use [seesaw core table]))
+  (:use [seesaw core table]
+        seesaw.test.examples.example))
 
 ; A simple example of (table) for basic tabular data
 
@@ -33,7 +34,7 @@
       :center (scrollable (make-table))
       :south  (label :id :sel :text "Selection: "))))
 
-(defn app []
+(defexample []
   (let [f (show! (make-frame))
         t (select f [:#table])]
     ; Listen for selection changes and show them in the label
@@ -43,10 +44,8 @@
           :text (str "Selection: " 
                      ; (selection t) returns the selected row index
                      ; (value-at t row) returns the record at row
-                     (value-at t (selection t))))))))
+                     (value-at t (selection t))))))
+    f))
 
-(defn -main [& args]
-  (invoke-later (app)))
-
-;(-main)
+;(run :dispose)
 

@@ -10,7 +10,8 @@
 
 (ns seesaw.test.examples.rpn
   (:use [seesaw.core]
-        [seesaw.style :only [apply-stylesheet]])
+        [seesaw.style :only [apply-stylesheet]]
+        seesaw.test.examples.example)
   (:require [seesaw.bind :as bind]))
 
 ;; A simple RPN calculator
@@ -117,14 +118,12 @@
                :editable? false}
     [:#stack] {:font "ARIAL-PLAIN-20"} })
 
-(defn -main [& args] 
-  (invoke-later
-    (->
-      (layout)
-      behave
-      (apply-stylesheet style) ; <- NOTE use of experimental/alpha function
-      pack!
-      show!)))
+(defexample [] 
+  (->
+    (layout)
+    behave
+    (apply-stylesheet style) ; <- NOTE use of experimental/alpha function
+    ))
 
-;(-main)
+;(run :dispose)
 

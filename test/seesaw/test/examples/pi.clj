@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.pi
-  (:use seesaw.core)
+  (:use seesaw.core
+        seesaw.test.examples.example)
   (:require seesaw.invoke)
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
 
@@ -157,13 +158,11 @@
     (apply listen (select root sel) (reduce concat handlers)))
   root)
 
-(defn -main [& args]
-  (invoke-later
-    (-> (make-frame) 
-      (apply-stylesheet stylesheet) 
-      (apply-behaviors behaviors) 
-      pack! 
-      show!)))
+(defexample []
+  (-> (make-frame) 
+    (apply-stylesheet stylesheet) 
+    (apply-behaviors behaviors) 
+    ))
 
-;(-main)
+;(run :dispose)
 

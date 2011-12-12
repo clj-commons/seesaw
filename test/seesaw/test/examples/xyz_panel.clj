@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.xyz-panel
-  (:use [seesaw core border behave graphics])
+  (:use [seesaw core border behave graphics]
+        seesaw.test.examples.example)
   (:import [javax.swing SwingUtilities]))
 
 
@@ -63,15 +64,14 @@
                    (config! :bounds :preferred)
                    movable))))
 
-(defn -main [& args]
-  (invoke-later
-    (show!
-      (frame 
-        :title   "Seesaw xyz-panel example" 
-        :content (border-panel
-                   :vgap 5
-                   :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
-                   :center (make-panel))
-        :size    [600 :by 600]))))
-;(-main)
+(defexample []
+  (frame 
+    :title   "Seesaw xyz-panel example" 
+    :content (border-panel
+               :vgap 5
+               :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"
+               :center (make-panel))
+    :size    [600 :by 600]))
+
+;(run :dispose)
 

@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.bind
-  (:use [seesaw core border])
+  (:use [seesaw core border]
+        seesaw.test.examples.example)
   (:require [seesaw.bind :as b]))
 
 (defn regex-box [& opts]
@@ -36,25 +37,20 @@
       :center pattern
       :south status :vgap 5 :border 5)))
 
-(defn app []
+(defexample []
+
   (let [f (frame 
-           :title "Seesaw (bind) example"
-           :content (border-panel :north (checkbox :id :enable 
-                                                   :text "Enable search"
-                                                   :selected? true)
-                                  :center (regex-box)))]
+            :title "Seesaw (bind) example"
+            :content (border-panel :north (checkbox :id :enable 
+                                                    :text "Enable search"
+                                                    :selected? true)
+                                   :center (regex-box)))]
     ; Bind the selection of the check box to the enabled state
     ; of the search box
     (b/bind (b/selection (select f [:#enable]))
             (b/property  (select f [:#search]) :enabled?))
+
     f))
 
-(defn -main [& args]
-  (invoke-now
-    (->
-      (app)
-      pack!
-      show!)))
-
-;(-main)
+;(run :dispose)
 

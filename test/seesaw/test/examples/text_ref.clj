@@ -9,12 +9,13 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.text-ref
-  (:use [seesaw.core])
+  (:use [seesaw.core]
+        seesaw.test.examples.example)
   (:require [seesaw.bind :as bind]))
 
 ; Very basic example of connecting a text field to an atom.
 
-(defn app []
+(defexample []
   (let [input  (text :columns 20)
         value  (atom "")
         output (text :editable? false)]
@@ -37,7 +38,5 @@
                   (action :name "Print atom value to console"
                           :handler (fn [e] (println "Current atom value is: " @value)))]))))
 
-(defn -main [& args]
-  (invoke-later (show! (pack! (app)))))
-;(-main)
+;(run :dispose)
 

@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.slider
-  (:use [seesaw core color border]))
+  (:use [seesaw core color border]
+        seesaw.test.examples.example))
 
 (defn make-frame []
   (frame 
@@ -26,17 +27,16 @@
         (canvas :id :canvas :border (line-border) :size [200 :by 200])])))
 
 (defn update-color [root]
-  (let [red   (selection (select root [:#red]))
-        green (selection (select root [:#green]))
-        blue  (selection (select root [:#blue]))]
-    (config! (select root [:#canvas]) :background (color red green blue))))
+  (let [{:keys [red green blue]} (value root)] ; <- Use (value) to get map of values
+    (config! (select root [:#canvas]) 
+             :background (color red green blue))))
 
-(defn -main [& args]
-  (invoke-later
-    (let [root (-> (make-frame) pack! show!)]
-      (listen (map #(select root [%]) [:#red :#green :#blue]) :change
-        (fn [e]
-          (update-color root))))))
+(defexample []
+  (let [root (make-frame)]
+    (listen (map #(select root [%]) [:#red :#green :#blue]) :change
+            (fn [e]
+              (update-color root)))
+    root))
 
-;(-main)
+;(run :dispose)
 

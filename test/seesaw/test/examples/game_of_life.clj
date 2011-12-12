@@ -3,7 +3,8 @@
         [seesaw.core]
         [seesaw.graphics]
         [seesaw.behave]
-        [seesaw.border])
+        [seesaw.border]
+        seesaw.test.examples.example)
   (:require [clojure.java.io :as jio]
             [seesaw.dnd :as dnd]
             [seesaw.bind :as b]))
@@ -93,10 +94,9 @@
                                  (contains? cells [x y]) "#F03232"
                                  (not= (even? x) (even? y)) "#323232"))))))
 
-(defn make-ui [on-close]
+(defn make-ui []
   (frame 
     :title "Game of Life" 
-    :on-close on-close
     :size [300 :by 300]
     :content (border-panel
                :border 5 :hgap 5 :vgap 5
@@ -163,14 +163,8 @@
 
   root)
 
-(defn app [on-close]
-  (invoke-later
-    (-> (make-ui on-close)
-      add-behaviors 
-      show!)))
+(defexample []
+  (-> (make-ui) add-behaviors))
 
-(defn -main [& args]
-  (app :exit))
-
-;(app :dispose)
+;(run :dispose)
 

@@ -1,6 +1,7 @@
 (ns seesaw.test.examples.pan-on-drag
-  (:require [seesaw.core :as sc])
-  (:require [seesaw.behave :as behave]))
+  (:use seesaw.test.examples.example)
+  (:require [seesaw.core :as sc]
+            [seesaw.behave :as behave]))
 
 (defn scrollable-image [id]
   (sc/scrollable
@@ -50,11 +51,8 @@
                           :size       [50 :by 50]
                           :background :blue)]))))
 
-(defn -main [& args]
-  (->
-    (app)
-    add-behaviors
-    sc/show!))
+(defexample []
+  (-> (app) add-behaviors))
 
-;(-main)
+;(run :dispose)
 

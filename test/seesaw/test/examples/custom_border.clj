@@ -10,9 +10,10 @@
 
 (ns seesaw.test.examples.custom-border
   (:use [seesaw.core :only [frame label show!]]
-        [seesaw.border :only [custom-border]]))
+        [seesaw.border :only [custom-border]]
+        seesaw.test.examples.example))
 
-(defn app []
+(defexample []
   (frame 
     :size [400 :by 400]
     :content (label :text "I have a custom border"
@@ -22,10 +23,5 @@
                                                       (.setColor java.awt.Color/RED)
                                                       (.drawRoundRect (+ 5 x) (+ 5 y) (- w 10) (- h 10) 15 15)))))))
 
-(defn -main [& args]
-  (->
-    (app)
-    show!))
-
-;(-main)
+;(run :dispose)
 

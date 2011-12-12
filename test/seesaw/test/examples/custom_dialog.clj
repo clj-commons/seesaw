@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.custom-dialog
-  (:use [seesaw core font border mig]))
+  (:use [seesaw core font border mig]
+        seesaw.test.examples.example))
 
 (defn open-more-options-dlg
   []
@@ -62,10 +63,11 @@
       pack! 
       show!)))
 
-(defn -main [& args]
-  (invoke-later
-    (show! (frame :title "Custom Dialog Example"
-           :content (action :name "Show Dialog" 
-                            :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))))))
-;(-main)
+(defexample []
+  (frame :title "Custom Dialog Example"
+         :content (action :name "Show Dialog" 
+                          :handler (fn [e] 
+                                     (alert (str "Result = " (open-display-options-dlg)))))))
+
+;(run :dispose)
 

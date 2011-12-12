@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.tree
-  (:use [seesaw core tree])
+  (:use [seesaw core tree]
+        seesaw.test.examples.example)
   (:require clojure.xml))
 
 (def source "http://www.4clojure.com/problems/rss")
@@ -40,7 +41,7 @@
                                 :renderer render-fn))
       :south  (label :id :sel :text "Selection: "))))
 
-(defn app []
+(defexample []
   (let [f (make-frame)]
     ; Listen for selection changes and show them in the label
     (listen (select f [:#tree]) 
@@ -54,8 +55,5 @@
             :text (str "Selection: " (-> e selection first last)))))
     f))
 
-(defn -main [& args]
-  (invoke-later (show! (app))))
-
-;(-main)
+;(run :dispose)
 

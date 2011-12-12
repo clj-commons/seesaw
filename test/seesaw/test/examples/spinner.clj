@@ -8,9 +8,10 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns seesaw.test.examples.spinner
-  (:use [seesaw.core]))
+  (:use [seesaw.core]
+        seesaw.test.examples.example))
 
-(defn app []
+(defexample []
   (frame 
     :title "Spinner Example"
     :content
@@ -34,10 +35,5 @@
                 ])))
 
 
-(defn -main [& args]
-  (-> (app)
-    pack!
-    show!))
-
-;(-main)
+;(run :dispose)
 

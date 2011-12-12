@@ -2,6 +2,7 @@
   (:use seesaw.core
         seesaw.chooser
         seesaw.mig
+        seesaw.test.examples.example
         [clojure.java.io :only [file]]))
 
 (native!)
@@ -53,7 +54,7 @@
     (spit @current-file)
     (set-status "Wrote " @current-file ".")))
 
-(defn a-exit  [e] (System/exit 0))
+(defn a-exit  [e] (dispose! e))
 (defn a-copy  [e] (.copy editor))
 (defn a-cut   [e] (.cut editor))
 (defn a-paste [e] (.paste editor))
@@ -71,20 +72,16 @@
         :items [(menu :text "File" :items [a-new a-open a-save a-save-as a-exit])
                 (menu :text "Edit" :items [a-copy a-cut a-paste])])))
 
-(defn -main [& args]
+(defexample []
   (add-watch
-   current-file
-   nil
-   (fn [_ _ _ new] (text! current-file-label (str new))))
-  (invoke-now
-   (-> (frame
-          :title "Seesaw Example Text Editor"
-          :content main-panel
-          :on-close :exit
-          :minimum-size [640 :by 480]
-          :menubar menus)
-     pack!
-     show!)))
+    current-file
+    nil
+    (fn [_ _ _ new] (text! current-file-label (str new))))
+  (frame
+    :title "Seesaw Example Text Editor"
+    :content main-panel
+    :minimum-size [640 :by 480]
+    :menubar menus))
 
-;(-main)
+;(run :dispose)
 

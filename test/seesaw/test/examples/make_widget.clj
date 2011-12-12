@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.make-widget
-  (:use [seesaw core border make-widget mig]))
+  (:use [seesaw core border make-widget mig]
+        seesaw.test.examples.example))
 
 ; This example shows how to implement the MakeWidget protocol for a new type.
 ; Is this cute? Yes. Useful? Hell if I know.
@@ -42,11 +43,9 @@
 
 ; Pass the people as the :items of a panel and we get a scrollable
 ; list of widgets.
-(defn app []
+(defexample []
   (frame :title "People"
     :content (scrollable (vertical-panel :items people))))
 
-(defn -main [& args]
-  (invoke-later (show! (pack! (app)))))
-;(-main)
+;(run :dispose)
 

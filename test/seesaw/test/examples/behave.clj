@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.behave
-  (:use [seesaw core behave]))
+  (:use [seesaw core behave]
+        seesaw.test.examples.example))
 
 ; Examples of stuff in (seesaw.behave). 
 
@@ -25,11 +26,8 @@
         (combobox :editable? true :model ["Same here. Hit tab!" "First" "Second" "Third"])
         when-focused-select-all)]))
 
-(defn -main [& args]
-  (invoke-later
-    (-> (frame :title "seesaw.behave examples" :content (focus-select))
-        pack!
-        show!)))
+(defexample []
+  (frame :title "seesaw.behave examples" :content (focus-select)))
 
-;(-main)
+;(run :dispose)
 

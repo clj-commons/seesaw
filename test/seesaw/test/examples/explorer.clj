@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.explorer
-  (:use [seesaw core tree])
+  (:use [seesaw core tree]
+        seesaw.test.examples.example)
   (:import [java.io File]
            [javax.swing.filechooser FileSystemView]))
 
@@ -42,7 +43,7 @@
 
       :south  (label :id :status :text "Ready"))))
 
-(defn app []
+(defexample []
   (let [f (make-frame)]
     ; Hook up a selection listener to the tree to update stuff
     (listen (select f [:#tree]) :selection
@@ -54,9 +55,5 @@
             (config! (select f [:#list]) :model files)))))
     f))
 
-(defn -main [& args]
-  (invoke-later (show! (app))))
-
-;(-main)
-
+;(run :dispose)
 

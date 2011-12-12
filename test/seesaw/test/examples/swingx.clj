@@ -10,7 +10,8 @@
 
 (ns seesaw.test.examples.swingx
   (:use [seesaw.core]
-        [seesaw.swingx])
+        [seesaw.swingx]
+        seesaw.test.examples.example)
   (:require [seesaw.bind :as b]))
 
 ; A demo program that shows some of the components in Seesaw's SwingX support.
@@ -113,15 +114,8 @@
                   (demos (selection chooser)) ))))
   root)
 
-(defn run [on-close]
-  (invoke-later
-    (-> (make-ui)
-      (config! :on-close on-close)
-      add-behaviors
-      show!)))
-
-(defn -main [& args]
-  (run :exit))
+(defexample []
+  (-> (make-ui) add-behaviors))
 
 ;(run :dispose)
 
