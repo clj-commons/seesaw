@@ -1114,6 +1114,8 @@
 (describe frame
   (it "should create a frame with an id"
     (= :my-frame (id-of (frame :id :my-frame))))
+  (it "should create a frame with 0 width and height"
+    (= (java.awt.Dimension. 0 0) (.getSize (frame))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88)]
       (expect (= javax.swing.JFrame (class f)))

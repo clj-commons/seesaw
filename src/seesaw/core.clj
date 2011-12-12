@@ -2727,12 +2727,12 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
   [& {:keys [width height visible? size] 
-      :or {width 100 height 100}
       :as opts}]
   (cond-doto ^JFrame (apply-options (construct JFrame opts) 
                                     (dissoc opts :width :height :visible?) 
                                     frame-options)
-    (not size) (.setSize width height)
+    (and (not size) 
+         (or width height)) (.setSize (or width 100) (or height 100))
     true       (.setLocationByPlatform true)
     visible?   (.setVisible (boolean visible?))))
 
