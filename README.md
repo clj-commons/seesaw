@@ -81,6 +81,7 @@ Now run it:
 * Anthony Grimes (Raynes)
 * Thomas Karolski (MHOOO)
 * Chun-wei Kuo (Domon)
+* Vladimir Matveev (dpx-infinity)
 
 ## License
 
