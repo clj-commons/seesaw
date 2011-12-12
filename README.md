@@ -71,6 +71,17 @@ Now run it:
 * Run `lein deps`
 * Move along
 
+## Contributors
+
+* Meikel Brandmeyer (kotarak)
+* Thomas Karolski (MHOOO)
+* Jonathan Fischer Friberg (odyssomay)
+* Stuart Campbell (harto)
+* Anthony Grimes (Raynes)
+* Chun-wei Kuo (Domon)
+* David Brunell (Quantalume)
+* Michael Frericks
+
 ## License
 
 Copyright (C) 2011 Dave Ray
