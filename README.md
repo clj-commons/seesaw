@@ -74,13 +74,13 @@ Now run it:
 ## Contributors
 
 * Meikel Brandmeyer (kotarak)
-* Thomas Karolski (MHOOO)
-* Jonathan Fischer Friberg (odyssomay)
-* Stuart Campbell (harto)
-* Anthony Grimes (Raynes)
-* Chun-wei Kuo (Domon)
 * David Brunell (Quantalume)
+* Stuart Campbell (harto)
 * Michael Frericks
+* Jonathan Fischer Friberg (odyssomay)
+* Anthony Grimes (Raynes)
+* Thomas Karolski (MHOOO)
+* Chun-wei Kuo (Domon)
 
 ## License
 
