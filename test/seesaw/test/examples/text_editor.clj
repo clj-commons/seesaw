@@ -51,7 +51,7 @@
 (defn a-save-as [e]
   (when-let [selected (select-file :save)]
     (set-current-file selected)
-    (spit @current-file)
+    (spit @current-file (text editor))
     (set-status "Wrote " @current-file ".")))
 
 (defn a-exit  [e] (dispose! e))
