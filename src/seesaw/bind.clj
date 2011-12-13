@@ -275,6 +275,33 @@
   ([widget]
     (selection widget {})))
 
+(defn value 
+  "Converts the value of a widget into a bindable. Applies to listbox,
+  table, tree, combobox, checkbox, etc, etc. In short, anything to which
+  (seesaw.core/value) applies. This is a \"receive-only\" bindable since
+  there is no good way to detect changes in the values of composites.
+
+  Examples:
+    
+    ; Map the value of an atom (a map) into the value of a panel.
+    (let [a  (atom nil)
+          p  (border-panel :north (checkbox :id :cb :text \"Enable\")
+                           :south (text :id :tb)]
+      (bind a (value p)))
+    ; ... now setting a to {:cb true :tb \"Hi\"} will check the checkbox
+    ; and change the text field to \"Hi\"
+
+  See:
+    (seesaw.bind/bind)
+    (seesaw.core/value!)
+  "
+  ([widget]
+    (reify Bindable
+      (subscribe [this handler]
+        (throw (UnsupportedOperationException. "Can't subscribe to value")))
+      (notify [this v]
+        (ssc/value! widget v)))))
+
 (defn transform 
   "Creates a bindable that takes an incoming value v, applies
   (f v args), and passes the result on. f should be side-effect

@@ -172,12 +172,22 @@
       (bind (selection lb) output)
       (ssc/selection! lb :b)
       (expect (= :b @output))))
-  (it "receives selection changes on a widget"
+  (it "maps its input to the selection of a widget"
     (let [input (atom nil)
           lb (ssc/listbox :model [:a :b :c])]
       (bind input (selection lb))
       (reset! input :b)
       (expect (= :b (ssc/selection lb))))))
+
+(describe value 
+  (it "maps its input to the value of a widget"
+    (let [input (atom nil)
+          lb (ssc/listbox :id :lb :model [:a :b :c])
+          tb (ssc/text :id :text)
+          p  (ssc/border-panel :north lb :center tb)]
+      (bind input (value p))
+      (reset! input {:lb :b :text "hi"})
+      (expect (= {:lb :b :text "hi"} (ssc/value p))))))
 
 (describe to-bindable
   (it "returns arg if it's already bindable"
