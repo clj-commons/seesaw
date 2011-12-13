@@ -13,7 +13,8 @@
   seesaw.dev
   (:require [seesaw.core :as core]
             [seesaw.event :as ev]
-            [seesaw.options :as opt]))
+            [seesaw.options :as opt]
+            [clojure.pprint :as pp]))
 
 
 (defonce ^{:private true} error-frame 
@@ -92,10 +93,10 @@
   friends."
   [v]
   (printf "%s%n" (.getName (class v)))
-  (doseq [{:keys [name setter]} (sort-by :name (vals (opt/options-for v)))]
-    (printf "  %s%s%n" 
+  (doseq [{:keys [name setter examples]} (sort-by :name (vals (opt/options-for v)))]
+    (printf "  %24s  %s%n" 
             name
-            (if-not setter " [ro]" ""))))
+            (if examples (pr-str examples) ""))))
 
 (defn show-events
   "Given a class or instance, print information about all supported events.

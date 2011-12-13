@@ -15,7 +15,7 @@
         [seesaw.util :only [camelize illegal-argument check-args
                             resource resource-key?]]))
 
-(defrecord Option [name setter getter])
+(defrecord Option [name setter getter examples])
 
 (def ^{:private true} options-property "seesaw-options")
 
@@ -57,24 +57,26 @@
     :else [v v]))
 
 (defmacro bean-option 
-  [name-arg target-type & [set-conv get-conv]]
+  [name-arg target-type & [set-conv get-conv examples]]
   (let [[option-name bean-property-name] (split-bean-option-name name-arg)
         target (gensym "target")]
   `(Option. ~option-name 
       (fn [~(with-meta target {:tag target-type}) value#]
         (. ~target ~(setter-name bean-property-name) (~(or set-conv 'identity) value#)))
       (fn [~(with-meta target {:tag target-type})]
-        (~(or get-conv 'identity) (. ~target ~(getter-name bean-property-name)))))))
+        (~(or get-conv 'identity) (. ~target ~(getter-name bean-property-name))))
+      ~examples)))
 
 (defn default-option 
   ([name] (default-option name (fn [_ _] (illegal-argument "No setter defined for option %s" name))))
   ([name setter] (default-option name setter (fn [_] (illegal-argument "No getter defined for option %s" name))))
-  ([name setter getter] (Option. name setter getter)))
+  ([name setter getter] (default-option name setter getter nil))
+  ([name setter getter examples] (Option. name setter getter examples)))
 
 (defn ignore-option
   "Might be used to explicitly ignore the default behaviour of options."
-  [name]
-  (default-option name (fn [_ _]) (fn [_ _])))
+  ([name examples] (default-option name (fn [_ _]) (fn [_ _]) nil))
+  ([name] (ignore-option name nil)))
 
 (declare reapply-options)
 
@@ -102,7 +104,9 @@
                                 (when-let [v (resource prop)]
                                   [(keyword k) v])))
                             (map name keys))
-              nil)))))
+              nil)))
+    nil
+    [(str "A i18n prefix for a resource with keys " keys)]))
 
 (defn- apply-option
   [target ^Option opt v]

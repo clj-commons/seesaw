@@ -781,41 +781,47 @@
 
 (declare paint-option-handler)
 
+(def ^{:private true} color-examples [:aliceblue "#f00" "#FF0000" "(seesaw.color/color 255 0 0 0 224)"])
+(def ^{:private true} boolean-examples 'boolean)
+(def ^{:private true} dimension-examples [[640 :by 480] java.awt.Dimension])
+
 (def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
 
 (def default-options 
   (option-map
     (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
-    (default-option :listen #(apply seesaw.event/listen %1 %2))
+    (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["See (seesaw.listen/listen)"])
 
     (default-option :items #(add-widgets %1 %2)
                                         #(seq (.getComponents ^java.awt.Container %1))) 
-    (default-option :id seesaw.selector/id-of! seesaw.selector/id-of)
-    (default-option :class seesaw.selector/class-of! seesaw.selector/class-of)
-    (bean-option :opaque? JComponent boolean) ; #(.setOpaque %1 (boolean %2))
-    (bean-option :enabled? java.awt.Component boolean)
-    (bean-option :focusable? java.awt.Component boolean)
+    (default-option :id seesaw.selector/id-of! seesaw.selector/id-of ["A keyword id for the widget"])
+    (default-option :class seesaw.selector/class-of! seesaw.selector/class-of [:class-name, #{:multiple, :class-names}])
+    (bean-option :opaque? JComponent boolean nil boolean-examples) 
+    (bean-option :enabled? java.awt.Component boolean nil boolean-examples)
+    (bean-option :focusable? java.awt.Component boolean nil boolean-examples)
     (default-option :background
                     #(do
                       (.setBackground ^JComponent %1 (seesaw.color/to-color %2))
                       (.setOpaque ^JComponent %1 true))
-                    #(.getBackground ^JComponent %1))
-    (bean-option :foreground JComponent seesaw.color/to-color)
-    (bean-option :border JComponent seesaw.border/to-border)
-    (bean-option :font JComponent seesaw.font/to-font)
-    (bean-option [:tip :tool-tip-text] JComponent str)
-    (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)))
-    (bean-option :visible? java.awt.Component boolean)
-    (bean-option :preferred-size JComponent to-dimension)
-    (bean-option :minimum-size JComponent to-dimension)
-    (bean-option :maximum-size JComponent to-dimension)
+                    #(.getBackground ^JComponent %1)
+                    color-examples)
+    (bean-option :foreground JComponent seesaw.color/to-color nil color-examples)
+    (bean-option :border JComponent seesaw.border/to-border nil [5, "\"Border Title\"", [5 "Compound" 10], "See seesaw.border/*"])
+    (bean-option :font JComponent seesaw.font/to-font nil ["ARIAL-BOLD-18", :monospaced :serif :sans-serif "See (seesaw.font/font)"])
+    (bean-option [:tip :tool-tip-text] JComponent str nil ["A tooltip string"])
+    (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)) nil ["See (seesaw.cursor/cursor)"])
+    (bean-option :visible? java.awt.Component boolean nil boolean-examples)
+    (bean-option :preferred-size JComponent to-dimension nil dimension-examples)
+    (bean-option :minimum-size JComponent to-dimension nil dimension-examples)
+    (bean-option :maximum-size JComponent to-dimension nil dimension-examples)
     (default-option :size
                       #(let [d (to-dimension %2)]
                         (doto ^JComponent %1 
                           (.setPreferredSize d)
                           (.setMinimumSize d)
                           (.setMaximumSize d)))
-                      #(.getSize ^JComponent %1))
+                      #(.getSize ^JComponent %1)
+      dimension-examples)
     (default-option :location #(move! %1 :to %2) #(.getLocation ^java.awt.Component %1))
     (default-option :bounds bounds-option-handler #(.getBounds ^java.awt.Component %1)) 
     (default-option :popup #(popup-option-handler %1 %2))
@@ -823,10 +829,10 @@
 
     ; TODO I'd like to push these down but cells.clj uses them on non-attached
     ; widgets.
-    (default-option :icon set-icon get-icon)
-    (default-option :text set-text get-text)
+    (default-option :icon set-icon get-icon ["See (seesaw.icon/icon)"])
+    (default-option :text set-text get-text ["A string" "Anything accepted by (clojure.core/slurp)"])
 
-    (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
+    (default-option :drag-enabled? set-drag-enabled get-drag-enabled boolean-examples)
     (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
 
 (extend-protocol Configurable
@@ -927,9 +933,9 @@
   (merge 
     default-options
     (option-map
-      (default-option :hgap #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)) 
-      (default-option :items border-panel-items-setter border-panel-items-getter))
+      (default-option :hgap #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2) nil ["An integer in pixels"])
+      (default-option :vgap #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2) nil ["An integer in pixels"]) 
+      (default-option :items border-panel-items-setter border-panel-items-getter ['[(label "North") :north (button :text "South") :south]]))
     (apply option-map 
            (map
             (fn [[k v]] (default-option k #(add-widget %1 %2 v)))
@@ -978,8 +984,8 @@
       (default-option :items (fn [panel items]
                               (doseq [[w id] items]
                                 (add-widget panel w (name id)))))
-      (default-option :hgap #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)) 
-      (default-option :vgap #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)))))
+      (default-option :hgap #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]) 
+      (default-option :vgap #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]))))
 
 (defn card-panel
   "Create a panel with a card layout. Options:
@@ -1019,10 +1025,19 @@
   (merge
     default-options
     (option-map 
-      (default-option :hgap #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :align #(.setAlignment ^FlowLayout (.getLayout ^java.awt.Container %1) (get flow-align-table %2 %2)))
-      (default-option :align-on-baseline? #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) (boolean %2))))))
+      (default-option :hgap #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
+      (default-option :vgap #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
+      (default-option 
+        :align 
+        #(.setAlignment ^FlowLayout (.getLayout ^java.awt.Container %1) 
+                        (get flow-align-table %2 %2))
+        nil
+        (keys flow-align-table))
+      (default-option 
+        :align-on-baseline? 
+        #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) 
+                              (boolean %2))
+        boolean-examples))))
 
 (defn flow-panel
   "Create a panel with a flow layout. Options:
@@ -1087,10 +1102,10 @@
   (merge
     default-options
     (option-map 
-      (ignore-option :rows)
-      (ignore-option :columns)
-      (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)))))
+      (ignore-option :rows ["Integer rows"])
+      (ignore-option :columns ["Integer columns"])
+      (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
+      (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]))))
 
 (defn grid-layout [rows columns]
   (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
@@ -1225,10 +1240,10 @@
     default-options
     (option-map
       (resource-option :resource base-resource-options)
-      (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table)
-      (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table) 
-      (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table)
-      (bean-option [:v-text-position :vertical-text-position] javax.swing.JLabel v-alignment-table))))
+      (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table nil (keys v-alignment-table)) 
+      (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:v-text-position :vertical-text-position] javax.swing.JLabel v-alignment-table nil (keys v-alignment-table)))))
 
 (defn label 
   "Create a label. Supports all default properties. Can take two forms:
@@ -1273,7 +1288,8 @@
   (option-map
     (default-option :buttons 
       #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b))
-      #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1)))))
+      #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1))
+      ["A seq of buttons in the group"])))
 
 (defn button-group
   "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
@@ -1322,13 +1338,13 @@
       model-option
       action-option
       (resource-option :resource base-resource-options)
-      (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
-      (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
-      (bean-option :selected? javax.swing.AbstractButton boolean)
+      (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table nil (keys v-alignment-table)) 
+      (bean-option :selected? javax.swing.AbstractButton boolean nil boolean-examples)
       (bean-option :margin javax.swing.AbstractButton to-insets)
 
-      (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1))
-      (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode))))
+      (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1) nil ["A button group"])
+      (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode nil ["See (seesaw.util/to-mnemonic-keycode)"]))))
 
 (defn button 
   "Construct a generic button. In addition to default widget options, supports
@@ -1414,18 +1430,18 @@
                                         [:caret-color :disabled-text-color :selected-text-color :selection-color]))
       (bean-option :editable? javax.swing.text.JTextComponent boolean)
       (bean-option :margin javax.swing.text.JTextComponent to-insets)
-      (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
+      (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
       (bean-option :caret-position javax.swing.text.JTextComponent)
-      (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (def text-field-options 
   (merge 
     text-options 
     (option-map
-      (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table)
+      (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table nil (keys h-alignment-table))
       (bean-option :columns javax.swing.JTextField))))
 
 (def text-area-options 
@@ -1723,13 +1739,13 @@
   (merge
     default-options
     (option-map
-      (around-option model-option to-list-model identity) 
+      (around-option model-option to-list-model identity)
       (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
       (default-option :selection-mode list-selection-mode-handler)
       (bean-option :fixed-cell-height javax.swing.JList)
-      (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (defn listbox
   "Create a list box (JList). Additional options:
@@ -1782,8 +1798,8 @@
       (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
       (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
       (default-option :selection-mode list-selection-mode-handler)
-      (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
-      (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table nil (keys auto-resize-mode-table))
+      (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (defn table
   "Create a table (JTable). Additional options:
@@ -1846,7 +1862,7 @@
       (bean-option :toggle-click-count javax.swing.JTree)
       (bean-option :visible-row-count javax.swing.JTree)
       (default-option :selection-mode tree-selection-mode-handler)
-      (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (defn tree
   "Create a tree (JTree). Additional options:
