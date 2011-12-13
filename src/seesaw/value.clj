@@ -55,7 +55,8 @@
 
   javax.swing.JList
     (container?* [this] false)
-    (value* [this] (sel/selection this)) 
+    (value* [this] (sel/selection this))
+    (value!* [this v] (sel/selection! this v)) 
 
   javax.swing.AbstractButton
     (container?* [this] false)

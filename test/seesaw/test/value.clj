@@ -103,6 +103,12 @@
               (value!* true)
               value*)))
 
+  (it "sets the selection of a listbox"
+    (let [cb (listbox :model ["a" "b" "c"])] 
+      (expect (nil? (value* cb)))
+      (value!* cb "b")
+      (expect (= "b" (value* cb)))))
+
   (it "sets the selection of a combobox"
     (let [cb (combobox :model ["a" "b" "c"])] 
       (expect (= "a" (selection cb)))
