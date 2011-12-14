@@ -581,6 +581,7 @@
 ; get/setText is a common method on many types, but not in any common interface :(
 
 (defprotocol ConfigIcon 
+  "Protocol to hook into :icon option"
   (set-icon* [this v])
   (get-icon* [this]))
 
@@ -603,11 +604,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} Text 
+(defprotocol ConfigText 
+  "Protocol to hook into :text option"
   (set-text* [this v])
   (get-text* [this]))
 
-(extend-protocol Text
+(extend-protocol ConfigText
   Object
     (set-text* [this v] (set-text* (to-widget this) v))
     (get-text* [this] (get-text* (to-widget this)))
@@ -650,41 +652,56 @@
     :else (str v)))
 
 (defn- set-text
+  "Internal use only"
   [this v]
   (set-text* this (convert-text-value v)))
 
 (defn- get-text
+  "Internal use only"
   [this]
   (get-text* this))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; setAction is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} SetAction (set-action [this v]))
-(extend-protocol SetAction
-  javax.swing.AbstractButton (set-action [this v] (.setAction this v))
-  javax.swing.JTextField (set-action [this v] (.setAction this v))
-  javax.swing.JComboBox (set-action [this v] (.setAction this v)))
+(defprotocol ConfigAction 
+  "Protocol to hook into :action option"
+  (set-action* [this v])
+  (get-action* [this]))
+
+(extend-protocol ConfigAction
+  javax.swing.AbstractButton 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v))
+  javax.swing.JTextField 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v))
+  javax.swing.JComboBox 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v)))
 
 (def ^{:doc "Default handler for the :action option. Internal use."} 
-  action-option (default-option :action set-action nil "See (seesaw.core/action)"))
+  action-option (default-option :action set-action* get-action* "See (seesaw.core/action)"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set/getModel is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} ConfigModel 
-  (get-model [this])
-  (set-model [this m]))
+(defprotocol ConfigModel 
+  "Protocol to hook into :model option"
+  (get-model* [this])
+  (set-model* [this m]))
 
 (extend-protocol ConfigModel
-  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v)))
+  javax.swing.text.JTextComponent 
+    (get-model* [this] (.getDocument this))
+    (set-model* [this v] (.setDocument this v)))
 
 (defmacro ^{:private true} config-model-impl [& classes]
   `(extend-protocol ConfigModel 
    ~@(mapcat
       (fn [c]
-        `(~c (~'get-model [this#] (. this# ~'getModel))
-             (~'set-model [this# v#] (. this# ~'setModel v#))))
+        `(~c (~'get-model* [this#] (. this# ~'getModel))
+             (~'set-model* [this# v#] (. this# ~'setModel v#))))
      classes)))
 
 (config-model-impl 
@@ -699,7 +716,7 @@
   javax.swing.JSpinner)
 
 (def ^{:doc "Default handler for the :model option. Delegates to the ConfigModel protocol"} 
-  model-option (default-option :model set-model get-model))
+  model-option (default-option :model set-model* get-model*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
