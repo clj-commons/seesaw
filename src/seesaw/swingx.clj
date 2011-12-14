@@ -29,7 +29,7 @@
                             card-panel-options
                             default-options button-options label-options
                             listbox-options tree-options table-options
-                            ConfigIcon get-icon set-icon
+                            ConfigIcon get-icon* set-icon*
                             config config!]]
         [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]])
   (:import [org.jdesktop.swingx.decorator
@@ -334,8 +334,8 @@
 
 (extend-protocol ConfigIcon
   org.jdesktop.swingx.JXTaskPane 
-    (get-icon [this] (.getIcon this))
-    (set-icon [this v] 
+    (get-icon* [this] (.getIcon this))
+    (set-icon* [this v] 
       (.setIcon this (icon v))))
 
 (def task-pane-options
@@ -343,8 +343,8 @@
     default-options
     (option-map
       ; TODO I have to add this manually because relying on the impl from default-options
-      ; fails with "No implementation of method: :set-icon :(
-      (default-option :icon set-icon get-icon)
+      ; fails with "No implementation of method: :set-icon* :(
+      (default-option :icon set-icon* get-icon*)
       (resource-option :resource [:title :icon])
       (bean-option :title org.jdesktop.swingx.JXTaskPane resource)
       (bean-option :animated? org.jdesktop.swingx.JXTaskPane boolean)
@@ -474,15 +474,15 @@
 
 (extend-protocol ConfigIcon
   org.jdesktop.swingx.JXHeader
-    (get-icon [this]   (.getIcon this))
-    (set-icon [this v] (.setIcon this (icon v))))
+    (get-icon* [this]   (.getIcon this))
+    (set-icon* [this v] (.setIcon this (icon v))))
 
 (def header-options
   (merge
     default-options 
     (option-map
       (bean-option :title org.jdesktop.swingx.JXHeader resource)
-      (default-option :icon set-icon get-icon)
+      (default-option :icon set-icon* get-icon*)
       (bean-option :description org.jdesktop.swingx.JXHeader resource))))
 
 (defn header 
