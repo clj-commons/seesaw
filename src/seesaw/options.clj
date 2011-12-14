@@ -75,7 +75,7 @@
 
 (defn ignore-option
   "Might be used to explicitly ignore the default behaviour of options."
-  ([name examples] (default-option name (fn [_ _]) (fn [_ _]) nil))
+  ([name examples] (default-option name (fn [_ _]) (fn [_ _]) "Internal use."))
   ([name] (ignore-option name nil)))
 
 (declare reapply-options)
@@ -106,7 +106,7 @@
                             (map name keys))
               nil)))
     nil
-    [(str "A i18n prefix for a resource with keys " keys)]))
+    [(str "A i18n prefix for a resource with keys in " (pr-str keys))]))
 
 (defn- apply-option
   [target ^Option opt v]
@@ -146,12 +146,15 @@
   (into {} (for [k (keys source-options)] [k (ignore-option k)])))
 
 (defn around-option
-  [parent-option set-conv get-conv]
+  ([parent-option set-conv get-conv examples]
   (default-option (:name parent-option)
     (fn [target value]
       ((:setter parent-option) target ((or set-conv identity) value)))
     (fn [target]
-      ((or get-conv identity) ((:getter parent-option) target)))))
+      ((or get-conv identity) ((:getter parent-option) target)))
+    examples))
+  ([parent-option set-conv get-conv]
+   (around-option parent-option set-conv get-conv nil)))
 
 (defn option-map 
   "Construct an option map from a list of options."

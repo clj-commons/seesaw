@@ -11,7 +11,9 @@
 (ns ^{:doc "Functions to aid development of Seesaw apps."
       :author "Dave Ray"} 
   seesaw.dev
-  (:require [seesaw.core :as core]
+  (:require [clojure.string :as string]
+            [seesaw.util :as util]
+            [seesaw.core :as core]
             [seesaw.event :as ev]
             [seesaw.options :as opt]
             [clojure.pprint :as pp]))
@@ -87,16 +89,21 @@
         (and (not f) installed?) (do (.setHandler handler nil) false)
         :else                    false)))))
 
+(defn- examples-str [examples]
+  (string/join (format "%n  %24s  " "") (util/to-seq examples)))
+
 (defn show-options
   "Given an object, print information about the options it supports. These
   are all the options you can legally pass to (seesaw.core/config) and
   friends."
   [v]
   (printf "%s%n" (.getName (class v)))
+  (printf "  %24s  Notes/Examples%n" "Option")
+  (printf "--%24s  --------------%n" (apply str (repeat 24 \-)))
   (doseq [{:keys [name setter examples]} (sort-by :name (vals (opt/options-for v)))]
     (printf "  %24s  %s%n" 
             name
-            (if examples (pr-str examples) ""))))
+            (if examples (examples-str examples) ""))))
 
 (defn show-events
   "Given a class or instance, print information about all supported events.

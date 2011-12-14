@@ -667,7 +667,7 @@
   javax.swing.JComboBox (set-action [this v] (.setAction this v)))
 
 (def ^{:doc "Default handler for the :action option. Internal use."} 
-  action-option (default-option :action set-action))
+  action-option (default-option :action set-action nil "See (seesaw.core/action)"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set/getModel is a common method on many types, but not in any common interface :(
@@ -759,29 +759,31 @@
   javax.swing.JList 
     (set-selection-mode [this v] (.setSelectionMode this v)))
 
-(let [list-selection-mode-table {
+(def ^{:private true} list-selection-mode-table {
   :single          javax.swing.ListSelectionModel/SINGLE_SELECTION
   :single-interval javax.swing.ListSelectionModel/SINGLE_INTERVAL_SELECTION
   :multi-interval  javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION
-}]
-  (defn- list-selection-mode-handler [target v]
-    (if-let [v (list-selection-mode-table v)]
-      (set-selection-mode target v)
-      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table)))))
+})
 
-(let [tree-selection-mode-table {
+(defn- list-selection-mode-handler [target v]
+  (if-let [v (list-selection-mode-table v)]
+    (set-selection-mode target v)
+    (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table))))
+
+(def ^ {:private true} tree-selection-mode-table {
   :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
   :contiguous    javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION
   :discontiguous javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION
-}]
-  (defn- tree-selection-mode-handler [target v]
-    (if-let [v (tree-selection-mode-table v)]
-      (set-selection-mode target v)
-      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table)))))
+})
+
+(defn- tree-selection-mode-handler [target v]
+  (if-let [v (tree-selection-mode-table v)]
+    (set-selection-mode target v)
+    (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table))))
 
 (declare paint-option-handler)
 
-(def ^{:private true} color-examples [:aliceblue "#f00" "#FF0000" "(seesaw.color/color 255 0 0 0 224)"])
+(def ^{:private true} color-examples [:aliceblue "\"#f00\"" "\"#FF0000\"" '(seesaw.color/color 255 0 0 0 224)])
 (def ^{:private true} boolean-examples 'boolean)
 (def ^{:private true} dimension-examples [[640 :by 480] java.awt.Dimension])
 
@@ -790,10 +792,13 @@
 (def default-options 
   (option-map
     (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
-    (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["See (seesaw.listen/listen)"])
+    (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["vector of args for (seesaw.core/listen)"])
 
-    (default-option :items #(add-widgets %1 %2)
-                                        #(seq (.getComponents ^java.awt.Container %1))) 
+    (default-option 
+      :items 
+      #(add-widgets %1 %2) 
+      #(seq (.getComponents ^java.awt.Container %1))
+      "A sequence of widgets to add.") 
     (default-option :id seesaw.selector/id-of! seesaw.selector/id-of ["A keyword id for the widget"])
     (default-option :class seesaw.selector/class-of! seesaw.selector/class-of [:class-name, #{:multiple, :class-names}])
     (bean-option :opaque? JComponent boolean nil boolean-examples) 
@@ -806,7 +811,7 @@
                     #(.getBackground ^JComponent %1)
                     color-examples)
     (bean-option :foreground JComponent seesaw.color/to-color nil color-examples)
-    (bean-option :border JComponent seesaw.border/to-border nil [5, "\"Border Title\"", [5 "Compound" 10], "See seesaw.border/*"])
+    (bean-option :border JComponent seesaw.border/to-border nil [5, "\"Border Title\"", [5 "Compound" 10], "See (seesaw.border/*)"])
     (bean-option :font JComponent seesaw.font/to-font nil ["ARIAL-BOLD-18", :monospaced :serif :sans-serif "See (seesaw.font/font)"])
     (bean-option [:tip :tool-tip-text] JComponent str nil ["A tooltip string"])
     (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)) nil ["See (seesaw.cursor/cursor)"])
@@ -825,7 +830,7 @@
     (default-option :location #(move! %1 :to %2) #(.getLocation ^java.awt.Component %1))
     (default-option :bounds bounds-option-handler #(.getBounds ^java.awt.Component %1)) 
     (default-option :popup #(popup-option-handler %1 %2))
-    (default-option :paint #(paint-option-handler %1 %2))
+    (default-option :paint #(paint-option-handler %1 %2) nil ["See (seesaw.core/paintable)"])
 
     ; TODO I'd like to push these down but cells.clj uses them on non-attached
     ; widgets.
@@ -1739,11 +1744,11 @@
   (merge
     default-options
     (option-map
-      (around-option model-option to-list-model identity)
+      (around-option model-option to-list-model identity "See (seesaw.core/listbox)")
       (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
-      (default-option :selection-mode list-selection-mode-handler)
+      (default-option :selection-mode list-selection-mode-handler nil (keys list-selection-mode-table))
       (bean-option :fixed-cell-height javax.swing.JList)
       (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
@@ -1797,7 +1802,7 @@
       (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
       (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
       (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
-      (default-option :selection-mode list-selection-mode-handler)
+      (default-option :selection-mode list-selection-mode-handler nil (keys list-selection-mode-table))
       (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table nil (keys auto-resize-mode-table))
       (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
@@ -1861,7 +1866,7 @@
       (bean-option [:shows-root-handles? :shows-root-handles] javax.swing.JTree boolean)
       (bean-option :toggle-click-count javax.swing.JTree)
       (bean-option :visible-row-count javax.swing.JTree)
-      (default-option :selection-mode tree-selection-mode-handler)
+      (default-option :selection-mode tree-selection-mode-handler nil (keys tree-selection-mode-table))
       (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (defn tree
@@ -1897,7 +1902,7 @@
     (option-map
       action-option
       (bean-option :editable? javax.swing.JComboBox boolean)
-      (around-option model-option to-combobox-model identity)
+      (around-option model-option to-combobox-model identity "See (seesaw.core/combobox)")
       (default-option :renderer 
                       #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
                       #(.getRenderer ^javax.swing.JComboBox %1)))))
@@ -1987,7 +1992,7 @@
   (merge
     default-options
     (option-map
-      (around-option model-option to-spinner-model identity))))
+      (around-option model-option to-spinner-model identity "See (seesaw.core/spinner)"))))
 
 (defn spinner 
   "Create a spinner (JSpinner). Additional options:
