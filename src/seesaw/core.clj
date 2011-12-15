@@ -964,17 +964,30 @@
   (let [layout (.getLayout panel)]
     (map #(vector % (border-layout-dirs-r (get-constraint layout panel %))) (.getComponents panel))))
 
+(def border-layout-options
+  (merge
+    (option-map
+      (default-option :hgap 
+        #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)
+        nil
+        ["An integer in pixels"])
+      (default-option :vgap 
+        #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)
+        nil 
+        ["An integer in pixels"]) 
+      (default-option :items 
+        border-panel-items-setter 
+        border-panel-items-getter 
+        ['[(label "North") :north (button :text "South") :south]]))
+    (apply option-map 
+           (map
+             (fn [[k v]] (default-option k #(add-widget %1 %2 v)))
+             border-layout-dirs)) ))
+
 (def border-panel-options 
   (merge 
     default-options
-    (option-map
-      (default-option :hgap #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2) nil ["An integer in pixels"])
-      (default-option :vgap #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2) nil ["An integer in pixels"]) 
-      (default-option :items border-panel-items-setter border-panel-items-getter ['[(label "North") :north (button :text "South") :south]]))
-    (apply option-map 
-           (map
-            (fn [[k v]] (default-option k #(add-widget %1 %2 v)))
-            border-layout-dirs))))
+    border-layout-options))
 
 (defn border-panel
   "Create a panel with a border layout. In addition to the usual options, 
@@ -1012,15 +1025,25 @@
 ;*******************************************************************************
 ; Card
 
+(def card-layout-options
+  (option-map
+    (default-option :items 
+      (fn [panel items]
+        (doseq [[w id] items]
+          (add-widget panel w (name id)))))
+    (default-option :hgap 
+      #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)
+      nil
+      ["Integer pixels"]) 
+    (default-option :vgap 
+      #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)
+      nil
+      ["Integer pixels"])))
+
 (def card-panel-options 
   (merge
     default-options
-    (option-map
-      (default-option :items (fn [panel items]
-                              (doseq [[w id] items]
-                                (add-widget panel w (name id)))))
-      (default-option :hgap #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]) 
-      (default-option :vgap #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]))))
+    card-layout-options))
 
 (defn card-panel
   "Create a panel with a card layout. Options:
@@ -1056,23 +1079,29 @@
 (def ^{:private true} flow-align-table
   (constant-map FlowLayout :left :right :leading :trailing :center))
 
-(def flow-panel-options 
-  (merge
-    default-options
-    (option-map 
-      (default-option :hgap #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
-      (default-option :vgap #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
-      (default-option 
-        :align 
+(def flow-layout-options
+  (option-map 
+      (default-option :hgap 
+        #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2)
+        nil 
+        ["Integer pixels"])
+      (default-option :vgap 
+        #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2)
+        nil 
+        ["Integer pixels"])
+      (default-option :align 
         #(.setAlignment ^FlowLayout (.getLayout ^java.awt.Container %1) 
                         (get flow-align-table %2 %2))
         nil
         (keys flow-align-table))
-      (default-option 
-        :align-on-baseline? 
-        #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) 
-                              (boolean %2))
-        boolean-examples))))
+      (default-option :align-on-baseline? 
+        #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) (boolean %2))
+        boolean-examples)))
+
+(def flow-panel-options 
+  (merge
+    default-options
+    flow-layout-options))
 
 (defn flow-panel
   "Create a panel with a flow layout. Options:
@@ -1097,7 +1126,12 @@
   :vertical   BoxLayout/Y_AXIS 
 })
 
-(def box-panel-options default-options)
+(def box-layout-options {})
+
+(def box-panel-options 
+  (merge 
+    default-options
+    box-layout-options))
 
 (defn box-layout [dir] #(BoxLayout. % (dir box-layout-dir-table)))
 
@@ -1133,14 +1167,23 @@
 ;*******************************************************************************
 ; Grid
 
+(def grid-layout-options
+  (option-map 
+    (ignore-option :rows    ["Integer rows"])
+    (ignore-option :columns ["Integer columns"])
+    (default-option :hgap 
+      #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)
+      nil 
+      ["Integer pixels"])
+    (default-option :vgap 
+      #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)
+      nil 
+      ["Integer pixels"])))
+
 (def grid-panel-options 
   (merge
     default-options
-    (option-map 
-      (ignore-option :rows ["Integer rows"])
-      (ignore-option :columns ["Integer columns"])
-      (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"])
-      (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2) nil ["Integer pixels"]))))
+    grid-layout-options))
 
 (defn grid-layout [rows columns]
   (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
@@ -1235,11 +1278,14 @@
       (add-widget panel widget constraints)))
   (handle-structure-change panel))
 
+(def form-layout-options
+  (option-map
+      (default-option :items add-grid-bag-items)))
+
 (def form-panel-options 
   (merge
     default-options
-    (option-map
-      (default-option :items add-grid-bag-items))))
+    form-layout-options))
 
 (defn form-panel
   "*Don't use this. GridBagLaout is an abomination* I suggest using Seesaw's

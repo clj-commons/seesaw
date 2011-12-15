@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.mig
   (:use [seesaw.core :only [abstract-panel LayoutManipulation default-options]]
-        [seesaw.options :only [default-option]]
+        [seesaw.options :only [default-option option-map]]
         [seesaw.util :only [cond-doto]]))
 
 ;*******************************************************************************
@@ -31,12 +31,15 @@
     (@#'seesaw.core/add-widget parent widget constraint))
   (@#'seesaw.core/handle-structure-change parent))
 
+(def mig-layout-options
+  (option-map
+    (default-option :constraints apply-mig-constraints)
+    (default-option :items add-mig-items)))
+
 (def mig-panel-options 
   (merge
     default-options
-    { :constraints (default-option :constraints apply-mig-constraints)
-     :items       (default-option :items add-mig-items)
-     }))
+    mig-layout-options))
 
 (defn mig-panel
   "Construct a panel with a MigLayout. Takes one special property:
