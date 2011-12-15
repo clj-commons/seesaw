@@ -763,18 +763,41 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol SetSelectionMode (set-selection-mode [this v]))
-(extend-protocol SetSelectionMode
+(defprotocol SelectionModeConfig 
+  "Hook protocol for :selection-mode option"
+  (set-selection-mode* [this v])
+  (get-selection-mode* [this]))
+
+(extend-protocol SelectionModeConfig
   javax.swing.tree.TreeSelectionModel
-    (set-selection-mode [this v] (.setSelectionMode this v))
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this] (.getSelectionMode this))
+
   javax.swing.JTree
-    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
+    (set-selection-mode* [this v] (set-selection-mode* (.getSelectionModel this) v))
+    (get-selection-mode* [this] (get-selection-mode* (.getSelectionModel this)))
+
   javax.swing.ListSelectionModel
-    (set-selection-mode [this v] (.setSelectionMode this v))
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this]   (.getSelectionMode this))
+
   javax.swing.JTable
-    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
+    (set-selection-mode* [this v] (set-selection-mode* (.getSelectionModel this) v))
+    (get-selection-mode* [this] (get-selection-mode* (.getSelectionModel this)))
   javax.swing.JList 
-    (set-selection-mode [this v] (.setSelectionMode this v)))
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this] (.getSelectionMode this)))
+
+(defn- selection-mode-option [table]
+  (let [rtable (clojure.set/map-invert table)]
+    (default-option
+      :selection-mode
+      (fn [target v] 
+        (if-let [v (table v)]
+          (set-selection-mode* target v)
+          (illegal-argument "Unknown selection-mode. Must be one of %s" (keys table))))
+      (fn [target] (rtable (get-selection-mode* target)))
+      (keys table))))
 
 (def ^{:private true} list-selection-mode-table {
   :single          javax.swing.ListSelectionModel/SINGLE_SELECTION
@@ -782,21 +805,11 @@
   :multi-interval  javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION
 })
 
-(defn- list-selection-mode-handler [target v]
-  (if-let [v (list-selection-mode-table v)]
-    (set-selection-mode target v)
-    (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table))))
-
 (def ^ {:private true} tree-selection-mode-table {
   :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
   :contiguous    javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION
   :discontiguous javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION
 })
-
-(defn- tree-selection-mode-handler [target v]
-  (if-let [v (tree-selection-mode-table v)]
-    (set-selection-mode target v)
-    (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table))))
 
 (declare paint-option-handler)
 
@@ -1765,7 +1778,7 @@
       (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
-      (default-option :selection-mode list-selection-mode-handler nil (keys list-selection-mode-table))
+      (selection-mode-option list-selection-mode-table)
       (bean-option :fixed-cell-height javax.swing.JList)
       (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
@@ -1819,7 +1832,7 @@
       (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
       (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
       (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
-      (default-option :selection-mode list-selection-mode-handler nil (keys list-selection-mode-table))
+      (selection-mode-option list-selection-mode-table)
       (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table nil (keys auto-resize-mode-table))
       (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
@@ -1883,7 +1896,7 @@
       (bean-option [:shows-root-handles? :shows-root-handles] javax.swing.JTree boolean)
       (bean-option :toggle-click-count javax.swing.JTree)
       (bean-option :visible-row-count javax.swing.JTree)
-      (default-option :selection-mode tree-selection-mode-handler nil (keys tree-selection-mode-table))
+      (selection-mode-option tree-selection-mode-table)
       (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (defn tree

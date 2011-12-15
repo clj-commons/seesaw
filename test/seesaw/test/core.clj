@@ -777,6 +777,7 @@
       (.isSelected t))))
 
 (describe listbox
+  (verify-config (listbox :selection-mode :single) :selection-mode :single)
   (it "should create a JList"
     (= javax.swing.JList (class (listbox))))
   (it "should create a JList with :fixed-cell-height set"
@@ -882,6 +883,7 @@
     (let [t (table :model [:columns [:a :b] :rows [[23 24] [25 26]]])
           m (.getModel t)]
       (expect (= 2 (.getRowCount m)))))
+  (verify-config (table :selection-mode :single) :selection-mode :single)
   (verify-config (table :fills-viewport-height? true) :fills-viewport-height? true)
   (verify-config (table :fills-viewport-height? false) :fills-viewport-height? false)
   (verify-config (table :show-grid? true) :show-grid? true)
@@ -913,6 +915,7 @@
   (verify-config (tree :toggle-click-count 2) :toggle-click-count 2)
   (verify-config (tree :toggle-click-count 1) :toggle-click-count 1)
   (verify-config (tree :visible-row-count 20) :visible-row-count 20)
+  (verify-config (tree :selection-mode :single) :selection-mode :single)
   (it "should create a JTree with :root-visible? true"
     (.isRootVisible (tree :root-visible? true)))
   (it "should create a JTree with :root-visible? false"
