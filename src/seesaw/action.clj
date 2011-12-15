@@ -12,7 +12,11 @@
       :author "Dave Ray"}
   seesaw.action
   (:use [seesaw.util :only [resource to-mnemonic-keycode]])
-  (:use [seesaw icon keystroke meta options])
+  (:use [seesaw icon keystroke meta]
+        [seesaw.options :only [option-map 
+                               default-option bean-option resource-option 
+                               apply-options
+                               option-provider]])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
@@ -48,6 +52,9 @@
       #(get-meta %1 action-handler-property))
     (resource-option :resource [:name :command :tip :icon :key :mnemonic])))
 
+
+(option-provider javax.swing.Action action-options)
+
 (defn action 
   "Construct a new Action object. Supports the following properties:
 
@@ -81,5 +88,5 @@
   (let [a (proxy [AbstractAction] [] 
             (actionPerformed [e] 
               (if-let [f (get-meta this action-handler-property)] (f e))))]
-    (apply-options a opts action-options)))
+    (apply-options a opts)))
 

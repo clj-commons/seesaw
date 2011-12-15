@@ -12,7 +12,8 @@
       :author "Dave Ray"}
   seesaw.chooser
   (:use [seesaw.color :only [to-color]]
-        [seesaw.options :only [default-option bean-option apply-options option-map]]
+        [seesaw.options :only [default-option bean-option apply-options 
+                               option-map option-provider]]
         [seesaw.util :only [illegal-argument]])
   (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
            [javax.swing JFileChooser]))
@@ -76,6 +77,8 @@
     (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
     (default-option :filters set-file-filters)))
 
+(option-provider JFileChooser file-chooser-options)
+
 (def ^{:private true} last-dir (atom nil))
 
 (defn- show-file-chooser [^JFileChooser chooser parent type]
@@ -85,7 +88,7 @@
           (.showDialog chooser parent (str type))))
 
 (defn- configure-file-chooser [^JFileChooser chooser opts]
-  (apply-options chooser opts file-chooser-options)
+  (apply-options chooser opts)
   (when (and @last-dir (not (:dir opts)))
     (.setCurrentDirectory chooser @last-dir))
   chooser)

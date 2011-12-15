@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.mig
   (:use [seesaw.core :only [abstract-panel LayoutManipulation default-options]]
-        [seesaw.options :only [default-option option-map]]
+        [seesaw.options :only [default-option option-map option-provider]]
         [seesaw.util :only [cond-doto]]))
 
 ;*******************************************************************************
@@ -36,10 +36,9 @@
     (default-option :constraints apply-mig-constraints)
     (default-option :items add-mig-items)))
 
-(def mig-panel-options 
-  (merge
-    default-options
-    mig-layout-options))
+(option-provider net.miginfocom.swing.MigLayout mig-layout-options)
+
+(def mig-panel-options default-options)
 
 (defn mig-panel
   "Construct a panel with a MigLayout. Takes one special property:
@@ -60,7 +59,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (abstract-panel (net.miginfocom.swing.MigLayout.) mig-panel-options opts))
+  (abstract-panel (net.miginfocom.swing.MigLayout.) opts))
 
 (extend-protocol LayoutManipulation
   net.miginfocom.swing.MigLayout

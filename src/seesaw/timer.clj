@@ -10,13 +10,15 @@
 
 (ns seesaw.timer
   (:use [seesaw.action :only [action]]
-        [seesaw.options :only [bean-option apply-options option-map]]))
+        [seesaw.options :only [bean-option apply-options option-map option-provider]]))
 
 (def ^{:private true} timer-opts 
   (option-map
     (bean-option :initial-delay javax.swing.Timer)
     (bean-option :delay javax.swing.Timer)
     (bean-option :repeats? javax.swing.Timer boolean)))
+
+(option-provider javax.swing.Timer timer-opts)
 
 (defn- timer-handler [f initial-value]
   (let [value (atom initial-value)]
@@ -41,7 +43,7 @@
   [f & {:keys [start? initial-value] :or {start? true} :as opts}] 
   (let [a (action :handler (timer-handler f initial-value))
         t (javax.swing.Timer. 1000 a)]
-    (apply-options t (dissoc opts :start? :initial-value) timer-opts)
+    (apply-options t (dissoc opts :start? :initial-value))
     (when start? (.start t))
     t))
   

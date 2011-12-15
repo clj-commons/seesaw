@@ -100,7 +100,7 @@
   (printf "%s%n" (.getName (class v)))
   (printf "  %24s  Notes/Examples%n" "Option")
   (printf "--%24s  --------------%n" (apply str (repeat 24 \-)))
-  (doseq [{:keys [name setter examples]} (sort-by :name (vals (opt/options-for v)))]
+  (doseq [{:keys [name setter examples]} (sort-by :name (vals (opt/get-option-map v)))]
     (printf "  %24s  %s%n" 
             name
             (if examples (examples-str examples) ""))))

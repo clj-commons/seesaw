@@ -11,21 +11,23 @@
 (ns ^{:doc "Functions for dealing with options."
       :author "Dave Ray"}
   seesaw.options
-  (:use [seesaw.meta :only [get-meta put-meta!]]
-        [seesaw.util :only [camelize illegal-argument check-args
+  (:use [seesaw.util :only [camelize illegal-argument check-args
                             resource resource-key?]]))
+
+(defprotocol OptionProvider
+  (get-option-maps* [this]))
+
+(defn get-option-map [this]
+  (apply merge (get-option-maps* this)))
+
+(defmacro option-provider [class options]
+  `(extend-protocol OptionProvider 
+     ~class
+     (~'get-option-maps* [this#] [~options])))
 
 (defrecord Option [name setter getter examples])
 
-(def ^{:private true} options-property "seesaw-options")
-
-(defn- store-option-handlers
-  [target handler-map]
-  (put-meta! target options-property handler-map))
-
-(defn- get-option-value-handlers
-  [target]
-  (get-meta target options-property))
+(declare apply-options)
 
 (defn- strip-question-mark
   [^String s] 
@@ -78,8 +80,6 @@
   ([name examples] (default-option name (fn [_ _]) (fn [_ _]) "Internal use."))
   ([name] (ignore-option name nil)))
 
-(declare reapply-options)
-
 (defn resource-option 
   "Defines an option that takes a j18n namespace-qualified keyword as a
   value. The keyword is used as a prefix for the set of properties in
@@ -98,13 +98,12 @@
       {:pre [(resource-key? value)]}
       (let [nspace (namespace value)
             prefix (name value)]
-            (reapply-options
+            (apply-options
               target (mapcat (fn [k]
                               (let [prop (keyword nspace (str prefix "." k))]
                                 (when-let [v (resource prop)]
                                   [(keyword k) v])))
-                            (map name keys))
-              nil)))
+                            (map name keys)))))
     nil
     [(str "A i18n prefix for a resource with keys in " (pr-str keys))]))
 
@@ -114,30 +113,26 @@
     (setter target v)
     (illegal-argument "No setter found for option %s" (:name opt))))
 
-(defn- ^Option lookup-option [target handler-map name]
-  (if-let [opt (get handler-map name)]
+(defn- ^Option lookup-option [target handler-maps name]
+  ;(println "---------------------------")
+  ;(println handler-maps)
+  (if-let [opt (some #(if % (% name)) handler-maps)]
     opt
     (illegal-argument "%s does not support the %s option" (class target) name)))
 
 (defn- apply-options*
-  [target opts handler-map]
+  [target opts handler-maps]
   (let [pairs (if (map? opts) opts (partition 2 opts))] 
     (doseq [[k v] pairs]
-      (let [opt (lookup-option target handler-map k)]
+      (let [opt (lookup-option target handler-maps k)]
         (apply-option target opt v))))
   target)
 
 (defn apply-options
-  [target opts handler-map]
+  [target opts]
   (check-args (or (map? opts) (even? (count opts))) 
               "opts must be a map or have an even number of entries")
-  (store-option-handlers target handler-map)
-  (apply-options* target opts handler-map))
-
-(defn reapply-options
-  [target args default-options]
-  (let [options (or (get-option-value-handlers target) default-options)]
-    (apply-options* target args options)))
+  (apply-options* target opts (get-option-maps* target)))
 
 (defn ignore-options
   "Create a ignore-map for options, which should be ignored. Ready to
@@ -162,21 +157,20 @@
   (into {} (map (juxt :name identity) opts)))
 
 (defn get-option-value 
-  ([target name] (get-option-value target name (get-option-value-handlers target)))
+  ([target name] (get-option-value target name (get-option-maps* target)))
   ([target name handlers]
-    (let [^Option option (get handlers name)
+    (let [^Option option (lookup-option target handlers name)
           getter (:getter option)]
       (if getter
         (getter target)
         (illegal-argument "Option %s cannot be read from %s" name (class target))))))
 
 (defn set-option-value
-  ([target name value] (set-option-value target name (get-option-value-handlers target)))
+  ([target name value] (set-option-value target name (get-option-maps* target)))
   ([target name value handlers]
-    (let [^Option option (get handlers name)
+    (let [^Option option (lookup-option target handlers name)
           setter (:setter option)]
       (if setter
         (setter target value)
         (illegal-argument "Option %s cannot be set on %s" name (class target))))))
 
-(def options-for get-option-value-handlers)

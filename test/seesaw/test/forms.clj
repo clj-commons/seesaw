@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.forms
-  (:use [seesaw [core :exclude (separator)] forms])
+  (:use [seesaw [core :exclude (separator)]])
+  (:use seesaw.forms)
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
