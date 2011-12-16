@@ -87,6 +87,20 @@
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20)))))
+  
+  (testing "given a spinner"
+    (it "should sync the value of the atom with the spinner value, if spinner value changed"
+      (let [v (atom 15)
+            sl (ssc/spinner :model @v)]
+        (bind (.getModel sl) v)
+        (.setValue sl 20)
+        (expect (= @v 20))))
+    (it "should sync the value of the spinner with the atom value, if atom value changed"
+      (let [v (atom 15)
+            sl (ssc/spinner :model @v)]
+        (bind v (.getModel sl))
+        (reset! v 20)
+        (expect (= (.getValue sl) 20)))))
 
   (testing "given an agent"
 

@@ -128,6 +128,14 @@
           (.remove this 0 (.getLength this))
           (.insertString this 0 (str v) nil))))
 
+  javax.swing.SpinnerModel
+    (subscribe [this handler]
+      (ssc/listen this :change
+        (fn [e] (handler (.getValue this)))))
+    (notify [this v] 
+      (when-not (= v (.getValue this)) 
+        (.setValue this v))) 
+  
   javax.swing.BoundedRangeModel
     (subscribe [this handler]
       (ssc/listen this :change
@@ -449,6 +457,8 @@
   javax.swing.JLabel
     (to-bindable* [this] (property this :text))
   javax.swing.JSlider
+    (to-bindable* [this] (.getModel this))
+  javax.swing.JSpinner
     (to-bindable* [this] (.getModel this))
   javax.swing.JProgressBar
     (to-bindable* [this] (.getModel this))
