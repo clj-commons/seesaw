@@ -10,8 +10,9 @@
 
 (ns seesaw.test.examples.launcher
   (:use [seesaw core swingx]
-        seesaw.test.examples.example )
-  (:require [seesaw.bind :as b]))
+        seesaw.test.examples.example)
+  (:require [seesaw.bind :as b]
+            [seesaw.dev :as dev]))
 
 ; A simple launcher for all the examples.
 
@@ -26,7 +27,6 @@
    'custom-dialog
    'dialog
    'dnd
-   'example
    'explorer
    'form
    'forms
@@ -37,7 +37,6 @@
    'kotka-bind
    'make-widget
    'mig
-   'multi-dialog
    'paintable
    'pan-on-drag
    'pi
@@ -74,7 +73,9 @@
   (let [example-ns (str "seesaw.test.examples." s)
         _          (require (symbol example-ns))
         run-fn     (resolve (symbol example-ns "run"))]
-    (run-fn :dispose)))
+    (if run-fn
+      (run-fn :dispose)
+      (alert (str "Couldn't find function " (symbol example-ns "run"))))))
 
 (defn add-behaviors [f]
   (let [{:keys [list launch]} (group-by-id f)] 
@@ -93,6 +94,7 @@
   f)
 
 (defexample []
+  (dev/debug!)
   (-> (make-frame) 
     add-behaviors))
 
