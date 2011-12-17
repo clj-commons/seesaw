@@ -833,6 +833,7 @@
 (def default-options 
   (option-map
     (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
+    (bean-option :layout JComponent nil nil "A layout manager.")
     (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["vector of args for (seesaw.core/listen)"])
 
     (default-option :id seesaw.selector/id-of! seesaw.selector/id-of ["A keyword id for the widget"])

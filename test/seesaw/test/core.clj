@@ -63,6 +63,12 @@
     (it "sets the classes of a widget"
       (expect (= #{"foo" "bar"} (selector/class-of (flow-panel :class #{:foo :bar}))))))
 
+  (testing "the :layout option"
+    (it "sets the layout of the widget"
+      (let [layout (java.awt.BorderLayout.)
+            b (button :layout layout)]
+        (expect (= layout (config b :layout))))))
+
   (testing "the :focusable? option"
     (it "makes a widget focusable"
       (.isFocusable (label :text "focusable" :focusable? true))))
