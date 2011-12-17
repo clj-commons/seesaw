@@ -2811,9 +2811,25 @@
   (option-map
     (default-option ::with) ; ignore ::with option inserted by (with-widget)
     (resource-option :resource [:title :icon])
-    (default-option :id seesaw.selector/id-of!)
-    (default-option :class seesaw.selector/class-of!)
-    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
+
+    (default-option :id 
+      seesaw.selector/id-of! 
+      seesaw.selector/id-of
+      ["A keyword id."
+       "See (seesaw.core/select)"])
+
+    (default-option :class 
+      seesaw.selector/class-of! 
+      seesaw.selector/class-of
+      ["A keyword class, in the HTML/CSS sense."
+       "See (Seesaw.core/select)"])
+
+    (bean-option 
+      [:on-close :default-close-operation] javax.swing.JFrame 
+      frame-on-close-map
+      nil
+      (keys frame-on-close-map))
+
     (default-option 
       :content
       (fn [^javax.swing.JFrame f v] 
@@ -2822,14 +2838,26 @@
           .invalidate
           .validate
           .repaint))
-      (fn [^javax.swing.JFrame f] (.getContentPane f)))
-    (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
+      (fn [^javax.swing.JFrame f] (.getContentPane f))
+      "The frame's main content widget")
 
-    (bean-option :title java.awt.Frame resource)
+    (bean-option 
+      [:menubar :j-menu-bar] 
+      javax.swing.JFrame
+      nil nil
+      "The frame's menu bar. See (seesaw.core/menubar).")
+
+    (bean-option :title java.awt.Frame resource nil
+      ["The frame's title as string or resource key"])
+
     (bean-option :resizable? java.awt.Frame boolean)
 
-    (bean-option :minimum-size  java.awt.Window to-dimension)
-    (bean-option :size java.awt.Window to-dimension)
+    (bean-option :minimum-size  java.awt.Window to-dimension nil
+                 dimension-examples)
+
+    (bean-option :size java.awt.Window to-dimension
+                 dimension-examples)
+
     (bean-option :visible? java.awt.Window boolean)
     ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
     ; base or interface.

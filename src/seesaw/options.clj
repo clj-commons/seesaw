@@ -105,7 +105,8 @@
                                   [(keyword k) v])))
                             (map name keys)))))
     nil
-    [(str "A i18n prefix for a resource with keys in " (pr-str keys))]))
+    [(str "A i18n prefix for a resource with keys") 
+     (pr-str keys)]))
 
 (defn- apply-option
   [target ^Option opt v]
