@@ -907,12 +907,6 @@
     (config* [target name] (get-option-value target name))
     (config!* [target args] (apply-options target args)))
 
-(defn apply-default-opts
-  "only used in tests!"
-  ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:as opts}]
-    (apply-options p opts)))
-
 ;*******************************************************************************
 ; ToDocument
 
@@ -2763,7 +2757,7 @@
     ~(if info
       `(with-widget (paintable-proxy ~cls)
           ~(cons target (mapcat identity (dissoc opts :paint))))
-      `(apply-default-opts (paintable-proxy ~cls) ~(dissoc opts :paint)))
+      `(apply-options (paintable-proxy ~cls) ~(dissoc opts :paint)))
     (@#'seesaw.core/paint-option-handler ~paint))))
 
 (def canvas-options 

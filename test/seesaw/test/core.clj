@@ -17,7 +17,8 @@
         seesaw.graphics
         seesaw.cells
         [seesaw.util :only (to-dimension children root-cause)]
-        [seesaw.color :only (color)])
+        [seesaw.color :only (color)]
+        [seesaw.options :only [apply-options]])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]
         [clojure.string :only (capitalize split)])
@@ -47,9 +48,9 @@
 (describe "Applying default options" 
   (testing "the :id option"
     (it "does nothing when omitted"
-      (expect (nil? (-> (JPanel.) apply-default-opts id-of))))
+      (expect (nil? (-> (JPanel.) (apply-options {}) id-of))))
     (it "sets the component's id as a keyword if given"
-      (expect (= :hi (-> (JLabel.) (apply-default-opts {:id "hi"}) id-of))))
+      (expect (= :hi (-> (JLabel.) (apply-options {:id "hi"}) id-of))))
     (it "throws IllegalStateException if the widget's id is already set"
       (try 
         (do (config! (label :id :foo) :id :bar) false)
@@ -57,7 +58,7 @@
 
   (testing "the :class option"
     (it "does nothing when omitted"
-      (expect (nil? (-> (JPanel.) apply-default-opts selector/class-of))))
+      (expect (nil? (-> (JPanel.) (apply-options {}) selector/class-of))))
     (it "sets the class of the widget"
       (expect (= #{"foo"} (selector/class-of (flow-panel :class :foo)))))
     (it "sets the classes of a widget"
@@ -75,22 +76,22 @@
 
   (testing "the :preferred-size option"
     (it "set the component's preferred size using to-dimension"
-      (let [p (apply-default-opts (JPanel.) {:preferred-size [10 :by 20]})]
+      (let [p (apply-options (JPanel.) {:preferred-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getPreferredSize p))))))
 
   (testing "the :minimum-size option"
     (it "set the component's minimum size using to-dimension"
-      (let [p (apply-default-opts (JPanel.) {:minimum-size [10 :by 20]})]
+      (let [p (apply-options (JPanel.) {:minimum-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getMinimumSize p))))))
 
   (testing "the :maximum-size option"
     (it "set the component's maximum size using to-dimension"
-      (let [p (apply-default-opts (JPanel.) {:maximum-size [10 :by 20]})]
+      (let [p (apply-options (JPanel.) {:maximum-size [10 :by 20]})]
         (expect (= (Dimension. 10 20) (.getMaximumSize p))))))
 
   (testing "the :size option"
     (it "set the component's min, max, and preferred size using to-dimension"
-      (let [p (apply-default-opts (JPanel.) {:size [11 :by 21]})
+      (let [p (apply-options (JPanel.) {:size [11 :by 21]})
             d (Dimension. 11 21)]
         (expect (= d (.getPreferredSize p)))
         (expect (= d (.getMinimumSize p)))
@@ -98,24 +99,24 @@
 
   (testing "the :location option"
     (it "sets the component's location with a two-element vector"
-      (let [p (apply-default-opts (JPanel.) {:location [23 45]})
+      (let [p (apply-options (JPanel.) {:location [23 45]})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
     (it "sets the component's location with a two-element vector, where :* means keep the old value "
-      (let [p (apply-default-opts (JPanel.) {:location [23 :*]})
+      (let [p (apply-options (JPanel.) {:location [23 :*]})
             l (.getLocation p)]
         (expect (= [23 0] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Point"
-      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Point. 23 45)})
+      (let [p (apply-options (JPanel.) {:location (java.awt.Point. 23 45)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)]))))
     (it "sets the component's location with a java.awt.Rectangle"
-      (let [p (apply-default-opts (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
+      (let [p (apply-options (JPanel.) {:location (java.awt.Rectangle. 23 45 99 100)})
             l (.getLocation p)]
         (expect (= [23 45] [(.x l) (.y l)])))))
   (testing "the :bounds option"
     (it "sets the component's bounds with a [x y width height] vector"
-      (let [p (apply-default-opts (JPanel.) {:bounds [23 45 67 89]})
+      (let [p (apply-options (JPanel.) {:bounds [23 45 67 89]})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a [x y width height] vector, where :* means keep the old value"
@@ -135,72 +136,72 @@
             b (.getBounds p)]
         (expect (= [23 45 80 90] [(.x b) (.y b) (.width b) (.height b)]))))
     (it "sets the component's bounds with a java.awt.Rectangle"
-      (let [p (apply-default-opts (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
+      (let [p (apply-options (JPanel.) {:bounds (java.awt.Rectangle. 23 45 67 89)})
             b (.getBounds p)]
         (expect (= [23 45 67 89] [(.x b) (.y b) (.width b) (.height b)])))))
 
   (testing "the :cursor option"
     (it "sets the widget's cursor when given a cursor"
       (let [c (cursor/cursor :hand)
-            p (apply-default-opts (JPanel.) {:cursor c})]
+            p (apply-options (JPanel.) {:cursor c})]
         (expect (= c (.getCursor p)))))
     (it "sets the widget's cursor when given a cursor type keyword"
-      (let [p (apply-default-opts (JPanel.) {:cursor :hand})]
+      (let [p (apply-options (JPanel.) {:cursor :hand})]
         (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor p)))))))
 
   (testing "setting enabled option"
     (it "does nothing when omitted"
-      (let [c (apply-default-opts (JPanel.))]
+      (let [c (apply-options (JPanel.) {})]
         (expect (.isEnabled c))))
     (it "sets enabled when provided"
-      (let [c (apply-default-opts (JPanel.) {:enabled? false})]
+      (let [c (apply-options (JPanel.) {:enabled? false})]
         (expect (not (.isEnabled c)))))
     (it "sets enabled when provided a truthy value"
-      (let [c (apply-default-opts (JPanel.) {:enabled? "something"})]
+      (let [c (apply-options (JPanel.) {:enabled? "something"})]
         (expect (.isEnabled c))))
     (it "sets enabled when provided a falsey value"
-      (let [c (apply-default-opts (JPanel.) {:enabled? nil})]
+      (let [c (apply-options (JPanel.) {:enabled? nil})]
         (expect (= false (.isEnabled c)))))) 
   (testing "setting visible? option"
     (it "does nothing when omitted"
-      (let [c (apply-default-opts (JPanel.))]
+      (let [c (apply-options (JPanel.) {})]
         (expect (.isVisible c))))
-    (it "sets visible when provided"
-      (let [c (apply-default-opts (JPanel.) {:visible? false})]
+   (it "sets visible when provided"
+      (let [c (apply-options (JPanel.) {:visible? false})]
         (expect (not (.isVisible c)))))
     (it "sets visible when provided a truthy value"
-      (let [c (apply-default-opts (JPanel.) {:visible? "something"})]
+      (let [c (apply-options (JPanel.) {:visible? "something"})]
         (expect (.isVisible c))))
     (it "sets not visible when provided a falsey value"
-      (let [c (apply-default-opts (JPanel.) {:visible? nil})]
+      (let [c (apply-options (JPanel.) {:visible? nil})]
         (expect (= false (.isVisible c))))))
 
   (testing "setting opaque? option"
     (it "does nothing when omitted"
-      (let [c (apply-default-opts (JPanel.))]
+      (let [c (apply-options (JPanel.) {})]
         (expect (.isOpaque c))))
     (it "sets opacity when provided"
-      (let [c (apply-default-opts (JPanel.) {:opaque? false})]
+      (let [c (apply-options (JPanel.) {:opaque? false})]
         (expect (not (.isOpaque c))))))
   (testing "the :model property"
     (it "sets the model when provided"
       (let [model  (javax.swing.DefaultButtonModel.)
-            widget (apply-default-opts (button :model model))]
+            widget (button :model model)]
         (expect (= model (.getModel widget))))))
   (it "sets background using to-color when provided"
-    (let [c (apply-default-opts (JPanel.) {:background "#000000" })]
+    (let [c (apply-options (JPanel.) {:background "#000000" })]
       (expect (= Color/BLACK (.getBackground c)))))
   (it "sets opaque when background provided"
-    (let [c (apply-default-opts (JLabel.) {:background "#000000" })]
+    (let [c (apply-options (JLabel.) {:background "#000000" })]
       (expect (= true (.isOpaque c)))))
   (it "sets foreground when provided"
-    (let [c (apply-default-opts (JPanel.) {:foreground "#00FF00" })]
+    (let [c (apply-options (JPanel.) {:foreground "#00FF00" })]
       (expect (= Color/GREEN (.getForeground c)))))
   (it "sets border when provided using to-border"
-    (let [c (apply-default-opts (JPanel.) {:border "TEST"})]
+    (let [c (apply-options (JPanel.) {:border "TEST"})]
       (expect (= "TEST" (.. c getBorder getTitle)))))
   (it "sets cursor when provided"
-    (let [c (apply-default-opts (JPanel.) {:cursor :hand})]
+    (let [c (apply-options (JPanel.) {:cursor :hand})]
       (expect (= java.awt.Cursor/HAND_CURSOR (.getType (.getCursor c)))))))
 
 (describe show!
