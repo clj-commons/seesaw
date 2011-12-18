@@ -120,7 +120,7 @@
   [v]
   (doseq [{:keys [name ^Class class events]} (->> (ev/events-for v)  
                                                (sort-by :name))]
-    (printf "%s [%s]%n" name (.getName class))
+    (printf "%s [%s]%n" name (if class (.getName class) "?"))
     (doseq [e (sort events)]
       (printf "  %s%n" e))))
 
