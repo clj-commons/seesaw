@@ -195,7 +195,19 @@
 ; Widget construction stuff
 
 (defmacro with-widget
-  "This macro allows a Seesaw widget 'constructor' function to be applied to
+  "*SOON TO DEPRECATED*
+
+  This macro will soon be deprecated. Instead just create your 3rd-party
+  widget and call (seesaw.core/config!) on it:
+
+    (-> (org.jdesktop.swingx.JXList.)
+      (config! :id :my-list :model ...)
+
+  is equivalent to the example below.
+  
+  -----
+
+  This macro allows a Seesaw widget 'constructor' function to be applied to
   a sub-class of the widget type it usually produces. For example (listbox)
   always returns an instance of exactly JList. Suppose you're using SwingX
   and want to use the Seesaw goodness of (listbox), but want to get a 
@@ -948,7 +960,6 @@
     (move! my-label :by [25 -50])
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     (seesaw.core/move!)
@@ -1763,7 +1774,6 @@
     (password :echo-char \\X)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
@@ -1821,7 +1831,6 @@
     :editor-kit   The EditorKit. See Javadoc.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html
@@ -1863,7 +1872,6 @@
     :renderer A cell renderer to use. See (seesaw.cells/to-cell-renderer).
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
     Retrieving and setting the current selection of the list box is fully 
     supported by the (selection) and (selection!) functions.
@@ -1937,7 +1945,6 @@
                         {:age 45 :height 13}]])
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     seesaw.table/table-model 
@@ -1979,7 +1986,6 @@
   "Create a tree (JTree). Additional options:
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
   
@@ -2027,7 +2033,6 @@
   (str (selection cb)). (seesaw.core/text!) is not supported.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
@@ -2122,7 +2127,6 @@
     * A value returned by (seesaw.core/spinner-model)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
@@ -2210,7 +2214,6 @@
     (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]) :id :#scrollable :border 5)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
@@ -2377,7 +2380,6 @@
   the two widgets.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
@@ -2395,7 +2397,6 @@
   the two widgets.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
@@ -2419,7 +2420,6 @@
   "Create a separator.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
@@ -2497,7 +2497,6 @@
     :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     (seesaw.core/button)
@@ -2532,7 +2531,6 @@
   fixes various eccentricities of Swing.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
@@ -2571,7 +2569,6 @@
     :items Sequence of menus, see (menu).
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     (seesaw.core/frame)
@@ -2610,7 +2607,6 @@
                  creates a toolbar separator.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
@@ -2667,7 +2663,6 @@
   Returns the new JTabbedPane.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
@@ -2745,7 +2740,6 @@
       :paint (fn [g c] (.drawLine 0 0 (.getWidth c) (.getHeight c))))
 
   See:
-    (seesaw.core/with-widget)
     (seesaw.core/canvas)
     (seesaw.graphics)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
@@ -2900,8 +2894,6 @@
     Call (pack!) on the frame if you'd like the frame to resize itself to fit its
     contents. Sometimes this doesn't look like crap.
 
-    This function is compatible with (seesaw.core/with-widget).
-  
   See:
     (seesaw.core/show!)
     (seesaw.core/hide!)
@@ -3056,7 +3048,6 @@
   Returns a JDialog. Use (seesaw.core/show!) to display the dialog.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     (seesaw.core/show!)
@@ -3359,7 +3350,6 @@
     (slider :value 10 :min -50 :max 50)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
@@ -3413,7 +3403,6 @@
   Returns a JProgressBar.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
