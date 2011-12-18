@@ -22,14 +22,13 @@
         [seesaw.event :only [listen-for-named-event listen-to-property]]
         [seesaw.core :only [construct to-widget make-widget
                             abstract-panel
-                            default-items-option
-                            box-layout
-                            grid-layout
                             default-options button-options label-options
                             listbox-options tree-options table-options
                             ConfigIcon get-icon* set-icon*
                             config config!]]
-        [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]]
+        [seesaw.layout :only [default-items-option box-layout grid-layout]]
+        [seesaw.options :only [option-map bean-option apply-options 
+                               default-option resource-option around-option]]
         [seesaw.widget-options :only [widget-option-provider]])
   (:import [org.jdesktop.swingx.decorator
               Highlighter

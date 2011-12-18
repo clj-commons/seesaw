@@ -491,17 +491,6 @@
           g (grid-panel :items items)] 
       (expect (= items (config g :items))))))
 
-(describe realize-grid-bag-constraints
-  (it "should return a vector of widget/constraint pairs"
-    (let [[[w0 c0] [w1 c1] & more] (realize-grid-bag-constraints [[:first :weightx 99 :weighty 555 :gridx :relative] [:second :weightx 100 :anchor :baseline]])]
-      (expect (nil? more))
-      (expect (= :first w0))
-      (expect (= 99.0 (.weightx c0)))
-      (expect (= 555.0 (.weighty c0)))
-      (expect (= :second w1))
-      (expect (= 100.0 (.weightx c1)))
-      (expect (= 555.0 (.weighty c1))))))
-
 (describe form-panel
   (it "should create a JPanel with a GridBagLayout"
     (= java.awt.GridBagLayout (class (.getLayout (form-panel)))))

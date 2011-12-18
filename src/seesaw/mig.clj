@@ -11,7 +11,8 @@
 (ns ^{:doc "MigLayout support for Seesaw"
       :author "Dave Ray"}
   seesaw.mig
-  (:use [seesaw.core :only [abstract-panel LayoutManipulation default-options]]
+  (:use [seesaw.core :only [abstract-panel default-options]]
+        [seesaw.layout :only [LayoutManipulation add-widget handle-structure-change]]
         [seesaw.options :only [default-option option-map option-provider]]
         [seesaw.util :only [cond-doto]]))
 
@@ -28,8 +29,8 @@
 (defn- add-mig-items [^java.awt.Container parent items]
   (.removeAll parent)
   (doseq [[widget constraint] items]
-    (@#'seesaw.core/add-widget parent widget constraint))
-  (@#'seesaw.core/handle-structure-change parent))
+    (add-widget parent widget constraint))
+  (handle-structure-change parent))
 
 (def mig-layout-options
   (option-map
@@ -64,6 +65,7 @@
 (extend-protocol LayoutManipulation
   net.miginfocom.swing.MigLayout
     (add!* [layout target widget constraint]
-      (@#'seesaw.core/add-widget target widget))
-    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+      (add-widget target widget))
+    (get-constraint* [layout container widget] 
+      (.getComponentConstraints layout widget)))
 

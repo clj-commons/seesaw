@@ -32,7 +32,8 @@
   (:require clojure.java.io
             clojure.set
             [seesaw color font border invoke timer selection value
-             event selector icon action cells table graphics cursor scroll dnd])
+             event selector icon action cells table graphics cursor scroll dnd]
+            [seesaw.layout :as layout])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants DropMode
              BoxLayout
@@ -398,17 +399,6 @@
     (.repaint target))
   targets)
 
-(defn- handle-structure-change [^JComponent container]
-  "Helper. Revalidate and repaint a container after structure change"
-  (doto container
-    .revalidate
-    .repaint))
-
-;*******************************************************************************
-; Layout manipulation. See far below for more. 
-(defprotocol LayoutManipulation
-  (add!* [layout target widget constraint])
-  (get-constraint [layout container widget]))
 
 ;*******************************************************************************
 ; move!
@@ -446,14 +436,14 @@
       (do
         (doto (.getParent this)
           (.setComponentZOrder this 0)
-          handle-structure-change)
+          layout/handle-structure-change)
         this))
     (move-to-back! [this]
       (let [parent (.getParent this)
             n      (.getComponentCount parent)]
         (doto parent 
           (.setComponentZOrder this (dec n))
-          handle-structure-change)
+          layout/handle-structure-change)
         this))
   java.awt.Window
     (move-to! [this x y]   (move-component-to! this x y))
@@ -519,20 +509,6 @@
   "Returns the height of the given widget in pixels"
   (.getHeight (to-widget w)))
 
-(defn- add-widget 
-  ([c w] (add-widget c w nil))
-  ([^java.awt.Container c w constraint] 
-    (let [w* (make-widget w)]
-      (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
-      (.add c w* constraint)
-      w*)))
-
-(defn- add-widgets
-  [^java.awt.Container c ws]
-  (.removeAll c)
-  (doseq [w ws]
-    (add-widget c w))
-  (handle-structure-change c))
 
 (defn id-of 
   "Returns the id of the given widget if the :id property was specified at
@@ -835,13 +811,6 @@
 
 (def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
 
-(def default-items-option 
-  (default-option 
-    :items 
-    #(add-widgets %1 %2) 
-    #(seq (.getComponents ^java.awt.Container %1))
-    "A sequence of widgets to add.")) 
-
 (def default-options 
   (option-map
     (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
@@ -889,14 +858,10 @@
     (default-option :drag-enabled? set-drag-enabled get-drag-enabled boolean-examples)
     (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
 
-(def nil-layout-options 
-  (option-map
-    default-items-option))
-
 (widget-option-provider 
   javax.swing.JPanel 
   default-options
-  nil-layout-options)
+  layout/nil-layout-options)
 
 (extend-protocol Configurable
   java.util.EventObject
@@ -971,41 +936,6 @@
 ;*******************************************************************************
 ; Border Layout
 
-(def ^{:private true}  border-layout-dirs 
-  (constant-map BorderLayout :north :south :east :west :center))
-(def ^{:private true}  border-layout-dirs-r (clojure.set/map-invert border-layout-dirs))
-
-(defn- border-panel-items-setter
-  [panel items]
-  (doseq [[w dir] items]
-    (add-widget panel w (border-layout-dirs dir))))
-
-(defn- border-panel-items-getter
-  [^java.awt.Container panel]
-  (let [layout (.getLayout panel)]
-    (map #(vector % (border-layout-dirs-r (get-constraint layout panel %))) (.getComponents panel))))
-
-(def border-layout-options
-  (merge
-    (option-map
-      (default-option :hgap 
-        #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)
-        nil
-        ["An integer in pixels"])
-      (default-option :vgap 
-        #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)
-        nil 
-        ["An integer in pixels"]) 
-      (default-option :items 
-        border-panel-items-setter 
-        border-panel-items-getter 
-        ['[(label "North") :north (button :text "South") :south]]))
-    (apply option-map 
-           (map
-             (fn [[k v]] (default-option k #(add-widget %1 %2 v)))
-             border-layout-dirs)) ))
-
-(option-provider java.awt.BorderLayout border-layout-options)
 
 (def border-panel-options default-options)
 
@@ -1045,23 +975,6 @@
 ;*******************************************************************************
 ; Card
 
-(def card-layout-options
-  (option-map
-    (default-option :items 
-      (fn [panel items]
-        (doseq [[w id] items]
-          (add-widget panel w (name id)))))
-    (default-option :hgap 
-      #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)
-      nil
-      ["Integer pixels"]) 
-    (default-option :vgap 
-      #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)
-      nil
-      ["Integer pixels"])))
-
-(option-provider java.awt.CardLayout card-layout-options)
-
 (def card-panel-options default-options)
 
 (defn card-panel
@@ -1079,6 +992,7 @@
   [& opts]
   (abstract-panel (java.awt.CardLayout.) opts))
 
+; TODO move to layout.clj
 (defn show-card! 
   "Show a particular card in a card layout. id can be a string or keyword.
    panel is returned.
@@ -1094,31 +1008,6 @@
 
 ;*******************************************************************************
 ; Flow
-
-(def ^{:private true} flow-align-table
-  (constant-map FlowLayout :left :right :leading :trailing :center))
-
-(def flow-layout-options
-  (option-map 
-    default-items-option
-    (default-option :hgap 
-      #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2)
-      nil 
-      ["Integer pixels"])
-    (default-option :vgap 
-      #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2)
-      nil 
-      ["Integer pixels"])
-    (default-option :align 
-      #(.setAlignment ^FlowLayout (.getLayout ^java.awt.Container %1) 
-                      (get flow-align-table %2 %2))
-      nil
-      (keys flow-align-table))
-    (default-option :align-on-baseline? 
-      #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) (boolean %2))
-      boolean-examples)))
-
-(option-provider FlowLayout flow-layout-options)
 
 (def flow-panel-options default-options)
 
@@ -1140,25 +1029,12 @@
 ;*******************************************************************************
 ; Boxes
 
-(def ^{:private true} box-layout-dir-table {
-  :horizontal BoxLayout/X_AXIS 
-  :vertical   BoxLayout/Y_AXIS 
-})
-
-(def box-layout-options 
-  (option-map
-    default-items-option))
-
-(option-provider BoxLayout box-layout-options)
-
 (def box-panel-options default-options)
-
-(defn box-layout [dir] #(BoxLayout. % (dir box-layout-dir-table)))
 
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
-  (abstract-panel (box-layout dir) opts))
+  (abstract-panel (layout/box-layout dir) opts))
 
 (def horizontal-panel-options box-panel-options)
 
@@ -1187,26 +1063,7 @@
 ;*******************************************************************************
 ; Grid
 
-(def grid-layout-options
-  (option-map 
-    default-items-option
-    (ignore-option :rows    ["Integer rows"])
-    (ignore-option :columns ["Integer columns"])
-    (default-option :hgap 
-      #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)
-      nil 
-      ["Integer pixels"])
-    (default-option :vgap 
-      #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)
-      nil 
-      ["Integer pixels"])))
-
-(option-provider GridLayout grid-layout-options)
-
 (def grid-panel-options default-options)
-
-(defn grid-layout [rows columns]
-  (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
 
 (defn grid-panel
   "Create a panel where widgets are arranged horizontally. Options:
@@ -1224,85 +1081,12 @@
   { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns] 
       :as opts}]
-  (abstract-panel (grid-layout rows columns) opts))
+  (abstract-panel (layout/grid-layout rows columns) opts))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout
 
-(def ^{:private true} gbc-fill 
-  (constant-map GridBagConstraints :none :both :horizontal :vertical))
 
-(def ^{:private true} gbc-grid-xy (constant-map GridBagConstraints :relative))
-
-(def ^{:private true} gbc-grid-wh
-  (constant-map GridBagConstraints :relative :remainder))
-
-(def ^{:private true} gbc-anchors 
-  (constant-map GridBagConstraints
-    :north :south :east :west 
-    :northwest :northeast :southwest :southeast :center
-    
-    :page-start :page-end :line-start :line-end 
-    :first-line-start :first-line-end :last-line-start :last-line-end
-  
-    :baseline :baseline-leading :baseline-trailing
-    :above-baseline :above-baseline-leading :above-baseline-trailing
-    :below-baseline :below-baseline-leading :below-baseline-trailing)) 
-
-(defn- gbc-grid-handler [^GridBagConstraints gbc v]
-  (let [x (.gridx gbc)
-        y (.gridy gbc)]
-    (condp = v
-      :next (set! (. gbc gridx) (inc x))
-      :wrap    (do 
-                 (set! (. gbc gridx) 0)
-                 (set! (. gbc gridy) (inc y))))
-    gbc))
-
-(def ^{:private true} grid-bag-constraints-options 
-  (option-map
-    (default-option :grid gbc-grid-handler)
-    (default-option :gridx #(set! (. ^GridBagConstraints %1 gridx)      (get gbc-grid-xy %2 %2)))
-    (default-option :gridy #(set! (. ^GridBagConstraints %1 gridy)      (get gbc-grid-xy %2 %2)))
-    (default-option :gridwidth #(set! (. ^GridBagConstraints %1 gridwidth)  (get gbc-grid-wh %2 %2)))
-    (default-option :gridheight #(set! (. ^GridBagConstraints %1 gridheight) (get gbc-grid-wh %2 %2)))
-    (default-option :fill #(set! (. ^GridBagConstraints %1 fill)       (get gbc-fill %2 %2)))
-    (default-option :ipadx #(set! (. ^GridBagConstraints %1 ipadx)      %2))
-    (default-option :ipady #(set! (. ^GridBagConstraints %1 ipady)      %2))
-    (default-option :insets #(set! (. ^GridBagConstraints %1 insets)     %2))
-    (default-option :anchor #(set! (. ^GridBagConstraints %1 anchor)     (gbc-anchors %2)))
-    (default-option :weightx #(set! (. ^GridBagConstraints %1 weightx)    %2))
-    (default-option :weighty #(set! (. ^GridBagConstraints %1 weighty)    %2))))
-
-(option-provider GridBagConstraints grid-bag-constraints-options)
-
-(defn realize-grid-bag-constraints
-  "*INTERNAL USE ONLY. DO NOT USE.*
-
-  Turn item specs into [widget constraint] pairs by successively applying
-  options to GridBagConstraints"
-  [items]
-  (second
-    (reduce
-      (fn [[^GridBagConstraints gbcs result] [widget & opts]]
-        (apply-options gbcs opts)
-        (vector (.clone gbcs) (conj result [widget gbcs]))) 
-      [(GridBagConstraints.) []]
-      items)))
-
-(defn- add-grid-bag-items
-  [^java.awt.Container panel items]
-  (.removeAll panel)
-  (doseq [[widget constraints] (realize-grid-bag-constraints items)]
-    (when widget
-      (add-widget panel widget constraints)))
-  (handle-structure-change panel))
-
-(def form-layout-options
-  (option-map
-    (default-option :items add-grid-bag-items)))
-
-(option-provider GridBagLayout form-layout-options)
 (def form-panel-options default-options)
 
 (defn form-panel
@@ -2558,7 +2342,7 @@
   (merge 
     default-options
     (option-map
-      default-items-option)))
+      layout/default-items-option)))
 
 (widget-option-provider javax.swing.JMenuBar menubar-options)
 
@@ -2594,7 +2378,8 @@
       (bean-option :orientation javax.swing.JToolBar orientation-table)
       (bean-option :floatable? javax.swing.JToolBar boolean)
       ; Override default :items handler
-      (default-option :items #(add-widgets %1 (insert-toolbar-separators %2))))))
+      (default-option :items 
+        #(layout/add-widgets %1 (insert-toolbar-separators %2))))))
 
 (widget-option-provider javax.swing.JToolBar toolbar-options)
 
@@ -3603,28 +3388,6 @@
 ;*******************************************************************************
 ; Widget layout manipulation
 
-(extend-protocol LayoutManipulation
-  java.awt.LayoutManager
-    (add!* [layout target widget constraint]
-      (add-widget target widget))
-    (get-constraint [layout container widget] nil)
-
-  java.awt.BorderLayout
-    (add!* [layout target widget constraint]
-      (add-widget target widget (border-layout-dirs constraint)))
-    (get-constraint [layout container widget]
-      (.getConstraints layout widget)))
-
-(defn- add!-impl 
-  [container subject & more]
-  (let [^java.awt.Container container (to-widget container)
-        [widget constraint] (if (vector? subject) subject [subject nil])
-        layout (.getLayout container)]
-    (add!* layout container widget constraint)
-    (when more
-      (apply add!-impl container more))
-    container))
-
 (defn add! [container subject & more]
   "Add one or more widgets to a widget container. The container and each widget
   argument are passed through (to-widget) as usual. Each widget can be a single
@@ -3642,15 +3405,8 @@
 
   Returns the target container *after* it's been passed through (to-widget).
   "
-  (handle-structure-change (apply add!-impl container subject more)))
-
-(defn- remove!-impl
-  [container subject & more]
-  (let [^java.awt.Container container (to-widget container)]
-    (.remove container (to-widget subject))
-    (when more
-      (apply remove!-impl container more))
-    container))
+  (layout/handle-structure-change 
+    (apply layout/add!-impl container subject more)))
 
 (defn remove!
   "Remove one or more widgets from a container. container and each widget
@@ -3667,26 +3423,9 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container subject & more]
-  (handle-structure-change (apply remove!-impl container subject more)))
+  (layout/handle-structure-change 
+    (apply layout/remove!-impl container subject more)))
 
-(defn- ^Integer index-of-component
-  [^java.awt.Container container widget]
-  (loop [comps (.getComponents container) idx 0]
-    (cond
-      (not comps)              nil
-      (= widget (first comps)) idx
-      :else (recur (next comps) (inc idx)))))
-
-(defn- replace!-impl
-  [^java.awt.Container container old-widget new-widget]
-  (let [idx        (index-of-component container old-widget)]
-    (when idx
-      (let [constraint (get-constraint (.getLayout container) container old-widget)]
-        (doto container
-          (.remove idx)
-          (.add    new-widget constraint idx))))
-    container))
-  
 (defn replace!
   "Replace old-widget with new-widget from container. container and old-widget
   are passed through (to-widget). new-widget is passed through make-widget.
@@ -3705,8 +3444,11 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container old-widget new-widget]
-  (handle-structure-change 
-    (replace!-impl (to-widget container) (to-widget old-widget) (make-widget new-widget))))
+  (layout/handle-structure-change 
+    (layout/replace!-impl 
+      (to-widget container) 
+      (to-widget old-widget) 
+      (make-widget new-widget))))
 
 
 ;*******************************************************************************
