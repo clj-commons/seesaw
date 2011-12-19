@@ -78,7 +78,7 @@
   "
   [& body] `(invoke-soon* (fn [] ~@body)))
 
-(defn signaller 
+(defn signaller* 
   "Returns a function that conditionally queues the given function (+ args) on 
   the UI thread. The call is only queued if there is not already a pending call
   queued. 
@@ -122,4 +122,21 @@
             (apply f args) 
             (reset! active? false)))
         do-it))))
+
+(defmacro signaller 
+  "Convenience form of (seesaw.invoke/signaller*).
+  
+  A use of signaller* like this:
+  
+    (signaller* (fn [x y z] ... body ...))
+  
+  can be written like this:
+  
+    (signaller [x y z] ... body ...)
+  
+  See:
+    (seesaw.invoke/signaller*)
+  "
+  [args & body]
+  `(signaller* (fn ~args ~@body)))
 

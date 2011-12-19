@@ -75,10 +75,9 @@
         progress     (config! (select root [:#progress]) :max steps :value 0)
         task         (init-task 4 step-size steps)]
     (add-watch (:result task) (gensym)
-      (seesaw.invoke/signaller 
-        (fn [k r o {:keys [value count]}] 
+      (seesaw.invoke/signaller [k r o {:keys [value count]}] 
           (config! progress :value count)
-          (text! result-label (format "\u03C0 = %.20f" value)))))
+          (text! result-label (format "\u03C0 = %.20f" value))))
     (reset! current-task (start-task task))))
 
 (defn cancel [e]
@@ -161,8 +160,7 @@
 (defexample []
   (-> (make-frame) 
     (apply-stylesheet stylesheet) 
-    (apply-behaviors behaviors) 
-    ))
+    (apply-behaviors behaviors)))
 
 ;(run :dispose)
 
