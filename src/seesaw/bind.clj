@@ -141,7 +141,7 @@
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
     (notify [this v] 
-      (when-not (= v (.getValue this)) 
+      (when-not (= (int v) (.getValue this)) 
         (.setValue this v))))
 
 (defn b-swap! 
@@ -464,5 +464,4 @@
     (to-bindable* [this] (.getModel this))
   javax.swing.text.JTextComponent
     (to-bindable* [this] (.getDocument this)))
-
 
