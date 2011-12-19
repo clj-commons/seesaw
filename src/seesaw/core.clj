@@ -807,7 +807,7 @@
 
 (def ^{:private true} color-examples [:aliceblue "\"#f00\"" "\"#FF0000\"" '(seesaw.color/color 255 0 0 0 224)])
 (def ^{:private true} boolean-examples 'boolean)
-(def ^{:private true} dimension-examples [[640 :by 480] java.awt.Dimension])
+(def ^{:private true} dimension-examples [[640 :by 480] 'java.awt.Dimension])
 
 (def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
 
@@ -845,9 +845,23 @@
                           (.setMaximumSize d)))
                       #(.getSize ^JComponent %1)
       dimension-examples)
-    (default-option :location #(move! %1 :to %2) #(.getLocation ^java.awt.Component %1))
-    (default-option :bounds bounds-option-handler #(.getBounds ^java.awt.Component %1)) 
-    (default-option :popup #(popup-option-handler %1 %2))
+
+    (default-option :location 
+      #(move! %1 :to %2) 
+      #(.getLocation ^java.awt.Component %1)
+      ["See (seesaw.core/move! :to)"])
+
+    (default-option :bounds 
+      bounds-option-handler 
+      #(.getBounds ^java.awt.Component %1)
+      [:preferred '[x y w h] "Use :* to leave component unchanged:"
+       '[x :* :* h]]) 
+    (default-option :popup 
+      #(popup-option-handler %1 %2)
+      nil
+      ['javax.swing.JPopupMenu
+       "(fn [e]) that returns a seq of menu items"
+       "See (seesaw.core/popup)"])
     (default-option :paint #(paint-option-handler %1 %2) nil ["See (seesaw.core/paintable)"])
 
     ; TODO I'd like to push these down but cells.clj uses them on non-attached
@@ -856,7 +870,10 @@
     (default-option :text set-text get-text ["A string" "Anything accepted by (clojure.core/slurp)"])
 
     (default-option :drag-enabled? set-drag-enabled get-drag-enabled boolean-examples)
-    (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
+    (bean-option :transfer-handler JComponent 
+                 seesaw.dnd/to-transfer-handler
+                 identity
+                 "See (seesaw.dnd/to-transfer-handler)")))
 
 (widget-option-provider 
   javax.swing.JPanel 
@@ -2640,7 +2657,10 @@
     (bean-option :visible? java.awt.Window boolean)
     ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
     ; base or interface.
-    (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
+    (bean-option :transfer-handler java.awt.Window 
+                 seesaw.dnd/to-transfer-handler
+                 identity
+                 "See (seesaw.dnd/to-transfer-handler)")
     (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)))
 
 (option-provider javax.swing.JFrame frame-options)
