@@ -1,5 +1,5 @@
 (ns seesaw.test.bind
-  (:refer-clojure :exclude [some])
+  (:refer-clojure :exclude [some filter])
   (:require [seesaw.core :as ssc])
   (:use seesaw.bind)
   (:use [lazytest.describe :only (describe it testing)]
@@ -165,6 +165,20 @@
       (reset! b 6)
       (expect (= [5 6] @end)))))
 
+(describe filter 
+  (it "doesn't pass along value when predicate returns falsey"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (filter (constantly false)) end)
+      (reset! start :something)
+      (expect (= :bar @end))))
+  (it "passes along value when predicate returns truthy"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (filter (constantly true)) end)
+      (reset! start :something)
+      (expect (= :something @end)))))
+
 (describe some
   (it "doesn't pass along falsey values returned by the predicate"
     (let [start (atom :foo)
@@ -172,7 +186,7 @@
       (bind start (some (constantly nil)) end)
       (reset! start :something)
       (expect (= :bar @end))))
-  (it "doesn't passes along result of predicate when it returns truthy"
+  (it "passes along result of predicate when it returns truthy"
     (let [start (atom :foo)
           end   (atom :bar)]
       (bind start (some (constantly :yum)) end)

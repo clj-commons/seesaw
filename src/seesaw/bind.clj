@@ -12,7 +12,7 @@
            synchronizing an atom with changes to a slider."
       :author "Dave Ray"}
   seesaw.bind
-  (:refer-clojure :exclude [some])
+  (:refer-clojure :exclude [some filter])
   (:require [seesaw.core :as ssc]
             [seesaw.invoke :as invoke])
   (:use [clojure.string :only (capitalize split)]))
@@ -353,8 +353,41 @@
   [bindings & body]
   `(b-do* (fn ~bindings ~@body)))
 
+(defn filter 
+  "Executes a predicate on incoming value. If the predicate returns a truthy
+  value, the incoming value is passed on to the next bindable in the chain. 
+  Otherwise, nothing is notified.
+  
+  Examples:
+    
+    ; Block out of range values
+    (let [input (text)
+          output (slider :min 0 :max 100)]
+      (bind 
+        input 
+        (filter #(< 0 % 100)) 
+        output))
+
+  Notes:
+    This works a lot like (clojure.core/filter)
+
+  See:
+    (seesaw.bind/some)
+    (clojure.core/filter)
+  "
+  [pred]
+  (let [state (atom {:handlers [] :value nil})]
+    (reify Bindable
+      (subscribe [this handler]
+        (swap! state update-in [:handlers] conj handler))
+      (notify [this v]
+        (when (pred v) 
+          (swap! state assoc :value v)
+          (doseq [h (:handlers @state)]
+            (h v)))))))
+
 (defn some
-  "Executes a preducate on incoming value. If the predicate returns a truthy
+  "Executes a predicate on incoming value. If the predicate returns a truthy
   value, that value is passed on to the next bindable in the chain. Otherwise,
   nothing is notified.
   
@@ -364,12 +397,13 @@
     ; Fails
     (let [input (text)
           output (slider :min 0 :max 100)]
-      (bind input (gate #(try (Integer/parseInt %) (catch Exception nil))) output))
+      (bind input (some #(try (Integer/parseInt %) (catch Exception nil))) output))
 
   Notes:
     This works a lot like (clojure.core/some)
 
   See:
+    (seesaw.bind/filter)
     (clojure.core/some)
   "
   [pred]
