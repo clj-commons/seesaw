@@ -82,6 +82,7 @@ Now run it:
 * Thomas Karolski (MHOOO)
 * Chun-wei Kuo (Domon)
 * Vladimir Matveev (dpx-infinity)
+* Jeff Rose (rosejn)
 
 ## License
 
