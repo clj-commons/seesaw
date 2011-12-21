@@ -16,6 +16,8 @@
         seesaw.test.examples.example)
   (:require [seesaw.dev :as dev]))
 
+; Example usage of seesaw.widgets.log-window/log-window
+
 (dev/debug!)
 
 (defn make-frame []

@@ -16,10 +16,12 @@
         [seesaw.widget-options :only [WidgetOptionProvider]]))
 
 (defprotocol LogWindow
-  (log   [this message])
-  (clear [this]))
+  (log   [this message] "Log a message to the given log-window")
+  (clear [this] "Clear the contents of the log-window"))
 
-(defn logf [this fmt & args]
+(defn logf 
+  "Log a formatted message to the given log-window."
+  [this fmt & args]
   (log this (apply format fmt args)))
 
 (defn log-window
@@ -30,12 +32,17 @@
   i.e. messages logged from multiple threads won't be interleaved. 
   
   It must be wrapped in (seesaw.core/scrollable) for scrolling.
+
   
   Includes a context menu with options for clearing the window
   and scroll lock.
 
   Returns a sub-class of javax.swing.JTextArea so any of the options
-  that apply to multi-line (seesaw.core/text) apply.
+  that apply to multi-line (seesaw.core/text) apply. Also supports
+  the following additional options:
+
+    :limit Maximum number of chars to keep in the log. When this limit
+           is reached, chars will be removed from the beginning.
 
   See:
     (seesaw.core/text)
@@ -90,6 +97,12 @@
                              :handler (fn [_] (clear ta)))]
 
     (map-key ta ::key.clear clear-action)
+
+    ; When auto-scroll is re-enabled, have to force caret to bottom
+    ; otherwise, it has no effect.
+    (listen scroll-item :selection
+            (fn [e] (if (selection scroll-item)
+                      (scroll! ta :to :bottom))))
 
     ; Apply default options and whatever options are provided.
     (apply-options
