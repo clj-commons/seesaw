@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.to-widget - Seesaw nil API documentation</title>
+    <title>seesaw.widgets.log-window - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,19 +52,27 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.widgets.log-window/clear">clear</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.widgets.log-window/log">log</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.widgets.log-window/log-window">log-window</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.widgets.log-window/logf">logf</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.to-widget</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.widgets.log-window</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
 
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.to-widget</span>))
+  (:require <span id="long-name">seesaw.widgets.log-window</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
 <pre id="namespace-docstr"></pre>
@@ -72,7 +80,74 @@ namespace.
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.widgets.log-window/clear">clear</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (clear this)
+</pre>
+  <pre id="var-docstr">Clear the contents of the log-window</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.widgets.log-window/log">log</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (log this message)
+</pre>
+  <pre id="var-docstr">Log a message to the given log-window</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.widgets.log-window/log-window">log-window</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (log-window &amp; opts)
+</pre>
+  <pre id="var-docstr">An auto-scrolling log window.
 
+The returned widget implements the LogWindow protocol with 
+which you can clear it, or append messages. It is thread-safe, 
+i.e. messages logged from multiple threads won't be interleaved. 
+
+It must be wrapped in (seesaw.core/scrollable) for scrolling.
+
+Includes a context menu with options for clearing the window
+and scroll lock.
+
+Returns a sub-class of javax.swing.JTextArea so any of the options
+that apply to multi-line (seesaw.core/text) apply. Also supports
+the following additional options:
+
+  :limit Maximum number of chars to keep in the log. When this limit
+         is reached, chars will be removed from the beginning.
+
+  :auto-scroll? Whether the window should auto-scroll. This is the
+        programmatic hook for the context menu entry.
+
+See:
+  (seesaw.core/text)
+</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.widgets.log-window/logf">logf</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (logf this fmt &amp; args)
+</pre>
+  <pre id="var-docstr">Log a formatted message to the given log-window.</pre>
+  
+  
+  
+</div>
 
 
 </div>

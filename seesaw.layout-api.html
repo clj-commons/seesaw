@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.to-widget - Seesaw nil API documentation</title>
+    <title>seesaw.layout - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,27 +52,43 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.layout/realize-grid-bag-constraints">realize-grid-bag-constraints</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.to-widget</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.layout</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
-
+<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.to-widget</span>))
+  (:require <span id="long-name">seesaw.layout</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr"></pre>
+<pre id="namespace-docstr">Functions for dealing with layouts. Prefer layout specific constructors in seesaw.core, e.g. border-panel.</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.layout/realize-grid-bag-constraints">realize-grid-bag-constraints</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (realize-grid-bag-constraints items)
+</pre>
+  <pre id="var-docstr">*INTERNAL USE ONLY. DO NOT USE.*
 
+Turn item specs into [widget constraint] pairs by successively applying
+options to GridBagConstraints</pre>
+  
+  
+  
+</div>
 
 
 </div>

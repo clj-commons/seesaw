@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.to-widget - Seesaw nil API documentation</title>
+    <title>seesaw.keymap - Seesaw nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,27 +52,92 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#seesaw.keymap/map-key">map-key</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.to-widget</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.keymap</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
   </h1>
-
+<span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
 <br />Usage:
 <pre>
 (ns your-namespace
-  (:require <span id="long-name">seesaw.to-widget</span>))
+  (:require <span id="long-name">seesaw.keymap</span>))
 </pre><pre>
 </pre><h2>Overview</h2>
-<pre id="namespace-docstr"></pre>
+<pre id="namespace-docstr">Functions for mapping key strokes to actions.</pre>
 
 
 <br />
 <h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="seesaw.keymap/map-key">map-key</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (map-key target key act &amp; {:keys [scope id], :as opts})
+</pre>
+  <pre id="var-docstr">Install a key mapping on a widget. 
 
+Key mappings are hopelessly entwined with keyboard focus and the widget 
+hierarchy. When a key is pressed in a widget with focus, each widget up
+the hierarchy gets a chance to handle it. There three 'scopes' with
+which a mapping may be registered:
+
+  :self 
+
+    The mapping only handles key presses when the widget itself has
+    the keyboard focus. Use this, for example, to install custom
+    key mappings in a text box.
+
+  :descendants
+
+    The mapping handles key presses when the widget itself or any
+    of its descendants has keyboard focus. 
+
+  :global
+
+    The mapping handles key presses as long as the top-level window
+    containing the widget is active. This is what's used for menu
+    shortcuts and should be used for other app-wide mappings.
+
+Given this, each mapping is installed on a particular widget along
+with the desired keystroke and action to perform. The keystroke can
+be any valid argument to (seesaw.keystroke/keystroke). The action
+can be one of the following:
+
+  * A javax.swing.Action. See (seesaw.core/action)
+  * A single-argument function. An action will automatically be
+    created around it.
+  * A button, menu, menuitem, or other button-y thing. An action
+    that programmatically clicks the button will be created.
+  * nil to disable or remove a mapping 
+
+target may be a widget, frame, or something convertible through to-widget.
+
+Returns a function that removes the key mapping.
+
+Examples:
+
+  ; In frame f, key "K" clicks button b
+  (map-key f "K" b)
+
+  ; In text box t, map ctrl+enter to a function
+  (map-key t "control ENTER"
+    (fn [e] (alert e "You pressed ctrl+enter!")))
+
+See:
+  (seesaw.keystroke/keystroke)
+  <a href="http://download.oracle.com/javase/tutorial/uiswing/misc/keybinding.html">http://download.oracle.com/javase/tutorial/uiswing/misc/keybinding.html</a>
+</pre>
+  
+  
+  
+</div>
 
 
 </div>
