@@ -41,15 +41,11 @@
       (recur (inc i)))))
 
 (defn add-behaviors [f]
-  (let [lw (select f [:#log-window])
-        start (select f [:#start])
-        stop (select f [:#stop])
-        limit (select f [:#limit])
-        limit? (select f [:#limit?])
+  (let [{:keys [log-window start stop limit limit?]} (group-by-id f)
         go (atom false)]
     (listen
       limit?
-      :selection (fn [_] (config! lw :limit (if (value limit?) 
+      :selection (fn [_] (config! log-window :limit (if (value limit?) 
                                               (value limit)))))
     (listen
       stop
@@ -58,7 +54,7 @@
       start 
       :action (fn [_] 
                 (reset! go true)
-                (future (spammer lw (System/currentTimeMillis) go)))))
+                (future (spammer log-window (System/currentTimeMillis) go)))))
   f)
 
 (defexample []
