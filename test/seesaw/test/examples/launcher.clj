@@ -9,7 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.launcher
-  (:use [seesaw core swingx]
+  (:use [seesaw core swingx keymap]
         seesaw.test.examples.example)
   (:require [seesaw.bind :as b]
             [seesaw.dev :as dev]))
@@ -35,6 +35,7 @@
    'j18n
    'kitchensink
    'kotka-bind
+   'log-window
    'make-widget
    'mig
    'paintable
@@ -87,6 +88,8 @@
             (fn [e]
               (when (= 2 (.getClickCount e))
                 (launch-example (selection list)))))
+
+    (map-key list "ENTER" (fn [_] (launch-example (selection list))))
 
     (listen launch :action (fn [_] (launch-example (selection list))))
 
