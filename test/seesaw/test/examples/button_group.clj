@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.button-group
-  (:use seesaw.core))
+  (:use seesaw.core
+        seesaw.test.examples.example))
 
 ; An example of putting radio buttons (or toggle buttons, or menu items, etc)
 ; in a button group to ensure mutual exclusion. Note that the group is a
@@ -46,13 +47,12 @@
             "(text (selection group)): " (text (selection group)) "</html>"))))
     panel))
 
-(defn -main [& args]
-  (invoke-later
-    (show! 
-      (frame :title "Seesaw Button Group Example"
-             :height 150
-             :width 300
-             :content (content)))))
+(defexample run []
 
-;(-main)
+  (frame :title "Seesaw Button Group Example"
+         :height 150
+         :width 300
+         :content (content)))
+
+;(run :dispose)
 

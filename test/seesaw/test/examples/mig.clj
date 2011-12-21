@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.mig
-  (:use [seesaw core mig]))
+  (:use [seesaw core mig]
+        seesaw.test.examples.example))
 
 ; http://www.devx.com/Java/Article/38017/1954
 
@@ -35,10 +36,8 @@
       [ "D/mm"             "gap 10"]
       [ (text :columns 10) ""]]))
 
-(defn app []
+(defexample []
   (frame :title "MigLayout Example" :resizable? false :content (frame-content)))
 
-(defn -main [& args]
-  (invoke-later (-> (app) pack! show!)))
-;(-main) 
+;(run :dispose) 
 

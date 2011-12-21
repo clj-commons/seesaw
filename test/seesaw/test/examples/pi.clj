@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.pi
-  (:use seesaw.core)
+  (:use seesaw.core
+        seesaw.test.examples.example)
   (:require seesaw.invoke)
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
 
@@ -74,10 +75,9 @@
         progress     (config! (select root [:#progress]) :max steps :value 0)
         task         (init-task 4 step-size steps)]
     (add-watch (:result task) (gensym)
-      (seesaw.invoke/signaller 
-        (fn [k r o {:keys [value count]}] 
+      (seesaw.invoke/signaller [k r o {:keys [value count]}] 
           (config! progress :value count)
-          (text! result-label (format "\u03C0 = %.20f" value)))))
+          (text! result-label (format "\u03C0 = %.20f" value))))
     (reset! current-task (start-task task))))
 
 (defn cancel [e]
@@ -157,13 +157,10 @@
     (apply listen (select root sel) (reduce concat handlers)))
   root)
 
-(defn -main [& args]
-  (invoke-later
-    (-> (make-frame) 
-      (apply-stylesheet stylesheet) 
-      (apply-behaviors behaviors) 
-      pack! 
-      show!)))
+(defexample []
+  (-> (make-frame) 
+    (apply-stylesheet stylesheet) 
+    (apply-behaviors behaviors)))
 
-;(-main)
+;(run :dispose)
 

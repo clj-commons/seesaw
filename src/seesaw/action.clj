@@ -12,7 +12,11 @@
       :author "Dave Ray"}
   seesaw.action
   (:use [seesaw.util :only [resource to-mnemonic-keycode]])
-  (:use [seesaw icon keystroke meta options])
+  (:use [seesaw icon keystroke meta]
+        [seesaw.options :only [option-map 
+                               default-option bean-option resource-option 
+                               apply-options
+                               option-provider]])
   (:import [javax.swing Action AbstractAction]))
 
 ;*******************************************************************************
@@ -22,7 +26,10 @@
   ([name key set-conv] (action-property-option name key set-conv nil))
   ([name key set-conv get-conv]
    (default-option name 
-     (fn [^Action target value] (.putValue target key ((or set-conv identity) value))))))
+     (fn [^Action target value] 
+       (.putValue target key ((or set-conv identity) value)))
+     (fn [^Action target]
+       (.getValue target key)))))
 
 ; store the handler function in a property on the action.
 (def ^{:private true} action-handler-property "seesaw-action-handler")
@@ -31,15 +38,22 @@
     (bean-option :enabled? Action boolean)
     (action-property-option :selected? Action/SELECTED_KEY boolean)
     (action-property-option :name Action/NAME resource)
-    (action-property-option :command Action/ACTION_COMMAND_KEY str)
-    (action-property-option :tip Action/SHORT_DESCRIPTION str)
+    (action-property-option :command Action/ACTION_COMMAND_KEY resource)
+    (action-property-option :tip Action/SHORT_DESCRIPTION resource)
     (action-property-option :icon Action/SMALL_ICON icon)
     (action-property-option :key Action/ACCELERATOR_KEY keystroke)
     (default-option :mnemonic 
       (fn [^Action a v]
-        (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))) 
-    (default-option :handler #(put-meta! %1 action-handler-property %2))
+        (.putValue a Action/MNEMONIC_KEY (Integer. (to-mnemonic-keycode v))))
+      (fn [^Action a]
+        (.getValue a Action/MNEMONIC_KEY))) 
+    (default-option :handler 
+      #(put-meta! %1 action-handler-property %2)
+      #(get-meta %1 action-handler-property))
     (resource-option :resource [:name :command :tip :icon :key :mnemonic])))
+
+
+(option-provider javax.swing.Action action-options)
 
 (defn action 
   "Construct a new Action object. Supports the following properties:
@@ -74,5 +88,5 @@
   (let [a (proxy [AbstractAction] [] 
             (actionPerformed [e] 
               (if-let [f (get-meta this action-handler-property)] (f e))))]
-    (apply-options a opts action-options)))
+    (apply-options a opts)))
 

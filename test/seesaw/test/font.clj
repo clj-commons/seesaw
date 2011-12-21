@@ -35,6 +35,9 @@
   (it "can create a font with a specific size"
     (let [f (font :size 40)]
       (expect (= 40 (.getSize f)))))
+  (it "can create a font from a family keyword"
+    (let [f (font :monospaced)]
+      (expect (= "Monospaced" (.getFamily f)))))
   (it "can create a monospace font"
     (let [f (font :name :monospaced)]
       (expect (= Font/MONOSPACED (.getName f)))))

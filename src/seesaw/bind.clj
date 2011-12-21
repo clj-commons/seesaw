@@ -12,7 +12,7 @@
            synchronizing an atom with changes to a slider."
       :author "Dave Ray"}
   seesaw.bind
-  (:refer-clojure :exclude [some])
+  (:refer-clojure :exclude [some filter])
   (:require [seesaw.core :as ssc]
             [seesaw.invoke :as invoke])
   (:use [clojure.string :only (capitalize split)]))
@@ -128,12 +128,20 @@
           (.remove this 0 (.getLength this))
           (.insertString this 0 (str v) nil))))
 
-  javax.swing.BoundedRangeModel
+  javax.swing.SpinnerModel
     (subscribe [this handler]
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
     (notify [this v] 
       (when-not (= v (.getValue this)) 
+        (.setValue this v))) 
+  
+  javax.swing.BoundedRangeModel
+    (subscribe [this handler]
+      (ssc/listen this :change
+        (fn [e] (handler (.getValue this)))))
+    (notify [this v] 
+      (when-not (= (int v) (.getValue this)) 
         (.setValue this v))))
 
 (defn b-swap! 
@@ -275,6 +283,33 @@
   ([widget]
     (selection widget {})))
 
+(defn value 
+  "Converts the value of a widget into a bindable. Applies to listbox,
+  table, tree, combobox, checkbox, etc, etc. In short, anything to which
+  (seesaw.core/value) applies. This is a \"receive-only\" bindable since
+  there is no good way to detect changes in the values of composites.
+
+  Examples:
+    
+    ; Map the value of an atom (a map) into the value of a panel.
+    (let [a  (atom nil)
+          p  (border-panel :north (checkbox :id :cb :text \"Enable\")
+                           :south (text :id :tb)]
+      (bind a (value p)))
+    ; ... now setting a to {:cb true :tb \"Hi\"} will check the checkbox
+    ; and change the text field to \"Hi\"
+
+  See:
+    (seesaw.bind/bind)
+    (seesaw.core/value!)
+  "
+  ([widget]
+    (reify Bindable
+      (subscribe [this handler]
+        (throw (UnsupportedOperationException. "Can't subscribe to value")))
+      (notify [this v]
+        (ssc/value! widget v)))))
+
 (defn transform 
   "Creates a bindable that takes an incoming value v, applies
   (f v args), and passes the result on. f should be side-effect
@@ -318,8 +353,41 @@
   [bindings & body]
   `(b-do* (fn ~bindings ~@body)))
 
+(defn filter 
+  "Executes a predicate on incoming value. If the predicate returns a truthy
+  value, the incoming value is passed on to the next bindable in the chain. 
+  Otherwise, nothing is notified.
+  
+  Examples:
+    
+    ; Block out of range values
+    (let [input (text)
+          output (slider :min 0 :max 100)]
+      (bind 
+        input 
+        (filter #(< 0 % 100)) 
+        output))
+
+  Notes:
+    This works a lot like (clojure.core/filter)
+
+  See:
+    (seesaw.bind/some)
+    (clojure.core/filter)
+  "
+  [pred]
+  (let [state (atom {:handlers [] :value nil})]
+    (reify Bindable
+      (subscribe [this handler]
+        (swap! state update-in [:handlers] conj handler))
+      (notify [this v]
+        (when (pred v) 
+          (swap! state assoc :value v)
+          (doseq [h (:handlers @state)]
+            (h v)))))))
+
 (defn some
-  "Executes a preducate on incoming value. If the predicate returns a truthy
+  "Executes a predicate on incoming value. If the predicate returns a truthy
   value, that value is passed on to the next bindable in the chain. Otherwise,
   nothing is notified.
   
@@ -329,12 +397,13 @@
     ; Fails
     (let [input (text)
           output (slider :min 0 :max 100)]
-      (bind input (gate #(try (Integer/parseInt %) (catch Exception nil))) output))
+      (bind input (some #(try (Integer/parseInt %) (catch Exception nil))) output))
 
   Notes:
     This works a lot like (clojure.core/some)
 
   See:
+    (seesaw.bind/filter)
     (clojure.core/some)
   "
   [pred]
@@ -423,9 +492,10 @@
     (to-bindable* [this] (property this :text))
   javax.swing.JSlider
     (to-bindable* [this] (.getModel this))
+  javax.swing.JSpinner
+    (to-bindable* [this] (.getModel this))
   javax.swing.JProgressBar
     (to-bindable* [this] (.getModel this))
   javax.swing.text.JTextComponent
     (to-bindable* [this] (.getDocument this)))
-
 

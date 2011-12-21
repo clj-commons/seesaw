@@ -16,7 +16,7 @@
   (:require
     seesaw.core)
   (:use
-    [seesaw.options :only (bean-option default-option apply-options ignore-options option-map)]
+    [seesaw.options :only (bean-option default-option apply-options ignore-options option-map option-provider)]
     [seesaw.util :only (resource)]))
 
 (defprotocol ComponentSpec
@@ -92,10 +92,14 @@
 
 (def ^{:private true} layout-options
   (option-map
-    (default-option :column-groups #(.setColumnGroups %1 (into-array (map int-array %2))))))
-
-(def ^{:private true} ignore-layout-options
-  (ignore-options layout-options))
+    (default-option 
+      :column-groups 
+      (fn set-column-groups [c v]
+        (cond
+          (instance? FormLayout c)
+            (.setColumnGroups c (into-array (map int-array v)))
+          :else
+            (set-column-groups (.getLayout c) v))))))
 
 (def ^{:private true} builder-options
   (option-map
@@ -106,8 +110,17 @@
     (bean-option :line-gap-size DefaultFormBuilder)
     (bean-option :paragraph-gap-size DefaultFormBuilder)))
 
+
 (def ^{:private true} ignore-builder-options
   (ignore-options builder-options))
+
+(def ^{:private true} ignore-layout-options
+  (ignore-options layout-options))
+
+(option-provider DefaultFormBuilder (merge builder-options ignore-layout-options))
+(option-provider FormLayout (merge layout-options ignore-builder-options))
+
+
 
 (defn ^JPanel forms-panel
   "Construct a panel with a FormLayout. The column spec is
@@ -134,12 +147,8 @@
   (let [layout  (FormLayout. column-spec "")
         panel   (#'seesaw.core/construct JPanel opts)
         builder (DefaultFormBuilder. layout panel)]
-    (apply-options layout opts
-                   (merge layout-options ignore-builder-options))
-    (apply-options builder opts
-                   (merge builder-options ignore-layout-options))
+    (apply-options layout opts)
+    (apply-options builder opts)
     (doto (.getPanel builder)
-      (apply-options opts (merge seesaw.core/default-options
-                                 ignore-layout-options
-                                 ignore-builder-options)))))
+      (apply-options opts))))
 

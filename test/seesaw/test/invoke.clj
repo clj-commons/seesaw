@@ -30,10 +30,10 @@
         (deliver p {:edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))))
       (expect (= {:edt? true} @p)))))
 
-(describe signaller
+(describe signaller*
   (it "should not invoke a call if one is already in flight"
     (let [call-count (atom 0)
-          signal     (signaller #(swap! % inc))]
+          signal     (signaller* #(swap! % inc))]
       ; Schedule  some signals and check that only the first is queued.
       (expect (= [true false false] (invoke-now [(signal call-count) (signal call-count) (signal call-count)])))
       ; Now check the call count and make sure only one function was queued

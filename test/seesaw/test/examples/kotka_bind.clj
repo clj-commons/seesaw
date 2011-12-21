@@ -10,7 +10,8 @@
 
 (ns seesaw.test.examples.kotka-bind
   (:require [seesaw.bind :as bind])
-  (:use [seesaw.core]))
+  (:use [seesaw.core]
+        seesaw.test.examples.example))
 
 ; seesaw.bind applied to http://kotka.de/blog/2010/05/Decoupling_Logic_and_GUI.html
 ;
@@ -25,8 +26,7 @@
     (swap! progress inc))
   (reset! done? true))
 
-(defn startup
-  []
+(defexample []
   (let [items     (take 500 (iterate inc 0))
         progress  (atom 0)
         done?     (atom false)
@@ -60,15 +60,8 @@
       progress 
       (bind/notify-later) 
       pbar)
-    (-> 
-      (frame :title "Example GUI" :on-close :dispose :content panel)
-      pack! 
-      show!)
-    (-> #(processing items done? canceled? progress) Thread. .start)))
+    (-> #(processing items done? canceled? progress) Thread. .start)
+    (frame :title "Example GUI" :on-close :dispose :content panel)))
 
-(defn -main
-  []
-  (invoke-now (startup)))
-
-;(-main)
+;(run :dispose)
 

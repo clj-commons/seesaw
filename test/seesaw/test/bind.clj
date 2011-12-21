@@ -1,5 +1,5 @@
 (ns seesaw.test.bind
-  (:refer-clojure :exclude [some])
+  (:refer-clojure :exclude [some filter])
   (:require [seesaw.core :as ssc])
   (:use seesaw.bind)
   (:use [lazytest.describe :only (describe it testing)]
@@ -87,6 +87,20 @@
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20)))))
+  
+  (testing "given a spinner"
+    (it "should sync the value of the atom with the spinner value, if spinner value changed"
+      (let [v (atom 15)
+            sl (ssc/spinner :model @v)]
+        (bind (.getModel sl) v)
+        (.setValue sl 20)
+        (expect (= @v 20))))
+    (it "should sync the value of the spinner with the atom value, if atom value changed"
+      (let [v (atom 15)
+            sl (ssc/spinner :model @v)]
+        (bind v (.getModel sl))
+        (reset! v 20)
+        (expect (= (.getValue sl) 20)))))
 
   (testing "given an agent"
 
@@ -151,6 +165,20 @@
       (reset! b 6)
       (expect (= [5 6] @end)))))
 
+(describe filter 
+  (it "doesn't pass along value when predicate returns falsey"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (filter (constantly false)) end)
+      (reset! start :something)
+      (expect (= :bar @end))))
+  (it "passes along value when predicate returns truthy"
+    (let [start (atom :foo)
+          end   (atom :bar)]
+      (bind start (filter (constantly true)) end)
+      (reset! start :something)
+      (expect (= :something @end)))))
+
 (describe some
   (it "doesn't pass along falsey values returned by the predicate"
     (let [start (atom :foo)
@@ -158,7 +186,7 @@
       (bind start (some (constantly nil)) end)
       (reset! start :something)
       (expect (= :bar @end))))
-  (it "doesn't passes along result of predicate when it returns truthy"
+  (it "passes along result of predicate when it returns truthy"
     (let [start (atom :foo)
           end   (atom :bar)]
       (bind start (some (constantly :yum)) end)
@@ -172,12 +200,22 @@
       (bind (selection lb) output)
       (ssc/selection! lb :b)
       (expect (= :b @output))))
-  (it "receives selection changes on a widget"
+  (it "maps its input to the selection of a widget"
     (let [input (atom nil)
           lb (ssc/listbox :model [:a :b :c])]
       (bind input (selection lb))
       (reset! input :b)
       (expect (= :b (ssc/selection lb))))))
+
+(describe value 
+  (it "maps its input to the value of a widget"
+    (let [input (atom nil)
+          lb (ssc/listbox :id :lb :model [:a :b :c])
+          tb (ssc/text :id :text)
+          p  (ssc/border-panel :north lb :center tb)]
+      (bind input (value p))
+      (reset! input {:lb :b :text "hi"})
+      (expect (= {:lb :b :text "hi"} (ssc/value p))))))
 
 (describe to-bindable
   (it "returns arg if it's already bindable"

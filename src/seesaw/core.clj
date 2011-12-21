@@ -16,19 +16,24 @@
       :author "Dave Ray"}
   seesaw.core
   (:use [seesaw.util :only [illegal-argument to-seq check-args 
-                            constant-map resource to-dimension 
-                            to-insets to-url try-cast
+                            constant-map resource resource-key?
+                            to-dimension to-insets to-url try-cast
                             cond-doto to-mnemonic-keycode]]
         [seesaw.config :only [Configurable config* config!*]]
-        [seesaw.options :only [ignore-option default-option bean-option resource-option around-option
-                               reapply-options get-option-value apply-options option-map]]
+        [seesaw.options :only [ignore-option default-option bean-option 
+                               resource-option around-option
+                               apply-options 
+                               option-map option-provider
+                               get-option-value]]
+        [seesaw.widget-options :only [widget-option-provider]]
         [seesaw.meta :only [get-meta put-meta!]]
         [seesaw.to-widget :only [ToWidget to-widget*]]
         [seesaw.make-widget :only [make-widget*]])
   (:require clojure.java.io
             clojure.set
-            [seesaw color font border invoke timer selection 
-             event selector icon action cells table graphics cursor scroll dnd])
+            [seesaw color font border invoke timer selection value
+             event selector icon action cells table graphics cursor scroll dnd]
+            [seesaw.layout :as layout])
   (:import [javax.swing 
              SwingConstants UIManager ScrollPaneConstants DropMode
              BoxLayout
@@ -191,7 +196,19 @@
 ; Widget construction stuff
 
 (defmacro with-widget
-  "This macro allows a Seesaw widget 'constructor' function to be applied to
+  "*SOON TO DEPRECATED*
+
+  This macro will soon be deprecated. Instead just create your 3rd-party
+  widget and call (seesaw.core/config!) on it:
+
+    (-> (org.jdesktop.swingx.JXList.)
+      (config! :id :my-list :model ...)
+
+  is equivalent to the example below.
+  
+  -----
+
+  This macro allows a Seesaw widget 'constructor' function to be applied to
   a sub-class of the widget type it usually produces. For example (listbox)
   always returns an instance of exactly JList. Suppose you're using SwingX
   and want to use the Seesaw goodness of (listbox), but want to get a 
@@ -382,17 +399,6 @@
     (.repaint target))
   targets)
 
-(defn- handle-structure-change [^JComponent container]
-  "Helper. Revalidate and repaint a container after structure change"
-  (doto container
-    .revalidate
-    .repaint))
-
-;*******************************************************************************
-; Layout manipulation. See far below for more. 
-(defprotocol LayoutManipulation
-  (add!* [layout target widget constraint])
-  (get-constraint [layout container widget]))
 
 ;*******************************************************************************
 ; move!
@@ -430,14 +436,14 @@
       (do
         (doto (.getParent this)
           (.setComponentZOrder this 0)
-          handle-structure-change)
+          layout/handle-structure-change)
         this))
     (move-to-back! [this]
       (let [parent (.getParent this)
             n      (.getComponentCount parent)]
         (doto parent 
           (.setComponentZOrder this (dec n))
-          handle-structure-change)
+          layout/handle-structure-change)
         this))
   java.awt.Window
     (move-to! [this x y]   (move-component-to! this x y))
@@ -503,20 +509,6 @@
   "Returns the height of the given widget in pixels"
   (.getHeight (to-widget w)))
 
-(defn- add-widget 
-  ([c w] (add-widget c w nil))
-  ([^java.awt.Container c w constraint] 
-    (let [w* (make-widget w)]
-      (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
-      (.add c w* constraint)
-      w*)))
-
-(defn- add-widgets
-  [^java.awt.Container c ws]
-  (.removeAll c)
-  (doseq [w ws]
-    (add-widget c w))
-  (handle-structure-change c))
 
 (defn id-of 
   "Returns the id of the given widget if the :id property was specified at
@@ -581,29 +573,43 @@
 ; get/setText is a common method on many types, but not in any common interface :(
 
 (defprotocol ConfigIcon 
-  (set-icon [this v])
-  (get-icon [this]))
+  "Protocol to hook into :icon option"
+  (set-icon* [this v])
+  (get-icon* [this]))
 
 (extend-protocol ConfigIcon
+  ; most things don't have icons...
+  java.awt.Component 
+    (set-icon* [this v] 
+      (illegal-argument "%s does not support the :icon option" (class this)))
+    (get-icon* [this]
+      (illegal-argument "%s does not support the :icon option" (class this)))
+
   javax.swing.JLabel 
-    (set-icon [this v] (.setIcon this (make-icon v)))
-    (get-icon [this] (.getIcon this))
+    (set-icon* [this v] (.setIcon this (make-icon v)))
+    (get-icon* [this] (.getIcon this))
 
   javax.swing.AbstractButton 
-    (set-icon [this v] (.setIcon this (make-icon v)))
-    (get-icon [this] (.getIcon this)))
+    (set-icon* [this v] (.setIcon this (make-icon v)))
+    (get-icon* [this] (.getIcon this)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; get/setText is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} Text 
+(defprotocol ConfigText 
+  "Protocol to hook into :text option"
   (set-text* [this v])
   (get-text* [this]))
 
-(extend-protocol Text
+(extend-protocol ConfigText
   Object
     (set-text* [this v] (set-text* (to-widget this) v))
     (get-text* [this] (get-text* (to-widget this)))
+  java.awt.Component 
+    (set-text* [this v] 
+      (illegal-argument "%s does not support (seesaw.core/text!)" (class this)))
+    (get-text* [this]
+      (illegal-argument "%s does not support (seesaw.core/text)" (class this)))
   javax.swing.JLabel
     (set-text* [this v] (.setText this v))
     (get-text* [this] (.getText this))
@@ -618,14 +624,19 @@
     (get-text* [this] (get-text* (.getDocument this)))
   javax.swing.text.JTextComponent
     (set-text* [this v] (.setText this v))
-    (get-text* [this] (.getText this)))
+    (get-text* [this] (.getText this))
+  javax.swing.JComboBox
+    (set-text* [this v] )
+    (get-text* [this] 
+      (if-let [i (selection this)]
+        (str i))))
 
 (defn- convert-text-value [v]
   (cond
-    (nil? v)    v
-    (string? v) v
-    (number? v) (str v)
-    (and (keyword? v) (namespace v)) (resource v)
+    (nil? v)          v
+    (string? v)       v
+    (number? v)       (str v)
+    (resource-key? v) (resource v)
     (satisfies? clojure.java.io/IOFactory v) (slurp v)
     ; TODO This line is unreachable because the IOFactory protocol is
     ; extended to Object, i.e. satisfies? above will *always* return
@@ -633,38 +644,56 @@
     :else (str v)))
 
 (defn- set-text
+  "Internal use only"
   [this v]
   (set-text* this (convert-text-value v)))
 
 (defn- get-text
+  "Internal use only"
   [this]
   (get-text* this))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; setAction is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} SetAction (set-action [this v]))
-(extend-protocol SetAction
-  javax.swing.AbstractButton (set-action [this v] (.setAction this v))
-  javax.swing.JTextField (set-action [this v] (.setAction this v))
-  javax.swing.JComboBox (set-action [this v] (.setAction this v)))
+(defprotocol ConfigAction 
+  "Protocol to hook into :action option"
+  (set-action* [this v])
+  (get-action* [this]))
+
+(extend-protocol ConfigAction
+  javax.swing.AbstractButton 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v))
+  javax.swing.JTextField 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v))
+  javax.swing.JComboBox 
+    (get-action* [this] (.getAction this))
+    (set-action* [this v] (.setAction this v)))
+
+(def ^{:doc "Default handler for the :action option. Internal use."} 
+  action-option (default-option :action set-action* get-action* "See (seesaw.core/action)"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set/getModel is a common method on many types, but not in any common interface :(
 
-(defprotocol ^{:private true} ConfigModel 
-  (get-model [this])
-  (set-model [this m]))
+(defprotocol ConfigModel 
+  "Protocol to hook into :model option"
+  (get-model* [this])
+  (set-model* [this m]))
 
 (extend-protocol ConfigModel
-  javax.swing.text.JTextComponent (get-model [this] (.getDocument this)) (set-model [this v] (.setDocument this v)))
+  javax.swing.text.JTextComponent 
+    (get-model* [this] (.getDocument this))
+    (set-model* [this v] (.setDocument this v)))
 
 (defmacro ^{:private true} config-model-impl [& classes]
   `(extend-protocol ConfigModel 
    ~@(mapcat
       (fn [c]
-        `(~c (~'get-model [this#] (. this# ~'getModel))
-             (~'set-model [this# v#] (. this# ~'setModel v#))))
+        `(~c (~'get-model* [this#] (. this# ~'getModel))
+             (~'set-model* [this# v#] (. this# ~'setModel v#))))
      classes)))
 
 (config-model-impl 
@@ -677,6 +706,9 @@
   javax.swing.JSlider
   javax.swing.JScrollBar
   javax.swing.JSpinner)
+
+(def ^{:doc "Default handler for the :model option. Delegates to the ConfigModel protocol"} 
+  model-option (default-option :model set-model* get-model*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
@@ -723,87 +755,130 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol SetSelectionMode (set-selection-mode [this v]))
-(extend-protocol SetSelectionMode
-  javax.swing.tree.TreeSelectionModel
-    (set-selection-mode [this v] (.setSelectionMode this v))
-  javax.swing.JTree
-    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
-  javax.swing.ListSelectionModel
-    (set-selection-mode [this v] (.setSelectionMode this v))
-  javax.swing.JTable
-    (set-selection-mode [this v] (set-selection-mode (.getSelectionModel this) v))
-  javax.swing.JList 
-    (set-selection-mode [this v] (.setSelectionMode this v)))
+(defprotocol SelectionModeConfig 
+  "Hook protocol for :selection-mode option"
+  (set-selection-mode* [this v])
+  (get-selection-mode* [this]))
 
-(let [list-selection-mode-table {
+(extend-protocol SelectionModeConfig
+  javax.swing.tree.TreeSelectionModel
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this] (.getSelectionMode this))
+
+  javax.swing.JTree
+    (set-selection-mode* [this v] (set-selection-mode* (.getSelectionModel this) v))
+    (get-selection-mode* [this] (get-selection-mode* (.getSelectionModel this)))
+
+  javax.swing.ListSelectionModel
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this]   (.getSelectionMode this))
+
+  javax.swing.JTable
+    (set-selection-mode* [this v] (set-selection-mode* (.getSelectionModel this) v))
+    (get-selection-mode* [this] (get-selection-mode* (.getSelectionModel this)))
+  javax.swing.JList 
+    (set-selection-mode* [this v] (.setSelectionMode this v))
+    (get-selection-mode* [this] (.getSelectionMode this)))
+
+(defn- selection-mode-option [table]
+  (let [rtable (clojure.set/map-invert table)]
+    (default-option
+      :selection-mode
+      (fn [target v] 
+        (if-let [v (table v)]
+          (set-selection-mode* target v)
+          (illegal-argument "Unknown selection-mode. Must be one of %s" (keys table))))
+      (fn [target] (rtable (get-selection-mode* target)))
+      (keys table))))
+
+(def ^{:private true} list-selection-mode-table {
   :single          javax.swing.ListSelectionModel/SINGLE_SELECTION
   :single-interval javax.swing.ListSelectionModel/SINGLE_INTERVAL_SELECTION
   :multi-interval  javax.swing.ListSelectionModel/MULTIPLE_INTERVAL_SELECTION
-}]
-  (defn- list-selection-mode-handler [target v]
-    (if-let [v (list-selection-mode-table v)]
-      (set-selection-mode target v)
-      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys list-selection-mode-table)))))
+})
 
-(let [tree-selection-mode-table {
+(def ^ {:private true} tree-selection-mode-table {
   :single        javax.swing.tree.TreeSelectionModel/SINGLE_TREE_SELECTION
   :contiguous    javax.swing.tree.TreeSelectionModel/CONTIGUOUS_TREE_SELECTION
   :discontiguous javax.swing.tree.TreeSelectionModel/DISCONTIGUOUS_TREE_SELECTION
-}]
-  (defn- tree-selection-mode-handler [target v]
-    (if-let [v (tree-selection-mode-table v)]
-      (set-selection-mode target v)
-      (illegal-argument "Unknown selection-mode. Must be one of %s" (keys tree-selection-mode-table)))))
+})
 
 (declare paint-option-handler)
+
+(def ^{:private true} color-examples [:aliceblue "\"#f00\"" "\"#FF0000\"" '(seesaw.color/color 255 0 0 0 224)])
+(def ^{:private true} boolean-examples 'boolean)
+(def ^{:private true} dimension-examples [[640 :by 480] 'java.awt.Dimension])
 
 (def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
 
 (def default-options 
   (option-map
     (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
-    (default-option :listen #(apply seesaw.event/listen %1 %2))
+    (bean-option :layout JComponent nil nil "A layout manager.")
+    (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["vector of args for (seesaw.core/listen)"])
 
-    (default-option :items #(add-widgets %1 %2)
-                                        #(seq (.getComponents ^java.awt.Container %1))) 
-    (default-option :id seesaw.selector/id-of! seesaw.selector/id-of)
-    (default-option :class seesaw.selector/class-of! seesaw.selector/class-of)
-    (bean-option :opaque? JComponent boolean) ; #(.setOpaque %1 (boolean %2))
-    (bean-option :enabled? java.awt.Component boolean)
-    (bean-option :focusable? java.awt.Component boolean)
+    (default-option :id seesaw.selector/id-of! seesaw.selector/id-of ["A keyword id for the widget"])
+    (default-option :class seesaw.selector/class-of! seesaw.selector/class-of [:class-name, #{:multiple, :class-names}])
+    (bean-option :opaque? JComponent boolean nil boolean-examples) 
+    (bean-option :enabled? java.awt.Component boolean nil boolean-examples)
+    (bean-option :focusable? java.awt.Component boolean nil boolean-examples)
     (default-option :background
                     #(do
                       (.setBackground ^JComponent %1 (seesaw.color/to-color %2))
                       (.setOpaque ^JComponent %1 true))
-                    #(.getBackground ^JComponent %1))
-    (bean-option :foreground JComponent seesaw.color/to-color)
-    (bean-option :border JComponent seesaw.border/to-border)
-    (bean-option :font JComponent seesaw.font/to-font)
-    (bean-option [:tip :tool-tip-text] JComponent str)
-    (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)))
-    (bean-option :visible? java.awt.Component boolean)
-    (bean-option :preferred-size JComponent to-dimension)
-    (bean-option :minimum-size JComponent to-dimension)
-    (bean-option :maximum-size JComponent to-dimension)
+                    #(.getBackground ^JComponent %1)
+                    color-examples)
+    (bean-option :foreground JComponent seesaw.color/to-color nil color-examples)
+    (bean-option :border JComponent seesaw.border/to-border nil [5, "\"Border Title\"", [5 "Compound" 10], "See (seesaw.border/*)"])
+    (bean-option :font JComponent seesaw.font/to-font nil ["ARIAL-BOLD-18", :monospaced :serif :sans-serif "See (seesaw.font/font)"])
+    (bean-option [:tip :tool-tip-text] JComponent str nil ["A tooltip string"])
+    (bean-option :cursor java.awt.Component #(apply seesaw.cursor/cursor (to-seq %)) nil ["See (seesaw.cursor/cursor)"])
+    (bean-option :visible? java.awt.Component boolean nil boolean-examples)
+    (bean-option :preferred-size JComponent to-dimension nil dimension-examples)
+    (bean-option :minimum-size JComponent to-dimension nil dimension-examples)
+    (bean-option :maximum-size JComponent to-dimension nil dimension-examples)
     (default-option :size
                       #(let [d (to-dimension %2)]
                         (doto ^JComponent %1 
                           (.setPreferredSize d)
                           (.setMinimumSize d)
                           (.setMaximumSize d)))
-                      #(.getSize ^JComponent %1))
-    (default-option :location #(move! %1 :to %2) #(.getLocation ^java.awt.Component %1))
-    (default-option :bounds bounds-option-handler #(.getBounds ^java.awt.Component %1)) 
-    (default-option :popup #(popup-option-handler %1 %2))
-    (default-option :paint #(paint-option-handler %1 %2))
+                      #(.getSize ^JComponent %1)
+      dimension-examples)
 
-    (default-option :icon set-icon get-icon)
-    (default-option :action set-action)
-    (default-option :text set-text get-text)
-    (default-option :model set-model get-model)
-    (default-option :drag-enabled? set-drag-enabled get-drag-enabled)
-    (bean-option :transfer-handler JComponent seesaw.dnd/to-transfer-handler)))
+    (default-option :location 
+      #(move! %1 :to %2) 
+      #(.getLocation ^java.awt.Component %1)
+      ["See (seesaw.core/move! :to)"])
+
+    (default-option :bounds 
+      bounds-option-handler 
+      #(.getBounds ^java.awt.Component %1)
+      [:preferred '[x y w h] "Use :* to leave component unchanged:"
+       '[x :* :* h]]) 
+    (default-option :popup 
+      #(popup-option-handler %1 %2)
+      nil
+      ['javax.swing.JPopupMenu
+       "(fn [e]) that returns a seq of menu items"
+       "See (seesaw.core/popup)"])
+    (default-option :paint #(paint-option-handler %1 %2) nil ["See (seesaw.core/paintable)"])
+
+    ; TODO I'd like to push these down but cells.clj uses them on non-attached
+    ; widgets.
+    (default-option :icon set-icon* get-icon* ["See (seesaw.icon/icon)"])
+    (default-option :text set-text get-text ["A string" "Anything accepted by (clojure.core/slurp)"])
+
+    (default-option :drag-enabled? set-drag-enabled get-drag-enabled boolean-examples)
+    (bean-option :transfer-handler JComponent 
+                 seesaw.dnd/to-transfer-handler
+                 identity
+                 "See (seesaw.dnd/to-transfer-handler)")))
+
+(widget-option-provider 
+  javax.swing.JPanel 
+  default-options
+  layout/nil-layout-options)
 
 (extend-protocol Configurable
   java.util.EventObject
@@ -812,25 +887,19 @@
 
   java.awt.Component
     (config* [target name] (get-option-value target name))
-    (config!* [target args] (reapply-options target args default-options))
+    (config!* [target args] (apply-options target args))
 
   javax.swing.JComponent
     (config* [target name] (get-option-value target name))
-    (config!* [target args] (reapply-options target args default-options))
+    (config!* [target args] (apply-options target args))
 
   javax.swing.Action
     (config* [target name] (get-option-value target name))
-    (config!* [target args] (reapply-options target args default-options))
+    (config!* [target args] (apply-options target args))
 
   java.awt.Window
     (config* [target name] (get-option-value target name))
-    (config!* [target args] (reapply-options target args default-options)))
-
-(defn apply-default-opts
-  "only used in tests!"
-  ([p] (apply-default-opts p {}))
-  ([^javax.swing.JComponent p {:as opts}]
-    (apply-options p opts default-options)))
+    (config!* [target args] (apply-options target args)))
 
 ;*******************************************************************************
 ; ToDocument
@@ -847,12 +916,12 @@
 ;*******************************************************************************
 ; Abstract Panel
 (defn abstract-panel
-  [layout custom-opts opts]
+  [layout opts]
   (let [^JPanel p (construct JPanel opts)
         layout (if (fn? layout) (layout p) layout)]
     (doto p
       (.setLayout layout)
-      (apply-options opts custom-opts))))
+      (apply-options opts))))
 
 ;*******************************************************************************
 ; Null Layout
@@ -873,43 +942,19 @@
     (move! my-label :by [25 -50])
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     (seesaw.core/move!)
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (abstract-panel nil default-options opts))
+  (abstract-panel nil opts))
 
 ;*******************************************************************************
 ; Border Layout
 
-(def ^{:private true}  border-layout-dirs 
-  (constant-map BorderLayout :north :south :east :west :center))
-(def ^{:private true}  border-layout-dirs-r (clojure.set/map-invert border-layout-dirs))
 
-(defn- border-panel-items-setter
-  [panel items]
-  (doseq [[w dir] items]
-    (add-widget panel w (border-layout-dirs dir))))
-
-(defn- border-panel-items-getter
-  [^java.awt.Container panel]
-  (let [layout (.getLayout panel)]
-    (map #(vector % (border-layout-dirs-r (get-constraint layout panel %))) (.getComponents panel))))
-
-(def border-panel-options 
-  (merge 
-    default-options
-    (option-map
-      (default-option :hgap #(.setHgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^BorderLayout (.getLayout ^java.awt.Container %1) %2)) 
-      (default-option :items border-panel-items-setter border-panel-items-getter))
-    (apply option-map 
-           (map
-            (fn [[k v]] (default-option k #(add-widget %1 %2 v)))
-            border-layout-dirs))))
+(def border-panel-options default-options)
 
 (defn border-panel
   "Create a panel with a border layout. In addition to the usual options, 
@@ -942,20 +987,12 @@
   "
   { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
-  (abstract-panel (BorderLayout.) border-panel-options opts))
+  (abstract-panel (BorderLayout.) opts))
 
 ;*******************************************************************************
 ; Card
 
-(def card-panel-options 
-  (merge
-    default-options
-    (option-map
-      (default-option :items (fn [panel items]
-                              (doseq [[w id] items]
-                                (add-widget panel w (name id)))))
-      (default-option :hgap #(.setHgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)) 
-      (default-option :vgap #(.setVgap ^java.awt.CardLayout (.getLayout ^java.awt.Container %1) %2)))))
+(def card-panel-options default-options)
 
 (defn card-panel
   "Create a panel with a card layout. Options:
@@ -970,8 +1007,9 @@
   "
   { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
-  (abstract-panel (java.awt.CardLayout.) card-panel-options opts))
+  (abstract-panel (java.awt.CardLayout.) opts))
 
+; TODO move to layout.clj
 (defn show-card! 
   "Show a particular card in a card layout. id can be a string or keyword.
    panel is returned.
@@ -988,17 +1026,7 @@
 ;*******************************************************************************
 ; Flow
 
-(def ^{:private true} flow-align-table
-  (constant-map FlowLayout :left :right :leading :trailing :center))
-
-(def flow-panel-options 
-  (merge
-    default-options
-    (option-map 
-      (default-option :hgap #(.setHgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^FlowLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :align #(.setAlignment ^FlowLayout (.getLayout ^java.awt.Container %1) (get flow-align-table %2 %2)))
-      (default-option :align-on-baseline? #(.setAlignOnBaseline ^FlowLayout (.getLayout ^java.awt.Container %1) (boolean %2))))))
+(def flow-panel-options default-options)
 
 (defn flow-panel
   "Create a panel with a flow layout. Options:
@@ -1013,24 +1041,17 @@
   "
   { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
-  (abstract-panel (FlowLayout.) flow-panel-options opts))
+  (abstract-panel (FlowLayout.) opts))
 
 ;*******************************************************************************
 ; Boxes
 
-(def ^{:private true} box-layout-dir-table {
-  :horizontal BoxLayout/X_AXIS 
-  :vertical   BoxLayout/Y_AXIS 
-})
-
 (def box-panel-options default-options)
-
-(defn box-layout [dir] #(BoxLayout. % (dir box-layout-dir-table)))
 
 (defn box-panel
   { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
-  (abstract-panel (box-layout dir) box-panel-options opts))
+  (abstract-panel (layout/box-layout dir) opts))
 
 (def horizontal-panel-options box-panel-options)
 
@@ -1059,17 +1080,7 @@
 ;*******************************************************************************
 ; Grid
 
-(def grid-panel-options 
-  (merge
-    default-options
-    (option-map 
-      (ignore-option :rows)
-      (ignore-option :columns)
-      (default-option :hgap #(.setHgap ^GridLayout (.getLayout ^java.awt.Container %1) %2))
-      (default-option :vgap #(.setVgap ^GridLayout (.getLayout ^java.awt.Container %1) %2)))))
-
-(defn grid-layout [rows columns]
-  (GridLayout. (or rows 0) (or columns (if rows 0 1)) 0 0))
+(def grid-panel-options default-options)
 
 (defn grid-panel
   "Create a panel where widgets are arranged horizontally. Options:
@@ -1087,85 +1098,13 @@
   { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns] 
       :as opts}]
-  (abstract-panel (grid-layout rows columns) 
-                  grid-panel-options
-                  opts))
+  (abstract-panel (layout/grid-layout rows columns) opts))
 
 ;*******************************************************************************
 ; Form aka GridBagLayout
 
-(def ^{:private true} gbc-fill 
-  (constant-map GridBagConstraints :none :both :horizontal :vertical))
 
-(def ^{:private true} gbc-grid-xy (constant-map GridBagConstraints :relative))
-
-(def ^{:private true} gbc-grid-wh
-  (constant-map GridBagConstraints :relative :remainder))
-
-(def ^{:private true} gbc-anchors 
-  (constant-map GridBagConstraints
-    :north :south :east :west 
-    :northwest :northeast :southwest :southeast :center
-    
-    :page-start :page-end :line-start :line-end 
-    :first-line-start :first-line-end :last-line-start :last-line-end
-  
-    :baseline :baseline-leading :baseline-trailing
-    :above-baseline :above-baseline-leading :above-baseline-trailing
-    :below-baseline :below-baseline-leading :below-baseline-trailing)) 
-
-(defn- gbc-grid-handler [^GridBagConstraints gbc v]
-  (let [x (.gridx gbc)
-        y (.gridy gbc)]
-    (condp = v
-      :next (set! (. gbc gridx) (inc x))
-      :wrap    (do 
-                 (set! (. gbc gridx) 0)
-                 (set! (. gbc gridy) (inc y))))
-    gbc))
-
-(def ^{:private true} grid-bag-constraints-options 
-  (option-map
-    (default-option :grid gbc-grid-handler)
-    (default-option :gridx #(set! (. ^GridBagConstraints %1 gridx)      (get gbc-grid-xy %2 %2)))
-    (default-option :gridy #(set! (. ^GridBagConstraints %1 gridy)      (get gbc-grid-xy %2 %2)))
-    (default-option :gridwidth #(set! (. ^GridBagConstraints %1 gridwidth)  (get gbc-grid-wh %2 %2)))
-    (default-option :gridheight #(set! (. ^GridBagConstraints %1 gridheight) (get gbc-grid-wh %2 %2)))
-    (default-option :fill #(set! (. ^GridBagConstraints %1 fill)       (get gbc-fill %2 %2)))
-    (default-option :ipadx #(set! (. ^GridBagConstraints %1 ipadx)      %2))
-    (default-option :ipady #(set! (. ^GridBagConstraints %1 ipady)      %2))
-    (default-option :insets #(set! (. ^GridBagConstraints %1 insets)     %2))
-    (default-option :anchor #(set! (. ^GridBagConstraints %1 anchor)     (gbc-anchors %2)))
-    (default-option :weightx #(set! (. ^GridBagConstraints %1 weightx)    %2))
-    (default-option :weighty #(set! (. ^GridBagConstraints %1 weighty)    %2))))
-
-(defn realize-grid-bag-constraints
-  "*INTERNAL USE ONLY. DO NOT USE.*
-
-  Turn item specs into [widget constraint] pairs by successively applying
-  options to GridBagConstraints"
-  [items]
-  (second
-    (reduce
-      (fn [[^GridBagConstraints gbcs result] [widget & opts]]
-        (apply-options gbcs opts grid-bag-constraints-options)
-        (vector (.clone gbcs) (conj result [widget gbcs]))) 
-      [(GridBagConstraints.) []]
-      items)))
-
-(defn- add-grid-bag-items
-  [^java.awt.Container panel items]
-  (.removeAll panel)
-  (doseq [[widget constraints] (realize-grid-bag-constraints items)]
-    (when widget
-      (add-widget panel widget constraints)))
-  (handle-structure-change panel))
-
-(def form-panel-options 
-  (merge
-    default-options
-    (option-map
-      (default-option :items add-grid-bag-items))))
+(def form-panel-options default-options)
 
 (defn form-panel
   "*Don't use this. GridBagLaout is an abomination* I suggest using Seesaw's
@@ -1189,7 +1128,7 @@
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (abstract-panel (GridBagLayout.) form-panel-options opts))
+  (abstract-panel (GridBagLayout.) opts))
 
 (def grid-bag-panel form-panel)
 
@@ -1201,10 +1140,12 @@
     default-options
     (option-map
       (resource-option :resource base-resource-options)
-      (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table)
-      (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table) 
-      (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table)
-      (bean-option [:v-text-position :vertical-text-position] javax.swing.JLabel v-alignment-table))))
+      (bean-option [:halign :horizontal-alignment] javax.swing.JLabel h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:valign :vertical-alignment] javax.swing.JLabel v-alignment-table nil (keys v-alignment-table)) 
+      (bean-option [:h-text-position :horizontal-text-position] javax.swing.JLabel h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:v-text-position :vertical-text-position] javax.swing.JLabel v-alignment-table nil (keys v-alignment-table)))))
+
+(widget-option-provider javax.swing.JLabel label-options)
 
 (defn label 
   "Create a label. Supports all default properties. Can take two forms:
@@ -1235,7 +1176,7 @@
   (case (count args) 
     0 (label :text "")
     1 (label :text (first args))
-    (apply-options (construct JLabel args) args label-options)))
+    (apply-options (construct JLabel args) args)))
 
 
 ;*******************************************************************************
@@ -1243,13 +1184,16 @@
 (extend-protocol Configurable
   javax.swing.ButtonGroup 
     (config* [target name] (get-option-value target name))
-    (config!* [target args] (reapply-options target args default-options)))
+    (config!* [target args] (apply-options target args)))
 
 (def button-group-options 
   (option-map
     (default-option :buttons 
       #(doseq [b %2] (.add ^javax.swing.ButtonGroup %1 b))
-      #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1)))))
+      #(enumeration-seq (.getElements ^javax.swing.ButtonGroup %1))
+      ["A seq of buttons in the group"])))
+
+(option-provider javax.swing.ButtonGroup button-group-options)
 
 (defn button-group
   "Creates a button group, i.e. a group of mutually exclusive toggle buttons, 
@@ -1277,26 +1221,36 @@
     ; Check A
     (selection bg (select root [:#a]))
 
+    ; Listen for selection changes. Note that the selection MAY BE NIL!
+    (listen bg :selection 
+      (fn [e]
+        (if-let [s (selection e)]
+          (println \"Selected \" (text s)))))
+
   Returns an instance of javax.swing.ButtonGroup
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/ButtonGroup.html
   "
   [& opts]
-  (apply-options (ButtonGroup.) opts button-group-options))
+  (apply-options (ButtonGroup.) opts))
 
 (def button-options 
   (merge
     default-options
     (option-map
+      model-option
+      action-option
       (resource-option :resource base-resource-options)
-      (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table)
-      (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table) 
-      (bean-option :selected? javax.swing.AbstractButton boolean)
+      (bean-option [:halign :horizontal-alignment] javax.swing.AbstractButton h-alignment-table nil (keys h-alignment-table))
+      (bean-option [:valign :vertical-alignment] javax.swing.AbstractButton v-alignment-table nil (keys v-alignment-table)) 
+      (bean-option :selected? javax.swing.AbstractButton boolean nil boolean-examples)
       (bean-option :margin javax.swing.AbstractButton to-insets)
 
-      (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1))
-      (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode))))
+      (default-option :group #(.add ^javax.swing.ButtonGroup %2 %1) nil ["A button group"])
+      (bean-option :mnemonic javax.swing.AbstractButton to-mnemonic-keycode nil ["See (seesaw.util/to-mnemonic-keycode)"]))))
+
+(widget-option-provider javax.swing.AbstractButton button-options)
 
 (defn button 
   "Construct a generic button. In addition to default widget options, supports
@@ -1332,7 +1286,7 @@
     (seesaw.core/button-group)"
   { :seesaw {:class 'javax.swing.JButton }} 
   [& args] 
-  (apply-options (construct javax.swing.JButton args) args button-options))
+  (apply-options (construct javax.swing.JButton args) args))
 
 (def toggle-options button-options)
 
@@ -1344,7 +1298,7 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JToggleButton }} 
   [& args] 
-  (apply-options (construct javax.swing.JToggleButton args) args toggle-options))
+  (apply-options (construct javax.swing.JToggleButton args) args))
 
 (def checkbox-options button-options)
 
@@ -1356,7 +1310,7 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JCheckBox }} 
   [& args] 
-  (apply-options (construct javax.swing.JCheckBox args) args checkbox-options))
+  (apply-options (construct javax.swing.JCheckBox args) args))
 
 (def radio-options button-options)
 
@@ -1368,7 +1322,7 @@
     (seesaw.core/button)"
   { :seesaw {:class 'javax.swing.JRadioButton }} 
   [& args] 
-  (apply-options (construct javax.swing.JRadioButton args) args radio-options))
+  (apply-options (construct javax.swing.JRadioButton args) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -1376,23 +1330,29 @@
   (merge
     default-options
     (option-map
+      model-option
+      action-option
       (resource-option :resource (concat base-resource-options 
                                         [:caret-color :disabled-text-color :selected-text-color :selection-color]))
       (bean-option :editable? javax.swing.text.JTextComponent boolean)
       (bean-option :margin javax.swing.text.JTextComponent to-insets)
-      (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color)
+      (bean-option :caret-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
       (bean-option :caret-position javax.swing.text.JTextComponent)
-      (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color)
-      (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option :disabled-text-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :selected-text-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :selection-color javax.swing.text.JTextComponent seesaw.color/to-color nil color-examples)
+      (bean-option :drop-mode javax.swing.text.JTextComponent keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
+
+(widget-option-provider javax.swing.text.JTextComponent text-options)
 
 (def text-field-options 
   (merge 
     text-options 
     (option-map
-      (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table)
+      (bean-option [:halign :horizontal-alignment] javax.swing.JTextField h-alignment-table nil (keys h-alignment-table))
       (bean-option :columns javax.swing.JTextField))))
+
+(widget-option-provider javax.swing.JTextField text-field-options)
 
 (def text-area-options 
   (merge 
@@ -1406,6 +1366,8 @@
            (.setWrapStyleWord (boolean %2)))
         #(.getLineWrap ^javax.swing.JTextArea %1))
       (bean-option :tab-size javax.swing.JTextArea))))
+
+(widget-option-provider javax.swing.JTextArea text-area-options)
 
 (defn text
   "Create a text field or area. Given a single argument, creates a JTextField 
@@ -1473,8 +1435,8 @@
     (let [{:keys [multi-line?] :as opts} args
           opts (dissoc opts :multi-line?)]
       (if multi-line?
-        (apply-options (construct JTextArea opts) opts text-area-options)
-        (apply-options (construct JTextField opts) opts text-field-options)))))
+        (apply-options (construct JTextArea opts) opts)
+        (apply-options (construct JTextField opts) opts)))))
 
 (defn text!
   "Set the text of widget(s) or document(s). targets is an object that can be
@@ -1536,6 +1498,8 @@
                      #(get-meta %1 :wrap-lines?))
       (default-option :styles add-styles))))
 
+(widget-option-provider javax.swing.JTextPane styled-text-options)
+
 (defn styled-text 
   "Create a text pane. 
   Supports the following options:
@@ -1570,7 +1534,7 @@
   (let [pane (proxy [JTextPane] []
                (getScrollableTracksViewportWidth []
                  (get-meta this :wrap-lines?)))]
-    (apply-options pane opts styled-text-options)))
+    (apply-options pane opts)))
 
 (defn style-text!
   "Style a JTextPane
@@ -1596,6 +1560,8 @@
     (option-map
       (bean-option :echo-char javax.swing.JPasswordField))))
 
+(widget-option-provider javax.swing.JPasswordField password-options)
+
 (defn password
   "Create a password field. Options are the same as single-line text fields with
   the following additions:
@@ -1609,7 +1575,6 @@
     (password :echo-char \\X)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
@@ -1617,7 +1582,7 @@
   { :seesaw {:class 'javax.swing.JPasswordField }}
   [& opts]
   (let [pw (construct javax.swing.JPasswordField opts)]
-    (apply-options pw opts password-options)))
+    (apply-options pw opts)))
 
 (defn with-password*
   "Retrieve the password of a password field and passes it to the given handler
@@ -1656,6 +1621,8 @@
       (bean-option :content-type javax.swing.JEditorPane str)
       (bean-option :editor-kit javax.swing.JEditorPane))))
 
+(widget-option-provider javax.swing.JEditorPane editor-pane-options)
+
 (defn editor-pane
   "Create a JEditorPane. Custom options:
 
@@ -1665,14 +1632,13 @@
     :editor-kit   The EditorKit. See Javadoc.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html
   "
   { :seesaw {:class 'javax.swing.JEditorPane }}
   [& opts]
-  (apply-options (construct javax.swing.JEditorPane opts) opts editor-pane-options))
+  (apply-options (construct javax.swing.JEditorPane opts) opts))
 
 ;*******************************************************************************
 ; Listbox
@@ -1689,13 +1655,15 @@
   (merge
     default-options
     (option-map
-      (around-option (:model default-options) to-list-model identity) 
+      (around-option model-option to-list-model identity "See (seesaw.core/listbox)")
       (default-option :renderer
                         #(.setCellRenderer ^javax.swing.JList %1 (seesaw.cells/to-cell-renderer %1 %2))
                         #(.getCellRenderer ^javax.swing.JList %1))
-      (default-option :selection-mode list-selection-mode-handler)
+      (selection-mode-option list-selection-mode-table)
       (bean-option :fixed-cell-height javax.swing.JList)
-      (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword))))
+      (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
+
+(widget-option-provider javax.swing.JList listbox-options)
 
 (defn listbox
   "Create a list box (JList). Additional options:
@@ -1705,7 +1673,6 @@
     :renderer A cell renderer to use. See (seesaw.cells/to-cell-renderer).
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
     Retrieving and setting the current selection of the list box is fully 
     supported by the (selection) and (selection!) functions.
@@ -1715,7 +1682,7 @@
   "
   { :seesaw {:class 'javax.swing.JList }}
   [& args]
-  (apply-options (construct javax.swing.JList args) args listbox-options))
+  (apply-options (construct javax.swing.JList args) args))
 
 ;*******************************************************************************
 ; JTable
@@ -1737,6 +1704,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :model javax.swing.JTable to-table-model)
       (default-option :show-grid? 
                                 #(.setShowGrid ^javax.swing.JTable %1 (boolean %2))
@@ -1746,9 +1714,11 @@
       (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
       (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
       (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
-      (default-option :selection-mode list-selection-mode-handler)
-      (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table)
-      (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword))))
+      (selection-mode-option list-selection-mode-table)
+      (bean-option [:auto-resize :auto-resize-mode] javax.swing.JTable auto-resize-mode-table nil (keys auto-resize-mode-table))
+      (bean-option :drop-mode javax.swing.JTable keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
+
+(widget-option-provider javax.swing.JTable table-options)
 
 (defn table
   "Create a table (JTable). Additional options:
@@ -1776,7 +1746,6 @@
                         {:age 45 :height 13}]])
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     seesaw.table/table-model 
@@ -1787,8 +1756,7 @@
   (apply-options 
     (doto ^javax.swing.JTable (construct javax.swing.JTable args)
       (.setFillsViewportHeight true)) 
-    args 
-    table-options))
+    args))
 
 ;*******************************************************************************
 ; JTree
@@ -1797,6 +1765,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :editable? javax.swing.JTree boolean)
       (default-option :renderer
                       #(.setCellRenderer ^javax.swing.JTree %1 (seesaw.cells/to-cell-renderer %1 %2))
@@ -1809,14 +1778,15 @@
       (bean-option [:shows-root-handles? :shows-root-handles] javax.swing.JTree boolean)
       (bean-option :toggle-click-count javax.swing.JTree)
       (bean-option :visible-row-count javax.swing.JTree)
-      (default-option :selection-mode tree-selection-mode-handler)
-      (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword))))
+      (selection-mode-option tree-selection-mode-table)
+      (bean-option :drop-mode javax.swing.JTree keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
+
+(widget-option-provider javax.swing.JTree tree-options)
 
 (defn tree
   "Create a tree (JTree). Additional options:
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
   
@@ -1824,7 +1794,7 @@
   "
   { :seesaw {:class 'javax.swing.JTree }}
   [& args]
-  (apply-options (construct javax.swing.JTree args) args tree-options))
+  (apply-options (construct javax.swing.JTree args) args))
 
 ;*******************************************************************************
 ; Combobox
@@ -1843,11 +1813,14 @@
   (merge
     default-options
     (option-map
+      action-option
       (bean-option :editable? javax.swing.JComboBox boolean)
-      (around-option (:model default-options) to-combobox-model identity)
+      (around-option model-option to-combobox-model identity "See (seesaw.core/combobox)")
       (default-option :renderer 
                       #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
                       #(.getRenderer ^javax.swing.JComboBox %1)))))
+
+(widget-option-provider javax.swing.JComboBox combobox-options)
 
 (defn combobox
   "Create a combo box (JComboBox). Additional options:
@@ -1857,17 +1830,17 @@
     :renderer Cell renderer used for display. See (seesaw.cells/to-cell-renderer).
 
   Note that the current selection can be retrieved and set with the (selection) and
-  (selection!) functions.
+  (selection!) functions. Calling (seesaw.core/text) on a combobox will return
+  (str (selection cb)). (seesaw.core/text!) is not supported.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
   "
   { :seesaw {:class 'javax.swing.JComboBox }}
   [& args]
-  (apply-options (construct javax.swing.JComboBox args) args combobox-options))
+  (apply-options (construct javax.swing.JComboBox args) args))
 
 (def ^{:private true} spinner-date-by-table 
   (constant-map java.util.Calendar 
@@ -1933,7 +1906,9 @@
   (merge
     default-options
     (option-map
-      (around-option (:model default-options) to-spinner-model identity))))
+      (around-option model-option to-spinner-model identity "See (seesaw.core/spinner)"))))
+
+(widget-option-provider javax.swing.JSpinner spinner-options)
 
 (defn spinner 
   "Create a spinner (JSpinner). Additional options:
@@ -1953,7 +1928,6 @@
     * A value returned by (seesaw.core/spinner-model)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSpinner.html
@@ -1963,7 +1937,7 @@
   "
   { :seesaw {:class 'javax.swing.JSpinner }}
   [& args]
-  (apply-options (construct javax.swing.JSpinner args) args spinner-options))
+  (apply-options (construct javax.swing.JSpinner args) args))
 
 ;*******************************************************************************
 ; Scrolling
@@ -2011,6 +1985,8 @@
           (for [k (keys scrollable-corner-constants)] 
              (default-option k (partial set-scrollable-corner k))))))
 
+(widget-option-provider JScrollPane scrollable-options)
+
 (defn scrollable 
   "Wrap target in a JScrollPane and return the scroll pane.
 
@@ -2039,7 +2015,6 @@
     (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]) :id :#scrollable :border 5)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
@@ -2047,7 +2022,7 @@
   [target & opts]
   (let [^JScrollPane sp (construct JScrollPane opts)]
     (.setViewportView sp (make-widget target))
-    (apply-options sp opts scrollable-options)))
+    (apply-options sp opts)))
 
 (defn scroll!
   "Scroll a widget. Obviously, the widget must be contained in a scrollable.
@@ -2172,6 +2147,8 @@
       (bean-option :resize-weight JSplitPane)
       (bean-option :one-touch-expandable? JSplitPane boolean))))
 
+(widget-option-provider JSplitPane splitter-options)
+
 (defn splitter
   "
   Create a new JSplitPane. This is a lower-level function. Usually you want
@@ -2194,8 +2171,7 @@
                              :top-bottom JSplitPane/VERTICAL_SPLIT}))
       (.setLeftComponent (make-widget left))
       (.setRightComponent (make-widget right)))
-    opts
-    splitter-options))
+    opts))
 
 (def left-right-split-options splitter-options)
 
@@ -2205,7 +2181,6 @@
   the two widgets.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
@@ -2223,7 +2198,6 @@
   the two widgets.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
     This function is not compatible with (seesaw.core/paintable). TODO.
   
   See:
@@ -2241,18 +2215,19 @@
     (option-map
       (bean-option :orientation javax.swing.JSeparator orientation-table))))
 
+(widget-option-provider javax.swing.JSeparator separator-options)
+
 (defn separator
   "Create a separator.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
   "
   { :seesaw {:class 'javax.swing.JSeparator }}
   [& opts]
-  (apply-options (construct javax.swing.JSeparator opts) opts separator-options))
+  (apply-options (construct javax.swing.JSeparator opts) opts))
 
 ;*******************************************************************************
 ; Menus
@@ -2263,11 +2238,13 @@
     (option-map
       (bean-option [:key :accelerator] javax.swing.JMenuItem seesaw.keystroke/keystroke))))
 
+(widget-option-provider javax.swing.JMenuItem menu-item-options)
+
 (defn menu-item          
   "Create a menu item for use in (seesaw.core/menu). Supports same options as
   (seesaw.core/button)"
   [& args] 
-  (apply-options (javax.swing.JMenuItem.) args menu-item-options))
+  (apply-options (javax.swing.JMenuItem.) args))
 
 (def checkbox-menu-item-options menu-item-options)
 
@@ -2275,7 +2252,7 @@
   "Create a checked menu item for use in (seesaw.core/menu). Supports same options as
   (seesaw.core/button)"
   [& args] 
-  (apply-options (javax.swing.JCheckBoxMenuItem.) args checkbox-menu-item-options))
+  (apply-options (javax.swing.JCheckBoxMenuItem.) args))
 
 (def radio-menu-item-options menu-item-options)
 
@@ -2287,7 +2264,7 @@
   Notes:
     Use (seesaw.core/button-group) or the :group option to enforce mutual exclusion
     across menu items."
-  [& args] (apply-options (javax.swing.JRadioButtonMenuItem.) args radio-menu-item-options))
+  [& args] (apply-options (javax.swing.JRadioButtonMenuItem.) args))
 
 (defn- ^javax.swing.JMenuItem to-menu-item
   [item]
@@ -2312,6 +2289,8 @@
                       (.addSeparator menu)
                       (.add menu (make-widget item))))))))))
 
+(widget-option-provider javax.swing.JMenu menu-options)
+
 (defn menu 
   "Create a new menu. In addition to all options applicable to (seesaw.core/button)
   the following additional options are supported:
@@ -2319,14 +2298,13 @@
     :items Sequence of menu item-like things (actions, icons, JMenuItems, etc)
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     (seesaw.core/button)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
-  (apply-options (construct javax.swing.JMenu opts) opts menu-options))
+  (apply-options (construct javax.swing.JMenu opts) opts))
 
 (def popup-options 
   (merge
@@ -2342,6 +2320,8 @@
                 (.addSeparator menu)
                 (.add menu (make-widget item))))))))))
 
+(widget-option-provider javax.swing.JPopupMenu popup-options)
+
 (defn popup 
   "Create a new popup menu. Additional options:
 
@@ -2352,13 +2332,12 @@
   fixes various eccentricities of Swing.
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   { :seesaw {:class 'javax.swing.JPopupMenu }}
   [& opts]
-  (apply-options (construct javax.swing.JPopupMenu opts) opts popup-options))
+  (apply-options (construct javax.swing.JPopupMenu opts) opts))
 
 
 (defn- ^javax.swing.JPopupMenu make-popup [target arg event]
@@ -2376,7 +2355,13 @@
           (.show p (to-widget event) (.x (.getPoint event)) (.y (.getPoint event))))))))
 
 
-(def menubar-options default-options)
+(def menubar-options 
+  (merge 
+    default-options
+    (option-map
+      layout/default-items-option)))
+
+(widget-option-provider javax.swing.JMenuBar menubar-options)
 
 (defn menubar
   "Create a new menu bar, suitable for the :menubar property of (frame). 
@@ -2385,7 +2370,6 @@
     :items Sequence of menus, see (menu).
   
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     (seesaw.core/frame)
@@ -2393,7 +2377,7 @@
   "
   { :seesaw {:class 'javax.swing.JMenuBar }}
   [& opts]
-  (apply-options (construct javax.swing.JMenuBar opts) opts menubar-options))
+  (apply-options (construct javax.swing.JMenuBar opts) opts))
 
 ;*******************************************************************************
 ; Toolbars
@@ -2411,7 +2395,10 @@
       (bean-option :orientation javax.swing.JToolBar orientation-table)
       (bean-option :floatable? javax.swing.JToolBar boolean)
       ; Override default :items handler
-      (default-option :items #(add-widgets %1 (insert-toolbar-separators %2))))))
+      (default-option :items 
+        #(layout/add-widgets %1 (insert-toolbar-separators %2))))))
+
+(widget-option-provider javax.swing.JToolBar toolbar-options)
 
 (defn toolbar
   "Create a JToolBar. The following properties are supported:
@@ -2422,14 +2409,13 @@
                  creates a toolbar separator.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   { :seesaw {:class 'javax.swing.JToolBar }}
   [& opts]
-  (apply-options (construct javax.swing.JToolBar opts) opts toolbar-options))
+  (apply-options (construct javax.swing.JToolBar opts) opts))
 
 ;*******************************************************************************
 ; Tabs
@@ -2460,6 +2446,8 @@
       (bean-option [:overflow :tab-layout-policy] javax.swing.JTabbedPane tab-overflow-table)
       (default-option :tabs add-to-tabbed-panel))))
 
+(widget-option-provider javax.swing.JTabbedPane tabbed-panel-options)
+
 (defn tabbed-panel
   "Create a JTabbedPane. Supports the following properties:
 
@@ -2477,14 +2465,13 @@
   Returns the new JTabbedPane.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
   
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   { :seesaw {:class 'javax.swing.JTabbedPane }}
   [& opts]
-  (apply-options (construct javax.swing.JTabbedPane opts) opts tabbed-panel-options))
+  (apply-options (construct javax.swing.JTabbedPane opts) opts))
 
 ;*******************************************************************************
 ; Canvas
@@ -2555,7 +2542,6 @@
       :paint (fn [g c] (.drawLine 0 0 (.getWidth c) (.getHeight c))))
 
   See:
-    (seesaw.core/with-widget)
     (seesaw.core/canvas)
     (seesaw.graphics)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29 
@@ -2567,7 +2553,7 @@
     ~(if info
       `(with-widget (paintable-proxy ~cls)
           ~(cons target (mapcat identity (dissoc opts :paint))))
-      `(apply-default-opts (paintable-proxy ~cls) ~(dissoc opts :paint)))
+      `(apply-options (paintable-proxy ~cls) ~(dissoc opts :paint)))
     (@#'seesaw.core/paint-option-handler ~paint))))
 
 (def canvas-options 
@@ -2599,7 +2585,7 @@
   (let [{:keys [paint] :as opts} opts
         ^javax.swing.JPanel p (paintable javax.swing.JPanel :paint paint)]
     (.setLayout p nil)
-    (apply-options p (dissoc opts :paint) canvas-options)))
+    (apply-options p (dissoc opts :paint))))
 
 ;*******************************************************************************
 ; Frame
@@ -2621,9 +2607,25 @@
   (option-map
     (default-option ::with) ; ignore ::with option inserted by (with-widget)
     (resource-option :resource [:title :icon])
-    (default-option :id seesaw.selector/id-of!)
-    (default-option :class seesaw.selector/class-of!)
-    (bean-option [:on-close :default-close-operation] javax.swing.JFrame frame-on-close-map)
+
+    (default-option :id 
+      seesaw.selector/id-of! 
+      seesaw.selector/id-of
+      ["A keyword id."
+       "See (seesaw.core/select)"])
+
+    (default-option :class 
+      seesaw.selector/class-of! 
+      seesaw.selector/class-of
+      ["A keyword class, in the HTML/CSS sense."
+       "See (Seesaw.core/select)"])
+
+    (bean-option 
+      [:on-close :default-close-operation] javax.swing.JFrame 
+      frame-on-close-map
+      nil
+      (keys frame-on-close-map))
+
     (default-option 
       :content
       (fn [^javax.swing.JFrame f v] 
@@ -2632,19 +2634,36 @@
           .invalidate
           .validate
           .repaint))
-      (fn [^javax.swing.JFrame f] (.getContentPane f)))
-    (bean-option [:menubar :j-menu-bar] javax.swing.JFrame)
+      (fn [^javax.swing.JFrame f] (.getContentPane f))
+      "The frame's main content widget")
 
-    (bean-option :title java.awt.Frame resource)
+    (bean-option 
+      [:menubar :j-menu-bar] 
+      javax.swing.JFrame
+      nil nil
+      "The frame's menu bar. See (seesaw.core/menubar).")
+
+    (bean-option :title java.awt.Frame resource nil
+      ["The frame's title as string or resource key"])
+
     (bean-option :resizable? java.awt.Frame boolean)
 
-    (bean-option :minimum-size  java.awt.Window to-dimension)
-    (bean-option :size java.awt.Window to-dimension)
+    (bean-option :minimum-size  java.awt.Window to-dimension nil
+                 dimension-examples)
+
+    (bean-option :size java.awt.Window to-dimension
+                 dimension-examples)
+
     (bean-option :visible? java.awt.Window boolean)
     ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
     ; base or interface.
-    (bean-option :transfer-handler java.awt.Window seesaw.dnd/to-transfer-handler)
+    (bean-option :transfer-handler java.awt.Window 
+                 seesaw.dnd/to-transfer-handler
+                 identity
+                 "See (seesaw.dnd/to-transfer-handler)")
     (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)))
+
+(option-provider javax.swing.JFrame frame-options)
 
 (defn frame
   "Create a JFrame. Options:
@@ -2680,8 +2699,6 @@
     Call (pack!) on the frame if you'd like the frame to resize itself to fit its
     contents. Sometimes this doesn't look like crap.
 
-    This function is compatible with (seesaw.core/with-widget).
-  
   See:
     (seesaw.core/show!)
     (seesaw.core/hide!)
@@ -2689,12 +2706,11 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JFrame.html 
   "
   [& {:keys [width height visible? size] 
-      :or {width 100 height 100}
       :as opts}]
   (cond-doto ^JFrame (apply-options (construct JFrame opts) 
-                                    (dissoc opts :width :height :visible?) 
-                                    frame-options)
-    (not size) (.setSize width height)
+                                    (dissoc opts :width :height :visible?))
+    (and (not size) 
+         (or width height)) (.setSize (or width 100) (or height 100))
     true       (.setLocationByPlatform true)
     visible?   (.setVisible (boolean visible?))))
 
@@ -2759,6 +2775,8 @@
       ; Ditto here. Avoid reflection
       (bean-option :title java.awt.Dialog resource)
       (bean-option :resizable? java.awt.Dialog boolean))))
+
+(option-provider java.awt.Dialog custom-dialog-options)
 
 (def ^{:private true} dialog-result-property ::dialog-result)
 
@@ -2835,7 +2853,6 @@
   Returns a JDialog. Use (seesaw.core/show!) to display the dialog.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     (seesaw.core/show!)
@@ -2845,9 +2862,10 @@
   [& {:keys [width height visible? modal? on-close size] 
       :or {width 100 height 100 visible? false}
       :as opts}]
-  (let [^JDialog dlg (apply-options (construct JDialog opts) 
-                           (merge {:modal? true} (dissoc opts :width :height :visible? :pack?))
-                           custom-dialog-options)]
+  (let [^JDialog dlg (apply-options 
+                       (construct JDialog opts) 
+                       (merge {:modal? true} 
+                              (dissoc opts :width :height :visible? :pack?)))]
     (when-not size (.setSize dlg width height))
     (.setLocationByPlatform dlg true)
     (if visible?
@@ -3089,6 +3107,7 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :orientation javax.swing.JSlider orientation-table)
       (bean-option :value javax.swing.JSlider)
       (bean-option [:min :minimum] javax.swing.JSlider)
@@ -3106,6 +3125,8 @@
       (bean-option [:paint-labels? :paint-labels] javax.swing.JSlider boolean)
       (bean-option [:paint-track? :paint-track] javax.swing.JSlider boolean)
       (bean-option [:inverted? :inverted] javax.swing.JSlider boolean))))
+
+(widget-option-provider javax.swing.JSlider slider-options)
 
 (defn slider
   "Show a slider which can be used to modify a value.
@@ -3134,7 +3155,6 @@
     (slider :value 10 :min -50 :max 50)
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
@@ -3144,7 +3164,7 @@
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}] 
   (let [sl (construct javax.swing.JSlider kw)]
-    (apply-options sl kw slider-options)))
+    (apply-options sl kw)))
 
 
 ;*******************************************************************************
@@ -3153,12 +3173,15 @@
   (merge
     default-options
     (option-map
+      model-option
       (bean-option :orientation javax.swing.JProgressBar orientation-table)
       (bean-option :value javax.swing.JProgressBar)
       (bean-option [:min :minimum] javax.swing.JProgressBar)
       (bean-option [:max :maximum] javax.swing.JProgressBar)
       (bean-option [:paint-string? :string-painted?] javax.swing.JProgressBar boolean)
       (bean-option :indeterminate? javax.swing.JProgressBar boolean))))
+
+(widget-option-provider javax.swing.JProgressBar progress-bar-options)
 
 (defn progress-bar
   "Show a progress-bar which can be used to display the progress of long running tasks.
@@ -3185,7 +3208,6 @@
   Returns a JProgressBar.
 
   Notes:
-    This function is compatible with (seesaw.core/with-widget).
  
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
@@ -3194,7 +3216,7 @@
   { :seesaw {:class 'javax.swing.JProgressBar }}
   [& {:keys [orientation value min max] :as opts}]
   (let [sl (construct javax.swing.JProgressBar opts)]
-    (apply-options sl opts progress-bar-options)))
+    (apply-options sl opts)))
 
 
 
@@ -3349,30 +3371,42 @@
     {}
     (select (to-widget root) [:*])))
 
+(defmacro with-widgets 
+  "Macro to ease construction of multiple widgets. The first argument
+  is a vector of widget constructor forms, each with an :id option.
+  The name of the value of each :id is used to generate a binding in
+  the scope of the macro.
+  
+  Examples:
+  
+    (with-widgets [(label :id :foo :text \"foo\")
+                   (button :id :bar :text \"bar\")]
+       ...)
+  
+    ; is equivalent to 
+    (let [foo (label :id :foo :text \"foo\")
+          bar (button :id :bar :text \"bar\")]
+       ...)
+
+  Notes:
+  
+  If you're looking for something like this to reduce boilerplate with
+  selectors on multiple widgets, see (seesaw.core/group-by-id).
+
+  See:
+    (seesaw.core/group-by-id) 
+  "
+  [widgets & body]
+  `(let [~@(mapcat (fn [[f & args :as widget]]
+                      (if-let [id (:id (apply hash-map args))]
+                        [(symbol (name id)) widget]
+                        (illegal-argument "No :id specified for widget in %s"
+                              (pr-str widget))))
+             widgets)]
+     ~@body))
+
 ;*******************************************************************************
 ; Widget layout manipulation
-
-(extend-protocol LayoutManipulation
-  java.awt.LayoutManager
-    (add!* [layout target widget constraint]
-      (add-widget target widget))
-    (get-constraint [layout container widget] nil)
-
-  java.awt.BorderLayout
-    (add!* [layout target widget constraint]
-      (add-widget target widget (border-layout-dirs constraint)))
-    (get-constraint [layout container widget]
-      (.getConstraints layout widget)))
-
-(defn- add!-impl 
-  [container subject & more]
-  (let [^java.awt.Container container (to-widget container)
-        [widget constraint] (if (vector? subject) subject [subject nil])
-        layout (.getLayout container)]
-    (add!* layout container widget constraint)
-    (when more
-      (apply add!-impl container more))
-    container))
 
 (defn add! [container subject & more]
   "Add one or more widgets to a widget container. The container and each widget
@@ -3391,15 +3425,8 @@
 
   Returns the target container *after* it's been passed through (to-widget).
   "
-  (handle-structure-change (apply add!-impl container subject more)))
-
-(defn- remove!-impl
-  [container subject & more]
-  (let [^java.awt.Container container (to-widget container)]
-    (.remove container (to-widget subject))
-    (when more
-      (apply remove!-impl container more))
-    container))
+  (layout/handle-structure-change 
+    (apply layout/add!-impl container subject more)))
 
 (defn remove!
   "Remove one or more widgets from a container. container and each widget
@@ -3416,26 +3443,9 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container subject & more]
-  (handle-structure-change (apply remove!-impl container subject more)))
+  (layout/handle-structure-change 
+    (apply layout/remove!-impl container subject more)))
 
-(defn- ^Integer index-of-component
-  [^java.awt.Container container widget]
-  (loop [comps (.getComponents container) idx 0]
-    (cond
-      (not comps)              nil
-      (= widget (first comps)) idx
-      :else (recur (next comps) (inc idx)))))
-
-(defn- replace!-impl
-  [^java.awt.Container container old-widget new-widget]
-  (let [idx        (index-of-component container old-widget)]
-    (when idx
-      (let [constraint (get-constraint (.getLayout container) container old-widget)]
-        (doto container
-          (.remove idx)
-          (.add    new-widget constraint idx))))
-    container))
-  
 (defn replace!
   "Replace old-widget with new-widget from container. container and old-widget
   are passed through (to-widget). new-widget is passed through make-widget.
@@ -3454,6 +3464,62 @@
   Returns the target container *after* it's been passed through (to-widget).
   "
   [container old-widget new-widget]
-  (handle-structure-change 
-    (replace!-impl (to-widget container) (to-widget old-widget) (make-widget new-widget))))
+  (layout/handle-structure-change 
+    (layout/replace!-impl 
+      (to-widget container) 
+      (to-widget old-widget) 
+      (make-widget new-widget))))
+
+
+;*******************************************************************************
+; Widget "value"
+
+(defn value 
+  "Return the 'value' of a widget. target is passed through (to-widget) as usual.
+  
+  Basically, there are two possibilities:
+  
+    * It's a container: A map of widget values keyed by :id is built
+        recursively from all its children.
+    * The 'natural' value for the widget is returned, usually the text,
+      or the current selection of the widget.
+
+  See:
+    (seesaw.core/value!)
+    (seesaw.core/selection)
+    (seesaw.core/group-by-id)
+  
+  This idea is shamelessly borrowed from Clarity https://github.com/stathissideris/clarity
+  " 
+  [target]
+  (seesaw.value/value* (or (to-widget target) target)))
+
+(defn value!
+  "Set the 'value' of a widget. This is the dual of (seesaw.core/value). target
+  is passed through (to-widget) as usual.
+
+  Basically, there are two possibilities:
+  
+    * target is a container: The value is a map of widget values keyed by :id. These
+        values are applied to all descendants of target.
+    * otherwise, v is a new 'natural' value for the widget, usually the text,
+      or the current selection of the widget.
+
+  In either case (to-widget target) is returned.
+
+  Examples:
+
+    Imagine there's widget :foo, :bar, :yum in frame f:
+
+      (value! f {:foo \"new foo text\" :bar 99 :yum \"new yum text\"})
+
+  See:
+    (seesaw.core/value)
+    (seesaw.core/selection)
+    (seesaw.core/group-by-id)
+ 
+  This idea is shamelessly borrowed from Clarity https://github.com/stathissideris/clarity
+  "
+  [target v]
+  (seesaw.value/value!* (or (to-widget target) target) v))
 

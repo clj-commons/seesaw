@@ -10,10 +10,15 @@
 
 (ns seesaw.test.examples.kitchensink
   (:require clojure.java.io)
-  (:use seesaw.core)
-  (:use seesaw.border)
+  (:use seesaw.core
+        seesaw.border
+        seesaw.test.examples.example)
   (:import (javax.swing JFrame JLabel)
            (java.awt Color)))
+
+; NOTE: This was the first Seesaw example written. It shows fairly randomly
+; how to do a bunch of stuff, but it's unfocused, messy and generally a 
+; bad example of how to structure a Seesaw (or any) app.
 
 (def rss-url (clojure.java.io/resource "seesaw/test/examples/rss.gif"))
 (def redditor "http://static.reddit.com/reddit.com.header.png")
@@ -114,7 +119,7 @@
           :south (label :id :table-sel :text "Table selection: ")) }
            ])))))
 
-(defn app []
+(defexample []
   (let [f (make-frame)]
     (listen (select f [:#tabs]) :state-changed
           #(let [tp (to-widget %)
@@ -148,10 +153,5 @@
       (fn [e] (println (selection e))))
     f))
 
-(defn -main [& args]
-  (native!)
-  (invoke-later (show! (app))))
-;(doseq [f (JFrame/getFrames)]
-  ;(.dispose f))
-;(-main)
+;(run :dispose)
 

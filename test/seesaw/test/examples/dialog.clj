@@ -10,7 +10,8 @@
 
 (ns seesaw.test.examples.dialog
   (:use [seesaw core font border util color pref mig]
-        [clojure.pprint :only (cl-format)])
+        [clojure.pprint :only (cl-format)]
+        seesaw.test.examples.example)
   (:require [seesaw.bind :as bind]))
 
 (defmethod print-dup java.awt.Color [x writer]
@@ -92,15 +93,14 @@
                                     lbl) "growx, wrap"]
                                  ])) pack! show!)))
 
-(defn -main [& args]
-  (invoke-later
-    (-> (frame :title "Custom Dialog Example"
-           :resizable? false
-           :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
-                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
-                                            (action :name "Show Dialog with custom option buttons" 
-                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))
-                                            (action :name "Show Dialog with remembered values" 
-                                                    :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])) pack! show!)))
-;(-main)
+(defexample []
+  (frame :title "Custom Dialog Example"
+         :resizable? false
+         :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
+                                                  :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
+                                          (action :name "Show Dialog with custom option buttons" 
+                                                  :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))
+                                          (action :name "Show Dialog with remembered values" 
+                                                  :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])))
+;(run :dispose)
 

@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.dnd
-  (:use seesaw.core)
+  (:use seesaw.core
+        seesaw.test.examples.example)
   (:require [seesaw.dnd :as dnd]))
 
 ; Set up a few targets for different data flavors.
@@ -88,7 +89,7 @@
       (scrollable icon-label)
       :divider-location 1/2)))
 
-(defn app []
+(defexample []
   (frame
     :title "Seesaw Drag-n-Drop Example"
     :content
@@ -100,11 +101,5 @@
           (border-panel :border "Drag and Drop Images here" :center (image-target))
           ])))
 
-(defn -main [& args]
-  (invoke-later
-    (-> (app)
-      pack!
-      show!)))
-
-;(-main)
+;(run :dispose)
 

@@ -22,16 +22,14 @@
         [seesaw.event :only [listen-for-named-event listen-to-property]]
         [seesaw.core :only [construct to-widget make-widget
                             abstract-panel
-                            border-panel-options
-                            flow-panel-options
-                            box-layout box-panel-options
-                            grid-layout grid-panel-options
-                            card-panel-options
                             default-options button-options label-options
                             listbox-options tree-options table-options
-                            ConfigIcon get-icon set-icon
+                            ConfigIcon get-icon* set-icon*
                             config config!]]
-        [seesaw.options :only [option-map bean-option apply-options default-option resource-option around-option]])
+        [seesaw.layout :only [default-items-option box-layout grid-layout]]
+        [seesaw.options :only [option-map bean-option apply-options 
+                               default-option resource-option around-option]]
+        [seesaw.widget-options :only [widget-option-provider]])
   (:import [org.jdesktop.swingx.decorator
               Highlighter
               HighlighterFactory
@@ -219,6 +217,8 @@
       (bean-option :foreground-painter org.jdesktop.swingx.JXButton)
       (bean-option :paint-border-insets? org.jdesktop.swingx.JXButton boolean))))
 
+(widget-option-provider org.jdesktop.swingx.JXButton button-x-options)
+
 (defn button-x
   "Creates a org.jdesktop.swingx.JXButton which is an improved (button) that 
   supports painters. Supports these additional options:
@@ -237,7 +237,7 @@
     (seesaw.swingx/button-x-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXButton args) args button-x-options))
+  (apply-options (construct org.jdesktop.swingx.JXButton args) args))
 
 ;*******************************************************************************
 ; XLabel 
@@ -251,6 +251,8 @@
       (bean-option :text-rotation org.jdesktop.swingx.JXLabel)
       (bean-option :background-painter org.jdesktop.swingx.JXLabel)
       (bean-option :foreground-painter org.jdesktop.swingx.JXLabel))))
+
+(widget-option-provider org.jdesktop.swingx.JXLabel label-x-options)
 
 (defn label-x
   "Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
@@ -271,7 +273,7 @@
     (seesaw.swingx/label-x-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXLabel args) args label-x-options))
+  (apply-options (construct org.jdesktop.swingx.JXLabel args) args))
 
 ;*******************************************************************************
 ; BusyLabel 
@@ -282,6 +284,8 @@
     (option-map
       ; TODO busy-label text-alignment, painter, etc
       (bean-option :busy? org.jdesktop.swingx.JXBusyLabel boolean))))
+
+(widget-option-provider org.jdesktop.swingx.JXBusyLabel busy-label-options)
 
 (defn busy-label
   "Creates a org.jdesktop.swingx.JXBusyLabel which is a label that shows
@@ -301,7 +305,7 @@
     (seesaw.swingx/busy-label-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXBusyLabel args) args busy-label-options))
+  (apply-options (construct org.jdesktop.swingx.JXBusyLabel args) args))
 
 ;*******************************************************************************
 ; Hyperlink 
@@ -310,6 +314,8 @@
     button-options
     (option-map
       (bean-option [:uri :URI] org.jdesktop.swingx.JXHyperlink to-uri))))
+
+(widget-option-provider org.jdesktop.swingx.JXHyperlink hyperlink-options)
 
 (defn hyperlink 
   "Constuct an org.jdesktop.swingx.JXHyperlink which is a button that looks like
@@ -327,24 +333,25 @@
     (seesaw.core/button-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXHyperlink args) args hyperlink-options))
+  (apply-options (construct org.jdesktop.swingx.JXHyperlink args) args))
 
 ;*******************************************************************************
 ; TaskPane
 
 (extend-protocol ConfigIcon
   org.jdesktop.swingx.JXTaskPane 
-    (get-icon [this] (.getIcon this))
-    (set-icon [this v] 
+    (get-icon* [this] (.getIcon this))
+    (set-icon* [this v] 
       (.setIcon this (icon v))))
 
 (def task-pane-options
   (merge
     default-options
     (option-map
+      default-items-option
       ; TODO I have to add this manually because relying on the impl from default-options
-      ; fails with "No implementation of method: :set-icon :(
-      (default-option :icon set-icon get-icon)
+      ; fails with "No implementation of method: :set-icon* :(
+      (default-option :icon set-icon* get-icon*)
       (resource-option :resource [:title :icon])
       (bean-option :title org.jdesktop.swingx.JXTaskPane resource)
       (bean-option :animated? org.jdesktop.swingx.JXTaskPane boolean)
@@ -355,6 +362,10 @@
         (fn [^org.jdesktop.swingx.JXTaskPane c actions]
           (doseq [^javax.swing.Action a actions]
             (.add c a)))))))
+
+(widget-option-provider 
+  org.jdesktop.swingx.JXTaskPane 
+  task-pane-options)
 
 (defn task-pane
   "Create a org.jdesktop.swingx.JXTaskPane which is a collapsable component with a title
@@ -382,8 +393,7 @@
   [& args]
   (apply-options 
     (construct org.jdesktop.swingx.JXTaskPane args) 
-    args 
-    task-pane-options))
+    args))
 
 (def task-pane-container-options
   (merge
@@ -393,6 +403,10 @@
         :items
         #(doseq [^org.jdesktop.swingx.JXTaskPane p %2] 
            (.add ^org.jdesktop.swingx.JXTaskPaneContainer %1 p))))))
+
+(widget-option-provider 
+  org.jdesktop.swingx.JXTaskPaneContainer 
+  task-pane-container-options)
 
 (defn task-pane-container
   "Creates a container for task panes. Supports the following additional
@@ -418,8 +432,7 @@
   [& args]
   (apply-options 
     (construct org.jdesktop.swingx.JXTaskPaneContainer args) 
-    args 
-    task-pane-container-options))
+    args))
 
 ;*******************************************************************************
 ; Color Selection Button
@@ -428,6 +441,10 @@
   (merge
     button-options
     {:selection (:background button-options)}))
+
+(widget-option-provider 
+  org.jdesktop.swingx.JXColorSelectionButton
+  color-selection-button-options)
 
 (defn color-selection-button 
   "Creates a color selection button. In addition to normal button options,
@@ -454,8 +471,7 @@
   [& args]
   (apply-options 
     (construct org.jdesktop.swingx.JXColorSelectionButton args) 
-    args 
-    color-selection-button-options))
+    args))
 
 ; Extend selection and selection event stuff for color button.
 
@@ -474,16 +490,18 @@
 
 (extend-protocol ConfigIcon
   org.jdesktop.swingx.JXHeader
-    (get-icon [this]   (.getIcon this))
-    (set-icon [this v] (.setIcon this (icon v))))
+    (get-icon* [this]   (.getIcon this))
+    (set-icon* [this v] (.setIcon this (icon v))))
 
 (def header-options
   (merge
     default-options 
     (option-map
       (bean-option :title org.jdesktop.swingx.JXHeader resource)
-      (default-option :icon set-icon get-icon)
+      (default-option :icon set-icon* get-icon*)
       (bean-option :description org.jdesktop.swingx.JXHeader resource))))
+
+(widget-option-provider org.jdesktop.swingx.JXHeader header-options)
 
 (defn header 
   "Creates a header which consists of a title, description (supports basic HTML)
@@ -506,8 +524,7 @@
   [& args]
   (apply-options 
     (construct org.jdesktop.swingx.JXHeader args) 
-    args 
-    header-options))
+    args))
 
 ;*******************************************************************************
 ; JXList
@@ -549,6 +566,8 @@
         (fn [^org.jdesktop.swingx.JXList c]
           (.getComparator c))))))
 
+(widget-option-provider org.jdesktop.swingx.JXList listbox-x-options)
+
 (defn listbox-x
   "Create a JXList which is basically an improved (seesaw.core/listbox).
   Additional capabilities include sorting, searching, and highlighting.
@@ -571,8 +590,7 @@
     (doto (construct org.jdesktop.swingx.JXList args)
       (.setAutoCreateRowSorter true)
       (.setRolloverEnabled true))
-    args
-    listbox-x-options))
+    args))
 
 ;*******************************************************************************
 ; JXTitledPanel
@@ -588,6 +606,10 @@
       (bean-option [:content :content-container] org.jdesktop.swingx.JXTitledPanel make-widget)
       (bean-option :right-decoration org.jdesktop.swingx.JXTitledPanel make-widget)   
       (bean-option :left-decoration org.jdesktop.swingx.JXTitledPanel make-widget))))
+
+(widget-option-provider 
+  org.jdesktop.swingx.JXTitledPanel 
+  titled-panel-options)
 
 (defn titled-panel 
   "Creates a panel with a title and content. Has the following properties:
@@ -614,8 +636,7 @@
   [& args]
   (apply-options
     (construct org.jdesktop.swingx.JXTitledPanel args) 
-    args
-    titled-panel-options))
+    args))
 
 ;*******************************************************************************
 ; JXTree
@@ -627,6 +648,8 @@
     tree-options
     highlighter-host-options
     (option-map)))
+
+(widget-option-provider org.jdesktop.swingx.JXTree tree-x-options)
 
 (defn tree-x
   "Create a JXTree which is basically an improved (seesaw.core/tree).
@@ -647,8 +670,7 @@
   (apply-options
     (doto (construct org.jdesktop.swingx.JXTree args)
       (.setRolloverEnabled true))
-    args
-    tree-x-options)) 
+    args)) 
 
 ;*******************************************************************************
 ; JXTable
@@ -662,6 +684,8 @@
     (option-map
       (bean-option :column-control-visible? org.jdesktop.swingx.JXTable boolean)
       (bean-option :column-margin org.jdesktop.swingx.JXTable))))
+
+(widget-option-provider org.jdesktop.swingx.JXTable table-x-options)
 
 (defn table-x
   "Create a JXTable which is basically an improved (seesaw.core/table).
@@ -686,44 +710,46 @@
     (doto (construct org.jdesktop.swingx.JXTable args)
       (.setRolloverEnabled true)
       (.setColumnControlVisible true))
-    args
-    table-x-options)) 
+    args)) 
 
 
 ;*******************************************************************************
 ; JXPanel
 
 (def panel-x-options
-  (option-map
-    (bean-option :alpha org.jdesktop.swingx.JXPanel)))
+  (merge
+    default-options
+    (option-map
+      (bean-option :alpha org.jdesktop.swingx.JXPanel))))
 
-(defn- abstract-panel-x [layout layout-options {:as opts}]
+(widget-option-provider
+  org.jdesktop.swingx.JXPanel
+  panel-x-options)
+
+(defn- abstract-panel-x [layout {:as opts}]
   (abstract-panel 
     layout
-    (merge layout-options panel-x-options)
     (assoc opts :seesaw.core/with org.jdesktop.swingx.JXPanel)))
 
 (defn xyz-panel-x [& opts]
-  (abstract-panel-x nil default-options opts))
+  (abstract-panel-x nil opts))
 
 (defn border-panel-x [& opts]
-  (abstract-panel-x (java.awt.BorderLayout.) border-panel-options opts))
+  (abstract-panel-x (java.awt.BorderLayout.) opts))
 
 (defn flow-panel-x [& opts]
-  (abstract-panel-x (java.awt.FlowLayout.) flow-panel-options opts))
+  (abstract-panel-x (java.awt.FlowLayout.) opts))
 
 (defn horizontal-panel-x [& opts]
-  (abstract-panel-x (box-layout :horizontal) box-panel-options opts))
+  (abstract-panel-x (box-layout :horizontal) opts))
 
 (defn vertical-panel-x [& opts]
-  (abstract-panel-x (box-layout :vertical) box-panel-options opts))
+  (abstract-panel-x (box-layout :vertical) opts))
 
 (defn grid-panel-x 
   [& {:keys [rows columns] :as opts}]
-  (abstract-panel-x (grid-layout rows columns) 
-                  grid-panel-options
-                  opts))
+  (abstract-panel-x (grid-layout rows columns) opts))
 
 (defn card-panel-x [& opts]
-  (abstract-panel-x (java.awt.CardLayout.) card-panel-options opts))
+  (abstract-panel-x (java.awt.CardLayout.) opts))
 

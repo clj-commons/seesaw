@@ -1,9 +1,10 @@
 (ns seesaw.test.examples.form
-  (:use seesaw.core))
+  (:use seesaw.core
+        seesaw.test.examples.example))
 
 ;http://www.leepoint.net/notes-java/GUI/layouts/gridbag-example.html 
 
-(defn app []
+(defexample []
   (frame :title "Find/Replace" :content 
     (form-panel
       :items [
@@ -32,7 +33,5 @@
           :grid :next]]
         )))
 
-(defn -main [& args]
-  (invoke-later (-> (app) pack! show!)))
-;(-main)
+;(run :dispose)
 

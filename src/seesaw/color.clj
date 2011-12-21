@@ -12,7 +12,7 @@
             in the core color options."
       :author "Dave Ray"}
   seesaw.color
-  (:use [seesaw.util :only (illegal-argument resource)])
+  (:use [seesaw.util :only (illegal-argument resource resource-key?)])
   (:import [java.awt Color]))
 
 (def ^{:private true} color-names {
@@ -206,7 +206,7 @@
     http://www.w3.org/TR/css3-color/
   "
   ([s]
-    (if (and (keyword? s) (namespace s))
+    (if (resource-key? s)
       (color (resource s))
       (or (color-names (.toLowerCase (name s))) (decode (name s)))))
   ([s a] (apply color (assoc (get-rgba (color s)) 3 a)))

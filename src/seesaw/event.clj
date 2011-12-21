@@ -227,6 +227,17 @@
   }
 })
 
+(def ^{:private true} event-groups-by-listener-class
+  (into {}
+        (for [{:keys [class] :as group} (vals event-groups)]
+          [class group])))
+
+(defn- get-listener-class [m]
+  (let [[arg] (.getParameterTypes m)]
+    (if (and arg (.startsWith (.getName m) "add"))
+      arg)))
+
+
 ; Kind of a hack. Re-route methods with renamed events (due to collisions like
 ; valueChanged()) back to their real names.
 (def ^{:private true} event-method-table (merge {
@@ -498,3 +509,30 @@
     (fn []
       (.removePropertyChangeListener target property listener))))
 
+; :selection is an artificial event handled specially for each class
+; of widget, so we hack...
+(defn- selection-group-for [this]
+  (if-let [group (event-group-table (resolve-event-aliases this :selection))]
+    (-> group
+      (assoc :name :selection))))
+
+(defn events-for
+  "Returns a sequence of event info maps for the given object which can
+  be either a widget instance or class.
+  
+  Used by (seesaw.dev/show-events).
+  
+  See:
+    (seesaw.dev/show-events)
+  "
+  [v]
+  (let [base (->> (.getMethods (if (class? v) v (class v))) 
+               (map get-listener-class)
+               (filter identity)
+               (map event-groups-by-listener-class)
+               (filter identity)
+               (map #(dissoc % :install)))
+        selection (selection-group-for v)]
+    (if selection
+      (cons selection base)
+      base)))

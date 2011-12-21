@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.scribble
-  (:use [seesaw core color graphics behave]))
+  (:use [seesaw core color graphics behave]
+        seesaw.test.examples.example))
 
 (def colors [:black :white :blue :green :red :yellow :orange :purple nil])
 
@@ -134,8 +135,8 @@
                                     :preferred-size [500 :by 500]
                                     :background :white)))))
 
-(defn -main [& args]
-  (-> (make-ui) add-behaviors pack! show!))
+(defexample []
+  (-> (make-ui) add-behaviors))
 
-;(-main)
+;(run :dispose)
 

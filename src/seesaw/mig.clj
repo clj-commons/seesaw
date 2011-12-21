@@ -11,8 +11,9 @@
 (ns ^{:doc "MigLayout support for Seesaw"
       :author "Dave Ray"}
   seesaw.mig
-  (:use [seesaw.core :only [abstract-panel LayoutManipulation]]
-        [seesaw.options :only [default-option]]
+  (:use [seesaw.core :only [abstract-panel default-options]]
+        [seesaw.layout :only [LayoutManipulation add-widget handle-structure-change]]
+        [seesaw.options :only [default-option option-map option-provider]]
         [seesaw.util :only [cond-doto]]))
 
 ;*******************************************************************************
@@ -28,13 +29,17 @@
 (defn- add-mig-items [^java.awt.Container parent items]
   (.removeAll parent)
   (doseq [[widget constraint] items]
-    (@#'seesaw.core/add-widget parent widget constraint))
-  (@#'seesaw.core/handle-structure-change parent))
+    (add-widget parent widget constraint))
+  (handle-structure-change parent))
 
-(def ^{:private true} mig-panel-options {
-  :constraints (default-option :constraints apply-mig-constraints)
-  :items       (default-option :items add-mig-items)
-})
+(def mig-layout-options
+  (option-map
+    (default-option :constraints apply-mig-constraints)
+    (default-option :items add-mig-items)))
+
+(option-provider net.miginfocom.swing.MigLayout mig-layout-options)
+
+(def mig-panel-options default-options)
 
 (defn mig-panel
   "Construct a panel with a MigLayout. Takes one special property:
@@ -49,15 +54,18 @@
 
     :items [[ \"Propeller\"        \"split, span, gaptop 10\"]]
 
-  See http://www.miglayout.com
+  See:
+    http://www.miglayout.com
+    (seesaw.core/default-options)
   "
   { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
-  (abstract-panel (net.miginfocom.swing.MigLayout.) mig-panel-options opts))
+  (abstract-panel (net.miginfocom.swing.MigLayout.) opts))
 
 (extend-protocol LayoutManipulation
   net.miginfocom.swing.MigLayout
     (add!* [layout target widget constraint]
-      (@#'seesaw.core/add-widget target widget))
-    (get-constraint [layout container widget] (.getComponentConstraints layout widget)))
+      (add-widget target widget))
+    (get-constraint* [layout container widget] 
+      (.getComponentConstraints layout widget)))
 

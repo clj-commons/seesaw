@@ -1,5 +1,6 @@
 (ns seesaw.test.examples.cell-renderers
-  (:use [seesaw core font]))
+  (:use [seesaw core font]
+        seesaw.test.examples.example))
 
 (def even-font (font "ARIAL-ITALIC-18"))
 (def odd-font (font "ARIAL--18"))
@@ -16,14 +17,11 @@
         [:text (str v " is even") :font even-font :foreground "#000033"]
         [:text (str v " is odd")  :font odd-font  :foreground "#aaaaee"]))))
 
-(defn app []
+(defexample []
   (frame :title   "Cell Renderer Example"
          :content (scrollable 
                     (listbox :model    (range 5 25) 
                              :renderer render-fn)))) 
 
-(defn -main [& args]
-  (invoke-later (show! (app))))
-
-;(-main)
+;(run :dispose)
 

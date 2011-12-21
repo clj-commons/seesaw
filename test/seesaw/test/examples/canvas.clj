@@ -9,9 +9,10 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.canvas
-  (:use seesaw.core)
-  (:use seesaw.graphics)
-  (:use seesaw.color))
+  (:use seesaw.core
+        seesaw.graphics
+        seesaw.color
+        seesaw.test.examples.example))
 
 ; A very rudimentary example of (canvas).
 
@@ -74,24 +75,25 @@
 ; properties on other widgets.
 (defn switch-paint-action [n paint]
   (action :name n 
-          :handler (fn [e] (config! (select (to-frame e) [:#canvas]) :paint paint))))
+          :handler #(-> (to-frame %)
+                      (select [:#canvas])
+                      (config! :paint paint))))
 
-(defn app
-  []
-  (frame :title "Canvas Example" :width 500 :height 300
+(defexample []
+  (frame 
+    :title "Canvas Example" 
+    :width 500 :height 300
     :content 
-      (border-panel :hgap 5 :vgap 5 :border 5
-        ; Create the canvas with initial nil paint function, i.e. just canvas
-        ; will be filled with it's background color and that's it.
-        :center (canvas :id :canvas :background "#BBBBDD" :paint nil)
+    (border-panel :hgap 5 :vgap 5 :border 5
+                  ; Create the canvas with initial nil paint function, i.e. just canvas
+                  ; will be filled with it's background color and that's it.
+                  :center (canvas :id :canvas :background "#BBBBDD" :paint nil)
 
-        ; Some buttons to swap the paint function
-        :south (horizontal-panel :items ["Switch canvas paint function: "
-                                        (switch-paint-action "None" nil)
-                                        (switch-paint-action "Rectangles" paint1)
-                                        (switch-paint-action "Ovals" paint2)]))))
+                  ; Some buttons to swap the paint function
+                  :south (horizontal-panel :items ["Switch canvas paint function: "
+                                                   (switch-paint-action "None" nil)
+                                                   (switch-paint-action "Rectangles" paint1)
+                                                   (switch-paint-action "Ovals" paint2)]))))
 
-(defn -main [& args]
-  (invoke-later (show! (app))))
-;(-main)
+;(run :dispose)
 

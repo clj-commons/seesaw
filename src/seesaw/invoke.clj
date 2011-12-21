@@ -78,7 +78,7 @@
   "
   [& body] `(invoke-soon* (fn [] ~@body)))
 
-(defn signaller 
+(defn signaller* 
   "Returns a function that conditionally queues the given function (+ args) on 
   the UI thread. The call is only queued if there is not already a pending call
   queued. 
@@ -98,11 +98,11 @@
 
     ; Increment a number in a thread and signal the UI to update a label
     ; with the current value. Without a signaller, the loop would send
-    ; updates way way way faster than the UI thread could handle.
+    ; updates way way way faster than the UI thread could handle them.
     (defn counting-text-box []
       (let [display (label :text \"0\")
             value   (atom 0)
-            signal  (signaller #(text! display (str @value)))]
+            signal  (signaller* #(text! display (str @value)))]
         (future
           (loop []
             (swap! value inc)
@@ -110,8 +110,14 @@
             (recur)))
         label))
 
+  Note:
+
+    You probably want to use the (seesaw.invoke/signaller) convenience
+    form.
+  
   See:
     (seesaw.invoke/invoke-later)
+    (seesaw.invoke/signaller)
   "
   [f]
   (let [active? (atom false)]
@@ -122,4 +128,21 @@
             (apply f args) 
             (reset! active? false)))
         do-it))))
+
+(defmacro signaller 
+  "Convenience form of (seesaw.invoke/signaller*).
+  
+  A use of signaller* like this:
+  
+    (signaller* (fn [x y z] ... body ...))
+  
+  can be written like this:
+  
+    (signaller [x y z] ... body ...)
+  
+  See:
+    (seesaw.invoke/signaller*)
+  "
+  [args & body]
+  `(signaller* (fn ~args ~@body)))
 

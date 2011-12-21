@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.examples.hotpotatoes
-  (:use seesaw.core seesaw.util seesaw.font)
+  (:use seesaw.core seesaw.util seesaw.font
+        seesaw.test.examples.example)
   (:require [clojure.java.io :only reader]))
 
 ; A simple HTTP request app. Enter a URL and click "Go". It does the request in 
@@ -22,8 +23,7 @@
                   ("Invalid URL"))]
       (invoke-later (f result)))))
       
-(defn app 
-  [exit?]
+(defexample []
   (let [exit-action (action :handler dispose! :name "Exit")
         url-text    (text "http://google.com")
         status      (label "Ready")
@@ -39,7 +39,6 @@
     (frame 
       :id :frame
       :title "Hot Potatoes!"
-      :on-close (if exit? :exit :dispose)
       :menubar (menubar :items [(menu :text "File" :items [exit-action])])
       :width 500 :height 600
       :content 
@@ -59,8 +58,5 @@
                   :items [(scrollable result-text)]))
           :south status))))
 
-(defn -main [& args]
-  (invoke-later (show! (app true))))
-
-;(show! (app false))
+;(run :dispose)
 
