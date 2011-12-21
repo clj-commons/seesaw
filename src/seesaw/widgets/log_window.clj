@@ -33,7 +33,6 @@
   
   It must be wrapped in (seesaw.core/scrollable) for scrolling.
 
-  
   Includes a context menu with options for clearing the window
   and scroll lock.
 
@@ -43,6 +42,9 @@
 
     :limit Maximum number of chars to keep in the log. When this limit
            is reached, chars will be removed from the beginning.
+
+    :auto-scroll? Whether the window should auto-scroll. This is the
+          programmatic hook for the context menu entry.
 
   See:
     (seesaw.core/text)
@@ -85,7 +87,10 @@
                   (default-option :limit
                     (fn [_ v] (reset! limit v))
                     (fn [_] @limit)
-                    ["An integer limit or nil"]))])
+                    ["An integer limit or nil"])
+                  (default-option :auto-scroll?
+                    (fn [_ v] (value! scroll-item v))
+                    (fn [_] (value scroll-item))))])
              (get_layout_option_map_STAR_ [] nil)
              
              ; this is how you disable auto-scrolling :(
