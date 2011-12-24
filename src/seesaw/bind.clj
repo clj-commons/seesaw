@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -29,14 +29,14 @@
     target
     (to-bindable* target)))
 
-(defn composite 
+(defn composite
   "Create a composite bindable from the start and end of a binding chain"
   [start end]
   (reify Bindable
     (subscribe [this handler] (subscribe end handler))
     (notify [this v] (notify start v))))
 
-(defn bind 
+(defn bind
   "Creates a chain of listener bindings. When the value of source
   changes it is passed along and updates the value of target.
 
@@ -122,7 +122,7 @@
     (subscribe [this handler]
       (ssc/listen this :document
         (fn [e] (handler (get-document-text this)))))
-    (notify [this v] 
+    (notify [this v]
       (when-not (= v (get-document-text this))
         (do
           (.remove this 0 (.getLength this))
@@ -132,69 +132,77 @@
     (subscribe [this handler]
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
-    (notify [this v] 
-      (when-not (= v (.getValue this)) 
-        (.setValue this v))) 
-  
+    (notify [this v]
+      (when-not (= v (.getValue this))
+        (.setValue this v)))
+
   javax.swing.BoundedRangeModel
     (subscribe [this handler]
       (ssc/listen this :change
         (fn [e] (handler (.getValue this)))))
-    (notify [this v] 
-      (when-not (= (int v) (.getValue this)) 
-        (.setValue this v))))
+    (notify [this v]
+      (when-not (= (int v) (.getValue this))
+        (.setValue this v)))
 
-(defn b-swap! 
+  javax.swing.JToggleButton
+    (subscribe [this handler]
+      (ssc/listen this :change
+        (fn [e] (handler (.isSelected this)))))
+    (notify [this v]
+      (when-not (= (boolean v) (.isSelected this))
+        (.setSelected this (boolean v)))))
+
+(defn b-swap!
   "Creates a bindable that swaps! an atom's value using the given function each
-  time its input changes. That is, each time a new value comes in, 
+  time its input changes. That is, each time a new value comes in,
   (apply swap! atom f new-value args) is called.
 
   This bindable's value (the current value of the atom) is subscribable.
-  
+
   Example:
-  
+
     ; Accumulate list of selections in a vector
     (bind (selection my-list) (b-swap! my-atom conj))
   "
   [atom f & args]
   (reify Bindable
-    (subscribe [this handler] 
+    (subscribe [this handler]
       (subscribe atom handler))
-    (notify [this v] 
+    (notify [this v]
       (apply swap! atom f v args))))
 
 (defn- b-send*
   [send-fn agent f & args]
   (reify Bindable
-    (subscribe [this handler] 
+    (subscribe [this handler]
       (subscribe agent handler))
-    (notify [this v] 
+    (notify [this v]
       (apply send-fn agent f v args))))
 
 (defn b-send
   "Creates a bindable that (send)s to an agent using the given function each
-  time its input changes. That is, each time a new value comes in, 
+  time its input changes. That is, each time a new value comes in,
   (apply send agent f new-value args) is called.
 
   This bindable's value (the current value of the atom) is subscribable.
-  
+
   Example:
-  
+
     ; Accumulate list of selections in a vector
     (bind (selection my-list) (b-send my-agent conj))
   "
   [agent f & args]
   (apply b-send* send agent f args))
 
-(defn b-send-off 
+(defn b-send-off
   "Creates a bindable that (send-off)s to an agent using the given function each
-  time its input changes. That is, each time a new value comes in, 
+  time its input changes. That is, each time a new value comes in,
   (apply send agent f new-value args) is called.
 
   This bindable's value (the current value of the atom) is subscribable.
-  
+
   Example:
-  
+
     ; Accumulate list of selections in a vector
     (bind (selection my-list) (b-send-off my-agent conj))
   "
@@ -222,7 +230,7 @@
                                      (.replace "?" ""))
                                  #"\-"))))
 
-(defn property 
+(defn property
   "Returns a bindable (suitable to pass to seesaw.bind/bind) that
   connects to a property of a widget, e.g. :foreground, :enabled?,
   etc.
@@ -237,20 +245,20 @@
       (bind (.getDocument t)
             (transform #(try (color %) (catch Exception (color 0 0 0))))
             (property lbl :background)))
-    
+
   See:
     (seesaw.bind/bind)
   "
   [^java.awt.Component target property-name]
   (reify Bindable
-    (subscribe [this handler] 
+    (subscribe [this handler]
       (let [property-name (property-kw->java-name property-name)]
         (.addPropertyChangeListener target
           ; first letter of *some* property-names must be lower-case
           (property-change-listener-name-overrides
               property-name
               (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
-          (reify java.beans.PropertyChangeListener 
+          (reify java.beans.PropertyChangeListener
             (propertyChange [this e] (handler (.getNewValue e)))))))
     (notify [this v] (ssc/config! target property-name v))))
 
@@ -261,9 +269,9 @@
 
   options corresponds to the option map passed to (seesaw.core/selection)
   and (seesaw.core/selection)
-  
+
   Examples:
-    
+
     ; Bind checkbox state to enabled state of a widget
     (let [cb (checkbox :text \"Enable\")
           t  (text)]
@@ -283,14 +291,14 @@
   ([widget]
     (selection widget {})))
 
-(defn value 
+(defn value
   "Converts the value of a widget into a bindable. Applies to listbox,
   table, tree, combobox, checkbox, etc, etc. In short, anything to which
   (seesaw.core/value) applies. This is a \"receive-only\" bindable since
   there is no good way to detect changes in the values of composites.
 
   Examples:
-    
+
     ; Map the value of an atom (a map) into the value of a panel.
     (let [a  (atom nil)
           p  (border-panel :north (checkbox :id :cb :text \"Enable\")
@@ -310,11 +318,11 @@
       (notify [this v]
         (ssc/value! widget v)))))
 
-(defn transform 
+(defn transform
   "Creates a bindable that takes an incoming value v, applies
   (f v args), and passes the result on. f should be side-effect
   free.
- 
+
   See:
     (seesaw.bind/bind)"
   [f & args]
@@ -331,7 +339,7 @@
   "Creates a bindable that takes an incoming value v, executes
   (f v args) and does nothing further. That is, it's the end of the binding
   chain.
-  
+
   See:
     (seesaw.bind/bind)
     (seesaw.bind/b-do)"
@@ -346,26 +354,26 @@
   "Macro helper for (seesaw.bind/b-do*). Takes a single-argument fn-style
   binding vector and a body. When a new value is received it is passed
   to the binding and the body is executes. The result is discarded.
-  
+
   See:
     (seesaw.bind/b-do*)
   "
   [bindings & body]
   `(b-do* (fn ~bindings ~@body)))
 
-(defn filter 
+(defn filter
   "Executes a predicate on incoming value. If the predicate returns a truthy
-  value, the incoming value is passed on to the next bindable in the chain. 
+  value, the incoming value is passed on to the next bindable in the chain.
   Otherwise, nothing is notified.
-  
+
   Examples:
-    
+
     ; Block out of range values
     (let [input (text)
           output (slider :min 0 :max 100)]
-      (bind 
-        input 
-        (filter #(< 0 % 100)) 
+      (bind
+        input
+        (filter #(< 0 % 100))
         output))
 
   Notes:
@@ -381,7 +389,7 @@
       (subscribe [this handler]
         (swap! state update-in [:handlers] conj handler))
       (notify [this v]
-        (when (pred v) 
+        (when (pred v)
           (swap! state assoc :value v)
           (doseq [h (:handlers @state)]
             (h v)))))))
@@ -390,9 +398,9 @@
   "Executes a predicate on incoming value. If the predicate returns a truthy
   value, that value is passed on to the next bindable in the chain. Otherwise,
   nothing is notified.
-  
+
   Examples:
-    
+
     ; Try to convert a text string to a number. Do nothing if the conversion
     ; Fails
     (let [input (text)
@@ -419,15 +427,15 @@
 
 (defn tee
   "Create a tee junction in a bindable chain.
-  
+
   Examples:
-  
+
     ; Take the content of a text box and show it as upper and lower
     ; case in two labels
     (let [t (text)
           upper (label)
           lower (label)]
-      (bind (property t :text) 
+      (bind (property t :text)
             (tee (bind (transform #(.toUpperCase %)) (property upper :text))
                  (bind (transform #(.toLowerCase %)) (property lower :text)))))
 
@@ -449,38 +457,38 @@
         (schedule-fn
           (fn [] (doseq [h @handlers] (h v))))))))
 
-(defn notify-later 
+(defn notify-later
   "Creates a bindable that notifies its subscribers (next in chain) on the
   swing thread using (seesaw.invoke/invoke-later). You should use this to
   ensure that things happen on the right thread, e.g. (seesaw.bind/property)
   and (seesaw.bind/selection).
-  
+
   See:
     (seesaw.invoke/invoke-later)
   "
   []
   (notify-when* invoke/invoke-later*))
 
-(defn notify-soon 
+(defn notify-soon
   "Creates a bindable that notifies its subscribers (next in chain) on the
   swing thread using (seesaw.invoke/invoke-soon). You should use this to
   ensure that things happen on the right thread, e.g. (seesaw.bind/property)
   and (seesaw.bind/selection).
- 
+
   See:
     (seesaw.invoke/invoke-soon)
   "
   []
   (notify-when* invoke/invoke-soon*))
 
-(defn notify-now 
+(defn notify-now
   "Creates a bindable that notifies its subscribers (next in chain) on the
   swing thread using (seesaw.invoke/invoke-now). You should use this to
   ensure that things happen on the right thread, e.g. (seesaw.bind/property)
   and (seesaw.bind/selection).
 
   Note that sincel invoke-now is used, you're in danger of deadlocks. Be careful.
-  
+
   See:
     (seesaw.invoke/invoke-soon)
   "
@@ -488,6 +496,8 @@
   (notify-when* invoke/invoke-now*))
 
 (extend-protocol ToBindable
+  javax.swing.JToggleButton
+    (to-bindable* [this] (
   javax.swing.JLabel
     (to-bindable* [this] (property this :text))
   javax.swing.JSlider
