@@ -87,7 +87,22 @@
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20)))))
-  
+ 
+  (testing "given a toggle button (or any button/menu)"
+    (it "should sync the selection state of the button"
+      (let [v (atom nil)
+            b (ssc/toggle :selected? false)]
+        (bind b v)
+        (.setSelected b true)
+        (expect @v)))
+
+    (it "should sync the selection state of the button"
+      (let [v (atom nil)
+            b (ssc/toggle :selected? false)]
+        (bind v b)
+        (reset! v true)
+        (expect (.isSelected b)))))
+
   (testing "given a spinner"
     (it "should sync the value of the atom with the spinner value, if spinner value changed"
       (let [v (atom 15)

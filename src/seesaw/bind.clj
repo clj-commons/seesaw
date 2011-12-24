@@ -488,6 +488,8 @@
   (notify-when* invoke/invoke-now*))
 
 (extend-protocol ToBindable
+  javax.swing.AbstractButton
+    (to-bindable* [this] (selection this))
   javax.swing.JLabel
     (to-bindable* [this] (property this :text))
   javax.swing.JSlider
