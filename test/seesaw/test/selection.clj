@@ -24,14 +24,14 @@
       (it "returns a single-element seq with true if the action is selected"
         (= true (selection (action :selected? true)))))
   (testing "when given an AbstractButton (e.g. toggle or checkbox)"
-    (it "returns nil when the button is not selected"
-      (nil? (selection (javax.swing.JCheckBox. "something" false))))
-    (it "returns the button itself if it is selected"
+    (it "returns false when the button is not selected"
+      (false? (selection (javax.swing.JCheckBox. "something" false))))
+    (it "returns true if it is selected"
       (let [b (javax.swing.JCheckBox. "something" true)]
-        (expect (= b (selection b)))))
-    (it "returns a single-element seq with the button itself if it's selected and multi? is true"
+        (expect (true? (selection b)))))
+    (it "returns a single-element seq with true if it's selected and multi? is true"
       (let [b (javax.swing.JCheckBox. "something" true)] 
-        (expect (= [b] (selection b {:multi? true}))))))
+        (expect (= [true] (selection b {:multi? true}))))))
 
   (testing "when given a ButtonGroup"
     (it "returns nil when no button is selected"
@@ -99,7 +99,7 @@
       (let [cb (javax.swing.JCheckBox. "something" true)]
         (do
           (expect (= cb (selection! cb nil)))
-          (expect (nil? (selection cb))))))
+          (expect (false? (selection cb))))))
     (it "selects the button if the argument is truthy"
       (let [cb (javax.swing.JCheckBox. "something" false)]
         (do
