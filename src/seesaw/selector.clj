@@ -14,7 +14,6 @@
   
   There's no need to ever directly require this namespace. Use (seesaw.core/select)!"
   (:require [seesaw.util :as ssu])
-  (:require [seesaw.meta :as ss-meta])
   (:require [clojure.zip :as z]))
 
 ; This code is the HTML selector code for Enlive with modifications to support
@@ -22,31 +21,33 @@
 ; locked down because other than the (select) function, I don't know what
 ; I want to expose yet.
 
-(def ^{:private true} id-property ::seesaw-widget-id)
-(def ^{:private true} class-property ::seesaw-widget-class)
+(defprotocol Selectable
+  (id-of* [this])
+  (id-of!* [this id])
+  (class-of* [this])
+  (class-of!* [this classes]))
 
 (defn id-of 
   "Retrieve the id of a widget. Use (seesaw.core/id-of)."
   [w] 
-  (ss-meta/get-meta w id-property))
+  (id-of* w))
 
-(defn id-of! 
+(defn id-of!
   "INTERNAL USE ONLY."
   [w id]
-  (let [existing-id (ss-meta/get-meta w id-property)]
+  (let [existing-id (id-of w)]
     (when existing-id (throw (IllegalStateException. (str ":id is already set to " existing-id))))
     ; TODO should we enforce unique ids?
-    (ss-meta/put-meta! w id-property (keyword id))))
+    (id-of!* w id)))
+
+(defn class-of [w]
+  "Retrieve the classes of a widget as a set of strings"
+  (class-of* w))
 
 (defn class-of! 
   "INTERNAL USE ONLY."
   [w classes]
-  (ss-meta/put-meta! w class-property 
-      (set (map name (if (coll? classes) classes [classes])))))
-
-(defn class-of [w]
-  "Retrieve the classes of a widget as a set of strings"
-  (ss-meta/get-meta w class-property))
+  (class-of!* w classes))
 
 (defn id-selector? [s]
   (.startsWith (name s) "#"))

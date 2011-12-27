@@ -3223,6 +3223,33 @@
 ;*******************************************************************************
 ; Selectors
 
+; Implement getting and setting ids and classes for selectors
+(def ^{:private true} id-property ::seesaw-widget-id)
+(def ^{:private true} class-property ::seesaw-widget-class)
+
+(extend-protocol seesaw.selector/Selectable
+  javax.swing.JComponent
+    (id-of* [this]
+      (.getClientProperty this id-property))
+    (id-of!* [this id] 
+      (.putClientProperty this id-property (keyword id)))
+    (class-of* [this]
+      (.getClientProperty this class-property))
+    (class-of!* [this classes]
+      (.putClientProperty this class-property
+                          (set (map name (if (coll? classes) classes [classes])))))
+  
+  java.awt.Component
+    (id-of* [this]
+      (get-meta this id-property))
+    (id-of!* [this id] 
+      (put-meta! this id-property (keyword id)))
+    (class-of* [this]
+      (get-meta this class-property))
+    (class-of!* [this classes]
+      (put-meta! this class-property
+                        (set (map name (if (coll? classes) classes [classes]))))))
+
 (defn select
   "Select a widget using the given selector expression. Selectors are *always*
    expressed as a vector. root is the root of the widget hierarchy to select
