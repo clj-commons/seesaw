@@ -26,8 +26,6 @@
                          (if @(:auto-scroll? state)
                            (proxy-super scrollRectToVisible rect)))))
 
-(def ^{:private true} LogWindowClass (class (log-window-proxy nil)))
-
 (defprotocol LogWindow
   (log   [this message] "Log a message to the given log-window")
   (clear [this] "Clear the contents of the log-window"))
@@ -106,7 +104,7 @@
          :popup     (popup :items [clear-action scroll-item])]
         opts))))
 
-(extend-type LogWindowClass 
+(extend-type (class (log-window-proxy nil))
 
   LogWindow
   (log [this message]
