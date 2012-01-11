@@ -24,6 +24,15 @@
       (bind a (transform + 5) b)
       (reset! a 5)
       (expect (= 10 @b))))
+
+  (it "returns something function-like that can be called to undo the binding"
+    (let [a (atom 0) b (atom 1) c (atom 2)
+          cb (bind a b c)]
+      (reset! a 5)
+      (expect (= [5 5 5] [@a @b @c]))
+      (cb)
+      (reset! a 6)
+      (expect (= [6 5 5] [@a @b @c]))))
   
   (it "can chain bindables, including composites, together"
     (let [a (atom 1)

@@ -52,6 +52,10 @@
   Note that the return value of this function is itself a composite
   bindable so it can be subscribed to, or nested in other chains.
 
+  The return value, like (seesaw.bind/subscribe) and (seesaw.event/listen)
+  can also be invoked as a no-arg function to back out all the subscriptions
+  made by bind.
+
   Examples:
 
     ; Bind the text of a text box to an atom. As the user types in
@@ -77,11 +81,21 @@
     Circular bindings will usually work.
   "
   [first-source target & more]
-  (loop [source (to-bindable first-source) target (to-bindable target) more (seq more)]
-    (subscribe source #(notify target %))
-    (if more
-      (recur target (to-bindable (first more)) (next more))
-      (composite first-source target))))
+  (loop [source (to-bindable first-source) 
+         target (to-bindable target) 
+         more   (seq more)
+         unsubs []]
+    (let [unsub (subscribe source #(notify target %))
+          unsubs (conj unsubs unsub)]
+      (if more
+        (recur target (to-bindable (first more)) (next more) unsubs)
+        (reify 
+          Bindable
+            (subscribe [this handler] (subscribe target handler))
+            (notify [this v] (notify first-source v))
+          clojure.lang.IFn
+            (invoke [this]
+              (doseq [f unsubs] (f))))))))
 
 (defn funnel
   "Create a binding chain with several input chains. Provides a
