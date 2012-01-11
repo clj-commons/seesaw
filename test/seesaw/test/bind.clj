@@ -316,3 +316,107 @@
             end)
       (reset! start 99)
       (expect (= {:value 99 :edt? true} @end)))))
+
+(describe subscribe
+  (testing "on an atom"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (atom "hi")
+            unsubscribe (subscribe target (fn [_] (swap! calls inc)))]
+        (reset! target "a")
+        (expect (= 1 @calls))
+        (unsubscribe)
+        (reset! target "b")
+        (expect (= 1 @calls)))))
+
+  (testing "on an agent"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (agent "hi")
+            unsubscribe (subscribe target (fn [_] (swap! calls inc)))]
+        (await (send target (fn [_] "a")))
+        (expect (= 1 @calls))
+        (unsubscribe)
+        (await (send target (fn [_] "b")))
+        (expect (= 1 @calls)))))
+  
+  (testing "on a javax.swing.text.Document"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (.getDocument (ssc/text))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.insertString target 0 "hi" nil)
+        (expect (= 1 @calls))
+        (unsub)
+        (.insertString target 0 "bye" nil)
+        (expect (= 1 @calls))
+        )))
+  (testing "on a javax.swing.BoundedRangeModel"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (javax.swing.DefaultBoundedRangeModel. 50 0 2 100)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.setValue target 1)
+        (expect (= 1 @calls))
+        (unsub)
+        (.setValue target 2)
+        (expect (= 1 @calls)))))
+  
+  (testing "on a funnel"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            a      (atom "hi")
+            target (funnel a)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (reset! a "bye")
+        (expect (= 1 @calls))
+        (unsub)
+        (reset! a "hi")
+        (expect (= 1 @calls))
+        )))
+  
+  (testing "on a widget property"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            w      (ssc/text)
+            target (property w :enabled?)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.setEnabled w false)
+        (expect (= 1 @calls))
+        (unsub)
+        (.setEnabled w true)
+        (expect (= 1 @calls))
+        )))
+  (testing "on a transform"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (transform identity)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls))
+        )))
+  (testing "on a filter"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (filter (constantly true))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls)))))
+  (testing "on a some"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (some (constantly true))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls))
+        ))))
+

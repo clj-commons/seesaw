@@ -17,9 +17,17 @@
             [seesaw.invoke :as invoke])
   (:use [clojure.string :only (capitalize split)]))
 
+(defn- remove-handler [handler handler-vec]
+  (vec (remove #(= % handler) handler-vec)))
+
 (defprotocol Bindable
-  (subscribe [this handler])
-  (notify [this v]))
+  (subscribe [this handler] "Subscribes a handler to changes in this bindable.
+                            handler is a single argument function that takes the
+                            new value of the bindable.
+                            Must return a no-arg function that unsubscribes the handler
+                            from future changes.")
+  (notify [this v] "Pass a new value to this bindable. Causes all subscribed handlers
+                   to be called with the value."))
 
 (defprotocol ToBindable
   (to-bindable* [this]))
@@ -106,16 +114,20 @@
 (extend-protocol Bindable
   clojure.lang.Atom
     (subscribe [this handler]
-      (add-watch this (keyword (gensym "bindable-atom-watcher"))
-        (fn bindable-atom-watcher
-          [k r o n] (when-not (= o n) (handler n)))))
+      (let [key (keyword (gensym "bindable-atom-watcher"))]
+        (add-watch this key
+          (fn bindable-atom-watcher
+            [k r o n] (when-not (= o n) (handler n))))
+        (fn [] (remove-watch this key))))
     (notify [this v] (reset! this v))
 
   clojure.lang.Agent
     (subscribe [this handler]
-      (add-watch this (keyword (gensym "bindable-agent-watcher"))
-        (fn bindable-agen-watcher
-          [k r o n] (when-not (= o n) (handler n)))))
+      (let [key (keyword (gensym "bindable-agent-watcher"))] 
+        (add-watch this key 
+                   (fn bindable-agent-watcher
+                     [k r o n] (when-not (= o n) (handler n))))
+        (fn [] (remove-watch this key))))
     (notify [this v] (throw (IllegalStateException. "Can't notify an agent!")))
 
   javax.swing.text.Document
@@ -244,14 +256,17 @@
   [^java.awt.Component target property-name]
   (reify Bindable
     (subscribe [this handler] 
-      (let [property-name (property-kw->java-name property-name)]
-        (.addPropertyChangeListener target
+      (let [property-name (property-kw->java-name property-name)
           ; first letter of *some* property-names must be lower-case
-          (property-change-listener-name-overrides
-              property-name
-              (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
-          (reify java.beans.PropertyChangeListener 
-            (propertyChange [this e] (handler (.getNewValue e)))))))
+            property-name (property-change-listener-name-overrides
+                            property-name
+                            (apply str 
+                                   (clojure.string/lower-case (first property-name))
+                                   (rest property-name)))
+            handler (reify java.beans.PropertyChangeListener 
+                      (propertyChange [this e] (handler (.getNewValue e))))]
+        (.addPropertyChangeListener target property-name handler)
+        (fn [] (.removePropertyChangeListener target property-name handler))))
     (notify [this v] (ssc/config! target property-name v))))
 
 (defn selection
@@ -277,7 +292,8 @@
   ([widget options]
     (reify Bindable
       (subscribe [this handler]
-        (ssc/listen widget :selection (fn [_] (-> widget (ssc/selection options) handler))))
+        (ssc/listen widget :selection 
+                    (fn [_] (-> widget (ssc/selection options) handler))))
       (notify [this v]
         (ssc/selection! widget options v))))
   ([widget]
@@ -321,7 +337,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn [] 
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (let [new-value (:value (swap! state assoc :value (apply f v args)))]
           (doseq [h (:handlers @state)]
@@ -379,7 +397,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn []
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (when (pred v) 
           (swap! state assoc :value v)
@@ -410,7 +430,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn []
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (let [new-value (:value (swap! state assoc :value (pred v)))]
           (when new-value
@@ -444,7 +466,9 @@
   (let [handlers (atom [])]
     (reify Bindable
       (subscribe [this handler]
-        (swap! handlers conj handler))
+        (swap! handlers conj handler)
+        (fn []
+          (swap! handlers remove-handler handler)))
       (notify [this v]
         (schedule-fn
           (fn [] (doseq [h @handlers] (h v))))))))
