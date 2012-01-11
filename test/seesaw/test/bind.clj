@@ -7,7 +7,16 @@
 
 (describe bind
   (it "returns a composite bindable"
-    (satisfies? Bindable (bind (atom 0) (atom 1) (atom 2) (atom 3))))
+    (let [a (atom 0) b (atom 1) c (atom 2) d (atom 3)
+          cb (bind a b c d)
+          called (atom nil) ]
+      (expect (satisfies? Bindable cb))
+
+      ; make sure that subscribing to the composite subscribes
+      ; to the *end* of the chain!
+      (subscribe cb (fn [v] (reset! called v)))
+      (reset! d 10)
+      (expect (= 10 @called))))
 
   (it "can chain bindables together"
     (let [a (atom 1)

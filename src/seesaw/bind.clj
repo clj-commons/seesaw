@@ -45,8 +45,12 @@
     (notify [this v] (notify start v))))
 
 (defn bind 
-  "Creates a chain of listener bindings. When the value of source
-  changes it is passed along and updates the value of target.
+  "Chains together two or more bindables into a listening chain.
+  When the value of source changes it is passed along and updates 
+  the value of target and so on.
+
+  Note that the return value of this function is itself a composite
+  bindable so it can be subscribed to, or nested in other chains.
 
   Examples:
 
@@ -75,9 +79,9 @@
   [first-source target & more]
   (loop [source (to-bindable first-source) target (to-bindable target) more (seq more)]
     (subscribe source #(notify target %))
-    (when more
-      (recur target (to-bindable (first more)) (next more))))
-      (composite first-source target))
+    (if more
+      (recur target (to-bindable (first more)) (next more))
+      (composite first-source target))))
 
 (defn funnel
   "Create a binding chain with several input chains. Provides a
