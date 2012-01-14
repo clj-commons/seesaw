@@ -21,7 +21,7 @@
     (fn [acc i]
       (+ acc (/ (* 4.0 (- 1 (* (mod i 2) 2))) (+ (* 2 i) 1))))
     0.0
-    (range (* start step-size) (- (* (inc start) step-size) 1))))
+    (range (* start step-size) (* (inc start) step-size))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Agent Actions
