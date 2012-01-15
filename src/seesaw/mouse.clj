@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -17,10 +17,10 @@
 (defn location
   ([] (let [p (.getLocation (info))]
         [(.x p) (.y p)]))
-  ([v] 
-   (cond 
+  ([v]
+   (cond
      (instance? java.awt.event.MouseEvent v)
-        
+
         (let [^java.awt.event.MouseEvent e v]
           [(.getX e) (.getY e)]))))
 
@@ -38,17 +38,17 @@
 (defn button-down?
   "Returns true if the given button is currently down in the given mouse
   event.
-  
+
   Examples:
-    
+
     (button-down? event :left)
   "
   [^java.awt.event.InputEvent e btn]
   (let [mask (input-modifier-table btn 0)]
     (not= 0 (bit-and mask (.getModifiersEx e)))))
 
-(defn button 
-  "Return the affected button in a mouse event. 
+(defn button
+  "Return the affected button in a mouse event.
 
   Returns :left, :center, :right, or nil."
   [^java.awt.event.MouseEvent e]
