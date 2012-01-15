@@ -10,19 +10,27 @@
 
 (ns ^{:doc "Functions for dealing with the mouse."
       :author "Dave Ray"}
-  seesaw.mouse)
+  seesaw.mouse
+  (:use [seesaw.util :only [illegal-argument]]))
 
 (defn- ^java.awt.PointerInfo info [] (java.awt.MouseInfo/getPointerInfo))
 
 (defn location
+  "Returns the [x y] location of the mouse.
+
+  If given no arguments, returns full screen coordinates.
+
+  If given a MouseEvent object returns the mouse location from the event.
+
+  "
   ([] (let [p (.getLocation (info))]
         [(.x p) (.y p)]))
   ([v]
    (cond
      (instance? java.awt.event.MouseEvent v)
-
         (let [^java.awt.event.MouseEvent e v]
-          [(.getX e) (.getY e)]))))
+          [(.getX e) (.getY e)])
+     :else (illegal-argument "Don't know how to get mouse location from %s" v))))
 
 (def ^ {:private true} input-modifier-table
   {:left java.awt.event.InputEvent/BUTTON1_DOWN_MASK
