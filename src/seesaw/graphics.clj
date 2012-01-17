@@ -233,8 +233,14 @@
 ;*******************************************************************************
 ; Styles
 
-(defrecord Style [^java.awt.Color  foreground
-                  ^java.awt.Color  background
+(defn ^java.awt.Paint to-paint
+  [v]
+  (cond
+    (instance? java.awt.Paint v) v
+    :else (to-color v)))
+
+(defrecord Style [^java.awt.Paint  foreground
+                  ^java.awt.Paint  background
                   ^java.awt.Stroke stroke
                   ^java.awt.Font   font])
 
@@ -269,8 +275,8 @@
   "
   [& {:keys [foreground background stroke font]}]
   (Style.
-    (to-color foreground)
-    (to-color background)
+    (to-paint foreground)
+    (to-paint background)
     (to-stroke stroke)
     (to-font font)))
 
@@ -295,8 +301,8 @@
               stroke (:stroke s)
               font (:font s) }}]
   (Style.
-    (to-color foreground)
-    (to-color background)
+    (to-paint foreground)
+    (to-paint background)
     (to-stroke stroke)
     (to-font font)))
 
@@ -308,25 +314,25 @@
 
 (extend-type java.awt.Shape Draw
   (draw* [shape ^java.awt.Graphics2D g2d style]
-    (let [fg (to-color (:foreground style))
-          bg (to-color (:background style))
+    (let [fg (:foreground style)
+          bg (:background style)
           s  (or (:stroke style) default-stroke)]
       (when bg
         (do
-          (.setColor g2d bg)
+          (.setPaint g2d bg)
           (.fill g2d shape)))
       (when fg
         (do
           (.setStroke g2d s)
-          (.setColor g2d fg)
+          (.setPaint g2d fg)
           (.draw g2d shape))))))
 
 (extend-type StringShape Draw
   (draw* [shape ^java.awt.Graphics2D g2d style]
-    (let [fg (to-color (:foreground style))
+    (let [fg (:foreground style)
           f  (:font style)]
       (when f (.setFont g2d f))
-      (.setColor g2d (or fg java.awt.Color/BLACK))
+      (.setPaint g2d (or fg java.awt.Color/BLACK))
       (.drawString g2d ^String (:value shape) (float (:x shape)) (float (:y shape))))))
 
 (extend-type ImageShape Draw

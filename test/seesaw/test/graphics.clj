@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.graphics
-  (:use seesaw.graphics)
+  (:use seesaw.graphics
+        [seesaw.color :only [to-color]])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import [java.awt RenderingHints]
@@ -21,6 +22,12 @@
           g2d (.getGraphics bi)]
       (anti-alias g2d)
       (expect (= RenderingHints/VALUE_ANTIALIAS_ON (.getRenderingHint g2d RenderingHints/KEY_ANTIALIASING))))))
+
+(describe to-paint
+  (it "returns its input if it's a java.awt.Paint"
+    (= java.awt.Color/BLACK (to-paint java.awt.Color/BLACK)))
+  (it "falls back to to-color otherwise"
+    (= (to-color :black) (to-paint :black))))
 
 (describe line
   (it "creates a line shape with given end points"
