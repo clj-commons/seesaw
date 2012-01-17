@@ -172,7 +172,15 @@
         (fn [e] (handler (.getValue this)))))
     (notify [this v] 
       (when-not (= (int v) (.getValue this)) 
-        (.setValue this v))))
+        (.setValue this v)))
+  
+  javax.swing.JComboBox
+    (subscribe [this handler]
+      (ssc/listen this :action
+        (fn [e] (handler (.getSelectedItem this)))))
+    (notify [this v] 
+      (when-not (= (int v) (.getSelectedItem this)) 
+        (.setSelectedItem this v))))
 
 (defn b-swap! 
   "Creates a bindable that swaps! an atom's value using the given function each
@@ -541,5 +549,6 @@
   javax.swing.JProgressBar
     (to-bindable* [this] (.getModel this))
   javax.swing.text.JTextComponent
-    (to-bindable* [this] (.getDocument this)))
-
+    (to-bindable* [this] (.getDocument this))
+  javax.swing.JComboBox
+    (to-bindable* [this] this))
