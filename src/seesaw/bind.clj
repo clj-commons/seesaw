@@ -179,7 +179,7 @@
       (ssc/listen this :action
         (fn [e] (handler (.getSelectedItem this)))))
     (notify [this v] 
-      (when-not (= (int v) (.getSelectedItem this)) 
+      (when-not (= v (.getSelectedItem this)) 
         (.setSelectedItem this v))))
 
 (defn b-swap! 
