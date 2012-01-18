@@ -121,6 +121,21 @@
         (reset! v true)
         (expect (.isSelected b)))))
 
+  (testing "given a combobox"
+    (it "should sync the selection state of the combobox"
+      (let [v (atom nil)
+            b (ssc/combobox :model [1 2 3 4])]
+        (bind b v)
+        (ssc/selection! b 2)
+        (expect (= 2 @v))))
+
+    (it "should sync the selection state of the combobox"
+      (let [v (atom nil)
+            b (ssc/combobox :model [1 2 3 4])]
+        (bind v b)
+        (reset! v 4)
+        (expect (= 4 (ssc/selection b))))))
+
   (testing "given a spinner"
     (it "should sync the value of the atom with the spinner value, if spinner value changed"
       (let [v (atom 15)
