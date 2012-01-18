@@ -1110,6 +1110,26 @@
       (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
       (expect (= 1 @called)))))
 
+(describe window 
+  (it "should create a jwindow"
+    (instance? javax.swing.JWindow (window)))
+  (it "should create a window with an id"
+    (= :my-frame (id-of (window :id :my-frame))))
+  (it "should create a window with 0 width and height"
+    (= (java.awt.Dimension. 0 0) (.getSize (window))))
+  (it "should create a window and set its title, width, and height"
+    (let [f (window :width 99 :height 88)]
+      (expect (= 99 (.getWidth f)))
+      (expect (= 88 (.getHeight f)))))
+  (it "should set the windows's size with the :size option"
+    (let [f (window :size [123 :by 456])]
+      (expect (= 123 (.getWidth f)))
+      (expect (= 456 (.getHeight f)))))
+  (it "should create a JFrame and set its content pane"
+    (let [c (label :text "HI")
+          f (window :content c)]
+      (expect (= c (.getContentPane f))))))
+
 (describe frame
   (it "should create a frame with an id"
     (= :my-frame (id-of (frame :id :my-frame))))

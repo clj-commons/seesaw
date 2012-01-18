@@ -2586,6 +2586,103 @@
         ^javax.swing.JPanel p (paintable javax.swing.JPanel :paint paint)]
     (.setLayout p nil)
     (apply-options p (dissoc opts :paint))))
+;
+;*******************************************************************************
+; Window 
+
+; base options shared by top-level stuff.
+(def ^{:private true} abstract-window-options
+  (option-map
+    (default-option ::with) ; ignore ::with option inserted by (with-widget)
+
+    (default-option :id 
+      seesaw.selector/id-of! 
+      seesaw.selector/id-of
+      ["A keyword id."
+       "See (seesaw.core/select)"])
+
+    (default-option :class 
+      seesaw.selector/class-of! 
+      seesaw.selector/class-of
+      ["A keyword class, in the HTML/CSS sense."
+       "See (Seesaw.core/select)"])
+
+    (default-option 
+      :content
+      (fn [^javax.swing.RootPaneContainer f v] 
+        (doto f
+          (.setContentPane (make-widget v))
+          .invalidate
+          .validate
+          .repaint))
+      (fn [^javax.swing.RootPaneContainer f] (.getContentPane f))
+      "The frame's main content widget")
+
+    (bean-option :minimum-size  java.awt.Window to-dimension nil
+                 dimension-examples)
+
+    (bean-option :size java.awt.Window to-dimension
+                 dimension-examples)
+
+    (bean-option :visible? java.awt.Window boolean)
+    ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
+    ; base or interface.
+    (bean-option :transfer-handler java.awt.Window 
+                 seesaw.dnd/to-transfer-handler
+                 identity
+                 "See (seesaw.dnd/to-transfer-handler)") ))
+
+(def window-options abstract-window-options)
+
+(option-provider javax.swing.JWindow window-options)
+
+(defn window 
+  "Create a JWindow. NOTE: A JWindow is a top-level window with no decorations,
+  i.e. no title bar, no menu, no nothin'. Usually you want (seesaw.core/frame)
+  if your just showing a normal top-level app.
+
+  Options:
+
+    :id       id of the window, used by (select).
+    :width    initial width. Note that calling (pack!) will negate this setting
+    :height   initial height. Note that calling (pack!) will negate this setting
+    :size     initial size. Note that calling (pack!) will negate this setting
+    :minimum-size minimum size of frame, e.g. [640 :by 480]
+    :content  passed through (make-widget) and used as the frame's content-pane
+    :visible?  whether frame should be initially visible (default false)
+
+  returns the new window
+
+  Examples:
+
+    ; Create a window, pack it and show it.
+    (-> (window :content \"I'm a label!\")
+      pack!
+      show!)
+
+    ; Create a frame with an initial size (note that pack! isn't called)
+    (show! (window :content \"I'm a label!\" :width 500 :height 600))
+
+  Notes:
+    Unless :visible? is set to true, the window will not be displayed until (show!)
+    is called on it.
+
+    Call (pack!) on the frame if you'd like the window to resize itself to fit its
+    contents. Sometimes this doesn't look like crap.
+
+  See:
+    (seesaw.core/show!)
+    (seesaw.core/hide!)
+    (seesaw.core/move!)
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JWindow.html 
+  "
+  [& {:keys [width height visible? size] 
+      :as opts}]
+  (cond-doto ^javax.swing.JWindow (apply-options (construct javax.swing.JWindow opts) 
+                                    (dissoc opts :width :height :visible?))
+    (and (not size) 
+         (or width height)) (.setSize (or width 100) (or height 100))
+    visible?   (.setVisible (boolean visible?))))
 
 ;*******************************************************************************
 ; Frame
@@ -2604,64 +2701,29 @@
             (.getImage i))))
 
 (def frame-options 
-  (option-map
-    (default-option ::with) ; ignore ::with option inserted by (with-widget)
-    (resource-option :resource [:title :icon])
+  (merge
+    abstract-window-options
+    (option-map
+      (resource-option :resource [:title :icon])
 
-    (default-option :id 
-      seesaw.selector/id-of! 
-      seesaw.selector/id-of
-      ["A keyword id."
-       "See (seesaw.core/select)"])
+      (bean-option 
+        [:on-close :default-close-operation] javax.swing.JFrame 
+        frame-on-close-map
+        nil
+        (keys frame-on-close-map))
 
-    (default-option :class 
-      seesaw.selector/class-of! 
-      seesaw.selector/class-of
-      ["A keyword class, in the HTML/CSS sense."
-       "See (Seesaw.core/select)"])
+      (bean-option 
+        [:menubar :j-menu-bar] 
+        javax.swing.JFrame
+        nil nil
+        "The frame's menu bar. See (seesaw.core/menubar).")
 
-    (bean-option 
-      [:on-close :default-close-operation] javax.swing.JFrame 
-      frame-on-close-map
-      nil
-      (keys frame-on-close-map))
+      (bean-option :title java.awt.Frame resource nil
+                   ["The frame's title as string or resource key"])
 
-    (default-option 
-      :content
-      (fn [^javax.swing.JFrame f v] 
-        (doto f
-          (.setContentPane (make-widget v))
-          .invalidate
-          .validate
-          .repaint))
-      (fn [^javax.swing.JFrame f] (.getContentPane f))
-      "The frame's main content widget")
+      (bean-option :resizable? java.awt.Frame boolean)
 
-    (bean-option 
-      [:menubar :j-menu-bar] 
-      javax.swing.JFrame
-      nil nil
-      "The frame's menu bar. See (seesaw.core/menubar).")
-
-    (bean-option :title java.awt.Frame resource nil
-      ["The frame's title as string or resource key"])
-
-    (bean-option :resizable? java.awt.Frame boolean)
-
-    (bean-option :minimum-size  java.awt.Window to-dimension nil
-                 dimension-examples)
-
-    (bean-option :size java.awt.Window to-dimension
-                 dimension-examples)
-
-    (bean-option :visible? java.awt.Window boolean)
-    ; TODO reflection. transfer-handler is in JWindow, JDialog, and JFrame, not a common
-    ; base or interface.
-    (bean-option :transfer-handler java.awt.Window 
-                 seesaw.dnd/to-transfer-handler
-                 identity
-                 "See (seesaw.dnd/to-transfer-handler)")
-    (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter)))
+      (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter))))
 
 (option-provider javax.swing.JFrame frame-options)
 
