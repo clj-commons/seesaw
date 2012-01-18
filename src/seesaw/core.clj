@@ -3435,7 +3435,7 @@
 ;*******************************************************************************
 ; Widget layout manipulation
 
-(defn add! [container subject & more]
+(defn add! 
   "Add one or more widgets to a widget container. The container and each widget
   argument are passed through (to-widget) as usual. Each widget can be a single
   widget, or a widget/constraint pair with a layout-specific constraint.
@@ -3452,6 +3452,7 @@
 
   Returns the target container *after* it's been passed through (to-widget).
   "
+  [container subject & more]
   (layout/handle-structure-change 
     (apply layout/add!-impl container subject more)))
 
