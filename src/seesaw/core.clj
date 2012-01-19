@@ -851,6 +851,11 @@
       #(.getLocation ^java.awt.Component %1)
       ["See (seesaw.core/move! :to)"])
 
+    (default-option :location-on-screen
+      nil
+      #(.getLocationOnScreen ^java.awt.Component %1)
+      ["java.awt.Point location in global screen coords"])
+
     (default-option :bounds
       bounds-option-handler
       #(.getBounds ^java.awt.Component %1)
