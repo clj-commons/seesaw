@@ -27,6 +27,7 @@
    'custom-dialog
    'dialog
    'dnd
+   'dynamic-layout
    'explorer
    'form
    'forms
