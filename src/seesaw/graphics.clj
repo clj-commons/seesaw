@@ -186,6 +186,98 @@
   ([^java.awt.Graphics2D g2d s]     (.scale g2d s s) g2d))
 
 ;*******************************************************************************
+; Gradients
+
+(defn- to-point2d-f [[x y]] (java.awt.geom.Point2D$Float. (float x) (float y)))
+(def ^{:private true} default-start [0 0])
+(def ^{:private true} default-end [1 0])
+(def ^{:private true} default-fractions [0.0 1.0])
+(def ^{:private true} default-colors [java.awt.Color/WHITE java.awt.Color/BLACK])
+(def ^{:private true} cycle-map
+  {:none    java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
+   :repeat  java.awt.MultipleGradientPaint$CycleMethod/REPEAT
+   :reflect java.awt.MultipleGradientPaint$CycleMethod/REFLECT })
+
+(defn linear-gradient
+  "Creates a linear gradient suitable for use on the :foreground and
+  :background properties of a (seesaw.graphics/style), or anywhere
+  a java.awt.Paint is required. Has the following options:
+
+    :start The start [x y] point, defaults to [0 0]
+    :end   The end [x y] point, defaults to [1 0]
+    :fractions Sequence of fractional values indicating color transition points
+               in the gradient. Defaults to [0.0 1.0]. Must have same number
+               of entries as :colors.
+    :colors Sequence of color values correspoding to :fractions. Value is passed
+            through (seesaw.color/to-color). e.g. :blue, \"#fff\", etc.
+    :cycle The cycle behavior of the gradient, :none, :repeat, or :reflect.
+           Defaults to :none.
+
+  Examples:
+
+    ; create a horizontal red, white and blue gradiant with three equal parts
+    (linear-gradient :fractions [0 0.5 1.0] :colors [:red :white :blue])
+
+  See:
+    http://docs.oracle.com/javase/6/docs/api/java/awt/LinearGradientPaint.html
+  "
+  [& {:keys [start end fractions colors cycle]
+      :or {start     default-start
+           end       default-end
+           fractions default-fractions
+           colors    default-colors
+           cycle     :none }
+      :as opts}]
+    (java.awt.LinearGradientPaint.
+      (to-point2d-f start)
+      (to-point2d-f end)
+      (float-array fractions)
+      (into-array java.awt.Color (map to-color colors))
+      (cycle-map cycle)))
+
+(def ^{:private true} default-center [0 0])
+(def ^{:private true} default-radius 1.0)
+
+(defn radial-gradient
+  "Creates a radial gradient suitable for use on the :foreground and
+  :background properties of a (seesaw.graphics/style), or anywhere
+  a java.awt.Paint is required. Has the following options:
+
+    :center The center [x y] point, defaults to [0 0]
+    :focus The focus [x y] point, defaults to :center
+    :radius   The radius. Defaults to 1.0
+    :fractions Sequence of fractional values indicating color transition points
+               in the gradient. Defaults to [0.0 1.0]. Must have same number
+               of entries as :colors.
+    :colors Sequence of color values correspoding to :fractions. Value is passed
+            through (seesaw.color/to-color). e.g. :blue, \"#fff\", etc.
+    :cycle The cycle behavior of the gradient, :none, :repeat, or :reflect.
+           Defaults to :none.
+
+  Examples:
+
+    ; create a red, white and blue gradiant with three equal parts
+    (radial-gradient :radius 100.0 :fractions [0 0.5 1.0] :colors [:red :white :blue])
+
+  See:
+    http://docs.oracle.com/javase/6/docs/api/java/awt/RadialGradientPaint.html
+  "
+  [& {:keys [center focus radius fractions colors cycle]
+      :or {center    default-center
+           radius    default-radius
+           fractions default-fractions
+           colors    default-colors
+           cycle     :none }
+      :as opts}]
+    (java.awt.RadialGradientPaint.
+      (to-point2d-f center)
+      (float radius)
+      (to-point2d-f (or focus center))
+      (float-array fractions)
+      (into-array java.awt.Color (map to-color colors))
+      (cycle-map cycle)))
+
+;*******************************************************************************
 ; Strokes
 
 (def ^{:private true} stroke-caps {

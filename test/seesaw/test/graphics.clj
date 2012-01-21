@@ -205,3 +205,67 @@
     (let [s (update-style (style :foreground :black) :foreground nil)]
       (expect (instance? seesaw.graphics.Style s))
       (expect (nil? (:foreground s))))))
+
+(describe linear-gradient
+  (it "creates a default linear gradient"
+    (let [g (linear-gradient)]
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getStartPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 0.0)
+                 (.getEndPoint g)))
+      (expect (= [(float 0.0) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/WHITE java.awt.Color/BLACK]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
+                 (.getCycleMethod g)))))
+  (it "creates a linear gradient"
+    (let [g (linear-gradient 
+              :start [1 2] 
+              :end [3.5 4.6]
+              :fractions [0.0 0.8 1.0]
+              :colors [:black :blue java.awt.Color/ORANGE]
+              :cycle :repeat)]
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 2.0)
+                 (.getStartPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 3.5 4.6)
+                 (.getEndPoint g)))
+      (expect (= [(float 0.0) (float 0.8) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/BLACK java.awt.Color/BLUE java.awt.Color/ORANGE]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/REPEAT
+                 (.getCycleMethod g))))))
+
+(describe radial-gradient
+  (it "creates a default radial gradient"
+    (let [g (radial-gradient)]
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getCenterPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getFocusPoint g)))
+      (expect (= (float 1.0) (.getRadius g)))
+      (expect (= [(float 0.0) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/WHITE java.awt.Color/BLACK]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
+                 (.getCycleMethod g)))))
+  (it "creates a radial gradient"
+    (let [g (radial-gradient 
+              :center [1 2] 
+              :focus [3.5 4.6]
+              :fractions [0.0 0.8 1.0]
+              :colors [:black :blue java.awt.Color/ORANGE]
+              :cycle :reflect)]
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 2.0)
+                 (.getCenterPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 3.5 4.6)
+                 (.getFocusPoint g)))
+      (expect (= [(float 0.0) (float 0.8) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/BLACK java.awt.Color/BLUE java.awt.Color/ORANGE]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/REFLECT
+                 (.getCycleMethod g))))))
+
