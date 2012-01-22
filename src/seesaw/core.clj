@@ -55,7 +55,6 @@
 (defmacro invoke-now
   "Alias for seesaw.invoke/invoke-now"
   [& args]
-  invoke-now
   `(seesaw.invoke/invoke-now ~@args))
 
 (defmacro invoke-later
