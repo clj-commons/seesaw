@@ -49,9 +49,24 @@
 (declare to-widget)
 (declare popup-option-handler)
 
-(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-now"} invoke-now #'seesaw.invoke/invoke-now)
-(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-later"} invoke-later #'seesaw.invoke/invoke-later)
-(def #^{:macro true :doc "Alias for seesaw.invoke/invoke-soon"} invoke-soon #'seesaw.invoke/invoke-later)
+; seesaw.invoke aliases. These were originally aliases with def, but this caused
+; the weird behavior in issue #73.
+
+(defmacro invoke-now
+  "Alias for seesaw.invoke/invoke-now"
+  [& args]
+  invoke-now
+  `(seesaw.invoke/invoke-now ~@args))
+
+(defmacro invoke-later
+ "Alias for seesaw.invoke/invoke-later"
+  [& args]
+  `(seesaw.invoke/invoke-later ~@args))
+
+(defmacro invoke-soon
+ "Alias for seesaw.invoke/invoke-soon"
+  [& args]
+  `(seesaw.invoke/invoke-soon ~@args))
 
 (defn native!
   "Set native look and feel and other options to try to make things look right.
