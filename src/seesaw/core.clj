@@ -1652,8 +1652,19 @@
 
   Notes:
 
+    An editor pane can fire 'hyperlink' events when elements are click,
+    say like a hyperlink in an html doc. You can listen to these with the
+    :hyperlink event:
+
+      (listen my-editor :hyperlink (fn [e] ...))
+
+    where the event is an instance of javax.swing.event.HyperlinkEvent.
+    From there you can inspect the event, inspect the clicked element,
+    etc.
+
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html
+    http://docs.oracle.com/javase/6/docs/api/javax/swing/event/HyperlinkEvent.html
   "
   { :seesaw {:class 'javax.swing.JEditorPane }}
   [& opts]

@@ -323,7 +323,15 @@
       (.removeNodeFromParent model child)
       (expect @nodes-removed)
       (.nodeStructureChanged model root)
-      (expect @structure-changed))))
+      (expect @structure-changed)))
+  (it "can register a hyperlink listener"
+    (let [editor (javax.swing.JEditorPane.)
+          called (atom 0)]
+      (listen editor :hyperlink-update (fn [_] (swap! called inc)))
+      (listen editor :hyperlink (fn [_] (swap! called inc)))
+      (expect (= 0 @called))
+      (.fireHyperlinkUpdate editor nil)
+      (expect (= 2 @called)))))
 
 (describe listen-to-property
   (it "registers a property change listener"

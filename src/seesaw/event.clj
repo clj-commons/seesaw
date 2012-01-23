@@ -17,7 +17,8 @@
   (:import [javax.swing.event ChangeListener
             CaretListener DocumentListener
             ListSelectionListener
-            TreeSelectionListener TreeExpansionListener TreeWillExpandListener TreeModelListener]
+            TreeSelectionListener TreeExpansionListener TreeWillExpandListener TreeModelListener
+            HyperlinkListener]
            [javax.swing.text Document]
            [java.awt.event WindowListener FocusListener ActionListener ItemListener
                           MouseListener MouseMotionListener MouseWheelListener
@@ -224,6 +225,14 @@
     ; See event-method-table below too!
     :named-events #{:dt-drag-enter :dt-drag-exit :dt-drag-over :dt-drop :dt-drop-action-changed}
     :install      #(.addDropTargetListener ^java.awt.dnd.DropTarget %1 ^java.awt.dnd.DropTargetListener %2)
+  }
+
+  :hyperlink {
+    :name    :hyperlink
+    :class   HyperlinkListener
+    :events  #{:hyperlink-update}
+    :install #(.addHyperlinkListener ^javax.swing.JEditorPane %1
+                                     ^HyperlinkListener %2)
   }
 })
 
