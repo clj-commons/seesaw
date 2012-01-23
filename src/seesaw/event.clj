@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -14,12 +14,12 @@
   seesaw.event
   (:use [seesaw.meta :only [put-meta! get-meta]]
         [seesaw.util :only [camelize illegal-argument to-seq check-args]])
-  (:import [javax.swing.event ChangeListener 
-            CaretListener DocumentListener 
-            ListSelectionListener 
+  (:import [javax.swing.event ChangeListener
+            CaretListener DocumentListener
+            ListSelectionListener
             TreeSelectionListener TreeExpansionListener TreeWillExpandListener TreeModelListener]
            [javax.swing.text Document]
-           [java.awt.event WindowListener FocusListener ActionListener ItemListener 
+           [java.awt.event WindowListener FocusListener ActionListener ItemListener
                           MouseListener MouseMotionListener MouseWheelListener
                           KeyListener ComponentListener]
            [java.beans PropertyChangeListener]))
@@ -39,7 +39,7 @@
 (defprotocol ^{:private true} AddListSelectionListener
   (add-list-selection-listener [this v]))
 
-(extend-listener-protocol AddChangeListener add-change-listener addChangeListener 
+(extend-listener-protocol AddChangeListener add-change-listener addChangeListener
   javax.swing.BoundedRangeModel
   javax.swing.JProgressBar
   javax.swing.JSlider
@@ -50,8 +50,8 @@
   javax.swing.SpinnerModel
   javax.swing.JSpinner
   javax.swing.ButtonModel)
- 
-(extend-listener-protocol AddActionListener add-action-listener addActionListener 
+
+(extend-listener-protocol AddActionListener add-action-listener addActionListener
   javax.swing.JFileChooser
   javax.swing.JTextField
   javax.swing.JComboBox
@@ -65,8 +65,8 @@
   javax.swing.ListSelectionModel)
 
 (extend-protocol AddListSelectionListener
-  javax.swing.JTable 
-    (add-list-selection-listener [this l] 
+  javax.swing.JTable
+    (add-list-selection-listener [this l]
       (add-list-selection-listener (.getSelectionModel this) l)))
 
 ; Declaratively set up all the Swing listener types available through the
@@ -83,7 +83,7 @@
                :component-shown}
     :install #(.addComponentListener ^java.awt.Component %1 ^ComponentListener %2)
   }
-                                    
+
   :property-change {
     :name    :property-change
     :class   PropertyChangeListener
@@ -99,7 +99,7 @@
   :window {
     :name    :window
     :class   WindowListener
-    :events  #{:window-activated :window-deactivated 
+    :events  #{:window-activated :window-deactivated
               :window-closed :window-closing :window-opened
               :window-deiconified :window-iconified}
     :install  #(.addWindowListener ^java.awt.Window %1 ^WindowListener %2)
@@ -114,16 +114,16 @@
     :name    :document
     :class   DocumentListener
     :events  #{:changed-update :insert-update :remove-update}
-    :install (fn [target listener] 
-               (.addDocumentListener 
-                 (if (instance? Document target) 
+    :install (fn [target listener]
+               (.addDocumentListener
+                 (if (instance? Document target)
                     ^Document target
                     (.getDocument ^javax.swing.text.JTextComponent target))
                  ^DocumentListener listener))
   }
   :caret {
     :name    :caret
-    :class   CaretListener 
+    :class   CaretListener
     :events  #{:caret-update}
     :install #(.addCaretListener ^javax.swing.text.JTextComponent %1 ^CaretListener %2)
   }
@@ -145,48 +145,48 @@
     :events  #{:item-state-changed}
     :install #(.addItemListener ^java.awt.ItemSelectable %1 ^ItemListener %2)
   }
-  :mouse { 
+  :mouse {
     :name    :mouse
     :class   MouseListener
     :events  #{:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released}
     :install #(.addMouseListener ^java.awt.Component %1 ^MouseListener %2)
   }
-  :mouse-motion { 
+  :mouse-motion {
     :name    :mouse-motion
     :class   MouseMotionListener
     :events  #{:mouse-moved :mouse-dragged}
     :install #(.addMouseMotionListener ^java.awt.Component %1 ^MouseMotionListener %2)
   }
-  :mouse-wheel { 
+  :mouse-wheel {
     :name    :mouse-wheel
     :class   MouseWheelListener
     :events  #{:mouse-wheel-moved}
     :install #(.addMouseWheelListener ^java.awt.Component %1 ^MouseWheelListener %2)
   }
-  :list-selection { 
+  :list-selection {
     :name    :list-selection
     :class   ListSelectionListener
     :events  #{:value-changed}
     :named-events #{:list-selection} ; Suppress reversed map entry
     :install add-list-selection-listener
   }
-  :tree-selection { 
+  :tree-selection {
     :name    :tree-selection
     :class   TreeSelectionListener
     :events  #{:value-changed}
     :named-events #{:tree-selection} ; Suppress reversed map entry
     :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)
   }
-  :tree-expansion { 
+  :tree-expansion {
     :name    :tree-expansion
-    :class   TreeExpansionListener 
+    :class   TreeExpansionListener
     :events  #{:tree-expanded :tree-collapsed}
     :install #(.addTreeExpansionListener ^javax.swing.JTree %1 ^TreeExpansionListener %2)
   }
   ; Since one of the methods matches the listener name, we give the overall
   ; a slightly different name to distinguish registering for *all* events
   ; versus just one.
-  :tree-will-expand* { 
+  :tree-will-expand* {
     :name    :tree-will-expand*
     :class   TreeWillExpandListener
     :events  #{:tree-will-expand :tree-will-collapse}
@@ -201,7 +201,7 @@
 
   :drag-source {
     :name         :drag-source
-    :class        java.awt.dnd.DragSourceListener 
+    :class        java.awt.dnd.DragSourceListener
     :events       #{:drag-drop-end :drag-enter :drag-exit :drag-over :drop-action-changed}
     ; Names are mostly the same as DragTarget events, so prefix with ds-
     ; See event-method-table below too!
@@ -209,9 +209,9 @@
     :install      #(.addDragSourceListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceListener %2)
   }
 
-  :drag-source-motion { 
+  :drag-source-motion {
     :name    :drag-source-motion
-    :class   java.awt.dnd.DragSourceMotionListener 
+    :class   java.awt.dnd.DragSourceMotionListener
     :events  #{:drag-mouse-moved}
     :install #(.addDragSourceMotionListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceMotionListener %2)
   }
@@ -257,7 +257,7 @@
   (let [hs (gensym "hs")]
     `(defmethod ~'reify-listener ~klass [c# ~hs]
       (reify ~klass
-        ~@(for [event events] 
+        ~@(for [event events]
           `(~(-> event name camelize symbol) [tx# ex#] (fire ~hs ~event ex#)))))))
 
 ; ... makes something like this ...
@@ -267,13 +267,13 @@
 
 
 ; Make a macro to reify all the listener classes/methods above and call
-; it. 
+; it.
 (defmacro ^{:private true} reify-all-event-groups
   []
   `(do
     ~@(for [[_ {^Class klass :class events :events}] event-groups]
       ; the symbol is very important here since the def-reify-listener
-      ; macro is expecting a symbol NOT a class instance! So many hours 
+      ; macro is expecting a symbol NOT a class instance! So many hours
       ; wasted...
       `(def-reify-listener ~(symbol (.getName klass)) ~events))))
 
@@ -351,9 +351,9 @@
     :else event-name))
 
 (defn- expand-multi-events
-  "Expands an event spec into a seq of event names. This handles multi-event cases 
+  "Expands an event spec into a seq of event names. This handles multi-event cases
   which can currently happen in two ways:
-  
+
     * The caller provided a set of event names, e.g. #{:mouse-pressed :mouse-released}
     * The caller provided a 'composite' event name like :mouse
   "
@@ -362,15 +362,15 @@
 
 (defn- preprocess-event-specs
   "take spec/fn pairs in listen arg list and expand multi-events, etc. For example:
-  
+
     [:foo handler0 #{:bar :yum} handler1]
-  
-  becomes 
-  
+
+  becomes
+
     [:foo handler0 :bar handler1 :yum handler1]
   "
   [target args]
-  (mapcat 
+  (mapcat
     (fn [[a b]] (for [n (to-seq a)] [n b]))
     (for [[ens f] (partition 2 args)
           en (expand-multi-events target ens)]
@@ -383,10 +383,10 @@
   (reduce
     (fn [result target]
       (cond
-        (instance? javax.swing.ButtonGroup target) 
+        (instance? javax.swing.ButtonGroup target)
           (concat result (enumeration-seq (.getElements ^javax.swing.ButtonGroup target)))
-        :else 
-          (conj result target)))  
+        :else
+          (conj result target)))
     []
     targets))
 
@@ -419,21 +419,21 @@
 
 (defn- single-target-listen-impl
   "Takes:
- 
+
    * a single target
-   * a raw-event-name (a keyword, set or keyword that eventually maps to a set 
+   * a raw-event-name (a keyword, set or keyword that eventually maps to a set
      of events, like :mouse)
    * an event handler function
-  
+
   doall *must* be called to ensure all side-effects occur.
 
   Installs handlers in the target and returns a seq of functions which reverse
   this operation."
   [target raw-event-name event-fn]
   (check-args (fn? event-fn) (str "Event handler for " raw-event-name " is not a function"))
-  (doall 
+  (doall
     (for [event-name (->> (expand-multi-events target raw-event-name)
-                          (map #(resolve-event-aliases target %)))] 
+                          (map #(resolve-event-aliases target %)))]
       (let [handlers          (get-or-install-handlers target event-name)
             final-method-name (get event-method-table event-name event-name)]
         (swap! handlers append-listener final-method-name event-fn)
@@ -442,13 +442,13 @@
 
 (defn- multi-target-listen-impl
   "Save as single-target-listen-impl, except that handlers are installed on multiple
-  targets. 
-  
+  targets.
+
   Returns seq of functions that reverse the operation."
-  
+
   ([targets raw-event-name event-fn]
-    (apply concat 
-      (for [target targets] 
+    (apply concat
+      (for [target targets]
         (if-let [hook-result (listen-for-named-event target raw-event-name event-fn)]
           [hook-result]
           (single-target-listen-impl target raw-event-name event-fn)))))
@@ -469,7 +469,7 @@
       :key-pressed       (fn [e] ...)
       :mouse-wheel-moved (fn [e] ...))
 
-  one function can be registered for multiple events by using a set 
+  one function can be registered for multiple events by using a set
   of event names instead of one:
 
     (listen (text)
@@ -492,19 +492,19 @@
   *not* retrievable from the event object.
   "
   [targets & more]
-  (check-args (even? (count more)) 
+  (check-args (even? (count more))
               "List of event name/handler pairs must have even length")
   (let [all-targets (get-sub-targets (to-seq targets))
         remove-fns  (apply multi-target-listen-impl all-targets more)]
     (apply juxt remove-fns)))
 
-(defn listen-to-property 
+(defn listen-to-property
   "List to propertyChange events on a target for a particular named property.
   List (listen), returns a function that, when called removes the installed
   listener."
   [target property event-fn]
   (let [listener (reify java.beans.PropertyChangeListener
-                   (propertyChange [this e] (event-fn e)))] 
+                   (propertyChange [this e] (event-fn e)))]
     (.addPropertyChangeListener target property listener)
     (fn []
       (.removePropertyChangeListener target property listener))))
@@ -519,14 +519,14 @@
 (defn events-for
   "Returns a sequence of event info maps for the given object which can
   be either a widget instance or class.
-  
+
   Used by (seesaw.dev/show-events).
-  
+
   See:
     (seesaw.dev/show-events)
   "
   [v]
-  (let [base (->> (.getMethods (if (class? v) v (class v))) 
+  (let [base (->> (.getMethods (if (class? v) v (class v)))
                (map get-listener-class)
                (filter identity)
                (map event-groups-by-listener-class)
