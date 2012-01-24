@@ -28,6 +28,7 @@
    'dialog
    'dnd
    'dynamic-layout
+   'editor-pane-hyperlink
    'explorer
    'form
    'forms
