@@ -1634,7 +1634,7 @@
 
 (def editor-pane-options
   (merge
-    default-options
+    text-options
     (option-map
       (bean-option :page javax.swing.JEditorPane to-url)
       (bean-option :content-type javax.swing.JEditorPane str)
