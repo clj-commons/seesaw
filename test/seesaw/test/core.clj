@@ -649,16 +649,20 @@
   (it "should create a text pane"
     (let [t (styled-text :text "HI")]
       (expect (instance? JTextPane t))
-      (expect (= "HI" (text t)))))
-  (verify-config (styled-text :wrap-lines? true) :wrap-lines? true)
-  (verify-config (styled-text :wrap-lines? false) :wrap-lines? false)
+      (expect (= "HI" (text t))))
+    (verify-config (styled-text :wrap-lines? true) :wrap-lines? true)
+    (verify-config (styled-text :wrap-lines? false) :wrap-lines? false))
   (it "should add styles"
     (let [t (styled-text :text "HI" 
                     :styles [[:big :size 30]
                             [:small :size 3]])
           style (.getStyle t "big")] 
       (expect (isa? (class style) javax.swing.text.Style))
-      (expect (.containsAttribute style StyleConstants/FontSize 30)))))
+      (expect (.containsAttribute style StyleConstants/FontSize 30))))
+  (it "should override getScrollableTracksViewportWidth with :wrap-lines?"
+    (not (.getScrollableTracksViewportWidth (styled-text))))
+  (it "should override getScrollableTracksViewportWidth with :wrap-lines?"
+    (.getScrollableTracksViewportWidth (styled-text :wrap-lines? true))))
 
 (describe style-text!
   (let [t (styled-text :text "HI"

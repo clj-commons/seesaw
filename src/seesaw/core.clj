@@ -1552,7 +1552,7 @@
   [& {:as opts}]
   (let [pane (proxy [JTextPane] []
                (getScrollableTracksViewportWidth []
-                 (get-meta this :wrap-lines?)))]
+                 (boolean (get-meta this :wrap-lines?))))]
     (apply-options pane opts)))
 
 (defn style-text!
