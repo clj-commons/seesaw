@@ -28,7 +28,10 @@
                :opaque? false
                :listen [:mouse-clicked (fn [_])]
                :foreground :red
-               :background :black)))
+               :background :black))
+  #_(it "shouldn't be a baby about hosting a styled-text"
+    (let [p (mig-panel :items [[(styled-text) ""]])]
+      (-> (frame :content (vertical-panel :items [p])) pack!))))
 
 (describe replace!
   (testing "when called on a panel with a mig layout"
