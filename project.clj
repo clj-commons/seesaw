@@ -17,12 +17,11 @@
                  [j18n "1.0.0"]]
   :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
                      [lein-clojars "0.7.0"]
-                     [org.clojars.rayne/autodoc "0.8.0-SNAPSHOT"]]
+                     [lein-autodoc "0.9.0"]]
   :repositories {"stuartsierra-releases" "http://stuartsierra.com/maven2"}
   :autodoc {
     :name "Seesaw", 
     :page-title "Seesaw API Documentation"
-    :copyright "Copyright 2011, Dave Ray"
-    :load-except-list [#"seesaw/examples"]}
+    :copyright "Copyright 2012, Dave Ray" }
   :java-source-path "jvm")
 
