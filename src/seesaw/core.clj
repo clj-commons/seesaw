@@ -3185,8 +3185,14 @@
         (.addPropertyChangeListener pane JOptionPane/VALUE_PROPERTY
           (reify java.beans.PropertyChangeListener
             (propertyChange [this e]
-              (return-from-dialog e
-                (([success-fn no-fn cancel-fn] (.getNewValue e)) pane))))))
+              (let [v (.getNewValue e)
+                    f (condp = v
+                        JOptionPane/CLOSED_OPTION cancel-fn
+                        JOptionPane/YES_OPTION    success-fn
+                        JOptionPane/NO_OPTION     no-fn
+                        JOptionPane/CANCEL_OPTION cancel-fn
+                        cancel-fn)]
+                (return-from-dialog e (f pane)))))))
       (if (:visible? opts)
         (show! dlg)
         dlg)))
