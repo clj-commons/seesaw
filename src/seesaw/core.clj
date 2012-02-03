@@ -1501,7 +1501,7 @@
       (doseq [[k v] (partition 2 options)]
         (case k
           :font       (.addAttribute style StyleConstants/FontFamily (seesaw.font/to-font v))
-          :size       (.addAttribute style StyleConstants/FontSize v)
+          :size       (.addAttribute style StyleConstants/FontSize (Integer. v))
           :color      (.addAttribute style StyleConstants/Foreground (seesaw.color/to-color v))
           :background (.addAttribute style StyleConstants/Background (seesaw.color/to-color v))
           :bold       (.addAttribute style StyleConstants/Bold (boolean v))

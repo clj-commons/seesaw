@@ -658,7 +658,13 @@
                             [:small :size 3]])
           style (.getStyle t "big")] 
       (expect (isa? (class style) javax.swing.text.Style))
-      (expect (.containsAttribute style StyleConstants/FontSize 30))))
+      (expect (.containsAttribute style StyleConstants/FontSize (Integer. 30)))))
+  (it "should set the FontSize attr as an Integer"
+    (let [t (styled-text :styles [[:big :size 30]])
+          s (.getStyle t "big")
+          v (.getAttribute s StyleConstants/FontSize)]
+      (expect (instance? Integer v))
+      (expect (= 30 v))))
   (it "should override getScrollableTracksViewportWidth with :wrap-lines?"
     (not (.getScrollableTracksViewportWidth (styled-text))))
   (it "should override getScrollableTracksViewportWidth with :wrap-lines?"
@@ -670,7 +676,7 @@
                                 [:small :size 3]])]
     (it "should style the text"
         (expect (= t (style-text! t :big 0 2)))
-        (expect (.containsAttribute (.getCharacterAttributes t) 
+        (expect (.containsAttribute (.getCharacterAttributes t)
                                     StyleConstants/FontSize 30)))))
 
 (describe password
