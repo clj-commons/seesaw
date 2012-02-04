@@ -45,7 +45,12 @@
   (it "returns the correct id, as a keyword, if a widget has an id"
     (= (keyword "id of the label") (id-of (label :id "id of the label")))))
 
-(describe "Applying default options" 
+(describe user-data
+  (it "returns the value of the :user-data option"
+    (= :got-it
+       (user-data (combobox :user-data :got-it)))))
+
+(describe "Applying default options"
   (testing "the :id option"
     (it "does nothing when omitted"
       (expect (nil? (-> (JPanel.) (apply-options {}) id-of))))
@@ -63,6 +68,12 @@
       (expect (= #{"foo"} (selector/class-of (flow-panel :class :foo)))))
     (it "sets the classes of a widget"
       (expect (= #{"foo" "bar"} (selector/class-of (flow-panel :class #{:foo :bar}))))))
+
+  (testing "the :user-data option"
+    (it "associates user data with the widget"
+      (expect (= "I'm some user data"
+                 (-> (label :user-data "I'm some user data")
+                   (config :user-data))))))
 
   (testing "the :layout option"
     (it "sets the layout of the widget"

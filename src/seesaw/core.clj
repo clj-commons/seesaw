@@ -540,6 +540,20 @@
 
 (def ^{:doc "Deprecated. See (seesaw.core/id-of)"} id-for id-of)
 
+(defn user-data
+  "Convenience function to retrieve the value of the :user-data option
+  passed to the widget at construction. The widget parameter is passed
+  through (to-widget) first so events and other objects can also be
+  used.
+
+  Examples:
+
+    (user-data (label :text \"HI!\" :user-data 99))
+    ;=> 99
+  "
+  [w]
+  (config* w :user-data))
+
 (def ^{:private true} h-alignment-table
   (constant-map SwingConstants :left :right :leading :trailing :center ))
 
@@ -833,6 +847,15 @@
 
     (default-option :id seesaw.selector/id-of! seesaw.selector/id-of ["A keyword id for the widget"])
     (default-option :class seesaw.selector/class-of! seesaw.selector/class-of [:class-name, #{:multiple, :class-names}])
+
+    (default-option
+      :user-data
+      (fn [c v] (put-meta! c ::user-data v))
+      (fn [c]   (get-meta c ::user-data))
+      ["Anything."
+       "Associate arbitrary user-data with a widget."
+       "See (seesaw.core/user-data)"])
+
     (bean-option :opaque? JComponent boolean nil boolean-examples)
     (bean-option :enabled? java.awt.Component boolean nil boolean-examples)
     (bean-option :focusable? java.awt.Component boolean nil boolean-examples)
