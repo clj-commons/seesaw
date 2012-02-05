@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -57,7 +57,7 @@
     (it "sets the component's id as a keyword if given"
       (expect (= :hi (-> (JLabel.) (apply-options {:id "hi"}) id-of))))
     (it "throws IllegalStateException if the widget's id is already set"
-      (try 
+      (try
         (do (config! (label :id :foo) :id :bar) false)
         (catch IllegalStateException e true))))
 
@@ -172,7 +172,7 @@
         (expect (.isEnabled c))))
     (it "sets enabled when provided a falsey value"
       (let [c (apply-options (JPanel.) {:enabled? nil})]
-        (expect (= false (.isEnabled c)))))) 
+        (expect (= false (.isEnabled c))))))
   (testing "setting visible? option"
     (it "does nothing when omitted"
       (let [c (apply-options (JPanel.) {})]
@@ -306,14 +306,14 @@
       (expect (= (.getDocument t) (to-document t))))))
 
 (defmacro verify-config [target key getter]
-  (let [t (gensym "t")] 
-    `(it ~(str "can retrieve the value of " key " from a widget") 
+  (let [t (gensym "t")]
+    `(it ~(str "can retrieve the value of " key " from a widget")
      (let [~t ~target
            expected# ~(if (symbol? getter) `(. ~t ~getter) getter)
            actual# (config ~t ~key)]
        (expect (= expected# actual#))))))
 
-(describe config 
+(describe config
   (it "throws IllegalArgumentException for an unknown option"
     (try
       (config (text "HI") :textish)
@@ -495,11 +495,11 @@
       (expect (= 3 (.getVgap l)))))
   (it "should add the given items to the panel"
     (let [[a b c] [(label :text "A") (label :text "B") (label :text "C")]
-          g (grid-panel :items [a b c])] 
+          g (grid-panel :items [a b c])]
       (expect (= [a b c] (seq (.getComponents g))))))
   (it "should get :items with config"
     (let [items [(label :text "A") (label :text "B") (label :text "C")]
-          g (grid-panel :items items)] 
+          g (grid-panel :items items)]
       (expect (= items (config g :items))))))
 
 (describe form-panel
@@ -546,7 +546,7 @@
       (catch IllegalArgumentException e true)))
   (it "should set the text of the document in a document event"
     (let [doc (javax.swing.text.PlainDocument.)
-          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0
                                                  javax.swing.event.DocumentEvent$EventType/CHANGE)]
       (text! evt "Hello")
       (expect (= "Hello" (text evt)))))
@@ -577,7 +577,7 @@
       (text! t (clojure.java.io/resource "seesaw/test/core.text.txt"))
       ; Be careful editing the test file with vim. It will silently add
       ; a trailing newline on save.
-      (expect (= "Some text in a resource" (text t)))))) 
+      (expect (= "Some text in a resource" (text t))))))
 
 (describe text
   (it "should throw IllegalArgumentException if argument is nil"
@@ -600,7 +600,7 @@
       (expect (= "HI" (text d)))))
   (it "should return the text of the document in a document event"
     (let [doc (javax.swing.text.PlainDocument.)
-          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0 
+          evt (javax.swing.text.AbstractDocument$DefaultDocumentEvent. doc 0 0
                                                  javax.swing.event.DocumentEvent$EventType/CHANGE)]
       (.insertString doc 0 "Hello" nil)
       (expect (= "Hello" (text evt)))))
@@ -664,10 +664,10 @@
     (verify-config (styled-text :wrap-lines? true) :wrap-lines? true)
     (verify-config (styled-text :wrap-lines? false) :wrap-lines? false))
   (it "should add styles"
-    (let [t (styled-text :text "HI" 
+    (let [t (styled-text :text "HI"
                     :styles [[:big :size 30]
                             [:small :size 3]])
-          style (.getStyle t "big")] 
+          style (.getStyle t "big")]
       (expect (isa? (class style) javax.swing.text.Style))
       (expect (.containsAttribute style StyleConstants/FontSize (Integer. 30)))))
   (it "should set the FontSize attr as an Integer"
@@ -757,9 +757,9 @@
       (expect (= a (.getAction b)))))
 
   (it "should set the :mnemonic of the button given an integer keycode"
-    (= 100 (.getMnemonic (button :mnemonic 100)))) 
+    (= 100 (.getMnemonic (button :mnemonic 100))))
   (it "should set the :mnemonic of the button given a char"
-    (= (int \Y) (.getMnemonic (button :mnemonic \Y)))) 
+    (= (int \Y) (.getMnemonic (button :mnemonic \Y))))
   (it "should set the :mnemonic of the button given a lower-case char"
     (= (int \Z) (.getMnemonic (button :mnemonic \z)))))
 
@@ -833,14 +833,14 @@
       (expect (= [1 2 3 4] (map #(.getElementAt model %1) (range (.getSize model)))))
       (expect (= 1 (.getSelectedItem model))))))
 
-(describe spinner-model 
+(describe spinner-model
   (it "should create a number spinner model"
     (let [m (spinner-model 3.5 :from 1.5 :to 4.5 :by 0.5)]
       (expect (instance? javax.swing.SpinnerNumberModel m))
       (expect (= 3.5 (.getValue m)))
       (expect (= 0.5 (.getStepSize m)))
       (expect (= 4.5 (.getMaximum m)))
-      (expect (= 1.5 (.getMinimum m))))) 
+      (expect (= 1.5 (.getMinimum m)))))
   (it "should create a date spinner model"
       (let [s (java.util.Date. (long 0))
             v (java.util.Date. (long (* 10 24 3600)))
@@ -876,7 +876,7 @@
       (expect (= 3.3 (.getValue m)))))
   (it "supports the :selection event"
     (let [s (spinner :model [1 2 3])
-          called (atom nil)] 
+          called (atom nil)]
       (listen s :selection (fn [e] (reset! called e)))
       (selection! s 2)
       (expect (= 2 (selection s)))
@@ -1106,7 +1106,7 @@
   (it "should add tabs from the tabs property"
     (let [a (label "A tab")
           b (label "B tab")
-          tp (tabbed-panel :tabs [{ :title "A" :content a :tip "tip A" } 
+          tp (tabbed-panel :tabs [{ :title "A" :content a :tip "tip A" }
                                   { :title "B" :content b :tip "tip B" }])]
       (expect (= ["A" "B"]         [(.getTitleAt tp 0) (.getTitleAt tp 1)]))
       (expect (= ["tip A" "tip B"] [(.getToolTipTextAt tp 0) (.getToolTipTextAt tp 1)]))
@@ -1119,19 +1119,19 @@
       (expect (nil? (.getLayout c)))))
   (it "should call :before and :after functions given to the :paint property"
     (let [called (atom 0)
-          before (fn [c g] (swap! called inc)) 
-          after (fn [c g] (swap! called inc)) 
+          before (fn [c g] (swap! called inc))
+          after (fn [c g] (swap! called inc))
           c (canvas :paint { :before before :after after })]
       (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
       (expect (= 2 @called))))
   (it "should call a single function given to the :paint property"
     (let [called (atom 0)
-          paint (fn [c g] (swap! called inc)) 
+          paint (fn [c g] (swap! called inc))
           c (canvas :paint paint)]
       (.paintComponent c (.getGraphics (buffered-image 100 100))) ; fake with buffered image
       (expect (= 1 @called)))))
 
-(describe window 
+(describe window
   (it "should create a jwindow"
     (instance? javax.swing.JWindow (window)))
   (it "should create a window with an id"
@@ -1212,12 +1212,12 @@
          [dlg & {:keys [future-fn] :or {future-fn #(Thread/sleep 100)}}]
          (let [v (atom nil)]
            (future
-             (future-fn) 
+             (future-fn)
              (swap! v #(if % % 'dialog-is-blocking))
              (invoke-now (.dispose dlg)))
            (invoke-now
-            (let [r (show! dlg)] 
-              (swap! v #(if % % r)))) 
+            (let [r (show! dlg)]
+              (swap! v #(if % % r))))
            @v))]
 
   (describe custom-dialog
@@ -1263,7 +1263,7 @@
                                         (return-from-dialog dlg :ok)
                                         (Thread/sleep 50))) :ok))))))
 
-  
+
   (describe dialog
     (it "should block until dialog is being disposed of"
       (let [dlg (dialog :content "Nothing" :modal? true)]
@@ -1302,7 +1302,7 @@
 
   (it "supports the :selection event"
     (let [s (slider)
-          called (atom nil)] 
+          called (atom nil)]
       (listen s :selection (fn [e] (reset! called e)))
       (selection! s 49)
       (expect @called)))
@@ -1322,7 +1322,7 @@
   (it "should set the progress bars min, max and initial value"
     (let [pb (progress-bar :value 5 :min 1 :max 6)]
       (expect (= 5 (.getValue pb)))
-      (expect (= 1 (.getMinimum pb))) 
+      (expect (= 1 (.getMinimum pb)))
       (expect (= 6 (.getMaximum pb))))))
 
 (describe select
@@ -1367,7 +1367,7 @@
   (it "should create a binding for the :id of each new widget"
     (let [a-value 99
           b-value 100
-          c-value 101] 
+          c-value 101]
       (with-widgets [(vector :id :a :value a-value)
                      (vector :id :b :value b-value)
                      (vector :value c-value :id :c)]
@@ -1514,7 +1514,7 @@
   ; TODO test non-exception case
   (it "should throw an IllegalStateException if not called on the Swing UI thread"
      @(future
-        (try 
+        (try
           (do (assert-ui-thread "some message") false)
           (catch IllegalStateException e true)))))
 
