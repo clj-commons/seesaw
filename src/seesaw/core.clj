@@ -209,56 +209,6 @@
 ;*******************************************************************************
 ; Widget construction stuff
 
-(defmacro with-widget
-  "*SOON TO DEPRECATED*
-
-  This macro will soon be deprecated. Instead just create your 3rd-party
-  widget and call (seesaw.core/config!) on it:
-
-    (-> (org.jdesktop.swingx.JXList.)
-      (config! :id :my-list :model ...)
-
-  is equivalent to the example below.
-
-  -----
-
-  This macro allows a Seesaw widget 'constructor' function to be applied to
-  a sub-class of the widget type it usually produces. For example (listbox)
-  always returns an instance of exactly JList. Suppose you're using SwingX
-  and want to use the Seesaw goodness of (listbox), but want to get a
-  JXList. That's what this macro is for:
-
-    (with-widget org.jdesktop.swingx.JXList
-      (listbox :id :my-list :model ...))
-
-  This will return a new instance of JXList, with the usual Seesaw listbox
-  options applied.
-
-  The factory argument can be one of the following:
-
-    A class literal - .newInstance is used to create a new instance of
-                      the class.
-
-    A function - The function is called with no arguments. It should
-                 return a sub-class of the expected class.
-
-    An existing instance - The instance is modified and returned.
-
-  If the instance in any of these cases is not a sub-class of the
-  type usually created by the constructor function, an IllegalArgumentException
-  is thrown. For example:
-
-    (with-widget JLabel (listbox ...)) ==> IllegalArgumentException
-
-  Returns a fully initialized instance of the class created by the
-  provided factory.
-  "
-  [factory form]
-  ; Just tack on an additional ::with parameter, used by (construct)
-  ; and otherwise ignored. Originally this was a thread binding, but
-  ; that failed when there were more widget constructors embedded in
-  ; the form.
-  `~(concat form [::with factory]))
 
 (declare construct-impl)
 (defn construct
@@ -271,7 +221,7 @@
   if the result using ::with isn't consistent with expected-class."
   ([factory-class opts]
     (construct-impl
-      (or (::with (if (map? opts) opts (apply hash-map opts))) factory-class)
+      factory-class
       factory-class)))
 
 (defn- construct-impl
@@ -841,7 +791,6 @@
 
 (def default-options
   (option-map
-    (ignore-option ::with) ; ignore ::with option inserted by (with-widget)
     (bean-option :layout JComponent nil nil "A layout manager.")
     (default-option :listen #(apply seesaw.event/listen %1 %2) nil ["vector of args for (seesaw.core/listen)"])
 
@@ -958,12 +907,11 @@
 ;*******************************************************************************
 ; Abstract Panel
 (defn abstract-panel
-  [layout opts]
-  (let [^JPanel p (construct JPanel opts)
-        layout (if (fn? layout) (layout p) layout)]
-    (doto p
-      (.setLayout layout)
-      (apply-options opts))))
+  ([panel layout opts]
+    (doto panel
+      (.setLayout (if (fn? layout) (layout panel) layout))
+      (apply-options opts)))
+  ([layout opts] (abstract-panel (JPanel.) layout opts)))
 
 ;*******************************************************************************
 ; Null Layout
@@ -988,7 +936,6 @@
   See:
     (seesaw.core/move!)
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
   (abstract-panel nil opts))
 
@@ -1027,7 +974,6 @@
 
     http://download.oracle.com/javase/6/docs/api/java/awt/BorderLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
   (abstract-panel (BorderLayout.) opts))
 
@@ -1047,7 +993,6 @@
     (seesaw.core/show-card!)
     http://download.oracle.com/javase/6/docs/api/java/awt/CardLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
   (abstract-panel (java.awt.CardLayout.) opts))
 
@@ -1081,7 +1026,6 @@
 
   See http://download.oracle.com/javase/6/docs/api/java/awt/FlowLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel}}
   [& opts]
   (abstract-panel (FlowLayout.) opts))
 
@@ -1091,7 +1035,6 @@
 (def box-panel-options default-options)
 
 (defn box-panel
-  { :seesaw {:class 'javax.swing.JPanel}}
   [dir & opts]
   (abstract-panel (layout/box-layout dir) opts))
 
@@ -1104,7 +1047,6 @@
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
   [& opts] (apply box-panel :horizontal opts))
 
 (def vertical-panel-options box-panel-options)
@@ -1116,7 +1058,6 @@
 
   See http://download.oracle.com/javase/6/docs/api/javax/swing/BoxLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
   [& opts] (apply box-panel :vertical opts))
 
 ;*******************************************************************************
@@ -1137,7 +1078,6 @@
 
   See http://download.oracle.com/javase/6/docs/api/java/awt/GridLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
   [& {:keys [rows columns]
       :as opts}]
   (abstract-panel (layout/grid-layout rows columns) opts))
@@ -1168,7 +1108,6 @@
 
   See http://download.oracle.com/javase/6/docs/api/java/awt/GridBagLayout.html
   "
-  { :seesaw {:class 'javax.swing.JPanel }}
   [& opts]
   (abstract-panel (GridBagLayout.) opts))
 
@@ -1213,7 +1152,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JLabel.html
   "
-  { :seesaw {:class 'javax.swing.JLabel }}
   [& args]
   (case (count args)
     0 (label :text "")
@@ -1326,7 +1264,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JButton.html
     (seesaw.core/button-group)"
-  { :seesaw {:class 'javax.swing.JButton }}
   [& args]
   (apply-options (construct javax.swing.JButton args) args))
 
@@ -1338,7 +1275,6 @@
 
   See:
     (seesaw.core/button)"
-  { :seesaw {:class 'javax.swing.JToggleButton }}
   [& args]
   (apply-options (construct javax.swing.JToggleButton args) args))
 
@@ -1350,7 +1286,6 @@
 
   See:
     (seesaw.core/button)"
-  { :seesaw {:class 'javax.swing.JCheckBox }}
   [& args]
   (apply-options (construct javax.swing.JCheckBox args) args))
 
@@ -1362,7 +1297,6 @@
 
   See:
     (seesaw.core/button)"
-  { :seesaw {:class 'javax.swing.JRadioButton }}
   [& args]
   (apply-options (construct javax.swing.JRadioButton args) args))
 
@@ -1461,7 +1395,6 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextArea.html
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextField.html
   "
-  { :seesaw {:class 'javax.swing.JTextField }} ;TODO!
   [& args]
   (if (= 1 (count args))
     (let [arg0      (first args)
@@ -1570,8 +1503,7 @@
     (seesaw.core/style-text!)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTextPane.html
   "
-  { :seesaw {:class 'javax.swing.JTextPane}
-    :arglists '([& args]) }
+  { :arglists '([& args]) }
   [& {:as opts}]
   (let [pane (proxy [JTextPane] []
                (getScrollableTracksViewportWidth []
@@ -1621,7 +1553,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
   "
-  { :seesaw {:class 'javax.swing.JPasswordField }}
   [& opts]
   (let [pw (construct javax.swing.JPasswordField opts)]
     (apply-options pw opts)))
@@ -1689,7 +1620,6 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JEditorPane.html
     http://docs.oracle.com/javase/6/docs/api/javax/swing/event/HyperlinkEvent.html
   "
-  { :seesaw {:class 'javax.swing.JEditorPane }}
   [& opts]
   (apply-options (construct javax.swing.JEditorPane opts) opts))
 
@@ -1733,7 +1663,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html
   "
-  { :seesaw {:class 'javax.swing.JList }}
   [& args]
   (apply-options (construct javax.swing.JList args) args))
 
@@ -1804,7 +1733,6 @@
     seesaw.table/table-model
     seesaw.examples.table
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
-  { :seesaw {:class 'javax.swing.JTable }}
   [& args]
   (apply-options
     (doto ^javax.swing.JTable (construct javax.swing.JTable args)
@@ -1845,7 +1773,6 @@
 
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html
   "
-  { :seesaw {:class 'javax.swing.JTree }}
   [& args]
   (apply-options (construct javax.swing.JTree args) args))
 
@@ -1891,7 +1818,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
   "
-  { :seesaw {:class 'javax.swing.JComboBox }}
   [& args]
   (apply-options (construct javax.swing.JComboBox args) args))
 
@@ -1988,7 +1914,6 @@
     (seesaw.core/spinner-model)
     test/seesaw/test/examples/spinner.clj
   "
-  { :seesaw {:class 'javax.swing.JSpinner }}
   [& args]
   (apply-options (construct javax.swing.JSpinner args) args))
 
@@ -2068,9 +1993,9 @@
     (scrollable (listbox :model [\"Foo\" \"Bar\" \"Yum\"]) :id :#scrollable :border 5)
 
   Notes:
-    This function is not compatible with (seesaw.core/paintable). TODO.
 
-  See http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
   [target & opts]
   (let [^JScrollPane sp (construct JScrollPane opts)]
@@ -2211,12 +2136,10 @@
     :divider-location The initial divider location. See (seesaw.core/divider-location!).
 
   Notes:
-    This function is not compatible with (seesaw.core/paintable). TODO.
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
-  { :seesaw {:class 'javax.swing.JSplitPane }}
   [dir left right & opts]
   (apply-options
     (doto ^JSplitPane (construct JSplitPane opts)
@@ -2234,14 +2157,13 @@
   the two widgets.
 
   Notes:
-    This function is not compatible with (seesaw.core/paintable). TODO.
 
   See:
     (seesaw.core/splitter)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
-  { :seesaw {:class 'javax.swing.JSplitPane }}
-  [left right & args] (apply splitter :left-right left right args))
+  [left right & args]
+  (apply splitter :left-right left right args))
 
 (def top-bottom-split-options splitter-options)
 
@@ -2251,14 +2173,13 @@
   the two widgets.
 
   Notes:
-    This function is not compatible with (seesaw.core/paintable). TODO.
 
   See:
     (seesaw.core/splitter)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSplitPane.html
   "
-  { :seesaw {:class 'javax.swing.JSplitPane }}
-  [top bottom & args] (apply splitter :top-bottom top bottom args))
+  [top bottom & args]
+  (apply splitter :top-bottom top bottom args))
 
 ;*******************************************************************************
 ; Separator
@@ -2278,7 +2199,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
   "
-  { :seesaw {:class 'javax.swing.JSeparator }}
   [& opts]
   (apply-options (construct javax.swing.JSeparator opts) opts))
 
@@ -2355,7 +2275,6 @@
   See:
     (seesaw.core/button)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
-  { :seesaw {:class 'javax.swing.JMenu }}
   [& opts]
   (apply-options (construct javax.swing.JMenu opts) opts))
 
@@ -2388,7 +2307,6 @@
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
-  { :seesaw {:class 'javax.swing.JPopupMenu }}
   [& opts]
   (apply-options (construct javax.swing.JPopupMenu opts) opts))
 
@@ -2428,7 +2346,6 @@
     (seesaw.core/frame)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
   "
-  { :seesaw {:class 'javax.swing.JMenuBar }}
   [& opts]
   (apply-options (construct javax.swing.JMenuBar opts) opts))
 
@@ -2466,7 +2383,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
-  { :seesaw {:class 'javax.swing.JToolBar }}
   [& opts]
   (apply-options (construct javax.swing.JToolBar opts) opts))
 
@@ -2522,7 +2438,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
-  { :seesaw {:class 'javax.swing.JTabbedPane }}
   [& opts]
   (apply-options (construct javax.swing.JTabbedPane opts) opts))
 
@@ -2559,8 +2474,8 @@
 
   Macro that generates a paintable widget, i.e. a widget that can be drawn on
   by client code. target is a Swing class literal indicating the type that will
-  be constructed or a Seesaw widget constructor funcation. In either case,
-  options should contain a :paint option with one of the following values:
+  be constructed. Options should contain a :paint option with one of the 
+  following values:
 
     nil - disables painting. The widget will be filled with its background
       color unless it is not opaque.
@@ -2572,11 +2487,8 @@
       are called before and after super.paintComponent respectively. If super?
       is false, the super.paintComponent is not called.
 
-  All other options will be passed along to the given Seesaw widget function
+  All other options will be passed along to the given Seesaw widget
   as usual and will be applied to the generated class.
-
-  If target is a class literal then generic widget options (like :id) are
-  supported, but no widget-type-specific options will be honored.
 
   Notes:
     If you just want a panel to draw on, use (seesaw.core/canvas). This macro is
@@ -2590,30 +2502,15 @@
     ; Create a raw JLabel and paint over it.
     (paintable javax.swing.JLabel :paint (fn [c g] (.fillRect g 0 0 20 20))
 
-    ; Create a border panel with some labels and a painted background
-    (paintable border-panel :north \"North\" :south \"South\"
-      :paint (fn [g c] (.drawLine 0 0 (.getWidth c) (.getHeight c))))
-
   See:
     (seesaw.core/canvas)
     (seesaw.graphics)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29
  "
- [target & {:keys [paint] :as opts}]
- (let [info (-> target resolve meta :seesaw :class)
-       cls  (or info target)]
-  `(doto
-    ~(if info
-      `(with-widget (paintable-proxy ~cls)
-          ~(cons target (mapcat identity (dissoc opts :paint))))
-      `(apply-options (paintable-proxy ~cls) ~(dissoc opts :paint)))
-    (@#'seesaw.core/paint-option-handler ~paint))))
+ [cls & opts]
+ `(apply-options (paintable-proxy ~cls) (vector ~@opts)))
 
-(def canvas-options
-  (merge
-    default-options
-    (option-map
-      (default-option :paint paint-option-handler))))
+(def canvas-options default-options)
 
 (defn canvas
   [& opts]
@@ -2636,9 +2533,9 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29
   "
   (let [{:keys [paint] :as opts} opts
-        ^javax.swing.JPanel p (paintable javax.swing.JPanel :paint paint)]
+        ^javax.swing.JPanel p (paintable javax.swing.JPanel)]
     (.setLayout p nil)
-    (apply-options p (dissoc opts :paint))))
+    (apply-options p opts)))
 ;
 ;*******************************************************************************
 ; Window
@@ -2646,8 +2543,6 @@
 ; base options shared by top-level stuff.
 (def ^{:private true} abstract-window-options
   (option-map
-    (default-option ::with) ; ignore ::with option inserted by (with-widget)
-
     (default-option :id
       seesaw.selector/id-of!
       seesaw.selector/id-of
@@ -3280,7 +3175,6 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSlider.html
 "
-  { :seesaw {:class 'javax.swing.JSlider }}
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}]
@@ -3334,7 +3228,6 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JProgressBar.html
 
 "
-  { :seesaw {:class 'javax.swing.JProgressBar }}
   [& {:keys [orientation value min max] :as opts}]
   (let [sl (construct javax.swing.JProgressBar opts)]
     (apply-options sl opts)))

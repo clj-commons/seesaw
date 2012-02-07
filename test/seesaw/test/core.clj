@@ -1460,42 +1460,6 @@
       (selection! bg b)
       (expect (= b (selection bg))))))
 
-(describe with-widget
-  (it "throws an exception if the factory class does not create the expected type"
-    (try
-      (do (with-widget JPanel (text :id :hi)) false)
-      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
-  (it "throws an exception if the factory function does not create the expected type"
-    (try
-      (do (with-widget #(JPanel.) (text :id :hi)) false)
-      (catch IllegalArgumentException e (.contains (.getMessage e) "is not an instance of"))))
-  (it "throws an exception if the given instance is not the expected type"
-    (try
-      (do (with-widget (JPanel.) (text :id :hi)) false)
-      (catch IllegalArgumentException e (.contains (.getMessage e) "is not consistent with expected type"))))
-  (it "uses a function as a factory and applies a constructor function to the result"
-    (let [expected (javax.swing.JPasswordField.)
-          result   (with-widget (fn [] expected) (text :id "hi"))]
-      (expect (= expected result))
-      (expect (= :hi (id-of result)))))
-
-  (it "can handle a form with nested widget creation functions"
-    (let [p (javax.swing.JPanel.)
-          result (with-widget p (flow-panel :id "hi" :items [(label :text "Nested")]))]
-      (expect (= p result))
-      (expect (instance? javax.swing.JLabel (first (children p))))
-      (expect (= :hi (id-of result)))))
-
-  (it "uses a class literal as a factory and applies a constructor function to it"
-    (let [result (with-widget javax.swing.JPasswordField (text :id "hi"))]
-      (expect (instance? javax.swing.JPasswordField result))
-      (expect (= :hi (id-of result)))))
-  (it "applies a constructor function to an existing widget instance"
-    (let [existing (JPanel.)
-          result (with-widget existing (border-panel :id "hi"))]
-      (expect (= existing result))
-      (expect (= :hi (id-of existing))))))
-
 (describe dispose!
   (it "should dispose of a JFrame"
     (let [f (pack! (frame :title "dispose!"))]
@@ -1574,7 +1538,7 @@
 
 (defmacro test-paintable [func expected-class]
   `(it ~(str "creates a paintable " expected-class " for (paintable " func " :paint nil)")
-      (let [p# (paintable ~func :paint nil :id :test)]
+      (let [p# (paintable ~expected-class :paint nil :id :test)]
         (expect (instance? ~expected-class p#))
         (expect (= :test (id-of p#)))
         (expect (= p# (config! p# :paint (fn [~'g ~'c] nil)))))))
@@ -1609,12 +1573,12 @@
       (expect (= :foo (id-of lbl)))))
 
   (it "creates a label subclass given the label function and args."
-    (let [lbl (paintable label :paint nil :id :foo)]
+    (let [lbl (paintable javax.swing.JLabel :paint nil :id :foo)]
       (expect (instance? javax.swing.JLabel lbl))
       (expect (= :foo (id-of lbl)))))
 
   (it "creates a button subclass"
-    (instance? javax.swing.JButton (paintable button :paint nil))))
+    (instance? javax.swing.JButton (paintable javax.swing.JButton :paint nil))))
 
 (describe width
   (it "returns the width of a widget"

@@ -726,10 +726,8 @@
   org.jdesktop.swingx.JXPanel
   panel-x-options)
 
-(defn- abstract-panel-x [layout {:as opts}]
-  (abstract-panel 
-    layout
-    (assoc opts :seesaw.core/with org.jdesktop.swingx.JXPanel)))
+(defn- abstract-panel-x [layout opts]
+  (abstract-panel (org.jdesktop.swingx.JXPanel.) layout opts))
 
 (defn xyz-panel-x [& opts]
   (abstract-panel-x nil opts))

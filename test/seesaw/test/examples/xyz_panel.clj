@@ -29,7 +29,7 @@
     ; Instead of a boring label, make the label rounded with
     ; some custom drawing. Use the before paint hook to draw
     ; under the label's text.
-    (paintable label 
+    (paintable javax.swing.JLabel 
       :border   5
       :text     text 
       :location [(rand-int 300) (rand-int 300)]
@@ -51,7 +51,8 @@
       (.drawLine g 0 y w y))))
 
 (defn make-panel []
-  (paintable xyz-panel 
+  (paintable javax.swing.JPanel 
+    :layout nil
     :paint draw-grid
     :id :xyz 
     :background "#222222"
