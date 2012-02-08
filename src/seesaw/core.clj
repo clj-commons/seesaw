@@ -2432,12 +2432,12 @@
 
 (defn- paint-option-handler [^java.awt.Component c v]
   (cond
-    (nil? v) (do 
+    (nil? v) (do
                (update-proxy c {"paintComponent" nil})
                (.repaint c))
     (fn? v)  (paint-option-handler c {:after v})
-    (map? v) (do 
-               (put-meta! c paint-property v) 
+    (map? v) (do
+               (put-meta! c paint-property v)
                (update-proxy c {"paintComponent" paint-component-impl})
                (.repaint c))
     :else (illegal-argument "Expect map or function for :paint property")))
@@ -2447,8 +2447,8 @@
 
   Macro that generates a paintable widget, i.e. a widget that can be drawn on
   by client code. target is a Swing class literal indicating the type that will
-  be constructed. 
-  
+  be constructed.
+
   All other options will be passed along to the given Seesaw widget
   as usual and will be applied to the generated class.
 

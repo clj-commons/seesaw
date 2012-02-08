@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -11,7 +11,7 @@
 (ns seesaw.selector
   "Seesaw selector support, based largely upon enlive-html.
   https://github.com/cgrand/enlive
-  
+
   There's no need to ever directly require this namespace. Use (seesaw.core/select)!"
   (:require [seesaw.util :as ssu])
   (:require [clojure.zip :as z]))
@@ -30,9 +30,9 @@
 (defprotocol Tag
   (tag-name [this]))
 
-(defn id-of 
+(defn id-of
   "Retrieve the id of a widget. Use (seesaw.core/id-of)."
-  [w] 
+  [w]
   (id-of* w))
 
 (defn id-of!
@@ -47,7 +47,7 @@
   "Retrieve the classes of a widget as a set of strings"
   (class-of* w))
 
-(defn class-of! 
+(defn class-of!
   "INTERNAL USE ONLY."
   [w classes]
   (class-of!* w classes))
@@ -55,7 +55,7 @@
 (defn id-selector? [s]
   (.startsWith (name s) "#"))
 
-(defn- mapknit 
+(defn- mapknit
  ([f coll]
    (mapknit f coll nil))
  ([f coll etc]
@@ -64,13 +64,13 @@
       (f (first coll) (mapknit f (rest coll) etc))
       etc))))
 
-(defn- iterate-while 
+(defn- iterate-while
  ([f x]
-  (lazy-seq (when x (cons x (iterate-while f (f x)))))) 
+  (lazy-seq (when x (cons x (iterate-while f (f x))))))
  ([f x pred]
-  (lazy-seq (when (pred x) (cons x (iterate-while f (f x) pred)))))) 
-  
-    
+  (lazy-seq (when (pred x) (cons x (iterate-while f (f x) pred))))))
+
+
 ;; utilities
 
 (defn- node? [x]
@@ -79,12 +79,12 @@
 
 (defn- as-nodes [node-or-nodes]
   (if (node? node-or-nodes)
-    [node-or-nodes] 
+    [node-or-nodes]
     node-or-nodes))
 
 (defn- flatten-nodes-coll [x]
   (letfn [(flat* [x stack]
-            (if (node? x) 
+            (if (node? x)
               (cons x (when (seq stack) (flat (peek stack) (pop stack))))
               (if-let [[x & xs] (seq x)]
                 (recur x (conj stack xs))
@@ -97,7 +97,7 @@
 (defn- flatmap [f node-or-nodes]
   (flatten-nodes-coll (map f (as-nodes node-or-nodes))))
 
-(defn- attr-values 
+(defn- attr-values
  "Returns the whitespace-separated values of the specified attr as a set or nil."
  [node attr]
   (when-let [v (-> node :attrs (get attr))]
@@ -108,22 +108,22 @@
   (z/zipper (constantly true) ssu/children identity root))
 
 ;; predicates utils
-(defn- zip-pred 
+(defn- zip-pred
  "Turns a predicate function on elements locs into a predicate-step usable in selectors."
  [f]
   #(and (z/branch? %) (f %)))
 
-(defn- pred 
+(defn- pred
  "Turns a predicate function on elements into a predicate-step usable in selectors."
  [f]
   (zip-pred #(f (z/node %))))
 
-(defn- text-pred 
+(defn- text-pred
  "Turns a predicate function on strings (text nodes) into a predicate-step usable in selectors."
  [f]
   #(let [n (z/node %)] (and (string? n) (f n))))
 
-(defn- re-pred 
+(defn- re-pred
  "Turns a predicate function on strings (text nodes) into a predicate-step usable in selectors."
  [re]
   (text-pred #(re-matches re %)))
@@ -133,14 +133,14 @@
 ;; core predicates
 (def ^{:private true} any (pred (constantly true)))
 
-(defn- tag= 
+(defn- tag=
  "Selector predicate, :foo is as short-hand for (tag= :foo)."
  [expected-tag-name]
-  (pred 
-    (fn [v] 
+  (pred
+    (fn [v]
         (= (if (satisfies? Tag v)
              (tag-name v)
-             (.getSimpleName (class v))) 
+             (.getSimpleName (class v)))
            expected-tag-name))))
 
 (defn- id=
@@ -162,12 +162,12 @@
  "Selector predicate, tests if the specified whitespace-seperated attribute contains the specified values. See CSS ~="
  [attr & values]
   (pred #(when-let [v (attr-values % attr)] (every? v values))))
- 
-(defn- has-class 
+
+(defn- has-class
  "Selector predicate, :.foo.bar. Looks for widgets with (:class #{:foo :bar})"
  [& classes]
  (pred #(when-let [v (class-of %)] (every? v classes))))
-   
+
 ;; selector syntax
 (defn- intersection [preds]
   (condp = (count preds)
@@ -187,16 +187,16 @@
 
 
 (def ^{:private true} segment-regex #"^<([\w.!]+)>(.*)")
-(defn- split-segments 
-  [^String s] 
-  (if-let [[_ ^String class-name & more]  (re-matches segment-regex s)] 
+(defn- split-segments
+  [^String s]
+  (if-let [[_ ^String class-name & more]  (re-matches segment-regex s)]
     (if (.endsWith class-name "!")
       (cons (str "+" (subs class-name 0 (dec (count class-name)))) (remove empty? more))
       (cons (str "*" class-name) (remove empty? more)))
     (seq (.split s "(?=[#.])"))))
 
-(def ^{:private true} compile-keyword 
-  (memoize 
+(def ^{:private true} compile-keyword
+  (memoize
     (fn [kw]
       (if (= :> kw)
         :>
@@ -215,15 +215,15 @@
                                     (conj preds (loose-type= (subs segment 1)))
                                     preds)))) preds segments)]
          (if (seq preds) (intersection preds) any))))))
-    
+
 (defn- compile-step [step]
   (cond
     (string? step) (compile-keyword (keyword step))
-    (keyword? step) (compile-keyword step)  
+    (keyword? step) (compile-keyword step)
     (set? step) (union (map compile-step step))
     (vector? step) (intersection (map compile-step step))
-    :else step))      
-    
+    :else step))
+
 (defn- compile-chain [chain]
   (map compile-step chain))
 
@@ -248,12 +248,12 @@
   (fn [^Number n]
     (loop [n n s (set init) [chains & etc] chains-seq]
       (cond
-        (odd? n) (recur (bit-shift-right n 1) (into s chains) etc) 
+        (odd? n) (recur (bit-shift-right n 1) (into s chains) etc)
         (zero? n) s
         :else (recur (bit-shift-right n 1) s etc)))))
 
 (defn- make-state [chains]
-  (let [derivations 
+  (let [derivations
           (reduce
             (fn [derivations chain]
               (cond
@@ -263,7 +263,7 @@
                 (next chain)
                   (let [pred (first chain)]
                     (-> derivations
-                      (assoc nil (conj (derivations nil) chain)) 
+                      (assoc nil (conj (derivations nil) chain))
                       (assoc pred (conj (derivations pred) (next chain)))))
                 :else
                   (assoc derivations :accepts (first chain)))) {} chains)
@@ -286,7 +286,7 @@
 (def ^{:private true} memoized-automaton* (memoize automaton*))
 
 (def ^{:private true} memoized-lockstep-automaton* (memoize lockstep-automaton*))
-    
+
 (defn- automaton [selector]
   ((if (cacheable? selector) memoized-automaton* automaton*) selector))
 
@@ -303,56 +303,56 @@
   (not (fragment-selector? selector)))
 
 (defn- static-selector? [selector]
-  (or (keyword? selector) 
+  (or (keyword? selector)
     (and (coll? selector) (every? static-selector? selector))))
 
-;; core 
-  
+;; core
+
 (defn- children-locs [loc]
   (iterate-while z/right (z/down loc)))
 
 (defn- zip-select-nodes* [locs state]
-  (letfn [(select1 [loc previous-state] 
+  (letfn [(select1 [loc previous-state]
             (when-let [state (step previous-state loc)]
               (let [descendants (mapcat #(select1 % state) (children-locs loc))]
                 (if (accept-key state) (cons loc descendants) descendants))))]
     (mapcat #(select1 % state) locs)))
-      
+
 (defn- select-nodes* [nodes selector]
   (let [state (automaton selector)]
-    (map z/node (zip-select-nodes* (map swing-zipper nodes) state)))) 
-      
+    (map z/node (zip-select-nodes* (map swing-zipper nodes) state))))
+
 (defn- zip-select-fragments* [locs state-from state-to]
-  (letfn [(select1 [locs previous-state-from previous-state-to] 
+  (letfn [(select1 [locs previous-state-from previous-state-to]
             (when (and previous-state-from previous-state-to)
               (let [states-from (map #(step previous-state-from %) locs)
                     states-to (map #(step previous-state-to %) locs)
                     descendants (reduce into []
-                                  (map #(select1 (children-locs %1) %2 %3) 
+                                  (map #(select1 (children-locs %1) %2 %3)
                                     locs states-from states-to))]
-                (loop [fragments descendants fragment nil 
+                (loop [fragments descendants fragment nil
                        locs locs states-from states-from states-to states-to]
                   (if-let [[loc & etc] (seq locs)]
                     (if fragment
                       (let [fragment (conj fragment loc)]
                         (if (accept-key (first states-to))
-                          (recur (conj fragments fragment) nil etc 
+                          (recur (conj fragments fragment) nil etc
                             (rest states-from) (rest states-to))
-                          (recur fragments fragment etc 
+                          (recur fragments fragment etc
                             (rest states-from) (rest states-to))))
                       (if (accept-key (first states-from))
                         (recur fragments [] locs states-from states-to)
-                        (recur fragments nil etc 
+                        (recur fragments nil etc
                           (rest states-from) (rest states-to))))
                     fragments)))))]
     (select1 locs state-from state-to)))
-      
+
 (defn- select-fragments* [nodes selector]
-  (let [[selector-from selector-to] (first selector) 
+  (let [[selector-from selector-to] (first selector)
         state-from (automaton selector-from)
         state-to (automaton selector-to)]
-    (map #(map z/node %) 
-      (zip-select-fragments* (map swing-zipper nodes) state-from state-to)))) 
+    (map #(map z/node %)
+      (zip-select-fragments* (map swing-zipper nodes) state-from state-to))))
 
 (defn select
  "*USE seesaw.core/select*
@@ -360,36 +360,36 @@
  [node-or-nodes selector]
   (let [nodes (as-nodes node-or-nodes)]
     (if (node-selector? selector)
-      (select-nodes* nodes selector) 
+      (select-nodes* nodes selector)
       (select-fragments* nodes selector))))
-  
-(defn- zip-select 
+
+(defn- zip-select
  "Returns the seq of locs matched by the specified selector."
  [locs selector]
   (if (node-selector? selector)
-    (apply zip-select-nodes* locs selector) 
+    (apply zip-select-nodes* locs selector)
     (apply zip-select-fragments* locs selector)))
-      
+
 ;; other predicates
-(defn- attr? 
+(defn- attr?
  "Selector predicate, tests if the specified attributes are present."
  [& kws]
   (pred #(every? (-> % :attrs keys set) kws)))
-  
-(defn- every?+ [pred & colls]
-  (every? #(apply pred %) (apply map vector colls))) 
 
-(defn- multi-attr-pred 
+(defn- every?+ [pred & colls]
+  (every? #(apply pred %) (apply map vector colls)))
+
+(defn- multi-attr-pred
  [single-attr-pred]
   (fn [& kvs]
     (let [ks (take-nth 2 kvs)
           vs (take-nth 2 (rest kvs))]
       (pred #(when-let [attrs (:attrs %)]
-               (every?+ single-attr-pred (map attrs ks) vs))))))           
+               (every?+ single-attr-pred (map attrs ks) vs))))))
 
 (def ^{:private true
-       :doc "Selector predicate, tests if the specified attributes have the specified values."} 
- attr= 
+       :doc "Selector predicate, tests if the specified attributes have the specified values."}
+ attr=
   (multi-attr-pred =))
 
 (defn- starts-with? [^String s ^String prefix]
@@ -402,34 +402,34 @@
   (and s (<= 0 (.indexOf s substring))))
 
 (def ^{:private true
-       :doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS ^= ."} 
+       :doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS ^= ."}
  attr-starts
   (multi-attr-pred starts-with?))
 
 (def ^{:private true
-       :doc "Selector predicate, tests if the specified attributes end with the specified values. See CSS $= ."} 
+       :doc "Selector predicate, tests if the specified attributes end with the specified values. See CSS $= ."}
  attr-ends
   (multi-attr-pred ends-with?))
 
 (def ^{:private true
-       :doc "Selector predicate, tests if the specified attributes contain the specified values. See CSS *= ."} 
+       :doc "Selector predicate, tests if the specified attributes contain the specified values. See CSS *= ."}
  attr-contains
   (multi-attr-pred contains-substring?))
 
 (defn- is-first-segment? [^String s ^String segment]
-  (and s 
+  (and s
     (.startsWith s segment)
     (= \- (.charAt s (count segment)))))
-             
+
 (def ^{:private true
        :doc "Selector predicate, tests if the specified attributes start with the specified values. See CSS |= ."}
- attr|=           
+ attr|=
   (multi-attr-pred is-first-segment?))
 
-(def ^{:private true} root 
+(def ^{:private true} root
   (zip-pred #(-> % z/up nil?)))
 
-(defn- nth? 
+(defn- nth?
  [f a b]
   (if (zero? a)
     ;#(= (-> (filter xml/tag? (f %)) count inc) b)
@@ -459,21 +459,21 @@
  "Selector step, tests if the node has an+b-1 siblings of the same type (tag name) on its left. See CSS :nth-of-type."
  ([b] (nth-of-type 0 b))
  ([a b] (zip-pred (nth? (filter-of-type z/lefts) a b))))
- 
+
 (defn- nth-last-of-type
  "Selector step, tests if the node has an+b-1 siblings of the same type (tag name) on its right. See CSS :nth-last-of-type."
  ([b] (nth-last-of-type 0 b))
  ([a b] (zip-pred (nth? (filter-of-type z/rights) a b))))
 
-(def ^{:private true} first-child (nth-child 1))      
-      
-(def ^{:private true} last-child (nth-last-child 1))      
-      
-(def ^{:private true} first-of-type (nth-of-type 1))      
-      
-(def ^{:private true} last-of-type (nth-last-of-type 1))      
+(def ^{:private true} first-child (nth-child 1))
 
-(def ^{:private true} only-child (intersection [first-child last-child]))  
+(def ^{:private true} last-child (nth-last-child 1))
+
+(def ^{:private true} first-of-type (nth-of-type 1))
+
+(def ^{:private true} last-of-type (nth-last-of-type 1))
+
+(def ^{:private true} only-child (intersection [first-child last-child]))
 
 (def ^{:private true} only-of-type (intersection [first-of-type last-of-type]))
 
@@ -486,19 +486,19 @@
 (defn- select? [node-or-nodes selector]
   (-> node-or-nodes as-nodes (select selector) seq boolean))
 
-(defn- has 
- "Selector predicate, matches elements which contain at least one element that 
-  matches the specified selector. See jQuery's :has" 
+(defn- has
+ "Selector predicate, matches elements which contain at least one element that
+  matches the specified selector. See jQuery's :has"
  [selector]
   (pred #(select? (:content %) selector)))
-  
+
 (defn- but-node
- "Selector predicate, matches nodes which are rejected by the specified selector-step. See CSS :not" 
+ "Selector predicate, matches nodes which are rejected by the specified selector-step. See CSS :not"
  [selector-step]
   (complement (compile-step selector-step)))
 
 (defn- but
- "Selector predicate, matches elements which are rejected by the specified selector-step. See CSS :not" 
+ "Selector predicate, matches elements which are rejected by the specified selector-step. See CSS :not"
  [selector-step]
   (intersection [any (but-node selector-step)]))
 
@@ -512,7 +512,7 @@
   (let [selector [:> selector-step]]
     ;#(select? (filter xml/tag? (z/lefts %)) selector)))
     #(select? (filter (constantly true) (z/lefts %)) selector)))
-  
+
 (defn- right [selector-step]
   (let [selector [:> selector-step]]
     ;#(when-let [sibling (first (filter xml/tag? (z/rights %)))]
@@ -523,7 +523,7 @@
   (let [selector [:> selector-step]]
     ;#(select? (filter xml/tag? (z/rights %)) selector)))
     #(select? (filter (constantly true) (z/rights %)) selector)))
-  
+
 (def ^{:private true} any-node (constantly true))
 
 (def ^{:private true} this-node [:> any-node])
@@ -532,31 +532,31 @@
 
 ;; screen-scraping utils
 (defn- text
- "Returns the text value of a node." 
+ "Returns the text value of a node."
  {:tag String}
  [node]
   (cond
     (string? node) node
-    ;(xml/tag? node) (apply str (map text (:content node))) 
+    ;(xml/tag? node) (apply str (map text (:content node)))
     :else ""))
-    
+
 (defn- texts
- "Returns the text value of a nodes collection." 
+ "Returns the text value of a nodes collection."
  {:tag String}
  [nodes]
   (map text nodes))
 
 ;(defmacro let-select
- ;"For each node or fragment, performs a subselect and bind it to a local, 
+ ;"For each node or fragment, performs a subselect and bind it to a local,
   ;then evaluates body.
-  ;bindings is a vector of binding forms and selectors." 
+  ;bindings is a vector of binding forms and selectors."
  ;[nodes-or-fragments bindings & body]
   ;(let [node-or-fragment (gensym "node-or-fragment__")
-        ;bindings 
-          ;(map (fn [f x] (f x)) 
+        ;bindings
+          ;(map (fn [f x] (f x))
             ;(cycle [identity (fn [spec] `(select ~node-or-fragment ~spec))])
-            ;bindings)] 
-    ;`(map (fn [~node-or-fragment] 
+            ;bindings)]
+    ;`(map (fn [~node-or-fragment]
             ;(let [~@bindings]
               ;~@body)) ~nodes-or-fragments)))
 
