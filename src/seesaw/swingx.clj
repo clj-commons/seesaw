@@ -237,7 +237,7 @@
     (seesaw.swingx/button-x-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXButton args) args))
+  (apply-options (construct org.jdesktop.swingx.JXButton) args))
 
 ;*******************************************************************************
 ; XLabel 
@@ -273,7 +273,7 @@
     (seesaw.swingx/label-x-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXLabel args) args))
+  (apply-options (construct org.jdesktop.swingx.JXLabel) args))
 
 ;*******************************************************************************
 ; BusyLabel 
@@ -305,7 +305,7 @@
     (seesaw.swingx/busy-label-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXBusyLabel args) args))
+  (apply-options (construct org.jdesktop.swingx.JXBusyLabel) args))
 
 ;*******************************************************************************
 ; Hyperlink 
@@ -333,7 +333,7 @@
     (seesaw.core/button-options)
   "
   [& args]
-  (apply-options (construct org.jdesktop.swingx.JXHyperlink args) args))
+  (apply-options (construct org.jdesktop.swingx.JXHyperlink) args))
 
 ;*******************************************************************************
 ; TaskPane
@@ -392,7 +392,7 @@
   "
   [& args]
   (apply-options 
-    (construct org.jdesktop.swingx.JXTaskPane args) 
+    (construct org.jdesktop.swingx.JXTaskPane) 
     args))
 
 (def task-pane-container-options
@@ -431,7 +431,7 @@
   "
   [& args]
   (apply-options 
-    (construct org.jdesktop.swingx.JXTaskPaneContainer args) 
+    (construct org.jdesktop.swingx.JXTaskPaneContainer) 
     args))
 
 ;*******************************************************************************
@@ -470,7 +470,7 @@
   "
   [& args]
   (apply-options 
-    (construct org.jdesktop.swingx.JXColorSelectionButton args) 
+    (construct org.jdesktop.swingx.JXColorSelectionButton) 
     args))
 
 ; Extend selection and selection event stuff for color button.
@@ -523,7 +523,7 @@
   "
   [& args]
   (apply-options 
-    (construct org.jdesktop.swingx.JXHeader args) 
+    (construct org.jdesktop.swingx.JXHeader) 
     args))
 
 ;*******************************************************************************
@@ -587,7 +587,7 @@
   "
   [& args]
   (apply-options
-    (doto (construct org.jdesktop.swingx.JXList args)
+    (doto (construct org.jdesktop.swingx.JXList)
       (.setAutoCreateRowSorter true)
       (.setRolloverEnabled true))
     args))
@@ -635,7 +635,7 @@
   "
   [& args]
   (apply-options
-    (construct org.jdesktop.swingx.JXTitledPanel args) 
+    (construct org.jdesktop.swingx.JXTitledPanel) 
     args))
 
 ;*******************************************************************************
@@ -668,7 +668,7 @@
   "
   [& args]
   (apply-options
-    (doto (construct org.jdesktop.swingx.JXTree args)
+    (doto (construct org.jdesktop.swingx.JXTree)
       (.setRolloverEnabled true))
     args)) 
 
@@ -707,7 +707,7 @@
   "
   [& args]
   (apply-options
-    (doto (construct org.jdesktop.swingx.JXTable args)
+    (doto (construct org.jdesktop.swingx.JXTable)
       (.setRolloverEnabled true)
       (.setColumnControlVisible true))
     args)) 
@@ -727,7 +727,7 @@
   panel-x-options)
 
 (defn- abstract-panel-x [layout opts]
-  (abstract-panel (org.jdesktop.swingx.JXPanel.) layout opts))
+  (abstract-panel (construct org.jdesktop.swingx.JXPanel) layout opts))
 
 (defn xyz-panel-x [& opts]
   (abstract-panel-x nil opts))

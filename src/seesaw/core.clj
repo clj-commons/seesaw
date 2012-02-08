@@ -210,41 +210,16 @@
 ; Widget construction stuff
 
 
-(declare construct-impl)
-(defn construct
-  "Use the ::with option to create a new widget, ensuring the
-   result is consistent with the given expected class. If there's no
-   ::with option, just fallback to a default instance of the expected
-   class.
+(defmacro construct
+  "*experimental. subject to change.*
 
-  Returns an instance of the expected class, or throws IllegalArgumentException
-  if the result using ::with isn't consistent with expected-class."
-  ([factory-class opts]
-    (construct-impl
-      factory-class
-      factory-class)))
+  A macro that returns a proxied instance of the given class. This is
+  used by Seesaw to construct widgets that can be fiddled with later,
+  e.g. installing a paint handler, etc."
+  ([factory-class]
+    `(proxy [~factory-class seesaw.selector.Tag] []
+       (tag_name [] (.getSimpleName ~factory-class)))))
 
-(defn- construct-impl
-  ([factory expected-class]
-    (cond
-      (instance? expected-class factory)
-        factory
-
-      (class? factory)
-        (construct-impl #(.newInstance ^Class factory) expected-class)
-
-      (fn? factory)
-        (let [result (factory)]
-          (if (instance? expected-class result)
-            result
-            (illegal-argument "%s is not an instance of %s"
-                              (class result)
-                              expected-class)))
-
-      :else
-        (illegal-argument
-          "Factory or instance %s is not consistent with expected type %s"
-          factory expected-class))))
 
 ;*******************************************************************************
 ; Generic widget stuff
@@ -1156,7 +1131,7 @@
   (case (count args)
     0 (label :text "")
     1 (label :text (first args))
-    (apply-options (construct JLabel args) args)))
+    (apply-options (construct JLabel) args)))
 
 
 ;*******************************************************************************
@@ -1265,7 +1240,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JButton.html
     (seesaw.core/button-group)"
   [& args]
-  (apply-options (construct javax.swing.JButton args) args))
+  (apply-options (construct javax.swing.JButton) args))
 
 (def toggle-options button-options)
 
@@ -1276,7 +1251,7 @@
   See:
     (seesaw.core/button)"
   [& args]
-  (apply-options (construct javax.swing.JToggleButton args) args))
+  (apply-options (construct javax.swing.JToggleButton) args))
 
 (def checkbox-options button-options)
 
@@ -1287,7 +1262,7 @@
   See:
     (seesaw.core/button)"
   [& args]
-  (apply-options (construct javax.swing.JCheckBox args) args))
+  (apply-options (construct javax.swing.JCheckBox) args))
 
 (def radio-options button-options)
 
@@ -1298,7 +1273,7 @@
   See:
     (seesaw.core/button)"
   [& args]
-  (apply-options (construct javax.swing.JRadioButton args) args))
+  (apply-options (construct javax.swing.JRadioButton) args))
 
 ;*******************************************************************************
 ; Text widgets
@@ -1410,8 +1385,8 @@
     (let [{:keys [multi-line?] :as opts} args
           opts (dissoc opts :multi-line?)]
       (if multi-line?
-        (apply-options (construct JTextArea opts) opts)
-        (apply-options (construct JTextField opts) opts)))))
+        (apply-options (construct JTextArea) opts)
+        (apply-options (construct JTextField) opts)))))
 
 (defn text!
   "Set the text of widget(s) or document(s). targets is an object that can be
@@ -1554,7 +1529,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPasswordField.html
   "
   [& opts]
-  (let [pw (construct javax.swing.JPasswordField opts)]
+  (let [pw (construct javax.swing.JPasswordField)]
     (apply-options pw opts)))
 
 (defn with-password*
@@ -1621,7 +1596,7 @@
     http://docs.oracle.com/javase/6/docs/api/javax/swing/event/HyperlinkEvent.html
   "
   [& opts]
-  (apply-options (construct javax.swing.JEditorPane opts) opts))
+  (apply-options (construct javax.swing.JEditorPane) opts))
 
 ;*******************************************************************************
 ; Listbox
@@ -1664,7 +1639,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JList.html
   "
   [& args]
-  (apply-options (construct javax.swing.JList args) args))
+  (apply-options (construct javax.swing.JList) args))
 
 ;*******************************************************************************
 ; JTable
@@ -1735,7 +1710,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTable.html"
   [& args]
   (apply-options
-    (doto ^javax.swing.JTable (construct javax.swing.JTable args)
+    (doto ^javax.swing.JTable (construct javax.swing.JTable)
       (.setFillsViewportHeight true))
     args))
 
@@ -1774,7 +1749,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTree.html
   "
   [& args]
-  (apply-options (construct javax.swing.JTree args) args))
+  (apply-options (construct javax.swing.JTree) args))
 
 ;*******************************************************************************
 ; Combobox
@@ -1819,7 +1794,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComboBox.html
   "
   [& args]
-  (apply-options (construct javax.swing.JComboBox args) args))
+  (apply-options (construct javax.swing.JComboBox) args))
 
 (def ^{:private true} spinner-date-by-table
   (constant-map java.util.Calendar
@@ -1915,7 +1890,7 @@
     test/seesaw/test/examples/spinner.clj
   "
   [& args]
-  (apply-options (construct javax.swing.JSpinner args) args))
+  (apply-options (construct javax.swing.JSpinner) args))
 
 ;*******************************************************************************
 ; Scrolling
@@ -1998,7 +1973,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JScrollPane.html
   "
   [target & opts]
-  (let [^JScrollPane sp (construct JScrollPane opts)]
+  (let [^JScrollPane sp (construct JScrollPane)]
     (.setViewportView sp (make-widget target))
     (apply-options sp opts)))
 
@@ -2142,7 +2117,7 @@
   "
   [dir left right & opts]
   (apply-options
-    (doto ^JSplitPane (construct JSplitPane opts)
+    (doto ^JSplitPane (construct JSplitPane)
       (.setOrientation (dir {:left-right JSplitPane/HORIZONTAL_SPLIT
                              :top-bottom JSplitPane/VERTICAL_SPLIT}))
       (.setLeftComponent (make-widget left))
@@ -2200,7 +2175,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JSeparator.html
   "
   [& opts]
-  (apply-options (construct javax.swing.JSeparator opts) opts))
+  (apply-options (construct javax.swing.JSeparator) opts))
 
 ;*******************************************************************************
 ; Menus
@@ -2276,7 +2251,7 @@
     (seesaw.core/button)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenu.html"
   [& opts]
-  (apply-options (construct javax.swing.JMenu opts) opts))
+  (apply-options (construct javax.swing.JMenu) opts))
 
 (def popup-options
   (merge
@@ -2308,7 +2283,7 @@
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JPopupMenu.html"
   [& opts]
-  (apply-options (construct javax.swing.JPopupMenu opts) opts))
+  (apply-options (construct javax.swing.JPopupMenu) opts))
 
 
 (defn- ^javax.swing.JPopupMenu make-popup [target arg event]
@@ -2347,7 +2322,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JMenuBar.html
   "
   [& opts]
-  (apply-options (construct javax.swing.JMenuBar opts) opts))
+  (apply-options (construct javax.swing.JMenuBar) opts))
 
 ;*******************************************************************************
 ; Toolbars
@@ -2384,7 +2359,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
-  (apply-options (construct javax.swing.JToolBar opts) opts))
+  (apply-options (construct javax.swing.JToolBar) opts))
 
 ;*******************************************************************************
 ; Tabs
@@ -2439,7 +2414,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
   "
   [& opts]
-  (apply-options (construct javax.swing.JTabbedPane opts) opts))
+  (apply-options (construct javax.swing.JTabbedPane) opts))
 
 ;*******************************************************************************
 ; Canvas
@@ -2626,7 +2601,7 @@
   "
   [& {:keys [width height visible? size]
       :as opts}]
-  (cond-doto ^javax.swing.JWindow (apply-options (construct javax.swing.JWindow opts)
+  (cond-doto ^javax.swing.JWindow (apply-options (construct javax.swing.JWindow)
                                     (dissoc opts :width :height :visible?))
     (and (not size)
          (or width height)) (.setSize (or width 100) (or height 100))
@@ -2717,7 +2692,7 @@
   "
   [& {:keys [width height visible? size]
       :as opts}]
-  (cond-doto ^JFrame (apply-options (construct JFrame opts)
+  (cond-doto ^JFrame (apply-options (construct JFrame)
                                     (dissoc opts :width :height :visible?))
     (and (not size)
          (or width height)) (.setSize (or width 100) (or height 100))
@@ -2873,7 +2848,7 @@
       :or {width 100 height 100 visible? false}
       :as opts}]
   (let [^JDialog dlg (apply-options
-                       (construct JDialog opts)
+                       (construct JDialog)
                        (merge {:modal? true}
                               (dissoc opts :width :height :visible? :pack?)))]
     (when-not size (.setSize dlg width height))
@@ -3178,7 +3153,7 @@
   [& {:keys [orientation value min max minor-tick-spacing major-tick-spacing
              snap-to-ticks? paint-ticks? paint-labels? paint-track? inverted?]
       :as kw}]
-  (let [sl (construct javax.swing.JSlider kw)]
+  (let [sl (construct javax.swing.JSlider)]
     (apply-options sl kw)))
 
 
@@ -3229,7 +3204,7 @@
 
 "
   [& {:keys [orientation value min max] :as opts}]
-  (let [sl (construct javax.swing.JProgressBar opts)]
+  (let [sl (construct javax.swing.JProgressBar)]
     (apply-options sl opts)))
 
 

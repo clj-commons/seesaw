@@ -26,7 +26,7 @@
 
   (it "should find a widget by type, strictly"
     (let [c (proxy [javax.swing.JLabel] []) ; should be ignored
-          d (core/label)
+          d (javax.swing.JLabel.) ; not ignored
           b (core/toggle) ; should be ignored
           p (core/flow-panel :items [c d b])
           f (core/frame :title "select by type" :content p)]

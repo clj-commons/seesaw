@@ -240,40 +240,40 @@
   (it "returns a button if input is an Action"
     (let [a (action :handler #(println "HI") :name "Test")
           c (make-widget a)]
-      (expect (isa? (class c) javax.swing.JButton))
+      (expect (instance? javax.swing.JButton c))
       (expect (= "Test" (.getText c)))))
   (it "creates a separator for :separator"
-    (expect (= javax.swing.JSeparator (class (make-widget :separator)))))
+    (instance? javax.swing.JSeparator (make-widget :separator)))
   (it "creates horizontal glue for :fill-h"
     (let [c (make-widget :fill-h)]
-      (expect (isa? (class c) javax.swing.Box$Filler ))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 32767.0 (.. c getMaximumSize getWidth)))))
   (it "creates vertical glue for :fill-v"
     (let [c (make-widget :fill-v)]
-      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 32767.0 (.. c getMaximumSize getHeight)))))
   (it "creates a vertical strut for [:fill-v N]"
     (let [c (make-widget [:fill-v 99])]
-      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 32767.0 (.. c getMaximumSize getWidth)))
       (expect (= 99.0 (.. c getMaximumSize getHeight)))
       (expect (= 99.0 (.. c getPreferredSize getHeight)))))
   (it "creates a horizontal strut for [:fill-h N]"
     (let [c (make-widget [:fill-h 88])]
-      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 32767.0 (.. c getMaximumSize getHeight)))
       (expect (= 88.0 (.. c getMaximumSize getWidth)))
       (expect (= 88.0 (.. c getPreferredSize getWidth)))))
   (it "creates a rigid area for a Dimension"
     (let [c (make-widget (Dimension. 12 34))]
-      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 12.0 (.. c getMaximumSize getWidth)))
       (expect (= 34.0 (.. c getMaximumSize getHeight)))
       (expect (= 12.0 (.. c getPreferredSize getWidth)))
       (expect (= 34.0 (.. c getPreferredSize getHeight)))))
   (it "creates a rigid area for a [N :by N]"
     (let [c (make-widget [12 :by 34])]
-      (expect (isa? (class c) javax.swing.Box$Filler))
+      (expect (instance? javax.swing.Box$Filler c))
       (expect (= 12.0 (.. c getMaximumSize getWidth)))
       (expect (= 34.0 (.. c getMaximumSize getHeight)))
       (expect (= 12.0 (.. c getPreferredSize getWidth)))
@@ -420,7 +420,7 @@
 
 (describe xyz-panel
   (it "should create a JPanel"
-    (= JPanel (class (xyz-panel))))
+    (instance? JPanel (xyz-panel)))
   (it "should create a JPanel with a nil layout"
     (nil? (.getLayout (xyz-panel))))
   (it "should add items"
@@ -522,7 +522,7 @@
 (describe label
   (it "should create an empty label"
     (let [l (label)]
-      (expect (= JLabel (class l)))
+      (expect (instance? JLabel l))
       (expect (= "" (.getText l)))))
   (it "should create a label with tooltip"
     (expect (= "HI" (.getToolTipText (label :tip "HI")))))
@@ -612,18 +612,18 @@
     (= ["HI" "BYE"] (text [(text "HI") (button :text "BYE")])))
   (it "should create a text field given a string argument"
     (let [t (text "HI")]
-      (expect (= JTextField (class t)))
+      (expect (instance? JTextField t))
       (expect (= "HI" (.getText t)))))
   (it "should create a text field by default"
     (let [t (text :text "HI")]
-      (expect (= JTextField (class t)))
+      (expect (instance? JTextField t))
       (expect (= "HI" (.getText t)))))
   (it "should create a text field with the given :columns"
     (let [t (text :text "HI" :columns 55)]
       (expect (= 55 (.getColumns t)))))
   (it "should create a text area when multi-line? is true"
     (let [t (text :text "HI" :multi-line? true)]
-      (expect (= JTextArea (class t)))
+      (expect (instance? JTextArea t))
       (expect (= "HI" (.getText t)))))
   (it "should create a text area with the given :columns"
     (let [t (text :text "HI" :multi-line? true :columns 91)]
@@ -668,7 +668,7 @@
                     :styles [[:big :size 30]
                             [:small :size 3]])
           style (.getStyle t "big")]
-      (expect (isa? (class style) javax.swing.text.Style))
+      (expect (instance? javax.swing.text.Style style))
       (expect (.containsAttribute style StyleConstants/FontSize (Integer. 30)))))
   (it "should set the FontSize attr as an Integer"
     (let [t (styled-text :styles [[:big :size 30]])
@@ -692,7 +692,7 @@
 
 (describe password
   (it "should create a JPasswordField"
-    (= javax.swing.JPasswordField (class (password))))
+    (instance? javax.swing.JPasswordField (password)))
   (it "should set the initial text"
     (= "secret" (text (password :text "secret"))))
   (it "should set the columns"
@@ -718,7 +718,7 @@
 
 (describe editor-pane
   (it "should create a JEditorPane"
-    (= javax.swing.JEditorPane (class (editor-pane)))))
+    (instance? javax.swing.JEditorPane (editor-pane))))
 
 (describe button-group
   (it "should create a ButtonGroup"
@@ -737,7 +737,7 @@
 (describe button
   (it "should create a JButton"
     (let [b (button :text "HI")]
-      (expect (= JButton (class b)))
+      (expect (instance? JButton b))
       (expect (= "HI" (.getText b)))))
   (it "should handle the :margin option with to-insets"
     (let [b (button :margin 1)
@@ -753,7 +753,7 @@
   (it "should create a button from an action"
     (let [a (action :handler println)
           b (button :action a)]
-      (expect (= JButton (class b)))
+      (expect (instance? JButton b))
       (expect (= a (.getAction b)))))
 
   (it "should set the :mnemonic of the button given an integer keycode"
@@ -766,7 +766,7 @@
 (describe toggle
   (it "should create a JToggleButton"
     (let [t (toggle :text "HI")]
-      (expect (= JToggleButton (class t)))
+      (expect (instance? JToggleButton t))
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
@@ -776,7 +776,7 @@
 (describe checkbox
   (it "should create a JCheckBox"
     (let [t (checkbox :text "HI")]
-      (expect (= JCheckBox (class t)))
+      (expect (instance? JCheckBox t))
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
@@ -786,7 +786,7 @@
 (describe radio
   (it "should create a JRadioButton"
     (let [t (radio :text "HI")]
-      (expect (= JRadioButton (class t)))
+      (expect (instance? JRadioButton t))
       (expect (= "HI" (.getText t))))
       (expect (not (.isSelected t))))
   (it "should honor the :selected property"
@@ -796,7 +796,7 @@
 (describe listbox
   (verify-config (listbox :selection-mode :single) :selection-mode :single)
   (it "should create a JList"
-    (= javax.swing.JList (class (listbox))))
+    (instance? javax.swing.JList (listbox)))
   (it "should create a JList with :fixed-cell-height set"
     (= 98 (.getFixedCellHeight (listbox :fixed-cell-height 98))))
   (it "should create a JList and set the selection mode"
@@ -815,7 +815,7 @@
 (describe combobox
   (it "should create a JComboBox"
     (let [lb (combobox)]
-      (= javax.swing.JComboBox (class lb))))
+      (instance? javax.swing.JComboBox lb)))
   (testing "the :editable? property"
     (it "should create a non-editable JComboBox when false"
       (not (.isEditable (combobox :editable? false))))
@@ -885,7 +885,7 @@
 
 (describe table
   (it "should create a JTable"
-    (= javax.swing.JTable (class (table))))
+    (instance? javax.swing.JTable (table)))
   (it "should create a JTable with :single selection-mode set"
     (= javax.swing.ListSelectionModel/SINGLE_SELECTION (.. (table :selection-mode :single) getSelectionModel getSelectionMode)))
   (it "should create a JTable with :multi-interval selection-mode set"
@@ -922,7 +922,7 @@
 
 (describe tree
   (it "should create a JTree"
-    (= javax.swing.JTree (class (tree))))
+    (instance? javax.swing.JTree (tree)))
   (verify-config (tree :expands-selected-paths? true) :expands-selected-paths? true)
   (verify-config (tree :expands-selected-paths? false) :expands-selected-paths? false)
   (verify-config (tree :scrolls-on-expand? true) :scrolls-on-expand? true)
@@ -956,7 +956,7 @@
   (it "should create a JScrollPane"
     (let [l (label :text "Test")
           s (scrollable l)]
-      (expect (= JScrollPane (class s)))
+      (expect (instance? JScrollPane s))
       (expect (= l (.. s getViewport getView)))))
   (it "should create a scroll pane with horizontal policy"
     (expect (= ScrollPaneConstants/HORIZONTAL_SCROLLBAR_NEVER (.getHorizontalScrollBarPolicy (scrollable (text) :hscroll :never)))))
@@ -987,7 +987,7 @@
     (let [left (label :text "Left")
           right (label :text "Right")
           s (splitter :left-right left right)]
-      (expect (= javax.swing.JSplitPane (class s)))
+      (expect (instance? javax.swing.JSplitPane s))
       (expect (= left (.getLeftComponent s)))
       (expect (= right (.getRightComponent s)))))
   (verify-config (splitter :top-bottom "top" "bottom" :divider-location 99) :divider-location 99)
@@ -1015,7 +1015,7 @@
 
 (describe menu-item
   (it "should create a JMenuItem"
-      (expect (= javax.swing.JMenuItem (class (menu-item)))))
+      (expect (instance? javax.swing.JMenuItem (menu-item))))
   (it "should create a menu item with an accelerator key"
     (let [ks (seesaw.keystroke/keystroke "ctrl S")
           mi (menu-item :key ks)]
@@ -1027,7 +1027,7 @@
 
 (describe menu
   (it "should create a JMenu"
-    (expect (= javax.swing.JMenu (class (menu)))))
+    (expect (instance? javax.swing.JMenu (menu))))
   (it "should create a JMenu with the given items"
     (let [a (action)
           b :separator
@@ -1036,13 +1036,13 @@
           m (menu :items [a b c d])
           [ia ib ic id] (.getMenuComponents m)]
       (expect (= a (.getAction ia)))
-      (expect (= javax.swing.JPopupMenu$Separator (class ib)))
+      (expect (instance? javax.swing.JPopupMenu$Separator ib))
       (expect (= c ic))
       (expect (= "Just a string" (.getText id))))))
 
 (describe popup
   (it "should create a JPopupMenu"
-    (expect (= javax.swing.JPopupMenu (class (popup)))))
+    (expect (instance? javax.swing.JPopupMenu (popup))))
   (it "should create a JPopupMenu with the given items"
     (let [a (action)
           b :separator
@@ -1057,7 +1057,7 @@
 
 (describe menubar
   (it "should create a JMenuBar"
-    (= javax.swing.JMenuBar (class (menubar))))
+    (instance? javax.swing.JMenuBar (menubar)))
   (it "should create a JMenuBar with the given items"
     (let [a (menu)
           b (menu)
@@ -1068,7 +1068,7 @@
   (it "should create a JToolBar with the given items"
     (let [tb (toolbar :items ["a" "b" "c"])
           items (.getComponents tb)]
-      (expect (= javax.swing.JToolBar (class tb)))
+      (expect (instance? javax.swing.JToolBar tb))
       (expect (= ["a" "b" "c"] (map #(.getText %) items)))))
   (it "should set the floatable? property"
     (let [tb (toolbar :floatable? true)]
@@ -1081,26 +1081,26 @@
       (expect (= SwingConstants/VERTICAL (.getOrientation tb)))))
   (it "can create a toolbar separator with the :separator keyword"
     (let [tb (toolbar :items [:separator])]
-      (expect (= javax.swing.JToolBar$Separator (class (.getComponent tb 0)))))))
+      (expect (instance? javax.swing.JToolBar$Separator (.getComponent tb 0))))))
 
 (describe separator
   (it "should create a horizontal JSeparator by default"
     (let [s (separator)]
-      (expect (= javax.swing.JSeparator (class s)))
+      (expect (instance? javax.swing.JSeparator s))
       (expect (= SwingConstants/HORIZONTAL (.getOrientation s)))))
   (it "should create a horizontal JSeparator when :orientation is specified"
     (let [s (separator :orientation :horizontal)]
-      (expect (= javax.swing.JSeparator (class s)))
+      (expect (instance? javax.swing.JSeparator s))
       (expect (= SwingConstants/HORIZONTAL (.getOrientation s)))))
   (it "should create a vertical JSeparator when :orientation is specified"
     (let [s (separator :orientation :vertical)]
-      (expect (= javax.swing.JSeparator (class s)))
+      (expect (instance? javax.swing.JSeparator s))
       (expect (= SwingConstants/VERTICAL (.getOrientation s))))))
 
 (describe tabbed-panel
   (it "should create a JTabbedPane with desired tab placement and layout"
     (let [tp (tabbed-panel :placement :bottom :overflow :wrap)]
-      (expect (= JTabbedPane (class tp)))
+      (expect (instance? JTabbedPane tp))
       (expect (= JTabbedPane/BOTTOM (.getTabPlacement tp)))
       (expect (= JTabbedPane/WRAP_TAB_LAYOUT (.getTabLayoutPolicy tp)))))
   (it "should add tabs from the tabs property"
@@ -1158,13 +1158,13 @@
     (= (java.awt.Dimension. 0 0) (.getSize (frame))))
   (it "should create a JFrame and set its title, width, and height"
     (let [f (frame :title "Hello" :width 99 :height 88)]
-      (expect (= javax.swing.JFrame (class f)))
+      (expect (instance? javax.swing.JFrame f))
       (expect (= "Hello" (.getTitle f)))
       (expect (= 99 (.getWidth f)))
       (expect (= 88 (.getHeight f)))))
   (it "should set the frame's size with the :size option"
     (let [f (frame :title "Hello" :size [123 :by 456])]
-      (expect (= javax.swing.JFrame (class f)))
+      (expect (instance? javax.swing.JFrame f))
       (expect (= "Hello" (.getTitle f)))
       (expect (= 123 (.getWidth f)))
       (expect (= 456 (.getHeight f)))))
@@ -1226,7 +1226,7 @@
        (= :my-dialog (id-of (custom-dialog :id :my-dialog))))
      (it "should create a JDialog and set its title, width, and height"
        (let [f (custom-dialog :title "Hello" :width 99 :height 88)]
-         (expect (= javax.swing.JDialog (class f)))
+         (expect (instance? javax.swing.JDialog f))
          (expect (= "Hello" (.getTitle f)))))
      (it "should set the dialog's default close operation"
        (let [f (custom-dialog :on-close :dispose)]
@@ -1295,7 +1295,7 @@
 (describe slider
   (it "should create a slider with a min, max, and value"
     (let [s (slider :min 40 :max 99 :value 55)]
-      (expect (= javax.swing.JSlider (class s)))
+      (expect (instance? javax.swing.JSlider s))
       (expect (= 40 (.getMinimum s)))
       (expect (= 99 (.getMaximum s)))
       (expect (= 55 (.getValue s)))))
@@ -1318,7 +1318,7 @@
 
 (describe progress-bar
   (it "should create a JProgressBar"
-    (expect (= javax.swing.JProgressBar (class (progress-bar)))))
+    (expect (instance? javax.swing.JProgressBar (progress-bar))))
   (it "should set the progress bars min, max and initial value"
     (let [pb (progress-bar :value 5 :min 1 :max 6)]
       (expect (= 5 (.getValue pb)))

@@ -27,6 +27,9 @@
   (class-of* [this])
   (class-of!* [this classes]))
 
+(defprotocol Tag
+  (tag-name [this]))
+
 (defn id-of 
   "Retrieve the id of a widget. Use (seesaw.core/id-of)."
   [w] 
@@ -132,8 +135,13 @@
 
 (defn- tag= 
  "Selector predicate, :foo is as short-hand for (tag= :foo)."
- [tag-name]
-  (pred #(= (.getSimpleName (class %)) tag-name)))
+ [expected-tag-name]
+  (pred 
+    (fn [v] 
+        (= (if (satisfies? Tag v)
+             (tag-name v)
+             (.getSimpleName (class v))) 
+           expected-tag-name))))
 
 (defn- id=
  "Selector predicate, :#foo is as short-hand for (id= \"foo\")."
