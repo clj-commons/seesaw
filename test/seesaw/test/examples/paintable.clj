@@ -27,14 +27,12 @@
   (flow-panel 
     :border 5
     :items [
-      (label            :text "I'm a good label!" :font "ARIAL-BOLD-40" :foreground "#00AA00")
-      (paintable javax.swing.JLabel
-                 :text "I'm a bad label!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)
-      (paintable javax.swing.JButton
-                 :text "I'm a bad button!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)]))
+      (label  :text "I'm a good label!" :font "ARIAL-BOLD-40" :foreground "#00AA00")
+      (label  :text "I'm a bad label!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)
+      (button :text "I'm a bad button!"  :font "ARIAL-BOLD-40" :paint draw-a-red-x)]))
 
 (defexample []
-  (frame :title "Seesaw (paintable) example"
+  (frame :title "Seesaw :paint example"
          :content (content)))
 
 ;(run :dispose)

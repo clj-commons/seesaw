@@ -828,7 +828,7 @@
       ['javax.swing.JPopupMenu
        "(fn [e]) that returns a seq of menu items"
        "See (seesaw.core/popup)"])
-    (default-option :paint #(paint-option-handler %1 %2) nil ["See (seesaw.core/paintable)"])
+    (default-option :paint #(paint-option-handler %1 %2) nil ["See (seesaw.core/canvas)"])
 
     ; TODO I'd like to push these down but cells.clj uses them on non-attached
     ; widgets.
@@ -886,7 +886,7 @@
     (doto panel
       (.setLayout (if (fn? layout) (layout panel) layout))
       (apply-options opts)))
-  ([layout opts] (abstract-panel (JPanel.) layout opts)))
+  ([layout opts] (abstract-panel (construct JPanel) layout opts)))
 
 ;*******************************************************************************
 ; Null Layout
@@ -2421,13 +2421,6 @@
 
 (def ^{:private true} paint-property "seesaw-paint")
 
-(defn- paint-option-handler [^java.awt.Component c v]
-  (cond
-    (nil? v) (paint-option-handler c {:before nil :after nil :super? true})
-    (fn? v)  (paint-option-handler c {:after v})
-    (map? v) (do (put-meta! c paint-property v) (.repaint c))
-    :else (illegal-argument "Expect map or function for :paint property")))
-
 (defn- paint-component-impl [^javax.swing.JComponent this ^java.awt.Graphics2D g]
   (let [{:keys [before after super?] :or {super? true}} (get-meta this paint-property)]
     (seesaw.graphics/anti-alias g)
@@ -2437,40 +2430,31 @@
     (when super? (proxy-super paintComponent g))
     (when after  (seesaw.graphics/push g (after this g)))))
 
-
-(defmacro ^{:doc "*INTERNAL USE ONLY* See (seesaw.core/paintable)"}
-  paintable-proxy
-  [class]
-  `(proxy [~class] []
-    (paintComponent [g#] (@#'seesaw.core/paint-component-impl ~'this g#))))
+(defn- paint-option-handler [^java.awt.Component c v]
+  (cond
+    (nil? v) (do 
+               (update-proxy c {"paintComponent" nil})
+               (.repaint c))
+    (fn? v)  (paint-option-handler c {:after v})
+    (map? v) (do 
+               (put-meta! c paint-property v) 
+               (update-proxy c {"paintComponent" paint-component-impl})
+               (.repaint c))
+    :else (illegal-argument "Expect map or function for :paint property")))
 
 (defmacro paintable
-  "*Experimental. Subject to change*
+  "*Deprecated. Just use :paint directly on any widget.*
 
   Macro that generates a paintable widget, i.e. a widget that can be drawn on
   by client code. target is a Swing class literal indicating the type that will
-  be constructed. Options should contain a :paint option with one of the 
-  following values:
-
-    nil - disables painting. The widget will be filled with its background
-      color unless it is not opaque.
-
-    (fn [c g]) - a paint function that takes the canvas and a Graphics2D as
-      arguments. Called after super.paintComponent.
-
-    {:before fn :after fn :super? bool} - a map with :before and :after functions which
-      are called before and after super.paintComponent respectively. If super?
-      is false, the super.paintComponent is not called.
-
+  be constructed. 
+  
   All other options will be passed along to the given Seesaw widget
   as usual and will be applied to the generated class.
 
   Notes:
     If you just want a panel to draw on, use (seesaw.core/canvas). This macro is
     intended for customizing the appearance of existing widget types.
-
-    Also note that some customizations are also possible and maybe easier with
-    the creative use of borders.
 
   Examples:
 
@@ -2483,32 +2467,46 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29
  "
  [cls & opts]
- `(apply-options (paintable-proxy ~cls) (vector ~@opts)))
+ `(apply-options (construct ~cls) (vector ~@opts)))
 
 (def canvas-options default-options)
 
 (defn canvas
   [& opts]
   "Creates a paintable canvas, i.e. a JPanel with paintComponent overridden.
-  Painting is configured with the :paint property which is described in
-  the docs for (seesaw.core/paintable)
+  Painting is configured with the :paint property which can take the
+  following values:
+
+    nil - disables painting. The widget will be filled with its background
+      color unless it is not opaque.
+
+    (fn [c g]) - a paint function that takes the widget and a Graphics2D as
+      arguments. Called after super.paintComponent.
+
+    {:before fn :after fn :super? bool} - a map with :before and :after functions which
+      are called before and after super.paintComponent respectively. If super?
+      is false, super.paintComponent is not called.
 
   Notes:
 
+    The :paint option is actually supported by *all* Seesaw widgets.
+
     (seesaw.core/config!) can be used to change the :paint property at any time.
+
+    Some customizations are also possible and maybe easier with
+    the creative use of borders.
 
   Examples:
 
     (canvas :paint #(.drawString %2 \"I'm a canvas\" 10 10))
 
   See:
-    (seesaw.core/paintable)
     (seesaw.graphics)
     (seesaw.examples.canvas)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29
   "
   (let [{:keys [paint] :as opts} opts
-        ^javax.swing.JPanel p (paintable javax.swing.JPanel)]
+        ^javax.swing.JPanel p (construct javax.swing.JPanel)]
     (.setLayout p nil)
     (apply-options p opts)))
 ;

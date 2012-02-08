@@ -11,6 +11,7 @@
 (ns seesaw.test.core
   (:require [seesaw.selector :as selector]
             [seesaw.cursor :as cursor]
+            seesaw.meta
             clojure.java.io)
   (:use seesaw.core
         seesaw.font
@@ -69,6 +70,12 @@
     (it "sets the classes of a widget"
       (expect (= #{"foo" "bar"} (selector/class-of (flow-panel :class #{:foo :bar}))))))
 
+  (testing "the :paint option"
+    (it "sets the paint-property to a function"
+      (let [f (fn [g c])
+            b (button :paint f)
+            pp (seesaw.meta/get-meta b "seesaw-paint")]
+        (expect (= f (:after pp))))))
   (testing "the :user-data option"
     (it "associates user data with the widget"
       (expect (= "I'm some user data"
