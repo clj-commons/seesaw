@@ -697,6 +697,7 @@
                              Defaults to true.
     :column-margin           Set margin between cells in pixels
     :highlighters            A list of highlighters
+    :horizontal-scroll-enabled? Allow horizontal scrollbars. Defaults to false.
 
   By default, ctrl/cmd-F is bound to the search function.
 
