@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -68,11 +68,11 @@
 
 (describe p-pattern
   (it "creates a PatternHighlighPredicate with the given pattern"
-    (let [pat #"hi"] 
+    (let [pat #"hi"]
       (expect (= pat (.getPattern (p-pattern pat))))))
 
   (it "creates a PatternHighlighPredicate with the given pattern and columns"
-    (let [pat (p-pattern #"hi" :test-column 123 :highlight-column 456)] 
+    (let [pat (p-pattern #"hi" :test-column 123 :highlight-column 456)]
       (expect (= 123 (.getTestColumn pat)))
       (expect (= 456 (.getHighlightColumn pat))))))
 
@@ -171,11 +171,11 @@
     (= "HI" (core/text (button-x :text "HI"))))
   (it "can set painters"
     (let [p (org.jdesktop.swingx.painter.BusyPainter.)]
-      (expect (= p (core/config 
-                     (button-x :background-painter p) 
+      (expect (= p (core/config
+                     (button-x :background-painter p)
                      :background-painter)))
-      (expect (= p (core/config 
-                     (button-x :foreground-painter p) 
+      (expect (= p (core/config
+                     (button-x :foreground-painter p)
                      :foreground-painter))))))
 (describe label-x
   (it "creates a JXLabel"
@@ -190,11 +190,11 @@
     (= (Math/toRadians 60.0) (core/config (label-x :text-rotation (Math/toRadians 60.0)) :text-rotation)))
   (it "can set painters"
     (let [p (org.jdesktop.swingx.painter.BusyPainter.)]
-      (expect (= p (core/config 
-                     (label-x :background-painter p) 
+      (expect (= p (core/config
+                     (label-x :background-painter p)
                      :background-painter)))
-      (expect (= p (core/config 
-                     (label-x :foreground-painter p) 
+      (expect (= p (core/config
+                     (label-x :foreground-painter p)
                      :foreground-painter))))))
 
 (describe busy-label
@@ -237,13 +237,13 @@
   (it "creates a JXColorSelectionButton"
     (instance? org.jdesktop.swingx.JXColorSelectionButton (color-selection-button)))
   (it "can set the initial color"
-    (expect (= java.awt.Color/RED 
-               (core/config 
+    (expect (= java.awt.Color/RED
+               (core/config
                  (color-selection-button :selection java.awt.Color/RED)
                  :selection))))
   (it "can retrieve the current selection with (seesaw.core/selection)"
-    (expect (= java.awt.Color/RED 
-               (core/selection 
+    (expect (= java.awt.Color/RED
+               (core/selection
                  (color-selection-button :selection java.awt.Color/RED)))))
   (it "can set the current selection with (seesaw.core/selection!)"
     (let [csb (color-selection-button)]
@@ -339,6 +339,8 @@
     (.isColumnControlVisible (table-x)))
   (it "creates a sortable JXTable"
     (.isSortable (table-x)))
+  (it "can enable horizontal scrollbar"
+    (core/config (table-x :horizontal-scroll-enabled? true) :horizontal-scroll-enabled?))
   (it "can show the column control"
     (not (core/config (table-x :column-control-visible? false) :column-control-visible?)))
   (it "can set the column margin"
@@ -348,22 +350,22 @@
 
 (describe border-panel-x
   (it "creates a JXPanel with border-panel"
-    (expect (instance? java.awt.BorderLayout 
+    (expect (instance? java.awt.BorderLayout
                        (.getLayout (border-panel-x :alpha 0.5))))))
 
 (describe flow-panel-x
   (it "creates a JXPanel with flow-panel"
-    (expect (instance? java.awt.FlowLayout 
+    (expect (instance? java.awt.FlowLayout
                        (.getLayout (flow-panel-x :alpha 0.5))))))
 
 (describe horizontal-panel-x
   (it "creates a JXPanel with horizontal-panel"
-    (expect (instance? javax.swing.BoxLayout 
+    (expect (instance? javax.swing.BoxLayout
                        (.getLayout (horizontal-panel-x :alpha 0.5))))))
 
 (describe vertical-panel-x
   (it "creates a JXPanel with vertical-panel"
-    (expect (instance? javax.swing.BoxLayout 
+    (expect (instance? javax.swing.BoxLayout
                        (.getLayout (vertical-panel-x :alpha 0.5))))))
 
 (describe grid-panel-x

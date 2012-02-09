@@ -683,6 +683,7 @@
     highlighter-host-options
     (option-map
       (bean-option :column-control-visible? org.jdesktop.swingx.JXTable boolean)
+      (bean-option :horizontal-scroll-enabled? org.jdesktop.swingx.JXTable boolean)
       (bean-option :column-margin org.jdesktop.swingx.JXTable))))
 
 (widget-option-provider org.jdesktop.swingx.JXTable table-x-options)
