@@ -2644,6 +2644,8 @@
 
       (bean-option :resizable? java.awt.Frame boolean)
 
+      (bean-option :undecorated? java.awt.Frame boolean)
+
       (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter))))
 
 (option-provider javax.swing.JFrame frame-options)

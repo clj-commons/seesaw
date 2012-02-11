@@ -1181,6 +1181,9 @@
   (it "should create a JFrame and make is not resizable"
     (let [f (frame :title "Hello" :resizable? false)]
       (expect (not (.isResizable f)))))
+  (it "should create an undecorated JFrame"
+    (let [f (frame :title "Hello" :undecorated? true)]
+      (expect (.isUndecorated f))))
   (it "should create a JFrame and set its menu bar"
     (let [mb (menubar)
           f (frame :menubar mb)]
