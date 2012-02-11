@@ -2608,6 +2608,45 @@
 ;*******************************************************************************
 ; Frame
 
+(defn- default-screen-device []
+  (->
+    (java.awt.GraphicsEnvironment/getLocalGraphicsEnvironment)
+    .getDefaultScreenDevice))
+
+(defn full-screen-window
+  "Returns the window/frame that is currently in full-screen mode or nil if
+  none."
+  ([^java.awt.GraphicsDevice device]
+    (.getFullScreenWindow device))
+  ([]
+    (full-screen-window (default-screen-device))))
+
+(defn full-screen?
+  "Returns true if the given window/frame is in full-screen mode"
+  ([^java.awt.GraphicsDevice device window]
+    (= (to-root window) (.getFullScreenWindow device)))
+  ([window]
+    (full-screen? (default-screen-device) window)))
+
+(defn full-screen!
+  "Make the given window/frame full-screen. Pass nil to return all windows
+  to normal size."
+  ([^java.awt.GraphicsDevice device window]
+    (.setFullScreenWindow device (to-root window))
+    window)
+  ([window]
+    (full-screen! (default-screen-device) window)))
+
+(defn toggle-full-screen!
+  "Toggle the full-screen state of the given window/frame."
+  ([^java.awt.GraphicsDevice device window]
+    (full-screen! device
+                  (if (full-screen? device window) nil window))
+    window)
+  ([window]
+    (toggle-full-screen! (default-screen-device) window)))
+
+
 (def ^{:private true} frame-on-close-map {
   :hide    JFrame/HIDE_ON_CLOSE
   :dispose JFrame/DISPOSE_ON_CLOSE

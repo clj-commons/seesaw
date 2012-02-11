@@ -32,6 +32,7 @@
    'explorer
    'form
    'forms
+   'full-screen
    'game-of-life
    'hotpotatoes
    'j18n
