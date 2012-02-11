@@ -122,5 +122,5 @@
 (defexample []
   (-> (make-ui) add-behaviors))
 
-(run :dispose)
+;(run :dispose)
 
