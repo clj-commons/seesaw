@@ -3083,7 +3083,7 @@
     ; display a dialog to enter a users name and return the entered name.
     (dialog :content
      (flow-panel :items [\"Enter your name\" (text :id :name :text \"Your name here\")])
-                 :options-type :ok-cancel
+                 :option-type :ok-cancel
                  :success-fn (fn [p] (text (select (to-root p) [:#name]))))
 
   The dialog is not immediately shown. Use (seesaw.core/show!) to display the dialog.
