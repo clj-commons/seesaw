@@ -128,6 +128,10 @@
       (expect (= [8.0 16.0 3.0 4.0 0.0 360.0]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
+(describe string-shape
+  (it "creates a string shape"
+    (string-shape 1 2 "HI")))
+
 (describe stroke
   (it "creates a default stroke of width 1 with no args"
     (let [s (stroke)]
