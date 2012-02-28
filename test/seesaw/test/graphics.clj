@@ -125,7 +125,7 @@
     (let [s (pie 11 20 -3 -4 0 360)]
       (expect (= java.awt.geom.Arc2D$Double (class s)))
       (expect (= java.awt.geom.Arc2D/PIE (.getArcType s)))
-      (expect (= [8.0 16.0 3.0 4.0 0.0 360.0]
+      (expect (= [9.0 16.0 3.0 4.0 0.0 360.0]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
 (describe string-shape
