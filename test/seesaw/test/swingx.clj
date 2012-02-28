@@ -207,13 +207,15 @@
   (it "can set the text of the label"
     (= "Processing" (core/text (busy-label :text "Processing")))))
 
-(describe hyperlink
-  (it "creates a JXHyperlink with a URI"
-    (let [hl (hyperlink :uri (java.net.URI. "http://google.com"))]
-      (expect (instance? org.jdesktop.swingx.JXHyperlink hl))))
-  (it "creates a JXHyperlink with a string URI"
-    (let [hl (hyperlink :uri "http://google.com")]
-      (expect (instance? org.jdesktop.swingx.JXHyperlink hl)))))
+; hyperlink gets grouchy when run on travis with no desktop.
+(when (java.awt.Desktop/isDesktopSupported)
+  (describe hyperlink
+    (it "creates a JXHyperlink with a URI"
+      (let [hl (hyperlink :uri (java.net.URI. "http://google.com"))]
+        (expect (instance? org.jdesktop.swingx.JXHyperlink hl))))
+    (it "creates a JXHyperlink with a string URI"
+      (let [hl (hyperlink :uri "http://google.com")]
+        (expect (instance? org.jdesktop.swingx.JXHyperlink hl))))))
 
 (describe task-pane
   (it "creates a JXTaskPane with a title and icon"
