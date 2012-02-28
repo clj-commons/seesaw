@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/daveray/seesaw.png?branch=develop)](http://travis-ci.org/daveray/seesaw)
+
 _Note that current development is on the *develop* branch, not master_
 
 There's now a [Google Group] (https://groups.google.com/group/seesaw-clj) for discussion and questions.
