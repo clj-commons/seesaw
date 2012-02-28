@@ -338,6 +338,25 @@
     (.repaint target))
   targets)
 
+(defn request-focus!
+  "Request focus for the given widget-able thing. This will try to give
+  keyboard focus to the given widget. Returns its input.
+
+  The widget must be :focusable? for this to succeed.
+
+  Example:
+    (request-focus! my-widget)
+
+    ; Move focus on click
+    (listen my-widget :focus-gained request-focus!)
+
+  See:
+    http://docs.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#requestFocusInWindow()
+  "
+  [target]
+  (let [^java.awt.Component w (to-widget target)]
+    (.requestFocusInWindow w))
+  target)
 
 ;*******************************************************************************
 ; move!
