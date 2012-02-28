@@ -1,4 +1,4 @@
-;  Copyright (c) Dave Ray, 2011. All rights reserved.
+;lein deps; lein compile; export DISPLAY=:99.0; rm -Rf test/ ./lazytest.sh"  Copyright (c) Dave Ray, 2011. All rights reserved.
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
@@ -23,7 +23,7 @@
     :center content))
 
 (def demos
-  {:table-x (demo "(seesaw.swingx/table-x)" "Like (table), but slightly less sucky."
+  (delay {:table-x (demo "(seesaw.swingx/table-x)" "Like (table), but slightly less sucky."
                   (scrollable
                     (table-x :model [:columns [:name :file :line]
                                      :rows (map (comp meta val) (ns-publics 'seesaw.core))]
@@ -88,7 +88,7 @@
                        (titled-panel
                          :content (label-x :wrap-lines? true
                                            :text "This is the content of the titled panel. The title can also have decorations, etc." )
-                         :title "The title of the panel"))})
+                         :title "The title of the panel"))}))
 
 (defn make-ui []
   (frame
@@ -103,10 +103,10 @@
                 (scrollable
                   (listbox-x
                     :id :chooser
-                    :model (->> (keys demos) sort)
+                    :model (->> (keys @demos) sort)
                     :highlighters [(hl-simple-striping)]))
                 (border-panel :id :demo-container
-                              :center (:label-x demos))
+                              :center (:label-x @demos))
                 :divider-location 1/4))))
 
 (defn add-behaviors [root]
@@ -116,7 +116,7 @@
       (fn [e]
         (replace! container
                   (select container [:#demo])
-                  (demos (selection chooser)) ))))
+                  (@demos (selection chooser)) ))))
   root)
 
 (defexample []
