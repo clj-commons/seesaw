@@ -2,14 +2,14 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns ^{:doc "A collection of basic behaviors that can be dynamically added to 
-           widgets. Most cover basic functionality that's missing from Swing 
+(ns ^{:doc "A collection of basic behaviors that can be dynamically added to
+           widgets. Most cover basic functionality that's missing from Swing
            or just a pain to implement."
       :author "Dave Ray"}
   seesaw.behave
@@ -34,7 +34,7 @@
   See:
   "
   [w]
-  (let [to-text #(if (instance? javax.swing.JComboBox %) 
+  (let [to-text #(if (instance? javax.swing.JComboBox %)
                           (.. ^javax.swing.JComboBox % getEditor getEditorComponent) %)
         targets (map #(-> % to-widget to-text) (to-seq w))]
     (listen targets :focus-gained
@@ -42,7 +42,7 @@
       ; to extend selection stuff to text widgets
       #(.selectAll ^javax.swing.text.JTextComponent (to-widget %)))))
 
-(defn when-mouse-dragged 
+(defn when-mouse-dragged
   "A helper for handling mouse dragging on a widget. This isn't that complicated,
   but the default mouse dragged event provided with Swing doesn't give the delta
   since the last drag event so you end up having to keep track of it. This function
@@ -60,15 +60,15 @@
     See (seesaw.examples.xyz-panel)
   "
   [w & opts]
-  (let [{:keys [start drag finish] 
+  (let [{:keys [start drag finish]
          :or   { start (fn [e]) drag (fn [e]) finish (fn [e]) }} opts
         last-point (java.awt.Point.)]
     (listen w
-      :mouse-pressed 
-        (fn [^java.awt.event.MouseEvent e] 
+      :mouse-pressed
+        (fn [^java.awt.event.MouseEvent e]
           (.setLocation last-point (.getPoint e))
           (start e))
-      :mouse-dragged 
+      :mouse-dragged
         (fn [^java.awt.event.MouseEvent e]
           (let [p (.getPoint e)]
             (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])
