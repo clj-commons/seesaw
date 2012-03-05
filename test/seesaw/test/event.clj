@@ -270,6 +270,15 @@
         (expect (= 1 (count (.getActionListeners cb))))
         (.. (first (.getActionListeners cb)) (actionPerformed nil))
         (expect @called))))
+
+  (it "can listen for tab panel changes with :selection key"
+    (let [tp (sc/tabbed-panel :tabs [{:title "A" :content "A"}
+                                     {:title "B" :content "B"}])
+          called (atom nil)]
+      (listen tp :selection (fn [e] (reset! called true)))
+      (.setSelectedIndex tp 1)
+      (expect @called)))
+
   (it "can register an ItemListener on an ItemSelectable (like a checkbox) with :selection key"
     (let [b (javax.swing.JToggleButton.)
           called (atom false)]

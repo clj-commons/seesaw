@@ -357,6 +357,7 @@
     (instance? java.awt.ItemSelectable target)    :item-state-changed
     (instance? javax.swing.JSpinner target)       :state-changed
     (instance? javax.swing.JSlider target)        :state-changed
+    (instance? javax.swing.JTabbedPane target)    :state-changed
     :else event-name))
 
 (defn- expand-multi-events

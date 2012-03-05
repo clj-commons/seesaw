@@ -2442,8 +2442,15 @@
     * A map as returned by (selection) with at least an :index, :title, or
       :content key.
 
+  Furthermore, you can be notified for when the active tab changes by
+  listening for the :selection event:
+
+    (listen my-tabbed-panel :selection (fn [e] ...))
+
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTabbedPane.html
+    (seesaw.core/selection)
+    (seesaw.core/selection!)
   "
   [& opts]
   (apply-options (construct javax.swing.JTabbedPane) opts))
