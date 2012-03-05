@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.selection
-  (:use [seesaw.util :only [check-args]]))
+  (:use [seesaw.util :only [check-args]])
+  (:require [seesaw.to-widget]))
 
 ;TODO put this somewhere
 ; I think this is generally useful, but the main reason for its existence is
@@ -103,6 +104,29 @@
       (if (seq args)
         target
         (.clearSelection target))))
+
+(extend-protocol Selection
+  javax.swing.JTabbedPane
+    (get-selection [this]
+      (let [i (.getSelectedIndex this)]
+        (if (neg? i)
+          nil
+          [{:content (.getComponentAt this i)
+           :title   (.getTitleAt this i)
+           :index i}])))
+    (set-selection [this [v]]
+      (cond
+        (nil? v) nil
+        (string? v)
+          (set-selection this [(.indexOfTab this ^String v)])
+        (and (number? v) (>= v 0))
+          (.setSelectedIndex this (int v))
+        (map? v)
+          (set-selection this [(or (:index v) (:title v) (:content v))])
+        (instance? java.awt.Component v)
+          (.setSelectedComponent this ^java.awt.Component v)
+        :else
+          (set-selection this [(seesaw.to-widget/to-widget* v)]))))
 
 (extend-protocol Selection
   javax.swing.text.JTextComponent

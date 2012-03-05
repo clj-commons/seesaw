@@ -2429,6 +2429,19 @@
 
   Notes:
 
+  The currently selected tab can be retrieved with the (selection) function.
+  It returns a map similar to the tab descriptor with keys :title, :content,
+  and :index.
+
+  Similarly, a tab can be programmatically selected with the
+  (selection!) function, by passing one of the following values:
+
+    * A number - The index of the tab to select
+    * A string - The title of the tab to select
+    * A to-widget-able - The content of the tab to select
+    * A map as returned by (selection) with at least an :index, :title, or
+      :content key.
+
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JTabbedPane.html
   "
