@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -30,7 +30,7 @@
       (let [b (javax.swing.JCheckBox. "something" true)]
         (expect (true? (selection b)))))
     (it "returns a single-element seq with true if it's selected and multi? is true"
-      (let [b (javax.swing.JCheckBox. "something" true)] 
+      (let [b (javax.swing.JCheckBox. "something" true)]
         (expect (= [true] (selection b {:multi? true}))))))
 
   (testing "when given a ButtonGroup"
@@ -55,7 +55,7 @@
         ; Note. This kind of sucks because the JTree constructor used above
         ; creates a tree of JTree.DynamicUtilTreeNode rather than just ints.
         ; If a real TreeModel was used, it could be more reasonable.
-        (expect (= [["root" 2] ["root" 3] ["root" 4]] 
+        (expect (= [["root" 2] ["root" 3] ["root" 4]]
                   (map (fn [path] (map #(.getUserObject %) path)) (selection jtree {:multi? true})))))))
 
   (testing "when given a JList"
@@ -91,7 +91,7 @@
         (.setRowSelectionInterval jtable 1 3)
         (= [1 2 3] (selection jtable {:multi? true}))
         (= 1 (selection jtable))))))
-          
+
 
 (describe selection!
   (testing "when given an AbstractButton (e.g. toggle or checkbox) and an argument"
