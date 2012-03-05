@@ -2430,7 +2430,7 @@
   Notes:
 
   See:
-    http://download.oracle.com/javase/6/docs/api/javax/swing/JToolBar.html
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JTabbedPane.html
   "
   [& opts]
   (apply-options (construct javax.swing.JTabbedPane) opts))
