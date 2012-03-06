@@ -459,12 +459,14 @@
     :to-back
       (move-to-back! target)))
 
-(defn width [w]
+(defn width
   "Returns the width of the given widget in pixels"
+  [w]
   (.getWidth (to-widget w)))
 
-(defn height [w]
+(defn height
   "Returns the height of the given widget in pixels"
+  [w]
   (.getHeight (to-widget w)))
 
 
@@ -2511,7 +2513,6 @@
 (def canvas-options default-options)
 
 (defn canvas
-  [& opts]
   "Creates a paintable canvas, i.e. a JPanel with paintComponent overridden.
   Painting is configured with the :paint property which can take the
   following values:
@@ -2544,6 +2545,7 @@
     (seesaw.examples.canvas)
     http://download.oracle.com/javase/6/docs/api/javax/swing/JComponent.html#paintComponent%28java.awt.Graphics%29
   "
+  [& opts]
   (let [{:keys [paint] :as opts} opts
         ^javax.swing.JPanel p (construct javax.swing.JPanel)]
     (.setLayout p nil)
