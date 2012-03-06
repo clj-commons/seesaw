@@ -7,7 +7,16 @@
 
 (describe bind
   (it "returns a composite bindable"
-    (satisfies? Bindable (bind (atom 0) (atom 1) (atom 2) (atom 3))))
+    (let [a (atom 0) b (atom 1) c (atom 2) d (atom 3)
+          cb (bind a b c d)
+          called (atom nil) ]
+      (expect (satisfies? Bindable cb))
+
+      ; make sure that subscribing to the composite subscribes
+      ; to the *end* of the chain!
+      (subscribe cb (fn [v] (reset! called v)))
+      (reset! d 10)
+      (expect (= 10 @called))))
 
   (it "can chain bindables together"
     (let [a (atom 1)
@@ -15,6 +24,15 @@
       (bind a (transform + 5) b)
       (reset! a 5)
       (expect (= 10 @b))))
+
+  (it "returns something function-like that can be called to undo the binding"
+    (let [a (atom 0) b (atom 1) c (atom 2)
+          cb (bind a b c)]
+      (reset! a 5)
+      (expect (= [5 5 5] [@a @b @c]))
+      (cb)
+      (reset! a 6)
+      (expect (= [6 5 5] [@a @b @c]))))
   
   (it "can chain bindables, including composites, together"
     (let [a (atom 1)
@@ -87,7 +105,37 @@
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20)))))
-  
+ 
+  (testing "given a toggle button (or any button/menu)"
+    (it "should sync the selection state of the button"
+      (let [v (atom nil)
+            b (ssc/toggle :selected? false)]
+        (bind b v)
+        (.setSelected b true)
+        (expect @v)))
+
+    (it "should sync the selection state of the button"
+      (let [v (atom nil)
+            b (ssc/toggle :selected? false)]
+        (bind v b)
+        (reset! v true)
+        (expect (.isSelected b)))))
+
+  (testing "given a combobox"
+    (it "should sync the selection state of the combobox"
+      (let [v (atom nil)
+            b (ssc/combobox :model [1 2 3 4])]
+        (bind b v)
+        (ssc/selection! b 2)
+        (expect (= 2 @v))))
+
+    (it "should sync the selection state of the combobox"
+      (let [v (atom nil)
+            b (ssc/combobox :model [1 2 3 4])]
+        (bind v b)
+        (reset! v 4)
+        (expect (= 4 (ssc/selection b))))))
+
   (testing "given a spinner"
     (it "should sync the value of the atom with the spinner value, if spinner value changed"
       (let [v (atom 15)
@@ -301,3 +349,107 @@
             end)
       (reset! start 99)
       (expect (= {:value 99 :edt? true} @end)))))
+
+(describe subscribe
+  (testing "on an atom"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (atom "hi")
+            unsubscribe (subscribe target (fn [_] (swap! calls inc)))]
+        (reset! target "a")
+        (expect (= 1 @calls))
+        (unsubscribe)
+        (reset! target "b")
+        (expect (= 1 @calls)))))
+
+  (testing "on an agent"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (agent "hi")
+            unsubscribe (subscribe target (fn [_] (swap! calls inc)))]
+        (await (send target (fn [_] "a")))
+        (expect (= 1 @calls))
+        (unsubscribe)
+        (await (send target (fn [_] "b")))
+        (expect (= 1 @calls)))))
+  
+  (testing "on a javax.swing.text.Document"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (.getDocument (ssc/text))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.insertString target 0 "hi" nil)
+        (expect (= 1 @calls))
+        (unsub)
+        (.insertString target 0 "bye" nil)
+        (expect (= 1 @calls))
+        )))
+  (testing "on a javax.swing.BoundedRangeModel"
+    (it "should return a function that unsubscribes"
+      (let [calls (atom 0)
+            target (javax.swing.DefaultBoundedRangeModel. 50 0 2 100)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.setValue target 1)
+        (expect (= 1 @calls))
+        (unsub)
+        (.setValue target 2)
+        (expect (= 1 @calls)))))
+  
+  (testing "on a funnel"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            a      (atom "hi")
+            target (funnel a)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (reset! a "bye")
+        (expect (= 1 @calls))
+        (unsub)
+        (reset! a "hi")
+        (expect (= 1 @calls))
+        )))
+  
+  (testing "on a widget property"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            w      (ssc/text)
+            target (property w :enabled?)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (.setEnabled w false)
+        (expect (= 1 @calls))
+        (unsub)
+        (.setEnabled w true)
+        (expect (= 1 @calls))
+        )))
+  (testing "on a transform"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (transform identity)
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls))
+        )))
+  (testing "on a filter"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (filter (constantly true))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls)))))
+  (testing "on a some"
+    (it "should return a function that unsubscribes"
+      (let [calls  (atom 0)
+            target (some (constantly true))
+            unsub  (subscribe target (fn [_] (swap! calls inc)))]
+        (notify target "hi")
+        (expect (= 1 @calls))
+        (unsub)
+        (notify target "bye")
+        (expect (= 1 @calls))
+        ))))
+

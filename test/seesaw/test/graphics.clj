@@ -9,7 +9,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.test.graphics
-  (:use seesaw.graphics)
+  (:use seesaw.graphics
+        [seesaw.color :only [to-color]])
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)])
   (:import [java.awt RenderingHints]
@@ -21,6 +22,12 @@
           g2d (.getGraphics bi)]
       (anti-alias g2d)
       (expect (= RenderingHints/VALUE_ANTIALIAS_ON (.getRenderingHint g2d RenderingHints/KEY_ANTIALIASING))))))
+
+(describe to-paint
+  (it "returns its input if it's a java.awt.Paint"
+    (= java.awt.Color/BLACK (to-paint java.awt.Color/BLACK)))
+  (it "falls back to to-color otherwise"
+    (= (to-color :black) (to-paint :black))))
 
 (describe line
   (it "creates a line shape with given end points"
@@ -121,6 +128,10 @@
       (expect (= [8.0 16.0 3.0 4.0 0.0 360.0]
                  [(.x s) (.y s) (.width s) (.height s) (.start s) (.extent s)])))))
 
+(describe string-shape
+  (it "creates a string shape"
+    (string-shape 1 2 "HI")))
+
 (describe stroke
   (it "creates a default stroke of width 1 with no args"
     (let [s (stroke)]
@@ -198,3 +209,67 @@
     (let [s (update-style (style :foreground :black) :foreground nil)]
       (expect (instance? seesaw.graphics.Style s))
       (expect (nil? (:foreground s))))))
+
+(describe linear-gradient
+  (it "creates a default linear gradient"
+    (let [g (linear-gradient)]
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getStartPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 0.0)
+                 (.getEndPoint g)))
+      (expect (= [(float 0.0) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/WHITE java.awt.Color/BLACK]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
+                 (.getCycleMethod g)))))
+  (it "creates a linear gradient"
+    (let [g (linear-gradient 
+              :start [1 2] 
+              :end [3.5 4.6]
+              :fractions [0.0 0.8 1.0]
+              :colors [:black :blue java.awt.Color/ORANGE]
+              :cycle :repeat)]
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 2.0)
+                 (.getStartPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 3.5 4.6)
+                 (.getEndPoint g)))
+      (expect (= [(float 0.0) (float 0.8) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/BLACK java.awt.Color/BLUE java.awt.Color/ORANGE]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/REPEAT
+                 (.getCycleMethod g))))))
+
+(describe radial-gradient
+  (it "creates a default radial gradient"
+    (let [g (radial-gradient)]
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getCenterPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 0.0 0.0)
+                 (.getFocusPoint g)))
+      (expect (= (float 1.0) (.getRadius g)))
+      (expect (= [(float 0.0) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/WHITE java.awt.Color/BLACK]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
+                 (.getCycleMethod g)))))
+  (it "creates a radial gradient"
+    (let [g (radial-gradient 
+              :center [1 2] 
+              :focus [3.5 4.6]
+              :fractions [0.0 0.8 1.0]
+              :colors [:black :blue java.awt.Color/ORANGE]
+              :cycle :reflect)]
+      (expect (= (java.awt.geom.Point2D$Float. 1.0 2.0)
+                 (.getCenterPoint g)))
+      (expect (= (java.awt.geom.Point2D$Float. 3.5 4.6)
+                 (.getFocusPoint g)))
+      (expect (= [(float 0.0) (float 0.8) (float 1.0)]
+                 (vec (.getFractions g))))
+      (expect (= [java.awt.Color/BLACK java.awt.Color/BLUE java.awt.Color/ORANGE]
+                 (vec (.getColors g))))
+      (expect (= java.awt.MultipleGradientPaint$CycleMethod/REFLECT
+                 (.getCycleMethod g))))))
+

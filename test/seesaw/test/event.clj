@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -30,7 +30,7 @@
         handler (fn [e] (reset! called true))
         listener (reify-listener listener-type (ref { handler-key [handler] }))]
     (dispatch-fn listener)
-    (or @called 
+    (or @called
         (throw (RuntimeException. (str listener-type ", " handler-key " wasn't called!"))))))
 
 (defn verify-listeners
@@ -43,7 +43,7 @@
       (expect (= {:test-key [listener]} (append-listener {} :test-key listener)))))
   (it "can insert additional listeners"
     (let [listener  #(println %)]
-      (expect (= {:test-key [:dummy listener]} 
+      (expect (= {:test-key [:dummy listener]}
          (append-listener {:test-key [:dummy]} :test-key listener))))))
 
 (describe unappend-listener
@@ -60,7 +60,7 @@
     (it "makes an instance that does nothing when there's no handler"
       (verify-empty-listener ComponentListener :component-resized #(.componentResized % nil)))
     (it "makes an instance that calls expected methods"
-      (verify-listeners ComponentListener 
+      (verify-listeners ComponentListener
                         :component-hidden #(.componentHidden % nil)
                         :component-moved #(.componentMoved % nil)
                         :component-resized #(.componentResized % nil)
@@ -80,14 +80,14 @@
       (verify-empty-listener ItemListener :item-state-changed #(.itemStateChanged % nil)))
     (it "makes an instance that calls :item-state-changed"
       (verify-listener ItemListener :item-state-changed #(.itemStateChanged % nil))))
-          
+
   (testing "for MouseListener"
     (it "instantiates an MouseListener instance"
       (instance? MouseListener (reify-listener MouseListener (ref {}))))
     (it "makes an instance that does nothing when there's no handlers"
       (verify-empty-listener MouseListener :mouse-clicked #(.mouseClicked % nil)))
     (it "makes an instance that calls expected methods"
-      (verify-listeners MouseListener 
+      (verify-listeners MouseListener
         :mouse-clicked #(.mouseClicked % nil)
         :mouse-entered #(.mouseEntered % nil)
         :mouse-exited #(.mouseExited % nil)
@@ -100,7 +100,7 @@
     (it "makes an instance that does nothing when there's no handlers"
       (verify-empty-listener MouseMotionListener :mouse-moved #(.mouseMoved % nil)))
     (it "makes an instance that calls expected methods"
-      (verify-listeners MouseMotionListener 
+      (verify-listeners MouseMotionListener
         :mouse-moved #(.mouseMoved % nil)
         :mouse-dragged #(.mouseDragged % nil)))))
 
@@ -270,6 +270,15 @@
         (expect (= 1 (count (.getActionListeners cb))))
         (.. (first (.getActionListeners cb)) (actionPerformed nil))
         (expect @called))))
+
+  (it "can listen for tab panel changes with :selection key"
+    (let [tp (sc/tabbed-panel :tabs [{:title "A" :content "A"}
+                                     {:title "B" :content "B"}])
+          called (atom nil)]
+      (listen tp :selection (fn [e] (reset! called true)))
+      (.setSelectedIndex tp 1)
+      (expect @called)))
+
   (it "can register an ItemListener on an ItemSelectable (like a checkbox) with :selection key"
     (let [b (javax.swing.JToggleButton.)
           called (atom false)]
@@ -323,7 +332,15 @@
       (.removeNodeFromParent model child)
       (expect @nodes-removed)
       (.nodeStructureChanged model root)
-      (expect @structure-changed))))
+      (expect @structure-changed)))
+  (it "can register a hyperlink listener"
+    (let [editor (javax.swing.JEditorPane.)
+          called (atom 0)]
+      (listen editor :hyperlink-update (fn [_] (swap! called inc)))
+      (listen editor :hyperlink (fn [_] (swap! called inc)))
+      (expect (= 0 @called))
+      (.fireHyperlinkUpdate editor nil)
+      (expect (= 2 @called)))))
 
 (describe listen-to-property
   (it "registers a property change listener"

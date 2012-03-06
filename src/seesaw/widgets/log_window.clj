@@ -10,10 +10,21 @@
 
 (ns seesaw.widgets.log-window
   (:use [seesaw.core]
+        [seesaw.bind :only [bind]]
         [seesaw.keymap :only [map-key]]
         [seesaw.invoke :only [signaller]]
         [seesaw.options :only [apply-options option-map default-option]]
         [seesaw.widget-options :only [WidgetOptionProvider]]))
+
+(defn- log-window-proxy [state]
+  (proxy [javax.swing.JTextArea clojure.lang.IDeref] []
+    ; Implement IDeref
+    (deref [] state) 
+
+    ; this is how you disable auto-scrolling :(
+    (scrollRectToVisible [rect]
+                         (if @(:auto-scroll? state)
+                           (proxy-super scrollRectToVisible rect)))))
 
 (defprotocol LogWindow
   (log   [this message] "Log a message to the given log-window")
@@ -50,71 +61,69 @@
     (seesaw.core/text)
   "
   [& opts]
-  (let [scroll-item (checkbox-menu-item :resource ::scroll
+  (let [state {:buffer (StringBuffer.) ; Buffer text from other threads here
+               :limit  (atom nil) 
+               :auto-scroll? (atom true)
+                ; Efficiently tell the ui thread to grab the buffer
+                ; contents and move it to the text area.
+               :signal (signaller [this]
+                         (let [{:keys [buffer limit]} @this] 
+                           (locking buffer
+                             (.append this (str buffer))
+                             (.setLength buffer 0))
+                           (if-let [limit @limit]
+                             (let [doc    (config this :model)
+                                   length (.getLength doc)]
+                               (if (> length limit)
+                                 (.remove doc 0 (- length limit))))))) }
+
+        this (log-window-proxy state) 
+
+        scroll-item (checkbox-menu-item :resource ::scroll
                                         :selected? true)
-        ; Buffer text from other threads here
-        buffer (StringBuffer.)
-
-        limit (atom nil)
-
-        ; Efficiently tell the ui thread to grab the buffer
-        ; contents and move it to the text area.
-        signal (signaller [^javax.swing.JTextArea ta]
-                 (locking buffer
-                   (.append ta (str buffer))
-                   (.setLength buffer 0))
-                 (if-let [limit @limit]
-                   (let [doc (config ta :model)
-                         length (.getLength doc)]
-                     (if (> length limit)
-                       (.remove doc 0 (- length limit))))))
-
-        ta (proxy [javax.swing.JTextArea 
-                   seesaw.widgets.log_window.LogWindow
-                   seesaw.widget_options.WidgetOptionProvider] []
-             
-             ; Implement LogWindow protocol
-             (log [message]
-               (.append buffer message)
-               (signal this))
-             (clear [] (invoke-soon (text! this "")))
-
-             ; Implement WidgetOptionProvider so we can add the :limit
-             ; option.
-             (get_widget_option_map_STAR_ [] 
-               [text-area-options
-                (option-map
-                  (default-option :limit
-                    (fn [_ v] (reset! limit v))
-                    (fn [_] @limit)
-                    ["An integer limit or nil"])
-                  (default-option :auto-scroll?
-                    (fn [_ v] (value! scroll-item v))
-                    (fn [_] (value scroll-item))))])
-             (get_layout_option_map_STAR_ [] nil)
-             
-             ; this is how you disable auto-scrolling :(
-             (scrollRectToVisible [rect]
-               (if (selection scroll-item)
-                 (proxy-super scrollRectToVisible rect))))
         
         clear-action (action :resource ::clear
-                             :handler (fn [_] (clear ta)))]
+                             :handler (fn [_] (clear this)))]
 
-    (map-key ta ::key.clear clear-action)
+    (map-key this ::key.clear clear-action)
+
+    (bind scroll-item (:auto-scroll? state) scroll-item)
 
     ; When auto-scroll is re-enabled, have to force caret to bottom
     ; otherwise, it has no effect.
     (listen scroll-item :selection
             (fn [e] (if (selection scroll-item)
-                      (scroll! ta :to :bottom))))
+                      (scroll! this :to :bottom))))
 
     ; Apply default options and whatever options are provided.
     (apply-options
-      ta 
+      this 
       (concat
         [:editable? false
          :font      :monospaced
          :popup     (popup :items [clear-action scroll-item])]
         opts))))
+
+(extend-type (class (log-window-proxy nil))
+
+  LogWindow
+  (log [this message]
+    (let [{:keys [buffer signal]} @this]
+      (.append buffer message)
+      (signal this)))
+  (clear [this] 
+    (invoke-soon (text! this "")))
+
+  WidgetOptionProvider 
+  (get-widget-option-map* [this] 
+    [text-area-options
+     (option-map
+       (default-option :limit
+         (fn [this v] (reset! (:limit @this) v))
+         (fn [this] @(:limit @this))
+         ["An integer limit or nil"])
+       (default-option :auto-scroll?
+         (fn [this v] (reset! (:auto-scroll? @this) v))
+         (fn [this]   @(:auto-scroll? @this))))])
+  (get-layout-option-map* [this] nil))
 

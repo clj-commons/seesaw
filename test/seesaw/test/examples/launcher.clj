@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -16,7 +16,7 @@
 
 ; A simple launcher for all the examples.
 
-(def examples 
+(def examples
   ['behave
    'bind
    'button-group
@@ -27,9 +27,12 @@
    'custom-dialog
    'dialog
    'dnd
+   'dynamic-layout
+   'editor-pane-hyperlink
    'explorer
    'form
    'forms
+   'full-screen
    'game-of-life
    'hotpotatoes
    'j18n
@@ -62,7 +65,7 @@
     :content
       (border-panel
         :hgap 5 :vgap 5 :border 5
-        :center (scrollable (listbox-x 
+        :center (scrollable (listbox-x
                               :id :list
                               :model examples
                               :selection-mode :single
@@ -79,7 +82,7 @@
       (alert (str "Couldn't find function " (symbol example-ns "run"))))))
 
 (defn add-behaviors [f]
-  (let [{:keys [list launch]} (group-by-id f)] 
+  (let [{:keys [list launch]} (group-by-id f)]
     (b/bind
       (b/selection list)
       (b/property launch :enabled?))
@@ -98,7 +101,7 @@
 
 (defexample []
   (dev/debug!)
-  (-> (make-frame) 
+  (-> (make-frame)
     add-behaviors))
 
 ;(run :dispose)

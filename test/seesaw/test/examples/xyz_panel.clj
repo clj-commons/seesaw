@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -25,15 +25,15 @@
 
 (defn make-label
   [text]
-  (doto 
+  (doto
     ; Instead of a boring label, make the label rounded with
     ; some custom drawing. Use the before paint hook to draw
     ; under the label's text.
-    (paintable label 
+    (label
       :border   5
-      :text     text 
+      :text     text
       :location [(rand-int 300) (rand-int 300)]
-      :paint { 
+      :paint {
         :before (fn [c g]
                   (draw g (rounded-rect 3 3 (- (width c) 6) (- (height c) 6) 9)
                           (style :foreground "#FFFFaa"
@@ -51,11 +51,11 @@
       (.drawLine g 0 y w y))))
 
 (defn make-panel []
-  (paintable xyz-panel 
+  (xyz-panel
     :paint draw-grid
-    :id :xyz 
+    :id :xyz
     :background "#222222"
-    :items (conj 
+    :items (conj
              (map (comp movable make-label) ["Agent Cooper" "Big Ed" "Leland Palmer"])
              (doto (border-panel
                        :border (line-border :top 15 :color "#AAFFFF")
@@ -65,8 +65,8 @@
                    movable))))
 
 (defexample []
-  (frame 
-    :title   "Seesaw xyz-panel example" 
+  (frame
+    :title   "Seesaw xyz-panel example"
     :content (border-panel
                :vgap 5
                :north "Demonstration of an xyz-panel with draggable widgets. Try dragging one!"

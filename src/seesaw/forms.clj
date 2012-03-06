@@ -145,7 +145,7 @@
   {:seesaw {:class `JPanel}}
   [column-spec & opts]
   (let [layout  (FormLayout. column-spec "")
-        panel   (#'seesaw.core/construct JPanel opts)
+        panel   (seesaw.core/construct JPanel)
         builder (DefaultFormBuilder. layout panel)]
     (apply-options layout opts)
     (apply-options builder opts)

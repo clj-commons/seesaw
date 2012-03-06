@@ -17,9 +17,17 @@
             [seesaw.invoke :as invoke])
   (:use [clojure.string :only (capitalize split)]))
 
+(defn- remove-handler [handler handler-vec]
+  (vec (remove #(= % handler) handler-vec)))
+
 (defprotocol Bindable
-  (subscribe [this handler])
-  (notify [this v]))
+  (subscribe [this handler] "Subscribes a handler to changes in this bindable.
+                            handler is a single argument function that takes the
+                            new value of the bindable.
+                            Must return a no-arg function that unsubscribes the handler
+                            from future changes.")
+  (notify [this v] "Pass a new value to this bindable. Causes all subscribed handlers
+                   to be called with the value."))
 
 (defprotocol ToBindable
   (to-bindable* [this]))
@@ -37,8 +45,16 @@
     (notify [this v] (notify start v))))
 
 (defn bind 
-  "Creates a chain of listener bindings. When the value of source
-  changes it is passed along and updates the value of target.
+  "Chains together two or more bindables into a listening chain.
+  When the value of source changes it is passed along and updates 
+  the value of target and so on.
+
+  Note that the return value of this function is itself a composite
+  bindable so it can be subscribed to, or nested in other chains.
+
+  The return value, like (seesaw.bind/subscribe) and (seesaw.event/listen)
+  can also be invoked as a no-arg function to back out all the subscriptions
+  made by bind.
 
   Examples:
 
@@ -65,11 +81,21 @@
     Circular bindings will usually work.
   "
   [first-source target & more]
-  (loop [source (to-bindable first-source) target (to-bindable target) more (seq more)]
-    (subscribe source #(notify target %))
-    (when more
-      (recur target (to-bindable (first more)) (next more))))
-      (composite first-source target))
+  (loop [source (to-bindable first-source) 
+         target (to-bindable target) 
+         more   (seq more)
+         unsubs []]
+    (let [unsub (subscribe source #(notify target %))
+          unsubs (conj unsubs unsub)]
+      (if more
+        (recur target (to-bindable (first more)) (next more) unsubs)
+        (reify 
+          Bindable
+            (subscribe [this handler] (subscribe target handler))
+            (notify [this v] (notify first-source v))
+          clojure.lang.IFn
+            (invoke [this]
+              (doseq [f unsubs] (f))))))))
 
 (defn funnel
   "Create a binding chain with several input chains. Provides a
@@ -106,16 +132,20 @@
 (extend-protocol Bindable
   clojure.lang.Atom
     (subscribe [this handler]
-      (add-watch this (keyword (gensym "bindable-atom-watcher"))
-        (fn bindable-atom-watcher
-          [k r o n] (when-not (= o n) (handler n)))))
+      (let [key (keyword (gensym "bindable-atom-watcher"))]
+        (add-watch this key
+          (fn bindable-atom-watcher
+            [k r o n] (when-not (= o n) (handler n))))
+        (fn [] (remove-watch this key))))
     (notify [this v] (reset! this v))
 
   clojure.lang.Agent
     (subscribe [this handler]
-      (add-watch this (keyword (gensym "bindable-agent-watcher"))
-        (fn bindable-agen-watcher
-          [k r o n] (when-not (= o n) (handler n)))))
+      (let [key (keyword (gensym "bindable-agent-watcher"))] 
+        (add-watch this key 
+                   (fn bindable-agent-watcher
+                     [k r o n] (when-not (= o n) (handler n))))
+        (fn [] (remove-watch this key))))
     (notify [this v] (throw (IllegalStateException. "Can't notify an agent!")))
 
   javax.swing.text.Document
@@ -142,7 +172,15 @@
         (fn [e] (handler (.getValue this)))))
     (notify [this v] 
       (when-not (= (int v) (.getValue this)) 
-        (.setValue this v))))
+        (.setValue this v)))
+  
+  javax.swing.JComboBox
+    (subscribe [this handler]
+      (ssc/listen this :action
+        (fn [e] (handler (.getSelectedItem this)))))
+    (notify [this v] 
+      (when-not (= v (.getSelectedItem this)) 
+        (.setSelectedItem this v))))
 
 (defn b-swap! 
   "Creates a bindable that swaps! an atom's value using the given function each
@@ -244,14 +282,17 @@
   [^java.awt.Component target property-name]
   (reify Bindable
     (subscribe [this handler] 
-      (let [property-name (property-kw->java-name property-name)]
-        (.addPropertyChangeListener target
+      (let [property-name (property-kw->java-name property-name)
           ; first letter of *some* property-names must be lower-case
-          (property-change-listener-name-overrides
-              property-name
-              (apply str (clojure.string/lower-case (first property-name)) (rest property-name)))
-          (reify java.beans.PropertyChangeListener 
-            (propertyChange [this e] (handler (.getNewValue e)))))))
+            property-name (property-change-listener-name-overrides
+                            property-name
+                            (apply str 
+                                   (clojure.string/lower-case (first property-name))
+                                   (rest property-name)))
+            handler (reify java.beans.PropertyChangeListener 
+                      (propertyChange [this e] (handler (.getNewValue e))))]
+        (.addPropertyChangeListener target property-name handler)
+        (fn [] (.removePropertyChangeListener target property-name handler))))
     (notify [this v] (ssc/config! target property-name v))))
 
 (defn selection
@@ -277,7 +318,8 @@
   ([widget options]
     (reify Bindable
       (subscribe [this handler]
-        (ssc/listen widget :selection (fn [_] (-> widget (ssc/selection options) handler))))
+        (ssc/listen widget :selection 
+                    (fn [_] (-> widget (ssc/selection options) handler))))
       (notify [this v]
         (ssc/selection! widget options v))))
   ([widget]
@@ -321,7 +363,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn [] 
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (let [new-value (:value (swap! state assoc :value (apply f v args)))]
           (doseq [h (:handlers @state)]
@@ -379,7 +423,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn []
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (when (pred v) 
           (swap! state assoc :value v)
@@ -410,7 +456,9 @@
   (let [state (atom {:handlers [] :value nil})]
     (reify Bindable
       (subscribe [this handler]
-        (swap! state update-in [:handlers] conj handler))
+        (swap! state update-in [:handlers] conj handler)
+        (fn []
+          (swap! state update-in [:handlers] (partial remove-handler handler))))
       (notify [this v]
         (let [new-value (:value (swap! state assoc :value (pred v)))]
           (when new-value
@@ -444,7 +492,9 @@
   (let [handlers (atom [])]
     (reify Bindable
       (subscribe [this handler]
-        (swap! handlers conj handler))
+        (swap! handlers conj handler)
+        (fn []
+          (swap! handlers remove-handler handler)))
       (notify [this v]
         (schedule-fn
           (fn [] (doseq [h @handlers] (h v))))))))
@@ -488,6 +538,8 @@
   (notify-when* invoke/invoke-now*))
 
 (extend-protocol ToBindable
+  javax.swing.AbstractButton
+    (to-bindable* [this] (selection this))
   javax.swing.JLabel
     (to-bindable* [this] (property this :text))
   javax.swing.JSlider
@@ -497,5 +549,6 @@
   javax.swing.JProgressBar
     (to-bindable* [this] (.getModel this))
   javax.swing.text.JTextComponent
-    (to-bindable* [this] (.getDocument this)))
-
+    (to-bindable* [this] (.getDocument this))
+  javax.swing.JComboBox
+    (to-bindable* [this] this))

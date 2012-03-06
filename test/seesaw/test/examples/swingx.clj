@@ -1,8 +1,8 @@
-;  Copyright (c) Dave Ray, 2011. All rights reserved.
+;lein deps; lein compile; export DISPLAY=:99.0; rm -Rf test/ ./lazytest.sh"  Copyright (c) Dave Ray, 2011. All rights reserved.
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -22,11 +22,16 @@
     :north (header :title title :description (str "<html>" desc "</html>"))
     :center content))
 
-(def demos 
-  {:label-x (demo "(seesaw.swingx/label-x)" "Like (label), but supports line wrapping, and painters. <i>It also support rotation, but is buggy</i>. :("
+(def demos
+  (delay {:table-x (demo "(seesaw.swingx/table-x)" "Like (table), but slightly less sucky."
+                  (scrollable
+                    (table-x :model [:columns [:name :file :line]
+                                     :rows (map (comp meta val) (ns-publics 'seesaw.core))]
+                        :horizontal-scroll-enabled? true)))
+   :label-x (demo "(seesaw.swingx/label-x)" "Like (label), but supports line wrapping, and painters. <i>It also support rotation, but is buggy</i>. :("
                   (vertical-panel :items [
-                    (label-x :wrap-lines? true 
-                             :text (str "<html>" 
+                    (label-x :wrap-lines? true
+                             :text (str "<html>"
                                         (apply str (repeat 10 "This is a <i>label-x</i> with <b>a lot</b> of content "))
                                         "</html>"))]))
    :busy-label (demo "(seesaw.swingx/busy-label" "A label with a busy indicator, enabled with the :busy? option"
@@ -45,14 +50,14 @@
                       (hyperlink :text "This link has an icon"
                                  :icon "seesaw/test/examples/rss.gif")]))
 
-   :task-pane (demo "(seesaw.swingx/task-pane) and (seesaw.swingx/task-pane-container)" 
+   :task-pane (demo "(seesaw.swingx/task-pane) and (seesaw.swingx/task-pane-container)"
                     "A collapsible task pane. Each pane can have an icon, title, etc, etc"
-                    (task-pane-container 
-                      :items [(task-pane :title "First" 
-                                :actions [(action :name "HI") 
+                    (task-pane-container
+                      :items [(task-pane :title "First"
+                                :actions [(action :name "HI")
                                           (action :name "BYE")])
-                              (task-pane :title "Second" 
-                                :actions [(action :name "HI") 
+                              (task-pane :title "Second"
+                                :actions [(action :name "HI")
                                           (action :name "BYE")])
                               (task-pane :title "Third" :special? true :collapsed? true
                                 :items [(button :text "YEP")])]))
@@ -69,7 +74,7 @@
 
    :listbox-x (demo "(seesaw.swingx/listbox-x)"
                     "A drop in replacement for (seesaw.core/listbox) with support for sorting, highlighters, etc"
-                    (border-panel 
+                    (border-panel
                       :hgap 5 :vgap 5
                       :north "In the listbox below, striping and rollover highlighting is added"
                       :center (scrollable (listbox-x
@@ -83,25 +88,25 @@
                        (titled-panel
                          :content (label-x :wrap-lines? true
                                            :text "This is the content of the titled panel. The title can also have decorations, etc." )
-                         :title "The title of the panel"))})
+                         :title "The title of the panel"))}))
 
 (defn make-ui []
   (frame
     :title "Seesaw SwingX Example"
     :size [640 :by 480]
-    :content 
+    :content
     (border-panel
       :hgap 5 :vgap 5 :border 5
       :north  (label-x :wrap-lines? true
                        :text "This example shows some of the various widgets provided by SwingX. See seesaw.swingx because there is more than what's shown here." )
       :center (left-right-split
-                (scrollable 
-                  (listbox-x 
-                    :id :chooser 
-                    :model (->> (keys demos) sort)
+                (scrollable
+                  (listbox-x
+                    :id :chooser
+                    :model (->> (keys @demos) sort)
                     :highlighters [(hl-simple-striping)]))
                 (border-panel :id :demo-container
-                              :center (:label-x demos))
+                              :center (:label-x @demos))
                 :divider-location 1/4))))
 
 (defn add-behaviors [root]
@@ -109,9 +114,9 @@
         container (select root [:#demo-container])]
     (listen chooser :selection
       (fn [e]
-        (replace! container 
-                  (select container [:#demo]) 
-                  (demos (selection chooser)) ))))
+        (replace! container
+                  (select container [:#demo])
+                  (@demos (selection chooser)) ))))
   root)
 
 (defexample []
