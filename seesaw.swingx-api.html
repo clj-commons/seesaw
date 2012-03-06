@@ -1,14 +1,11 @@
 <html>
   <head>
-    <title>seesaw.swingx - Seesaw nil API documentation</title>
+    <title>seesaw.swingx - Seesaw API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
     <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
     <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
-    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
-    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
-    <script src="file/view/clojure.js" type="text/javascript"></script>
     <style>.menuWrapper{height: 36px;}</style>
     <!--[if lte IE 6]>
     <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
@@ -35,10 +32,12 @@ namespace.
       <li><a class="wiki_link" href="index.html">Overview</a></li>
       <li><a class="wiki_link" href="api-index.html">API Index</a></li>
     </ul>
-    <span class="toc-header">Namespaces</span>
-    <ul id="left-sidebar-list">
-      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.config-api.html" class="wiki_link">seesaw.config</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.dev-api.html" class="wiki_link">seesaw.dev</a></li><li><a href="seesaw.dnd-api.html" class="wiki_link">seesaw.dnd</a></li><li><a href="seesaw.dnd-explorer-api.html" class="wiki_link">seesaw.dnd-explorer</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keymap-api.html" class="wiki_link">seesaw.keymap</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.layout-api.html" class="wiki_link">seesaw.layout</a></li><li><a href="seesaw.make-widget-api.html" class="wiki_link">seesaw.make-widget</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.options-api.html" class="wiki_link">seesaw.options</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.scroll-api.html" class="wiki_link">seesaw.scroll</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.style-api.html" class="wiki_link">seesaw.style</a></li><li><a href="seesaw.swingx-api.html" class="wiki_link">seesaw.swingx</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li><li><a href="seesaw.value-api.html" class="wiki_link">seesaw.value</a></li><li><a href="seesaw.widget-options-api.html" class="wiki_link">seesaw.widget-options</a></li><li><a href="seesaw.widgets.log-window-api.html" class="wiki_link">seesaw.widgets.log-window</a></li>
-    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.config-api.html" class="wiki_link">seesaw.config</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.dev-api.html" class="wiki_link">seesaw.dev</a></li><li><a href="seesaw.dnd-api.html" class="wiki_link">seesaw.dnd</a></li><li><a href="seesaw.dnd-explorer-api.html" class="wiki_link">seesaw.dnd-explorer</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keymap-api.html" class="wiki_link">seesaw.keymap</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.layout-api.html" class="wiki_link">seesaw.layout</a></li><li><a href="seesaw.make-widget-api.html" class="wiki_link">seesaw.make-widget</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.mouse-api.html" class="wiki_link">seesaw.mouse</a></li><li><a href="seesaw.options-api.html" class="wiki_link">seesaw.options</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.scroll-api.html" class="wiki_link">seesaw.scroll</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.style-api.html" class="wiki_link">seesaw.style</a></li><li><a href="seesaw.swingx-api.html" class="wiki_link">seesaw.swingx</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li><li><a href="seesaw.value-api.html" class="wiki_link">seesaw.value</a></li><li><a href="seesaw.widget-options-api.html" class="wiki_link">seesaw.widget-options</a></li><li><a href="seesaw.widgets.log-window-api.html" class="wiki_link">seesaw.widgets.log-window</a></li><li><a href="seesaw.widgets.rounded-label-api.html" class="wiki_link">seesaw.widgets.rounded-label</a></li>
+      </ul>
+    </div>
     
     <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
   </div>
@@ -82,17 +81,14 @@ namespace.
 </div>
 </div>
                 <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.swingx</span>
-  - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
+  - <span id="header-project">Seesaw</span> <span id="header-version"></span>
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
-<br />Usage:
-<pre>
-(ns your-namespace
-  (:require <span id="long-name">seesaw.swingx</span>))
-</pre><pre>
-</pre><h2>Overview</h2>
+<br />Full namespace name: <span id="long-name">seesaw.swingx</span>
+<p></p>
+<h2>Overview</h2>
 <pre id="namespace-docstr">SwingX integration. Unfortunately, SwingX is hosted on java.net which means
-it looks abandoned most of the time. Downloads are here 
+it looks abandoned most of the time. Downloads are here
 <a href="http://java.net/downloads/swingx/releases/1.6/">http://java.net/downloads/swingx/releases/1.6/</a>
 
 This is an incomplete wrapper. If something's missing that you want, just ask.</pre>
@@ -108,7 +104,7 @@ This is an incomplete wrapper. If something's missing that you want, just ask.</
   <pre id="var-usage">Usage: (busy-label &amp; args)
 </pre>
   <pre id="var-docstr">Creates a org.jdesktop.swingx.JXBusyLabel which is a label that shows
-'busy' status with a spinner, kind of like an indeterminate progress bar. 
+'busy' status with a spinner, kind of like an indeterminate progress bar.
 Additional options:
 
   :busy? Whether busy status should be shown or not. Defaults to false.
@@ -133,7 +129,7 @@ See:
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (button-x &amp; args)
 </pre>
-  <pre id="var-docstr">Creates a org.jdesktop.swingx.JXButton which is an improved (button) that 
+  <pre id="var-docstr">Creates a org.jdesktop.swingx.JXButton which is an improved (button) that
 supports painters. Supports these additional options:
 
 
@@ -164,7 +160,7 @@ supports:
 
   :selection A color value. See (seesaw.color/to-color)
 
-The currently selected color canbe retrieved with (seesaw.core/selection). 
+The currently selected color canbe retrieved with (seesaw.core/selection).
 
 Examples:
 
@@ -172,7 +168,7 @@ Examples:
 
   (selection! b java.awt.Color/RED)
 
-  (listen b :selection 
+  (listen b :selection
     (fn [e]
       (println "Selected color changed to ")))
 
@@ -191,22 +187,22 @@ See:
   <pre id="var-usage">Usage: (header &amp; args)
 </pre>
   <pre id="var-docstr">Creates a header which consists of a title, description (supports basic HTML)
- and an icon. Additional options:
+and an icon. Additional options:
 
-   :title The title. May be a resource.
-   :description The description. Supports basic HTML (3.2). May be a resource.
-   :icon The icon. May be a resource.
+  :title The title. May be a resource.
+  :description The description. Supports basic HTML (3.2). May be a resource.
+  :icon The icon. May be a resource.
 
- Examples:
+Examples:
 
-   (header :title "This is a title" 
-           :description "&lt;html&gt;A &lt;b&gt;description&lt;/b&gt; with some 
-                         &lt;i&gt;italics&lt;/i&gt;&lt;/html&gt;" 
-           :icon "<a href="http://url/to/icon.png">http://url/to/icon.png</a>")
+  (header :title "This is a title"
+          :description "&lt;html&gt;A &lt;b&gt;description&lt;/b&gt; with some
+                        &lt;i&gt;italics&lt;/i&gt;&lt;/html&gt;"
+          :icon "<a href="http://url/to/icon.png">http://url/to/icon.png</a>")
 
- See:
-   (seesaw.swingx/header-options)
- </pre>
+See:
+  (seesaw.swingx/header-options)
+</pre>
   
   
   
@@ -218,19 +214,19 @@ See:
   <pre id="var-usage">Usage: (hyperlink &amp; args)
 </pre>
   <pre id="var-docstr">Constuct an org.jdesktop.swingx.JXHyperlink which is a button that looks like
- a link and opens its URI in the system browser. In addition to all the options of
- a button, supports:
- 
-   :uri A string, java.net.URL, or java.net.URI with the URI to open
+a link and opens its URI in the system browser. In addition to all the options of
+a button, supports:
 
- Examples:
+  :uri A string, java.net.URL, or java.net.URI with the URI to open
 
-   (hyperlink :text "Click Me" :uri "<a href="http://google.com">http://google.com</a>")
+Examples:
 
- See:
-   (seesaw.core/button)
-   (seesaw.core/button-options)
- </pre>
+  (hyperlink :text "Click Me" :uri "<a href="http://google.com">http://google.com</a>")
+
+See:
+  (seesaw.core/button)
+  (seesaw.core/button-options)
+</pre>
   
   
   
@@ -241,7 +237,7 @@ See:
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (label-x &amp; args)
 </pre>
-  <pre id="var-docstr">Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that 
+  <pre id="var-docstr">Creates a org.jdesktop.swingx.JXLabel which is an improved (label) that
 supports wrapped text, rotation, etc. Additional options:
 
   :wrap-lines? When true, text is wrapped to fit
@@ -269,21 +265,21 @@ See:
   <pre id="var-usage">Usage: (listbox-x &amp; args)
 </pre>
   <pre id="var-docstr">Create a JXList which is basically an improved (seesaw.core/listbox).
- Additional capabilities include sorting, searching, and highlighting.
- Beyond listbox, has the following additional options:
- 
-   :sort-with    A comparator (like &lt;, &gt;, etc) used to sort the items in the
-                 model.
-   :sort-order   :ascending or descending
-   :highlighters A list of highlighters
+Additional capabilities include sorting, searching, and highlighting.
+Beyond listbox, has the following additional options:
 
- By default, ctrl/cmd-F is bound to the search function. 
+  :sort-with    A comparator (like &lt;, &gt;, etc) used to sort the items in the
+                model.
+  :sort-order   :ascending or descending
+  :highlighters A list of highlighters
 
- Examples:
- 
- See:
-   (seesaw.core/listbox)
- </pre>
+By default, ctrl/cmd-F is bound to the search function.
+
+Examples:
+
+See:
+  (seesaw.core/listbox)
+</pre>
   
   
   
@@ -302,8 +298,9 @@ Beyond table, has the following additional options:
                            Defaults to true.
   :column-margin           Set margin between cells in pixels
   :highlighters            A list of highlighters
+  :horizontal-scroll-enabled? Allow horizontal scrollbars. Defaults to false.
 
-By default, ctrl/cmd-F is bound to the search function. 
+By default, ctrl/cmd-F is bound to the search function.
 
 Examples:
 
@@ -322,27 +319,27 @@ See:
   <pre id="var-usage">Usage: (task-pane &amp; args)
 </pre>
   <pre id="var-docstr">Create a org.jdesktop.swingx.JXTaskPane which is a collapsable component with a title
- and icon. It is generally used as an item inside a task-pane-container.  Supports the
- following additional options 
+and icon. It is generally used as an item inside a task-pane-container.  Supports the
+following additional options
 
-   :resource Get icon and title from a resource
-   :icon The icon
-   :title The pane's title
-   :animated? True if collapse is animated
-   :collapsed? True if the pane should be collapsed
-   :scroll-on-expand? If true, when expanded, it's container will scroll the pane into 
-                      view
-   :special? If true, the pane will be displayed in a 'special' way depending on 
-             look and feel
+  :resource Get icon and title from a resource
+  :icon The icon
+  :title The pane's title
+  :animated? True if collapse is animated
+  :collapsed? True if the pane should be collapsed
+  :scroll-on-expand? If true, when expanded, it's container will scroll the pane into
+                     view
+  :special? If true, the pane will be displayed in a 'special' way depending on
+            look and feel
 
- The pane can be populated with the standard :items option, which just takes a 
- sequence of widgets. Additionally, the :actions option takes a sequence of
- action objects and makes hyper-links out of them.  
+The pane can be populated with the standard :items option, which just takes a
+sequence of widgets. Additionally, the :actions option takes a sequence of
+action objects and makes hyper-links out of them.
 
- See:
-   (seesaw.swingx/task-pane-options)
-   (seesaw.swingx/task-pane-container)
- </pre>
+See:
+  (seesaw.swingx/task-pane-options)
+  (seesaw.swingx/task-pane-container)
+</pre>
   
   
   
@@ -354,25 +351,25 @@ See:
   <pre id="var-usage">Usage: (task-pane-container &amp; args)
 </pre>
   <pre id="var-docstr">Creates a container for task panes. Supports the following additional
- options: 
- 
-   :items Sequence of task-panes to display
+options:
 
- Examples:
+  :items Sequence of task-panes to display
 
-   (task-pane-container 
-     :items [(task-pane :title "First" 
-               :actions [(action :name "HI") 
-                         (action :name "BYE")])
-             (task-pane :title "Second" 
-               :actions [(action :name "HI") 
-                         (action :name "BYE")])
-             (task-pane :title "Third" :special? true :collapsed? true
-               :items [(button :text "YEP")])])
- See:
-   (seesaw.swingx/task-pane-container-options)
-   (seesaw.swingx/task-pane)
- </pre>
+Examples:
+
+  (task-pane-container
+    :items [(task-pane :title "First"
+              :actions [(action :name "HI")
+                        (action :name "BYE")])
+            (task-pane :title "Second"
+              :actions [(action :name "HI")
+                        (action :name "BYE")])
+            (task-pane :title "Third" :special? true :collapsed? true
+              :items [(button :text "YEP")])])
+See:
+  (seesaw.swingx/task-pane-container-options)
+  (seesaw.swingx/task-pane)
+</pre>
   
   
   
@@ -389,14 +386,14 @@ See:
   :title   The text of the title. May be a resource.
   :title-color Text color. Passed through (seesaw.color/to-color). May
            be resource.
-  :left-decoration Decoration widget on left of title. 
+  :left-decoration Decoration widget on left of title.
   :right-decoration Decoration widget on right of title.
   :resource Set :title and :title-color from a resource bundle
   :painter Painter used on the title
 
 Examples:
-  
-  (titled-panel :title "Error" 
+
+  (titled-panel :title "Error"
                 :title-color :red
                 :content (label-x :wrap-lines? true
                                  :text "An error occurred!"))
@@ -415,19 +412,19 @@ See:
   <pre id="var-usage">Usage: (tree-x &amp; args)
 </pre>
   <pre id="var-docstr">Create a JXTree which is basically an improved (seesaw.core/tree).
- Additional capabilities include searching, and highlighting.
- Beyond tree, has the following additional options:
+Additional capabilities include searching, and highlighting.
+Beyond tree, has the following additional options:
 
-   :highlighters A list of highlighters
+  :highlighters A list of highlighters
 
- By default, ctrl/cmd-F is bound to the search function. 
+By default, ctrl/cmd-F is bound to the search function.
 
- Examples:
- 
- See:
-   (seesaw.core/tree-options)
-   (seesaw.core/tree)
- </pre>
+Examples:
+
+See:
+  (seesaw.core/tree-options)
+  (seesaw.core/tree)
+</pre>
   
   
   
@@ -440,7 +437,7 @@ See:
           </div>
 	</div>
 	<div id="foot">
-	  <div style="text-align: center;" id="copyright">Copyright 2011, Dave Ray</div>
+	  <div style="text-align: center;" id="copyright">Copyright 2012, Dave Ray</div>
 	</div>
       </div>
       <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />

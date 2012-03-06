@@ -1,14 +1,11 @@
 <html>
   <head>
-    <title>seesaw.action - Seesaw nil API documentation</title>
+    <title>seesaw.action - Seesaw API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
     <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
     <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
-    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
-    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
-    <script src="file/view/clojure.js" type="text/javascript"></script>
     <style>.menuWrapper{height: 36px;}</style>
     <!--[if lte IE 6]>
     <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
@@ -35,10 +32,12 @@ namespace.
       <li><a class="wiki_link" href="index.html">Overview</a></li>
       <li><a class="wiki_link" href="api-index.html">API Index</a></li>
     </ul>
-    <span class="toc-header">Namespaces</span>
-    <ul id="left-sidebar-list">
-      <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.config-api.html" class="wiki_link">seesaw.config</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.dev-api.html" class="wiki_link">seesaw.dev</a></li><li><a href="seesaw.dnd-api.html" class="wiki_link">seesaw.dnd</a></li><li><a href="seesaw.dnd-explorer-api.html" class="wiki_link">seesaw.dnd-explorer</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keymap-api.html" class="wiki_link">seesaw.keymap</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.layout-api.html" class="wiki_link">seesaw.layout</a></li><li><a href="seesaw.make-widget-api.html" class="wiki_link">seesaw.make-widget</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.options-api.html" class="wiki_link">seesaw.options</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.scroll-api.html" class="wiki_link">seesaw.scroll</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.style-api.html" class="wiki_link">seesaw.style</a></li><li><a href="seesaw.swingx-api.html" class="wiki_link">seesaw.swingx</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li><li><a href="seesaw.value-api.html" class="wiki_link">seesaw.value</a></li><li><a href="seesaw.widget-options-api.html" class="wiki_link">seesaw.widget-options</a></li><li><a href="seesaw.widgets.log-window-api.html" class="wiki_link">seesaw.widgets.log-window</a></li>
-    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="seesaw.action-api.html" class="wiki_link">seesaw.action</a></li><li><a href="seesaw.applet-api.html" class="wiki_link">seesaw.applet</a></li><li><a href="seesaw.behave-api.html" class="wiki_link">seesaw.behave</a></li><li><a href="seesaw.bind-api.html" class="wiki_link">seesaw.bind</a></li><li><a href="seesaw.border-api.html" class="wiki_link">seesaw.border</a></li><li><a href="seesaw.cells-api.html" class="wiki_link">seesaw.cells</a></li><li><a href="seesaw.chooser-api.html" class="wiki_link">seesaw.chooser</a></li><li><a href="seesaw.color-api.html" class="wiki_link">seesaw.color</a></li><li><a href="seesaw.config-api.html" class="wiki_link">seesaw.config</a></li><li><a href="seesaw.core-api.html" class="wiki_link">seesaw.core</a></li><li><a href="seesaw.cursor-api.html" class="wiki_link">seesaw.cursor</a></li><li><a href="seesaw.dev-api.html" class="wiki_link">seesaw.dev</a></li><li><a href="seesaw.dnd-api.html" class="wiki_link">seesaw.dnd</a></li><li><a href="seesaw.dnd-explorer-api.html" class="wiki_link">seesaw.dnd-explorer</a></li><li><a href="seesaw.event-api.html" class="wiki_link">seesaw.event</a></li><li><a href="seesaw.font-api.html" class="wiki_link">seesaw.font</a></li><li><a href="seesaw.forms-api.html" class="wiki_link">seesaw.forms</a></li><li><a href="seesaw.graphics-api.html" class="wiki_link">seesaw.graphics</a></li><li><a href="seesaw.icon-api.html" class="wiki_link">seesaw.icon</a></li><li><a href="seesaw.invoke-api.html" class="wiki_link">seesaw.invoke</a></li><li><a href="seesaw.keymap-api.html" class="wiki_link">seesaw.keymap</a></li><li><a href="seesaw.keystroke-api.html" class="wiki_link">seesaw.keystroke</a></li><li><a href="seesaw.layout-api.html" class="wiki_link">seesaw.layout</a></li><li><a href="seesaw.make-widget-api.html" class="wiki_link">seesaw.make-widget</a></li><li><a href="seesaw.meta-api.html" class="wiki_link">seesaw.meta</a></li><li><a href="seesaw.mig-api.html" class="wiki_link">seesaw.mig</a></li><li><a href="seesaw.mouse-api.html" class="wiki_link">seesaw.mouse</a></li><li><a href="seesaw.options-api.html" class="wiki_link">seesaw.options</a></li><li><a href="seesaw.pref-api.html" class="wiki_link">seesaw.pref</a></li><li><a href="seesaw.scroll-api.html" class="wiki_link">seesaw.scroll</a></li><li><a href="seesaw.selection-api.html" class="wiki_link">seesaw.selection</a></li><li><a href="seesaw.selector-api.html" class="wiki_link">seesaw.selector</a></li><li><a href="seesaw.style-api.html" class="wiki_link">seesaw.style</a></li><li><a href="seesaw.swingx-api.html" class="wiki_link">seesaw.swingx</a></li><li><a href="seesaw.table-api.html" class="wiki_link">seesaw.table</a></li><li><a href="seesaw.timer-api.html" class="wiki_link">seesaw.timer</a></li><li><a href="seesaw.to-widget-api.html" class="wiki_link">seesaw.to-widget</a></li><li><a href="seesaw.tree-api.html" class="wiki_link">seesaw.tree</a></li><li><a href="seesaw.util-api.html" class="wiki_link">seesaw.util</a></li><li><a href="seesaw.value-api.html" class="wiki_link">seesaw.value</a></li><li><a href="seesaw.widget-options-api.html" class="wiki_link">seesaw.widget-options</a></li><li><a href="seesaw.widgets.log-window-api.html" class="wiki_link">seesaw.widgets.log-window</a></li><li><a href="seesaw.widgets.rounded-label-api.html" class="wiki_link">seesaw.widgets.rounded-label</a></li>
+      </ul>
+    </div>
     
     <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
   </div>
@@ -60,15 +59,12 @@ namespace.
 </div>
 </div>
                 <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.action</span>
-  - <span id="header-project">Seesaw</span> <span id="header-version"></span> (<span id="header-status"></span>)
+  - <span id="header-project">Seesaw</span> <span id="header-version"></span>
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
-<br />Usage:
-<pre>
-(ns your-namespace
-  (:require <span id="long-name">seesaw.action</span>))
-</pre><pre>
-</pre><h2>Overview</h2>
+<br />Full namespace name: <span id="long-name">seesaw.action</span>
+<p></p>
+<h2>Overview</h2>
 <pre id="namespace-docstr">Functions for dealing with Swing Actions. Prefer (seesaw.core/action).</pre>
 
 
@@ -121,7 +117,7 @@ See:
           </div>
 	</div>
 	<div id="foot">
-	  <div style="text-align: center;" id="copyright">Copyright 2011, Dave Ray</div>
+	  <div style="text-align: center;" id="copyright">Copyright 2012, Dave Ray</div>
 	</div>
       </div>
       <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />

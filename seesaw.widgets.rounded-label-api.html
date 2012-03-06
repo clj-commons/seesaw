@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>seesaw.event - Seesaw API documentation</title>
+    <title>seesaw.widgets.rounded-label - Seesaw API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,25 +52,20 @@ namespace.
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#seesaw.event/events-for">events-for</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#seesaw.event/listen">listen</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#seesaw.event/listen-to-property">listen-to-property</a>
+      <a href="#seesaw.widgets.rounded-label/rounded-label">rounded-label</a>
     </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.event</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">seesaw.widgets.rounded-label</span>
   - <span id="header-project">Seesaw</span> <span id="header-version"></span>
   </h1>
 <span id="author-line">by <span id="author-name">Dave Ray</span><br /></span>
-<br />Full namespace name: <span id="long-name">seesaw.event</span>
+<br />Full namespace name: <span id="long-name">seesaw.widgets.rounded-label</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr">Functions for handling events. Do not use these functions directly.
-Use (seesaw.core/listen) instead.</pre>
+<pre id="namespace-docstr">Function to create a label with a rounded border and background.</pre>
 
 
 <br />
@@ -78,74 +73,17 @@ Use (seesaw.core/listen) instead.</pre>
 <div id="var-entry">
   <br />
   <hr />
-  <h2 id="seesaw.event/events-for">events-for</h2>
+  <h2 id="seesaw.widgets.rounded-label/rounded-label">rounded-label</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (events-for v)
+  <pre id="var-usage">Usage: (rounded-label &amp; opts)
 </pre>
-  <pre id="var-docstr">Returns a sequence of event info maps for the given object which can
-be either a widget instance or class.
+  <pre id="var-docstr">Create a label whose background is a rounded rectangle
 
-Used by (seesaw.dev/show-events).
+Supports all the same options as (seesaw.core/label).
 
 See:
-  (seesaw.dev/show-events)
+  (seesaw.core/label)
 </pre>
-  
-  
-  
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="seesaw.event/listen">listen</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (listen targets &amp; more)
-</pre>
-  <pre id="var-docstr">
-*note: use seesaw.core/listen rather than calling this directly*
-
-Install listeners for one or more events on the given target. For example:
-
-  (listen (button "foo")
-    :mouse-entered     (fn [e] ...)
-    :focus-gained      (fn [e] ...)
-    :key-pressed       (fn [e] ...)
-    :mouse-wheel-moved (fn [e] ...))
-
-one function can be registered for multiple events by using a set
-of event names instead of one:
-
-  (listen (text)
-    #{:remove-update insert-update} (fn [e] ...))
-
-Note in this case that it's smart enough to add a document listener
-to the JTextFields document.
-
-Similarly, an event can be registered for all events in a particular swing
-listener interface by just using the keyword-ized prefix of the interface
-name. For example, to get all callbacks in the MouseListener interface:
-
-  (listen my-widget :mouse (fn [e] ...))
-
-Returns a function which, when called, removes all listeners registered
-with this call.
-
-When the target is a JTable and listener type is :selection, only
-row selection events are reported. Also note that the source table is
-*not* retrievable from the event object.
-</pre>
-  
-  
-  
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="seesaw.event/listen-to-property">listen-to-property</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (listen-to-property target property event-fn)
-</pre>
-  <pre id="var-docstr">List to propertyChange events on a target for a particular named property.
-List (listen), returns a function that, when called removes the installed
-listener.</pre>
   
   
   
