@@ -9,6 +9,6 @@ Example Seesaw application. Display weather data from weatherunderground.com
 
 ## License
 
-Copyright (C) 2010 FIXME
+Copyright (C) 2012 Dave Ray
 
 Distributed under the Eclipse Public License, the same as Clojure.
