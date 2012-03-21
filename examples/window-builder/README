@@ -1,0 +1,15 @@
+# window-builder
+
+This example project shows how you can use Google Window Builder in Eclipse to layout and form and then use that form from Clojure with Seesaw.
+
+## Usage
+
+    $ lein deps
+    $ lein compile
+    $ lein run -m window-builder.core
+
+## License
+
+Copyright (C) 2012 Dave Ray
+
+Distributed under the Eclipse Public License, the same as Clojure.
