@@ -1452,7 +1452,7 @@
     (let [style (.addStyle text-pane (name id) nil)]
       (doseq [[k v] (partition 2 options)]
         (case k
-          :font       (.addAttribute style StyleConstants/FontFamily (seesaw.font/to-font v))
+          :font       (.addAttribute style StyleConstants/FontFamily (name v))
           :size       (.addAttribute style StyleConstants/FontSize (Integer. v))
           :color      (.addAttribute style StyleConstants/Foreground (seesaw.color/to-color v))
           :background (.addAttribute style StyleConstants/Background (seesaw.color/to-color v))
@@ -1487,7 +1487,7 @@
                   [identifier & options]
                   Where identifier is a string or keyword
                   Options supported:
-                    :font        See (seesaw.font/to-font)
+                    :font        A font family name as keyword or string.
                     :size        An integer.
                     :color       See (seesaw.color/to-color)
                     :background  See (seesaw.color/to-color)
