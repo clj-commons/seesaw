@@ -483,7 +483,7 @@
   of event names instead of one:
 
     (listen (text)
-      #{:remove-update insert-update} (fn [e] ...))
+      #{:remove-update :insert-update} (fn [e] ...))
 
   Note in this case that it's smart enough to add a document listener
   to the JTextFields document.
