@@ -57,8 +57,8 @@ Now edit the generated `src/hello_seesaw/core.clj` file:
       (:use seesaw.core))
 
     (defn -main [& args]
-      (invoke-later 
-        (-> (frame :title "Hello", 
+      (invoke-later
+        (-> (frame :title "Hello",
                :content "Hello, Seesaw",
                :on-close :exit)
          pack!
