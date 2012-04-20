@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -18,21 +18,21 @@
 
 ; A function that takes a mouse event and dynamically generates the items
 ; of the displayed popup menu
-(defn dynamic-popup 
+(defn dynamic-popup
   [event]
   [(str "HI-" (rand)) "BYE"])
 
 (defexample []
   (frame :title "Popup Menu Example" :width 500 :height 300
-    :content 
-      (left-right-split 
+    :content
+      (left-right-split
         ; Just a couple of labels with popup menus associated
 
-        (label :text "<html>Right Click Me<br>(static popup menu)</html>" 
+        (label :text "<html>Right Click Me<br>(static popup menu)</html>"
                :border [5 (line-border)]
                :popup static-popup)
 
-        (label :text "<html>No, Right Click Me!<br>(dynamically popuplated menu)</html>" 
+        (label :text "<html>No, Right Click Me!<br>(dynamically popuplated menu)</html>"
                :border [5 (line-border)]
                :popup dynamic-popup)
         :divider-location 1/2)))
