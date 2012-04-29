@@ -1386,7 +1386,7 @@ one function can be registered for multiple events by using a set
 of event names instead of one:
 
   (listen (text)
-    #{:remove-update insert-update} (fn [e] ...))
+    #{:remove-update :insert-update} (fn [e] ...))
 
 Note in this case that it's smart enough to add a document listener
 to the JTextFields document.
@@ -2359,7 +2359,7 @@ Supports the following options:
                 [identifier &amp; options]
                 Where identifier is a string or keyword
                 Options supported:
-                  :font        See (seesaw.font/to-font)
+                  :font        A font family name as keyword or string.
                   :size        An integer.
                   :color       See (seesaw.color/to-color)
                   :background  See (seesaw.color/to-color)
