@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/clojure-1.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/forms-1.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/j18n-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/miglayout-3.7.4.jar"/>
+	<classpathentry kind="lib" path="lib/seesaw-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-action-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-autocomplete-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-common-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-core-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-painters-1.6.3.jar"/>
+	<classpathentry kind="lib" path="lib/swingx-plaf-1.6.3.jar"/>
+	<classpathentry kind="lib" path="classes"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

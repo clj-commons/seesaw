@@ -44,6 +44,7 @@
    'paintable
    'pan-on-drag
    'pi
+   'piano
    'popup
    'rpn
    'scribble

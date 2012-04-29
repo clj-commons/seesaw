@@ -41,7 +41,7 @@
   (testing "when called on Object"
     (it "stores metadata somewhere, retrievable by get-meta"
       (let [f (javax.swing.JFrame.)
-            result (put-meta! f :some-key 100)]
+            result (put-meta! f :some-key 10000)]
         (expect (= f result))
-        (expect (= 100 (get-meta f :some-key)))))))
+        (expect (= 10000 (get-meta f :some-key)))))))
 

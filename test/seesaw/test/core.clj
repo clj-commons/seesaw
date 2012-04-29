@@ -677,6 +677,18 @@
           style (.getStyle t "big")]
       (expect (instance? javax.swing.text.Style style))
       (expect (.containsAttribute style StyleConstants/FontSize (Integer. 30)))))
+  (it "should set the FontFamily attr as a string from a keyword"
+    (let [t (styled-text :styles [[:fonty :font :Arial]])
+          s (.getStyle t "fonty")
+          v (.getAttribute s StyleConstants/FontFamily)]
+      (expect (string? v))
+      (expect (= "Arial" v))))
+  (it "should set the FontFamily attr as a string from a string"
+    (let [t (styled-text :styles [[:fonty :font "Arial"]])
+          s (.getStyle t "fonty")
+          v (.getAttribute s StyleConstants/FontFamily)]
+      (expect (string? v))
+      (expect (= "Arial" v))))
   (it "should set the FontSize attr as an Integer"
     (let [t (styled-text :styles [[:big :size 30]])
           s (.getStyle t "big")

@@ -18,6 +18,8 @@
            [javax.swing.event ChangeListener]
            [java.awt.event ComponentListener ItemListener MouseListener MouseMotionListener]))
 
+(defn test-handler [_])
+
 (defn verify-empty-listener
   [listener-type handler-key dispatch-fn]
   (let [listener (reify-listener listener-type (ref {}))]
@@ -123,7 +125,7 @@
       ; TODO 1.2 event wrapping
       (catch RuntimeException e
         (instance? IllegalArgumentException (root-cause e)))))
-  (it "throws IllegalArgumentException if a handler isn't a function"
+  (it "throws IllegalArgumentException if a handler isn't a function or var"
     (try
       (listen (javax.swing.JPanel.) :mouse "foo")
       false
@@ -141,6 +143,12 @@
       ; TODO 1.2 event wrapping
       (catch RuntimeException e
         (instance? IllegalArgumentException (root-cause e)))))
+  (it "can install a listener with a var as handler"
+    (let [panel        (JPanel.)
+          f        (fn [e] (println "handled"))]
+      (do
+        (listen panel :mouse-clicked (var test-handler))
+        (expect (= 1 (-> panel .getMouseListeners count))))))
   (it "can install a mouse-clicked listener"
     (let [panel        (JPanel.)
           f        (fn [e] (println "handled"))]

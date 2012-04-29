@@ -36,7 +36,7 @@
 
   Notes:
 
-    (seesaw.core/invoke-now) is an alias of this macro.
+    (seesaw.core/invoke-later) is an alias of this macro.
 
   See:
   

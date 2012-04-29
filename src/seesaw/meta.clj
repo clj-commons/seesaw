@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -10,8 +10,7 @@
 
 (ns ^{:doc "Functions for associating metadata with frames and widgets, etc."
       :author "Dave Ray"}
-  seesaw.meta
-  (:import [java.lang.ref WeakReference]))
+  seesaw.meta)
 
 (defprotocol Meta
   (put-meta! [this key value])
@@ -21,15 +20,15 @@
 
 (extend-protocol Meta
   Object
-    (put-meta! [this key value] 
+    (put-meta! [this key value]
       (if-let [this-map (.get ^java.util.Map meta-map this)]
-        (.put ^java.util.Map this-map key (WeakReference. value))
-        (.put ^java.util.Map meta-map this (doto (java.util.HashMap.) (.put key (WeakReference. value)))))
+        (.put ^java.util.Map this-map key value)
+        (.put ^java.util.Map meta-map this (doto (java.util.HashMap.)
+                                             (.put key value))))
       this)
     (get-meta  [this key]
       (when-let [this-map (.get ^java.util.Map meta-map this)]
-        (when-let [^WeakReference weak-ref (.get ^java.util.Map this-map key)]
-          (.get weak-ref))))
+        (.get ^java.util.Map this-map key)))
 
   javax.swing.JComponent
     (put-meta! [this key value] (doto this (.putClientProperty key value)))

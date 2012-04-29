@@ -440,7 +440,7 @@
   Installs handlers in the target and returns a seq of functions which reverse
   this operation."
   [target raw-event-name event-fn]
-  (check-args (fn? event-fn) (str "Event handler for " raw-event-name " is not a function"))
+  (check-args (or (var? event-fn) (fn? event-fn)) (str "Event handler for " raw-event-name " is not a function"))
   (doall
     (for [event-name (->> (expand-multi-events target raw-event-name)
                           (map #(resolve-event-aliases target %)))]
@@ -483,7 +483,7 @@
   of event names instead of one:
 
     (listen (text)
-      #{:remove-update insert-update} (fn [e] ...))
+      #{:remove-update :insert-update} (fn [e] ...))
 
   Note in this case that it's smart enough to add a document listener
   to the JTextFields document.
