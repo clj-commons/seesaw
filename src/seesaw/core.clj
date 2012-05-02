@@ -2673,7 +2673,18 @@
   "Make the given window/frame full-screen. Pass nil to return all windows
   to normal size."
   ([^java.awt.GraphicsDevice device window]
-    (.setFullScreenWindow device (to-root window))
+    (if window
+      (let [root (to-root window)]
+        (when (not= (.getFullScreenWindow device) root)
+          (.dispose root)
+          (.setUndecorated root true)
+          (.setFullScreenWindow device root)
+          (.show root)))
+      (when-let [root (.getFullScreenWindow device)]
+        (.dispose root)
+        (.setFullScreenWindow device nil)
+        (.setUndecorated root false)
+        (.show root)))
     window)
   ([window]
     (full-screen! (default-screen-device) window)))
