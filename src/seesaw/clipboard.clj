@@ -8,7 +8,12 @@
 (defn contents
   "Retrieve the current content of the system clipboard in the given flavor.
   If omitted, flavor defaults to seesaw.dnd/string-flavor. If not content
-  with the given flavor is found, returns nil."
+  with the given flavor is found, returns nil.
+
+  See:
+    seesaw.dnd
+    http://docs.oracle.com/javase/7/docs/api/java/awt/datatransfer/Clipboard.html
+  "
   ([] (contents dnd/string-flavor))
   ([flavor]
     (try
@@ -24,6 +29,7 @@
 
   See:
     (seesaw.dnd/default-transferable)
+    http://docs.oracle.com/javase/7/docs/api/java/awt/datatransfer/Clipboard.html
   "
   ([transferable]
     (contents! transferable nil))
