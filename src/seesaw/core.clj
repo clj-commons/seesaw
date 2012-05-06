@@ -2669,11 +2669,36 @@
   ([window]
     (full-screen? (default-screen-device) window)))
 
+(defn- full-screen-ensure-undecorated
+  "Windows should be undecorated when put into full-screen. If they're not
+  this function strips their decorations and annotates them so when they're
+  brought out of full-screen mode the decorations are restored."
+  [window]
+  (when (and window (not (config window :undecorated?)))
+    (-> window
+      dispose!
+      (config! :undecorated? true)
+      (put-meta! ::was-decorated? true)
+      show!))
+  window)
+
+(defn- restore-full-screen-window-decorations
+  "when full screen windows is moving back to normal, redecorate as needed."
+  [^java.awt.GraphicsDevice device]
+  (when-let [window (full-screen-window device)]
+    (when (get-meta window ::was-decorated?)
+      (-> window
+        dispose!
+        (config! :undecorated? false)
+        (put-meta! ::was-decorated? nil)
+        show!))))
+
 (defn full-screen!
   "Make the given window/frame full-screen. Pass nil to return all windows
   to normal size."
   ([^java.awt.GraphicsDevice device window]
-    (.setFullScreenWindow device (to-root window))
+    (restore-full-screen-window-decorations device)
+    (.setFullScreenWindow device (full-screen-ensure-undecorated (to-root window)))
     window)
   ([window]
     (full-screen! (default-screen-device) window)))
