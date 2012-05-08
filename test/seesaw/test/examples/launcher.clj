@@ -47,6 +47,7 @@
    'piano
    'popup
    'rpn
+   'rsyntax
    'scribble
    'scroll
    'slider
