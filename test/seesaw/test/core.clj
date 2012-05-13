@@ -814,6 +814,9 @@
 
 (describe listbox
   (verify-config (listbox :selection-mode :single) :selection-mode :single)
+  (verify-config (listbox :layout-orientation :vertical) :layout-orientation :vertical)
+  (verify-config (listbox :layout-orientation :horizontal-wrap) :layout-orientation :horizontal-wrap)
+  (verify-config (listbox :layout-orientation :vertical-wrap) :layout-orientation :vertical-wrap)
   (it "should create a JList"
     (instance? javax.swing.JList (listbox)))
   (it "should create a JList with :fixed-cell-height set"
