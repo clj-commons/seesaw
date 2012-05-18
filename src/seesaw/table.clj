@@ -64,6 +64,7 @@
         (swap! full-values remove-at row)
         (let [^javax.swing.table.DefaultTableModel this this]
           (proxy-super removeRow row)))
+      ; TODO this stuff is an awful hack and now that I'm wiser, I should fix it.
       (getValueAt [row col]
         (if (= -1 row col)
           column-key-map
@@ -217,7 +218,10 @@
         ; TODO this precludes setting a cell to nil. Do we care?
         (when-let [v (aget row-values i)]
           (.setValueAt target (aget row-values i) row i)))
-      (.setValueAt target (last row-values) row -1))
+      ; merge with current full-map value so that extra fields aren't lost.
+      (.setValueAt target
+                   (merge (.getValueAt target row -1)
+                          (last row-values)) row -1))
     target)
   ([target row value & more]
     (if more

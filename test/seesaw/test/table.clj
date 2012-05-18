@@ -92,6 +92,17 @@
           r (update-at! t 0 {:a "A0"})]
       (expect (= t r))
       (expect (= {:a "A0" :b "b0"} (value-at t 0)))))
+  (it "preserves the values of unspecified 'hidden' columns"
+    (let [t (table-model :columns [:name :phone :email]
+                         :rows [{:name "S"
+                                 :phone 12345
+                                 :email "s@email.com"
+                                 :twitter "@s"}])]
+      ; :twitter should survive the update even though it's not a column
+      ; in the table model
+      (update-at! t 0 {:email "s@snailmail.com"})
+      (expect (= {:name "S" :phone 12345 :email "s@snailmail.com" :twitter "@s"}
+                 (value-at t 0)))))
   (it "updates multiple rows with the same format as :rows option of (table-model)"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
           r (update-at! t 1 ["A1" "B1"] 0 {:a "A0" :b "B0"})]
