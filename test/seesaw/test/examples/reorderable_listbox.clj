@@ -1,4 +1,4 @@
-;  Copyright (c) Dave Ray, 2011. All rights reserved.
+;  Copyright (c) Dave Ray, 2012. All rights reserved.
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)

@@ -58,6 +58,7 @@
    'temp
    'text-editor
    'text-ref
+   'toggle-listbox
    'tree
    'xyz-panel])
 
