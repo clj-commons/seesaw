@@ -46,6 +46,7 @@
    'pi
    'piano
    'popup
+   'reorderable-listbox
    'rpn
    'rsyntax
    'scribble
