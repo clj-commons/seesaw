@@ -71,6 +71,8 @@
       :mouse-dragged
         (fn [^java.awt.event.MouseEvent e]
           (let [p (.getPoint e)]
+            ; TODO the delta reported here is incorrect if the widget is
+            ; programmatically moved during the callback. See xyz-panel test.
             (drag e [(- (.x p) (.x last-point)) (- (.y p) (.y last-point))])
             (.setLocation last-point (.getPoint e))))
       :mouse-released

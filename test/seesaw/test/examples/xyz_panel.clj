@@ -16,11 +16,20 @@
 
 ; Put in some basic support for moving w around using behave/when-mouse-dragged.
 (defn movable [w]
-  (when-mouse-dragged w
-    ; When the mouse is pressed, move the widget to the front of the z order
-    :start #(move! % :to-front)
-    ; When the mouse is dragged move the widget
-    :drag  #(move! %1 :by %2))
+  (let [start-point (java.awt.Point.)]
+    (when-mouse-dragged w
+      ; When the mouse is pressed, move the widget to the front of the z order
+      :start (fn [e]
+                (move! e :to-front)
+                (.setLocation start-point (.getPoint e)))
+      ; When the mouse is dragged move the widget
+      ; Unfortunately, the delta passed to this function doesn't work correctly
+      ; if the widget is moved during the drag. So, the move is calculated
+      ; manually.
+      :drag (fn [e _]
+              (let [p (.getPoint e)]
+                (move! e :by [(- (.x p) (.x start-point)) 
+                              (- (.y p) (.y start-point))])))))
   w)
 
 (defn make-label
