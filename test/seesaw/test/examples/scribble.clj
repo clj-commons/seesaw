@@ -71,8 +71,8 @@
 })
 
 (defn switch-tool [state source]
-  (let [tool (selection source)]
-    (assoc state :tool (if tool (tool-handlers (id-of tool))))))
+  (let [selected? (selection source)]
+    (assoc state :tool (if selected? (tool-handlers (id-of source))))))
 
 (defn update-shape-style
   [state source]
@@ -98,7 +98,7 @@
       :drag   (dispatch :drag)
       :finish (dispatch :finish))
     (doseq [s styles] #(swap! state update-shape-style s))
-    (swap! state switch-tool tools))
+    (swap! state switch-tool (selection tools)))
   root)
 
 ; TODO On OSX (at least) the renderer is not used for the currently
@@ -138,5 +138,5 @@
 (defexample []
   (-> (make-ui) add-behaviors))
 
-;(run :dispose)
+(run :dispose)
 
