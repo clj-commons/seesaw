@@ -264,7 +264,7 @@
 (defmacro def-reify-listener
   [klass events]
   (let [hs (gensym "hs")]
-    `(defmethod ~'reify-listener ~klass [c# ~hs]
+    `(defmethod reify-listener ~klass [c# ~hs]
       (reify ~klass
         ~@(for [event events]
           `(~(-> event name camelize symbol) [tx# ex#] (fire ~hs ~event ex#)))))))
