@@ -75,7 +75,8 @@
                                           (java.io.File. (str dir))))))
     (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
     (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
-    (default-option :filters set-file-filters)))
+    (default-option :filters set-file-filters)
+    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)))
 
 (option-provider JFileChooser file-chooser-options)
 
