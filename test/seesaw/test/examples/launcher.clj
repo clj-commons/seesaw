@@ -46,7 +46,9 @@
    'pi
    'piano
    'popup
+   'reorderable-listbox
    'rpn
+   'rsyntax
    'scribble
    'scroll
    'slider
@@ -56,6 +58,7 @@
    'temp
    'text-editor
    'text-ref
+   'toggle-listbox
    'tree
    'xyz-panel])
 

@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -17,19 +17,19 @@
   (:import [java.awt.datatransfer DataFlavor
                                   UnsupportedFlavorException
                                   Transferable]
-           [javax.swing TransferHandler 
+           [javax.swing TransferHandler
                         TransferHandler$TransferSupport]))
 
 (defprotocol Flavorful
   "Protocol for abstracting DataFlavor including automatic conversion from
-  external/native representations (e.g. uri-list) to friendlier internal 
+  external/native representations (e.g. uri-list) to friendlier internal
   representations (e.g. list of java.net.URI)."
   (to-raw-flavor [this]
     "Return an instance of java.awt.datatransfer.DataFlavor for this.")
-  (to-local [this value] 
+  (to-local [this value]
     "Given an incoming value convert it to the expected local format. For example, a uri-list
     would return a vector of URI.")
-  (to-remote [this value] 
+  (to-remote [this value]
     "Given an outgoing value, convert it to the appropriate remote format.
     For example, a vector of URIs would be serialized as a uri-list."))
 
@@ -49,23 +49,23 @@
     other apps.
 
   Examples:
-  
+
     ; HTML as a reader
     (make-flavor \"text/html\" java.io.Reader)
   "
   [mime-type ^java.lang.Class rep-class]
-  (DataFlavor. 
-    (format "%s;class=%s" 
-            mime-type 
+  (DataFlavor.
+    (format "%s;class=%s"
+            mime-type
             (.getCanonicalName rep-class))))
 
-(defn local-object-flavor 
+(defn local-object-flavor
   "Creates a flavor for moving raw Java objects between components within a
   single JVM instance. class-or-value is either the class of data, or an
   example value from which the class is taken.
-  
+
   Examples:
-  
+
     ; Move Clojure vectors
     (local-object-flavor [])
   "
@@ -78,35 +78,35 @@
   file-list-flavor DataFlavor/javaFileListFlavor)
 
 (def ^{:doc "Flavor for a list of java.net.URI objects. Note it's URI, not URL.
-            With just java.net.URL it's possible to drop non-URL links, e.g. \"about:config\"." }
-  uri-list-flavor 
+            With just java.net.URL it's not possible to drop non-URL links, e.g. \"about:config\"." }
+  uri-list-flavor
   (let [flavor (make-flavor "text/uri-list" String)]
     (reify Flavorful
       (to-raw-flavor [this] flavor)
-      (to-local [this value] 
+      (to-local [this value]
         (map #(java.net.URI. %) (clojure.string/split-lines value)))
-      (to-remote [this value] 
+      (to-remote [this value]
         (clojure.string/join "\r\n" value)))))
 
 (def ^{:doc "Flavor for HTML text"} html-flavor (make-flavor "text/html" String))
 (def ^{:doc "Flavor for images as java.awt.Image" } image-flavor DataFlavor/imageFlavor)
 (def ^{:doc "Flavor for raw text" } string-flavor DataFlavor/stringFlavor)
 
-(defn ^Transferable default-transferable 
+(defn ^Transferable default-transferable
   "Constructs a transferable given a vector of alternating flavor/value pairs.
-  If a value is a function, i.e. (fn? value) is true, then then function is 
-  called with no arguments when the value is requested for its corresponding 
-  flavor. This way calculation of the value can be deferred until drop time. 
-  
+  If a value is a function, i.e. (fn? value) is true, then then function is
+  called with no arguments when the value is requested for its corresponding
+  flavor. This way calculation of the value can be deferred until drop time.
+
   Each flavor must be unique and it's assumed that the flavor and value agree.
-  
+
   Examples:
-  
+
     ; A transferable holding String or File data where the file calc is
     ; deferred
     (default-transferable [string-flavor    \"/home/dave\"
                            file-list-flavor #(vector (java.io.File. \"/home/dave\"))])
-  
+
   "
   [pairs]
   (let [pairs      (map (fn [[f v]] [(to-raw-flavor f) [f v]]) (partition 2 pairs))
@@ -131,53 +131,53 @@
         v))
     pairs))
 
-(defn- get-import-data 
+(defn- get-import-data
   [^TransferHandler$TransferSupport support flavorful]
   (to-local flavorful (.. support getTransferable (getTransferData (to-raw-flavor flavorful)))))
 
 (def ^{:private true} keyword-to-action
   (constant-map TransferHandler :copy :copy-or-move :link :move :none))
 
-(def ^{:private true} action-to-keyword 
+(def ^{:private true} action-to-keyword
   (clojure.set/map-invert keyword-to-action))
 
 (defn- unpack-drop-location [^javax.swing.TransferHandler$DropLocation dl]
   (let [^java.awt.Point pt (.getDropPoint dl) ]
-    (merge 
+    (merge
       (cond
-        (instance? javax.swing.JList$DropLocation dl) 
-          (let [^javax.swing.JList$DropLocation dl dl] 
-            { :index (.getIndex dl) 
+        (instance? javax.swing.JList$DropLocation dl)
+          (let [^javax.swing.JList$DropLocation dl dl]
+            { :index (.getIndex dl)
               :insert? (.isInsert dl) })
 
         (instance? javax.swing.JTable$DropLocation dl)
-          (let [^javax.swing.JTable$DropLocation dl dl] 
+          (let [^javax.swing.JTable$DropLocation dl dl]
             { :column (.getColumn dl)
               :row    (.getRow dl)
               :insert-column? (.isInsertColumn dl)
               :insert-row?    (.isInsertRow dl) })
 
         (instance? javax.swing.text.JTextComponent$DropLocation dl)
-          (let [^javax.swing.text.JTextComponent$DropLocation dl dl] 
+          (let [^javax.swing.text.JTextComponent$DropLocation dl dl]
             { :bias (.getBias dl)
               :index (.getIndex dl) })
-        
+
         (instance? javax.swing.JTree$DropLocation dl)
-          (let [^javax.swing.JTree$DropLocation dl dl] 
-            { :index (.getChildIndex dl) 
+          (let [^javax.swing.JTree$DropLocation dl dl]
+            { :index (.getChildIndex dl)
               :path  (.getPath dl) })
 
         :else {})
       {:point [(.x pt) (.y pt)]})))
 
-(defn default-transfer-handler 
+(defn default-transfer-handler
   "Create a transfer handler for drag and drop operations. Take a list
   of key/value option pairs as usual. The following options are supported:
-  
+
     :import - A vector of flavor/handler pairs used when a drop/paste occurs
               (see below)
     :export - A map of options used when a drag/copy occurs (see below)
-  
+
   Data Import
 
     The :import option specifies a vector of flavor/handler pairs. When
@@ -187,7 +187,7 @@
       :target        The widget that's the target of the drop
       :data          The data, type depends on flavor
       :drop?         true if this is a drop operation, otherwise it's a paste
-      :drop-location Map of drop location info or nil if drop? is false. See 
+      :drop-location Map of drop location info or nil if drop? is false. See
                      below.
       :support       Instance of javax.swing.TransferHandler$TransferSupport
                      for advanced use.
@@ -201,21 +201,21 @@
 
         :point    [x y] vector
 
-      listbox 
-  
+      listbox
+
         :index    The index for the drop
         :insert?  True if it's an insert, i.e. \"between\" entries
 
-      table 
+      table
 
         :column         The column for the drop
         :row            The row for the drop
         :insert-column? True if it's an insert, i.e. \"between\" columns.
-        :insert-row?    True if it's an insert, i.e. \"between\" rows 
+        :insert-row?    True if it's an insert, i.e. \"between\" rows
 
-      tree 
-  
-        :index  The index of the drop point 
+      tree
+
+        :index  The index of the drop point
         :path   TreePath of the drop point
 
       Text Components
@@ -229,7 +229,7 @@
     from a widget. It is a map with the following keys:
 
       :actions A function that takes a widget and returns a keyword indicating
-               supported actions. Defaults to :move. Can be any of :move, :copy, 
+               supported actions. Defaults to :move. Can be any of :move, :copy,
                :copy-or-move, :link, or :none.
       :start   A function that takes a widget and returns a vector of flavor/value
                pairs to be exported. Required.
@@ -246,7 +246,7 @@
       ; Allow either strings or lists of files to be dropped
       :import [string-flavor    (fn [{:keys [data]}] ... data is a string ...)
                file-list-flavor (fn [{:keys [data]}] ... data is a *list* of files ...)]
-      
+
       :export {
         :actions (fn [_] :copy)
         :start   (fn [w] [string-flavor (seesaw.core/text w)])
@@ -262,9 +262,9 @@
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
         finish           (:finish export)
-        actions          (if export 
+        actions          (if export
                              (or (:actions export) (constantly :move))
-                             (constantly :none))] 
+                             (constantly :none))]
     (proxy [TransferHandler] []
 
       (canImport [^TransferHandler$TransferSupport support]
@@ -272,19 +272,19 @@
 
       (importData [^TransferHandler$TransferSupport support]
         (if (.canImport ^TransferHandler this support)
-          (try 
+          (try
             (let [[flavorful handler] (get-import-handler support import-pairs)
                   data                         (get-import-data support flavorful)
                   drop?                        (.isDrop support)]
-              (boolean (handler { :data          data 
+              (boolean (handler { :data          data
                                   :drop?         drop?
                                   :drop-location (if drop? (unpack-drop-location (.getDropLocation support)))
                                   :target        (.getComponent support)
                                   :support       support })))
-            ; When Swing calls importData it seems to catch and suppress all 
+            ; When Swing calls importData it seems to catch and suppress all
             ; exceptions, which is maddening to debug. :|
-            (catch Exception e 
-              (.printStackTrace e) 
+            (catch Exception e
+              (.printStackTrace e)
               (throw e)))
           false))
 
@@ -296,8 +296,8 @@
 
       (exportDone [^javax.swing.JComponent c ^Transferable data action]
         (if finish
-          (finish { :source c 
-                    :data   data 
+          (finish { :source c
+                    :data   data
                     :action (action-to-keyword action) }))))))
 
 (defn ^TransferHandler to-transfer-handler
@@ -307,7 +307,7 @@
     (vector? v) (apply default-transfer-handler v)
     :else (illegal-argument "Don't know how to make TransferHandler from: %s" v)))
 
-(defn everything-transfer-handler 
+(defn everything-transfer-handler
   "Handler that accepts all drops. For debugging."
   [handler]
   (proxy [TransferHandler] []

@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -12,7 +12,7 @@
   (:use [seesaw.util :only [illegal-argument]]))
 
 (defn- normalize-column [c]
-  (cond 
+  (cond
     (map? c) c
     :else {:key c :text (name c)}))
 
@@ -30,22 +30,22 @@
     (vector? row) (object-array (concat row [nil]))
     :else         (illegal-argument "row must be a map or vector, got %s" (type row))))
 
-(defn- insert-at [row-vec pos item] 
+(defn- insert-at [row-vec pos item]
   (apply conj (subvec row-vec 0 pos) item (subvec row-vec pos)))
 
-(defn- remove-at [row-vec pos] 
+(defn- remove-at [row-vec pos]
   (let [[head [_ & tail]] (split-at pos row-vec)]
     (vec (concat head tail))))
 
-(defn- ^javax.swing.table.DefaultTableModel proxy-table-model 
+(defn- ^javax.swing.table.DefaultTableModel proxy-table-model
   [column-names column-key-map]
   (let [full-values (atom [])]
     (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
       (isCellEditable [row col] false)
       (setRowCount [^Integer rows]
         ; trick to force proxy-super macro to see correct type to avoid reflection.
-        (swap! full-values (fn [v] 
-                             (if (< rows (count v)) 
+        (swap! full-values (fn [v]
+                             (if (< rows (count v))
                                (subvec v rows)
                                (vec (concat v (take (- (count v) rows) (constantly nil)))))))
         (let [^javax.swing.table.DefaultTableModel this this]
@@ -64,7 +64,8 @@
         (swap! full-values remove-at row)
         (let [^javax.swing.table.DefaultTableModel this this]
           (proxy-super removeRow row)))
-      (getValueAt [row col] 
+      ; TODO this stuff is an awful hack and now that I'm wiser, I should fix it.
+      (getValueAt [row col]
         (if (= -1 row col)
           column-key-map
           (if (= -1 col)
@@ -90,9 +91,9 @@
     (catch ArrayIndexOutOfBoundsException e
       ; Otherwise, just map from column names to values
       (let [n (.getColumnCount model)]
-        (apply hash-map 
-               (interleave 
-                 (map #(.getColumnName model %) (range n)) 
+        (apply hash-map
+               (interleave
+                 (map #(.getColumnName model %) (range n))
                  (range n)))))))
 
 (defn table-model
@@ -106,18 +107,18 @@
 
     :rows - a sequence of maps or vectors, possibly mixed. If a map, must contain
             row data indexed by keys in :columns. Any additional keys will
-            be remembered and retrievable with (value-at). If a vector, data 
+            be remembered and retrievable with (value-at). If a vector, data
             is indexed by position in the vector.
 
   Example:
-    
-    (table-model :columns [:name 
+
+    (table-model :columns [:name
                            {:key :age :text \"Age\"}]
                  :rows [ [\"Jim\" 65]
                          {:age 75 :name \"Doris\"}])
 
     This creates a two column table model with columns \"name\" and \"Age\"
-    and two rows. 
+    and two rows.
 
   See:
     (seesaw.core/table)
@@ -143,14 +144,14 @@
 (defn- single-value-at
   [^javax.swing.table.TableModel model col-key-map row]
   (let [full-row (get-full-value model row)]
-    (merge 
+    (merge
       full-row
       (reduce
         (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
         {}
         (keys col-key-map)))))
 
-(defn value-at 
+(defn value-at
   "Retrieve one or more rows from a table or table model. target is a JTable or TableModel.
   rows is either a single integer row index, or a sequence of row indices. In the first case
   a single map of row values is returns. Otherwise, returns a sequence of maps.
@@ -183,7 +184,7 @@
   [target rows]
   (let [target      (to-table-model target)
         col-key-map (get-column-key-map target)]
-    (cond 
+    (cond
       (integer? rows) (single-value-at target col-key-map rows)
       :else           (map #(single-value-at target col-key-map %) rows))))
 
@@ -217,7 +218,10 @@
         ; TODO this precludes setting a cell to nil. Do we care?
         (when-let [v (aget row-values i)]
           (.setValueAt target (aget row-values i) row i)))
-      (.setValueAt target (last row-values) row -1))
+      ; merge with current full-map value so that extra fields aren't lost.
+      (.setValueAt target
+                   (merge (.getValueAt target row -1)
+                          (last row-values)) row -1))
     target)
   ([target row value & more]
     (if more
@@ -278,7 +282,7 @@
     (remove-at! target row)))
 
 (defn clear!
-  "Clear all rows from a table model or JTable. 
+  "Clear all rows from a table model or JTable.
 
   Returns target.
   "

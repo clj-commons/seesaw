@@ -19,7 +19,7 @@
   (frame :title  "Seesaw Full-screen Example"
          :width  400
          :height 400
-         :undecorated? true
+         ;:undecorated? true
          :content (vertical-panel 
                     :items ["A demo of (seesaw.core/toggle-full-screen!)."
                             (button :id :toggle :text "Toggle full screen")

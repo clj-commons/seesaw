@@ -728,6 +728,36 @@
 (def ^{:private true} keyword-to-drop-mode (clojure.set/map-invert drop-mode-to-keyword))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; layout-orientation support constants
+
+(defprotocol LayoutOrientationConfig
+  "Hook protocol for :layout-orientation option"
+  (set-layout-orientation* [this v])
+  (get-layout-orientation* [this]))
+
+(extend-protocol LayoutOrientationConfig
+  javax.swing.JList
+    (set-layout-orientation* [this v] (.setLayoutOrientation this v))
+    (get-layout-orientation* [this] (.getLayoutOrientation this)))
+
+(defn- layout-orientation-option [table]
+  (let [rtable (clojure.set/map-invert table)]
+    (default-option
+      :layout-orientation
+      (fn [target v]
+        (if-let [v (table v)]
+          (set-layout-orientation* target v)
+          (illegal-argument "Unknown layout-orientation. Must be one of %s" (keys table))))
+      (fn [target] (rtable (get-layout-orientation* target)))
+      (keys table))))
+
+(def ^{:private true} list-layout-orientation-table {
+  :vertical        javax.swing.JList/VERTICAL
+  :horizontal-wrap javax.swing.JList/HORIZONTAL_WRAP
+  :vertical-wrap   javax.swing.JList/VERTICAL_WRAP
+})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol SelectionModeConfig
   "Hook protocol for :selection-mode option"
@@ -1640,6 +1670,7 @@
                         #(.getCellRenderer ^javax.swing.JList %1))
       (selection-mode-option list-selection-mode-table)
       (bean-option :fixed-cell-height javax.swing.JList)
+      (layout-orientation-option list-layout-orientation-table)
       (bean-option :drop-mode javax.swing.JList keyword-to-drop-mode drop-mode-to-keyword (keys keyword-to-drop-mode)))))
 
 (widget-option-provider javax.swing.JList listbox-options)
@@ -2669,11 +2700,36 @@
   ([window]
     (full-screen? (default-screen-device) window)))
 
+(defn- full-screen-ensure-undecorated
+  "Windows should be undecorated when put into full-screen. If they're not
+  this function strips their decorations and annotates them so when they're
+  brought out of full-screen mode the decorations are restored."
+  [window]
+  (when (and window (not (config window :undecorated?)))
+    (-> window
+      dispose!
+      (config! :undecorated? true)
+      (put-meta! ::was-decorated? true)
+      show!))
+  window)
+
+(defn- restore-full-screen-window-decorations
+  "when full screen windows is moving back to normal, redecorate as needed."
+  [^java.awt.GraphicsDevice device]
+  (when-let [window (full-screen-window device)]
+    (when (get-meta window ::was-decorated?)
+      (-> window
+        dispose!
+        (config! :undecorated? false)
+        (put-meta! ::was-decorated? nil)
+        show!))))
+
 (defn full-screen!
   "Make the given window/frame full-screen. Pass nil to return all windows
   to normal size."
   ([^java.awt.GraphicsDevice device window]
-    (.setFullScreenWindow device (to-root window))
+    (restore-full-screen-window-decorations device)
+    (.setFullScreenWindow device (full-screen-ensure-undecorated (to-root window)))
     window)
   ([window]
     (full-screen! (default-screen-device) window)))

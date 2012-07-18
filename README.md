@@ -71,6 +71,7 @@ Now run it:
 *NOTE:* Here's how you can run against the bleeding edge of Seesaw:
 
 * Clone Seesaw from github. Fork if you like. *Switch to the "develop" branch.*
+* In your Seesaw checkout, run `lein deps` to get Seesaw's dependencies
 * In your Seesaw checkout, run `lein install` to build it
 * In your project's `project.clj` file, change the Seesaw version to `X.Y.Z-SNAPSHOT` to match whatever's in Seesaw's `project.clj`.
 * Run `lein deps`
