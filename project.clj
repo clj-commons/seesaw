@@ -18,7 +18,7 @@
   ;
   ;   $ lein run :examples
   ;
-  :run-aliases { :examples seesaw.test.examples.launcher }
+  :aliases { "examples" ["run" "-m" "seesaw.test.examples.launcher"] }
 
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [com.miglayout/miglayout "3.7.4"]
