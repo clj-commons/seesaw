@@ -29,7 +29,7 @@
   :profiles { :dev {:dependencies [[com.stuartsierra/lazytest "1.1.2"]
                                    [lein-clojars "0.7.0"]
                                    [lein-autodoc "0.9.0"]]}}
-  :repositories {"stuartsierra-releases" "http://stuartsierra.com/maven2"}
+  :repositories [["stuartsierra-releases" "http://stuartsierra.com/maven2"]]
   :autodoc {
     :name "Seesaw",
     :page-title "Seesaw API Documentation"
