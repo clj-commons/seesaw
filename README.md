@@ -71,10 +71,9 @@ Now run it:
 *NOTE:* Here's how you can run against the bleeding edge of Seesaw:
 
 * Clone Seesaw from github. Fork if you like. *Switch to the "develop" branch.*
-* In your Seesaw checkout, run `lein deps` to get Seesaw's dependencies
-* In your Seesaw checkout, run `lein install` to build it
+* In your Seesaw checkout, run `lein install` to build it. *Note that Seesaw uses Leiningen 2 as of 3 NOV 2012!*
 * In your project's `project.clj` file, change the Seesaw version to `X.Y.Z-SNAPSHOT` to match whatever's in Seesaw's `project.clj`.
-* Run `lein deps`
+* Run `lein deps` ... actually you can just start coding. `lein deps` is almost never necessary.
 * Move along
 
 ## Contributors
@@ -89,9 +88,11 @@ Now run it:
 * Chun-wei Kuo (Domon)
 * Vladimir Matveev (dpx-infinity)
 * Jeff Rose (rosejn)
+* Simon Lundmark (simlun)
 
 ## License
 
-Copyright (C) 2011 Dave Ray
+Copyright (C) 2012 Dave Ray
 
 Distributed under the Eclipse Public License, the same as Clojure.
+

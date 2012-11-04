@@ -16,23 +16,22 @@
 
   ; To run the examples:
   ;
-  ;   $ lein run :examples
+  ;   $ lein examples
   ;
-  :run-aliases { :examples seesaw.test.examples.launcher }
+  :aliases { "examples" ["run" "-m" "seesaw.test.examples.launcher"] }
 
-  :dependencies [[org.clojure/clojure "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.miglayout/miglayout "3.7.4"]
                  [com.jgoodies/forms "1.2.1"]
                  [org.swinglabs.swingx/swingx-core "1.6.3"]
                  [j18n "1.0.1"]
                  [org.fife.ui/rsyntaxtextarea "2.0.4.1"]]
-  :dev-dependencies [[com.stuartsierra/lazytest "1.1.2"]
-                     [lein-clojars "0.7.0"]
-                     [lein-autodoc "0.9.0"]]
-  :repositories {"stuartsierra-releases" "http://stuartsierra.com/maven2"}
+  :profiles { :dev {:dependencies [[com.stuartsierra/lazytest "1.1.2"]
+                                  [lein-autodoc "0.9.0"]]}}
+  :repositories [["stuartsierra-releases" "http://stuartsierra.com/maven2"]]
   :autodoc {
     :name "Seesaw",
     :page-title "Seesaw API Documentation"
     :copyright "Copyright 2012, Dave Ray" }
-  :java-source-path "jvm")
+  :java-source-paths ["jvm"])
 
