@@ -89,6 +89,7 @@ Now run it:
 * Vladimir Matveev (dpx-infinity)
 * Jeff Rose (rosejn)
 * Simon Lundmark (simlun)
+* Jake McCrary (jakemcc)
 
 ## License
 
