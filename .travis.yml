@@ -3,4 +3,4 @@ lein: lein2
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-script: "lein2 deps; lein2 compile; export DISPLAY=:99.0; ./lazytest.sh"
+script: "lein2 deps; lein2 javac; export DISPLAY=:99.0; ./lazytest.sh"
