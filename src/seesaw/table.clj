@@ -211,6 +211,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
   "
   ([target row value]
+    (println row "/" value)
     (let [target      (to-table-model target)
           col-key-map (get-column-key-map target)
           ^objects row-values  (unpack-row col-key-map value)]
@@ -224,9 +225,9 @@
                           (last row-values)) row -1))
     target)
   ([target row value & more]
-    (if more
-      (apply update-at! target more)
-      (update-at! target row value))))
+    (when more
+      (apply update-at! target more)) 
+    (update-at! target row value)))
 
 (defn insert-at!
   "Inserts one or more rows into a table. The arguments are one or more row-index/value

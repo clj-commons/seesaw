@@ -107,8 +107,8 @@
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])
           r (update-at! t 1 ["A1" "B1"] 0 {:a "A0" :b "B0"})]
       (expect (= t r))
-      (expect (= {:a "A0" :b "B0"} (value-at t 0))))
-      (expect (= {:a "A1" :b "B1"} (value-at t 1)))))
+      (expect (= {:a "A0" :b "B0"} (value-at t 0)))
+      (expect (= {:a "A1" :b "B1"} (value-at t 1))))))
 
 (describe insert-at!
   (it "inserts a row with the same format as :rows option of (table-model)"
