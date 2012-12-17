@@ -44,25 +44,29 @@ Install `lein` as described and then:
 
 Add Seesaw to `project.clj`
 
-    (defproject hello-seesaw "1.0.0-SNAPSHOT"
-      :description "FIXME: write"
-      :dependencies [[org.clojure/clojure "1.3.0"]
-                    [seesaw "x.y.z"]])
+```clojure
+(defproject hello-seesaw "1.0.0-SNAPSHOT"
+  :description "FIXME: write"
+  :dependencies [[org.clojure/clojure "1.3.0"]
+                [seesaw "x.y.z"]])
+```
 
 _Replace the Seesaw version with whatever the latest version tag is. See below!_
 
 Now edit the generated `src/hello_seesaw/core.clj` file:
 
-    (ns hello-seesaw.core
-      (:use seesaw.core))
+```clojure
+(ns hello-seesaw.core
+  (:use seesaw.core))
 
-    (defn -main [& args]
-      (invoke-later
-        (-> (frame :title "Hello",
-               :content "Hello, Seesaw",
-               :on-close :exit)
-         pack!
-         show!)))
+(defn -main [& args]
+  (invoke-later
+    (-> (frame :title "Hello",
+           :content "Hello, Seesaw",
+           :on-close :exit)
+     pack!
+     show!)))
+```
 
 Now run it:
 
