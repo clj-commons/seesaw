@@ -79,7 +79,17 @@
       (expect (= {"A" nil "B" nil "C" nil } (value-at t 0)))))
   (it "gets the value of a sequence of row indices as a list of maps"
     (let [t (table-model :columns [:a :b] :rows [["a0" "b0"] ["a1" "b1"]])]
-      (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t [0 1]))))))
+      (expect (= [{:a "a0" :b "b0" } {:a "a1" :b "b1" }] (value-at t [0 1])))))
+  (it "returns nil for an out of bounds row index"
+    (let [t (table-model :columns [{:key :a :text "a"} {:key :b :text "b"}]
+                        :rows [[:a "bee" :b "cee"] [:a "tree" :b "four"]])]
+      (expect (nil? (value-at t 9)))))
+  (it "survives an out-of-bounds value-at call"
+    (let [t (table-model :columns [{:key :a :text "a"} {:key :b :text "b"}]
+                        :rows [{:a "bee" :b "cee"} {:a "tree" :b "four"}])]
+      (expect (= {:a "bee" :b "cee"} (value-at t 0)))
+      (try (value-at t 9) (catch Exception e))
+      (expect (= {:a "bee" :b "cee"} (value-at t 0))))))
 
 (describe update-at!
   (it "updates a row with the same format as :rows option of (table-model)"

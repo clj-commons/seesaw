@@ -143,18 +143,22 @@
 
 (defn- single-value-at
   [^javax.swing.table.TableModel model col-key-map row]
-  (let [full-row (get-full-value model row)]
-    (merge
-      full-row
-      (reduce
-        (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
-        {}
-        (keys col-key-map)))))
+  (if (and (>= row 0) (< row (.getRowCount model)))
+    (let [full-row (get-full-value model row)]
+      (merge
+        full-row
+        (reduce
+          (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
+          {}
+          (keys col-key-map))))
+    nil))
 
 (defn value-at
   "Retrieve one or more rows from a table or table model. target is a JTable or TableModel.
   rows is either a single integer row index, or a sequence of row indices. In the first case
   a single map of row values is returns. Otherwise, returns a sequence of maps.
+
+  If a row index is out of bounds, returns nil.
 
   Notes:
 
@@ -226,7 +230,7 @@
     target)
   ([target row value & more]
     (when more
-      (apply update-at! target more)) 
+      (apply update-at! target more))
     (update-at! target row value)))
 
 (defn insert-at!
