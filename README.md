@@ -16,7 +16,7 @@ Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens 
 
 ## Features
 
-Seesaw is compatible with both Clojure 1.2 and 1.3.
+Seesaw is compatible with both Clojure 1.4, but will probably work fine with 1.3 and 1.5. Maybe even 1.2.
 
 * Swing knowledge is *not required* for many apps!
 * [Construct widgets](https://github.com/daveray/seesaw/wiki/Widgets) with simple functions, e.g. `(listbox :model (range 100))`
@@ -47,7 +47,7 @@ Add Seesaw to `project.clj`
 ```clojure
 (defproject hello-seesaw "1.0.0-SNAPSHOT"
   :description "FIXME: write"
-  :dependencies [[org.clojure/clojure "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                 [seesaw "x.y.z"]])
 ```
 
