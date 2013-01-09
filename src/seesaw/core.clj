@@ -1228,9 +1228,12 @@
     (selection bg (select root [:#a]))
 
     ; Listen for selection changes. Note that the selection MAY BE NIL!
+    ; Also note that the event that comes through is from the selected radio button
+    ; *not the button-group itself* since the button-group is a somewhat artificial
+    ; construct. So, you'll have to ask for (selection bg) instead of (selection e) : (
     (listen bg :selection
       (fn [e]
-        (if-let [s (selection e)]
+        (if-let [s (selection bg)]
           (println \"Selected \" (text s)))))
 
   Returns an instance of javax.swing.ButtonGroup
