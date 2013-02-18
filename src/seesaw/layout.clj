@@ -37,7 +37,7 @@
   ([^java.awt.Container c w constraint] 
     (let [w* (if w (make-widget* w))]
       (check-args (not (nil? w*)) (str "Can't add nil widget. Original was (" w ")"))
-      (.add c w* constraint)
+      (.add c ^java.awt.Component w* constraint)
       w*)))
 
 (defn add-widgets

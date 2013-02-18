@@ -194,7 +194,7 @@
   [v]
   (cond 
     (resource-key? v) (to-mnemonic-keycode (resource v))
-    (string? v)       (to-mnemonic-keycode (.charAt v 0))
+    (string? v)       (to-mnemonic-keycode (.charAt ^String v 0))
     (char? v)         (int (Character/toUpperCase ^Character v))
     :else             (int v)))
 

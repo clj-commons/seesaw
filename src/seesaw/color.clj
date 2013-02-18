@@ -210,7 +210,7 @@
       (color (resource s))
       (or (color-names (.toLowerCase (name s))) (decode (name s)))))
   ([s a] (apply color (assoc (get-rgba (color s)) 3 a)))
-  ([^Integer r ^Integer g ^Integer b ^Integer a] (Color. r (or g 0) (or b 0) (or a 255)))
+  ([^Integer r ^Integer g ^Integer b ^Integer a] (Color. r (int (or g 0)) (int (or b 0)) (int (or a 255))))
   ([r g b] (color r g b nil)))
 
 (defn ^Color default-color
