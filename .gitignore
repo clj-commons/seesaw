@@ -9,3 +9,7 @@ pom.xml
 *.swo
 .DS_Store
 autodoc/**
+/bin
+/.classpath
+/.project
+/.settings
