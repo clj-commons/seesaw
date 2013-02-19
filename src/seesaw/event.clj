@@ -509,8 +509,8 @@
     (apply juxt remove-fns)))
 
 (defn listen-to-property
-  "List to propertyChange events on a target for a particular named property.
-  List (listen), returns a function that, when called removes the installed
+  "Listen to propertyChange events on a target for a particular named property.
+  Like (listen), returns a function that, when called removes the installed
   listener."
   [^java.awt.Component target property event-fn]
   (let [listener (reify java.beans.PropertyChangeListener
