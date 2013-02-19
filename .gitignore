@@ -3,6 +3,8 @@ pom.xml
 /lib/
 /classes/
 /target/
+examples/**/target/
+.lein-repl-history
 .lein-failures
 .lein-deps-sum
 *.swp
