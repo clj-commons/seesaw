@@ -1228,9 +1228,12 @@
     (selection bg (select root [:#a]))
 
     ; Listen for selection changes. Note that the selection MAY BE NIL!
+    ; Also note that the event that comes through is from the selected radio button
+    ; *not the button-group itself* since the button-group is a somewhat artificial
+    ; construct. So, you'll have to ask for (selection bg) instead of (selection e) : (
     (listen bg :selection
       (fn [e]
-        (if-let [s (selection e)]
+        (if-let [s (selection bg)]
           (println \"Selected \" (text s)))))
 
   Returns an instance of javax.swing.ButtonGroup
@@ -1735,10 +1738,10 @@
     :model A TableModel, or a vector. If a vector, then it is used as
            arguments to (seesaw.table/table-model).
     :show-grid? Whether to show the grid lines of the table.
-    :show-horizontal-lines? Whether to show vertical grid lines
-    :show-vertical-lines?   Whether to show horizontal grid lines
+    :show-horizontal-lines? Whether to show horizontal grid lines
+    :show-vertical-lines?   Whether to show vertical grid lines
     :fills-viewport-height?
-    :auto-reseize The behavior of columns when the table is resized. One of:
+    :auto-resize The behavior of columns when the table is resized. One of:
            :off                Do nothing to column widths
            :next-column        When a column is resized, take space from next column
            :subsequent-columns Change subsequent columns to presercve total width of table

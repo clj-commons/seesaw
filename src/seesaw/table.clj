@@ -143,18 +143,22 @@
 
 (defn- single-value-at
   [^javax.swing.table.TableModel model col-key-map row]
-  (let [full-row (get-full-value model row)]
-    (merge
-      full-row
-      (reduce
-        (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
-        {}
-        (keys col-key-map)))))
+  (if (and (>= row 0) (< row (.getRowCount model)))
+    (let [full-row (get-full-value model row)]
+      (merge
+        full-row
+        (reduce
+          (fn [result k] (assoc result k (.getValueAt model row (col-key-map k))))
+          {}
+          (keys col-key-map))))
+    nil))
 
 (defn value-at
   "Retrieve one or more rows from a table or table model. target is a JTable or TableModel.
   rows is either a single integer row index, or a sequence of row indices. In the first case
   a single map of row values is returns. Otherwise, returns a sequence of maps.
+
+  If a row index is out of bounds, returns nil.
 
   Notes:
 
@@ -211,6 +215,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
   "
   ([target row value]
+    (println row "/" value)
     (let [target      (to-table-model target)
           col-key-map (get-column-key-map target)
           ^objects row-values  (unpack-row col-key-map value)]
@@ -224,9 +229,9 @@
                           (last row-values)) row -1))
     target)
   ([target row value & more]
-    (if more
-      (apply update-at! target more)
-      (update-at! target row value))))
+    (when more
+      (apply update-at! target more))
+    (update-at! target row value)))
 
 (defn insert-at!
   "Inserts one or more rows into a table. The arguments are one or more row-index/value

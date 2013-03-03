@@ -2,9 +2,16 @@ pom.xml
 *jar
 /lib/
 /classes/
+/target/
+examples/**/target/
+.lein-repl-history
 .lein-failures
 .lein-deps-sum
 *.swp
 *.swo
 .DS_Store
 autodoc/**
+/bin
+/.classpath
+/.project
+/.settings

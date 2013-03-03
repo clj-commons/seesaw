@@ -241,7 +241,7 @@
         (for [{:keys [class] :as group} (vals event-groups)]
           [class group])))
 
-(defn- get-listener-class [m]
+(defn- get-listener-class [^java.lang.reflect.Method m]
   (let [[arg] (.getParameterTypes m)]
     (if (and arg (.startsWith (.getName m) "add"))
       arg)))
@@ -509,10 +509,10 @@
     (apply juxt remove-fns)))
 
 (defn listen-to-property
-  "List to propertyChange events on a target for a particular named property.
-  List (listen), returns a function that, when called removes the installed
+  "Listen to propertyChange events on a target for a particular named property.
+  Like (listen), returns a function that, when called removes the installed
   listener."
-  [target property event-fn]
+  [^java.awt.Component target property event-fn]
   (let [listener (reify java.beans.PropertyChangeListener
                    (propertyChange [this e] (event-fn e)))]
     (.addPropertyChangeListener target property listener)
@@ -536,7 +536,7 @@
     (seesaw.dev/show-events)
   "
   [v]
-  (let [base (->> (.getMethods (if (class? v) v (class v)))
+  (let [base (->> (.getMethods (if (class? v) ^java.lang.Class v (class v)))
                (map get-listener-class)
                (filter identity)
                (map event-groups-by-listener-class)
