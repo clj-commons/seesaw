@@ -292,8 +292,9 @@
 
 (defn remove!-impl
   [container subject & more]
-  (let [^java.awt.Container container (if container (to-widget* container))]
-    (.remove container (if container (to-widget* subject)))
+  (let [^java.awt.Container container      (if container (to-widget* container))
+        ^java.awt.Component subject-widget (if container (to-widget* subject))]
+    (.remove container subject-widget)
     (when more
       (apply remove!-impl container more))
     container))
