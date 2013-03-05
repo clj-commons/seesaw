@@ -276,7 +276,13 @@
     (add!* [layout target widget constraint]
       (add-widget target widget (border-layout-dirs constraint)))
     (get-constraint* [layout container widget]
-      (.getConstraints layout widget)))
+      (.getConstraints layout widget))
+  
+  java.awt.CardLayout
+    (add!* [layout target widget constraint]
+      (add-widget target widget (name constraint)))
+
+    (get-constraint* [layout container widget]))
 
 ;;;
 
