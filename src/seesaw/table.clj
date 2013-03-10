@@ -215,7 +215,6 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/table/TableModel.html
   "
   ([target row value]
-    (println row "/" value)
     (let [target      (to-table-model target)
           col-key-map (get-column-key-map target)
           ^objects row-values  (unpack-row col-key-map value)]
