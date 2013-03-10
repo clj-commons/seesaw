@@ -24,8 +24,7 @@
                  [com.miglayout/miglayout "3.7.4"]
                  [com.jgoodies/forms "1.2.1"]
                  [org.swinglabs.swingx/swingx-core "1.6.3"]
-                 ; exclude org.clojure/clojure to avoid its version range
-                 [j18n "1.0.1" :exclusions [org.clojure/clojure]]
+                 [j18n "1.0.2"]
                  [org.fife.ui/rsyntaxtextarea "2.0.4.1"]]
   :profiles { :dev {:dependencies [[com.stuartsierra/lazytest "1.1.2"]
                                   [lein-autodoc "0.9.0"]]}}
