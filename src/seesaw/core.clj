@@ -1704,6 +1704,9 @@
     (instance? javax.swing.table.TableModel v) v
     :else (apply seesaw.table/table-model v)))
 
+(defn- table-columns [table]
+  (-> table .getColumnModel .getColumns enumeration-seq))
+
 (def ^{:private true} auto-resize-mode-table {
   :off                javax.swing.JTable/AUTO_RESIZE_OFF
   :next-column        javax.swing.JTable/AUTO_RESIZE_NEXT_COLUMN
@@ -1723,6 +1726,11 @@
                                 (fn [^javax.swing.JTable t]
                                   (and (.getShowHorizontalLines t)
                                       (.getShowVerticalLines t))))
+      (default-option :column-widths
+                                   #(doall
+                                     (map (fn [c w] (.setPreferredWidth c w)) (table-columns %1) %2))
+                                   #(doall
+                                     (map (fn [c] (.getWidth c)) (table-columns %1))))
       (bean-option [:show-vertical-lines? :show-vertical-lines] javax.swing.JTable boolean)
       (bean-option [:show-horizontal-lines? :show-horizontal-lines] javax.swing.JTable boolean)
       (bean-option [:fills-viewport-height? :fills-viewport-height] javax.swing.JTable boolean)
