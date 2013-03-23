@@ -335,6 +335,7 @@
   (verify-config (tree :drag-enabled? true) :drag-enabled? true)
   (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
   (verify-config (table :drag-enabled? true) :drag-enabled? true)
+  (verify-config (table :model [:columns [:a :b :c] :rows [[1 2 3]]] :column-widths [20 30 40]) :column-widths [20 30 40])
 
   (verify-config (text :drop-mode :insert) :drop-mode :insert)
   (verify-config (tree :drop-mode :on-or-insert) :drop-mode :on-or-insert)
