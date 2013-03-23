@@ -348,7 +348,17 @@
       (listen editor :hyperlink (fn [_] (swap! called inc)))
       (expect (= 0 @called))
       (.fireHyperlinkUpdate editor nil)
-      (expect (= 2 @called)))))
+      (expect (= 2 @called))))
+
+  (it "can register an ActionListener on a java.awt.MenuItem with :action key"
+    (let [mi (java.awt.MenuItem.)
+          called (atom false)]
+      (do
+        (expect (= 0 (count (.getActionListeners mi))))
+        (listen mi :action (fn [e] (reset! called true)))
+        (expect (= 1 (count (.getActionListeners mi))))
+        (.. (first (.getActionListeners mi)) (actionPerformed nil))
+        (expect @called)))))
 
 (describe listen-to-property
   (it "registers a property change listener"

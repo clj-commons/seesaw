@@ -59,7 +59,8 @@
   javax.swing.AbstractButton
   javax.swing.ButtonModel
   javax.swing.ComboBoxEditor
-  javax.swing.Timer)
+  javax.swing.Timer
+  java.awt.MenuItem)
 
 (extend-listener-protocol AddListSelectionListener add-list-selection-listener addListSelectionListener
   javax.swing.JList
