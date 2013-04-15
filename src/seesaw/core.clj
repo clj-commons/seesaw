@@ -2793,7 +2793,17 @@
 
       (bean-option :undecorated? java.awt.Frame boolean)
 
-      (bean-option [:icon :icon-image] javax.swing.JFrame frame-icon-converter))))
+      (bean-option
+        [:icon :icon-image]
+        javax.swing.JFrame
+        frame-icon-converter nil
+        "The image to be displayed as the icon for this frame")
+
+      (bean-option
+        [:icons :icon-images]
+        java.awt.Window
+        (partial map frame-icon-converter) nil
+        "Sequence of images to be displayed as the icon for this frame"))))
 
 (option-provider javax.swing.JFrame frame-options)
 
