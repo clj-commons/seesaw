@@ -174,11 +174,23 @@
   "Create a transfer handler for drag and drop operations. Take a list
   of key/value option pairs as usual. The following options are supported:
 
+    :import-when - A vector of flavor/predicate pairs used to check is a drop
+                   is acceptable 
+                   (adds additional flexibilty over just matching the flavor)
+
     :import - A vector of flavor/handler pairs used when a drop/paste occurs
               (see below)
+
     :export - A map of options used when a drag/copy occurs (see below)
 
   Data Import
+    The :import-when option is a vector of favour predicate pairs
+    it adds an additional check for when drop can be accepted.
+    by default a drop is acceptable if any data-flavor matches in :import.
+    if an import-when predicate is defined for a flavor,
+      first the flavor must match an :import flavor (see below)
+      and then, the predicate must also return true when passed the 
+      prospective drop data.
 
     The :import option specifies a vector of flavor/handler pairs. When
     a drop/paste occurs, the handler for the first matching flavor is called
@@ -256,9 +268,14 @@
 
     http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html
   "
-  [& {:keys [import export] :as opts}]
+  [& {:keys [import-when import export] :as opts}]
   (let [import-pairs     (partition 2 import)
         accepted-flavors (map (comp to-raw-flavor first) import-pairs)
+        import-when-map  (into {}
+                               (map (fn [[flavor import-when?]]
+                                      [(to-raw-flavor flavor) import-when?])
+                                    (partition 2 import-when)))
+
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
         finish           (:finish export)
@@ -266,9 +283,18 @@
                              (or (:actions export) (constantly :move))
                              (constantly :none))]
     (proxy [TransferHandler] []
-
       (canImport [^TransferHandler$TransferSupport support]
-        (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
+        (boolean
+          (some 
+            (fn [flavor]
+              (when (.isDataFlavorSupported support flavor)
+                (let [import-when? (import-when-map flavor)]
+                  (if-not import-when? 
+                    true
+                    (let [[flavorful handler] (get-import-handler support import-pairs)
+                          data                 (get-import-data support flavorful)]
+                      (import-when? data))))))
+            accepted-flavors)))
 
       (importData [^TransferHandler$TransferSupport support]
         (if (.canImport ^TransferHandler this support)
