@@ -2817,16 +2817,28 @@
   "Create a JFrame. Options:
 
     :id       id of the window, used by (select).
+
     :title    the title of the window
+
     :icon     the icon of the frame (varies by platform)
+
     :width    initial width. Note that calling (pack!) will negate this setting
+
     :height   initial height. Note that calling (pack!) will negate this setting
+
     :size     initial size. Note that calling (pack!) will negate this setting
+
     :minimum-size minimum size of frame, e.g. [640 :by 480]
+
     :content  passed through (make-widget) and used as the frame's content-pane
+
     :visible?  whether frame should be initially visible (default false)
+
     :resizable? whether the frame can be resized (default true)
+
     :on-close   default close behavior. One of :exit, :hide, :dispose, :nothing
+                The default value is :hide. Note that the :window-closed event is
+                only fired for values :exit and :dispose
 
   returns the new frame.
 
