@@ -2803,7 +2803,13 @@
         [:icons :icon-images]
         java.awt.Window
         (partial map frame-icon-converter) nil
-        "Sequence of images to be displayed as the icon for this frame"))))
+        "Sequence of images to be displayed as the icon for this frame")
+
+      (default-option
+        :listen
+        #(apply seesaw.event/listen %1 %2)
+        nil
+        ["vector of args for (seesaw.core/listen)"]))))
 
 (option-provider javax.swing.JFrame frame-options)
 
