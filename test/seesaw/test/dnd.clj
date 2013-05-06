@@ -70,6 +70,26 @@
     (it "returns false if the :import map is missing or empty"
       (not (.canImport (default-transfer-handler) (fake-transfer-support (StringSelection. "hi")))))
 
+    (let [transfer-handler (default-transfer-handler
+                             :import-when [string-flavor (fn [info] 
+                                                           (= info "should match"))]
+                             :import [string-flavor (fn [info])])]
+      (it "returns false if the :import-when is specified and returns false"
+          (not (.canImport transfer-handler  
+                 (fake-transfer-support (StringSelection. "should not match")))))
+      
+      (it "returns true if the :import-when is specified and returns true"
+          (.canImport transfer-handler  
+            (fake-transfer-support (StringSelection. "should match"))))
+      )
+    
+    (let [transfer-handler (default-transfer-handler
+                             :import-when [uri-list-flavor (fn [info] false)]
+                             :import [string-flavor (fn [info])])]
+      (it "returns true if the :import-when is specified but matching data-flavor predicate is not found"
+          (.canImport transfer-handler  
+            (fake-transfer-support (StringSelection. "should still match")))))
+    
     (it "only accepts flavors in the keys of the :import map"
       (let [th (default-transfer-handler :import [string-flavor (fn [info])])]
         (expect (.canImport th (fake-transfer-support (StringSelection. "hi"))))
