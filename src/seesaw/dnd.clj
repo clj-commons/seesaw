@@ -170,6 +170,27 @@
         :else {})
       {:point [(.x pt) (.y pt)]})))
 
+
+(defn validate-import-pairs [import-pairs]
+  ;; ensure useful error message for missing :on-drop handler
+  ;; otherwise user will see null pointer exception later
+  (when-let [error-import-pairs (seq (filter 
+                                       (fn [[flavor handler]] 
+                                         (when (and (map? handler) 
+                                                    (not (:on-drop handler)))
+                                           [flavor handler])) 
+                                       import-pairs))]
+    (throw (ex-info 
+             "no :on-drop key found in handler-map. :import with handler-map must have (:on-drop handler) => (fn [data] ...)"
+             {:error-import-pairs error-import-pairs}))))
+
+(defn normalise-import-pairs [import-pairs]
+  (validate-import-pairs import-pairs)
+  (map (fn [[flavor handler]]
+         (let [handler (if (map? handler) handler {:on-drop handler})]
+           [flavor handler])) 
+       import-pairs))
+
 (defn default-transfer-handler
   "Create a transfer handler for drag and drop operations. Take a list
   of key/value option pairs as usual. The following options are supported:
@@ -180,9 +201,18 @@
 
   Data Import
 
-    The :import option specifies a vector of flavor/handler pairs. When
-    a drop/paste occurs, the handler for the first matching flavor is called
-    with a map with the following keys:
+    The :import option specifies a vector of flavor/handler pairs. A handler is
+    either 
+
+      a function: (fn [data] ...process drop...)  
+      or a map  : {:on-drop   (fn [data] ...process drop...)
+                   :can-drop? (fn [data] ...check drop is allowed...)}
+
+    if a map is provided :on-drop is mandatory, :can-drop? is optional, 
+    defaulting to (constantly true)
+
+    When a drop/paste occurs, the handler for the first matching flavor is 
+    called with a map with the following keys:
 
       :target        The widget that's the target of the drop
       :data          The data, type depends on flavor
@@ -257,7 +287,7 @@
     http://download.oracle.com/javase/6/docs/api/javax/swing/TransferHandler.html
   "
   [& {:keys [import export] :as opts}]
-  (let [import-pairs     (partition 2 import)
+  (let [import-pairs     (normalise-import-pairs (partition 2 import))
         accepted-flavors (map (comp to-raw-flavor first) import-pairs)
         start            (if-let [start-val (:start export)]
                            (fn [c] (default-transferable (start-val c))))
@@ -268,19 +298,31 @@
     (proxy [TransferHandler] []
 
       (canImport [^TransferHandler$TransferSupport support]
-        (boolean (some #(.isDataFlavorSupported support %) accepted-flavors)))
+        (boolean
+          (some 
+            (fn [flavor]
+              (when (.isDataFlavorSupported support flavor)
+                (let [[flavorful handler] (get-import-handler support import-pairs)]
+                  (if-let [can-drop? (:can-drop? handler)]
+                    (let [data (get-import-data support flavorful)]
+                      (can-drop? data))
+                    true))))
+            accepted-flavors)))
 
       (importData [^TransferHandler$TransferSupport support]
         (if (.canImport ^TransferHandler this support)
           (try
             (let [[flavorful handler] (get-import-handler support import-pairs)
-                  data                         (get-import-data support flavorful)
-                  drop?                        (.isDrop support)]
-              (boolean (handler { :data          data
-                                  :drop?         drop?
-                                  :drop-location (if drop? (unpack-drop-location (.getDropLocation support)))
-                                  :target        (.getComponent support)
-                                  :support       support })))
+                  data                (get-import-data support flavorful)
+                  drop?               (.isDrop support)
+                  on-drop (:on-drop handler) 
+                  ]
+              (boolean 
+                (on-drop {:data          data
+                          :drop?         drop?
+                          :drop-location (if drop? (unpack-drop-location (.getDropLocation support)))
+                          :target        (.getComponent support)
+                          :support       support })))
             ; When Swing calls importData it seems to catch and suppress all
             ; exceptions, which is maddening to debug. :|
             (catch Exception e
