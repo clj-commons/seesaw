@@ -63,8 +63,13 @@
   (javax.swing.TransferHandler$TransferSupport. (javax.swing.JLabel.) t))
 
 (describe default-transfer-handler
-  (it "creates a transfer handler"
-    (instance? javax.swing.TransferHandler (default-transfer-handler)))
+  (testing "(default-transfer-handler)" 
+     (it "creates a transfer handler"
+         (instance? javax.swing.TransferHandler (default-transfer-handler)))
+     (it "throws an ex-info if there is a handler-map without an on-drop key"
+         (try 
+           (default-transfer-handler :import [string-flavor {}]) false
+           (catch clojure.lang.ExceptionInfo e true))))
 
   (testing "(canImport)"
     (it "returns false if the :import map is missing or empty"
@@ -73,7 +78,26 @@
     (it "only accepts flavors in the keys of the :import map"
       (let [th (default-transfer-handler :import [string-flavor (fn [info])])]
         (expect (.canImport th (fake-transfer-support (StringSelection. "hi"))))
-        (expect (not (.canImport th (fake-transfer-support (default-transferable []))))))))
+        (expect (not (.canImport th (fake-transfer-support (default-transferable [])))))))
+    
+    (let [transfer-handler (default-transfer-handler
+                             :import [string-flavor {:on-drop   (fn [info])
+                                                     :can-drop? (fn [info] 
+                                                                  (= info "should match"))}])]
+      (testing ":can-drop?"
+               (it "returns false if the import handler is a map and :can-drop? returns false"
+                   (not (.canImport transfer-handler  
+                          (fake-transfer-support (StringSelection. "should not match")))))
+               
+               (it "returns true if the import handler is a map and :can-drop? returns true"
+                   (.canImport transfer-handler  
+                     (fake-transfer-support (StringSelection. "should match"))))
+               
+               (let [transfer-handler (default-transfer-handler
+                                        :import [string-flavor {:on-drop (fn [info])}])]
+                 (it "returns true if the import handler is a map and :can-drop? is not given"
+                     (.canImport transfer-handler  
+                       (fake-transfer-support (StringSelection. "should match"))))))))
 
   (testing "(importData)"
     (it "returns false immediately if (canImport) returns false"
