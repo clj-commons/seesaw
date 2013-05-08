@@ -564,6 +564,8 @@
           r (text! d "BYE!")]
       (expect (= d r))
       (expect (= "BYE!" (text d)))))
+  (it "With nil input it should set the text of a text widget to \"\""
+    (= "" (text (text! (text "HI") nil))))
   (it "should set the text of a single text widget argument"
     (= "BYE" (text (text! (text "HI") "BYE"))))
   (it "should set the text of a single button argument"
