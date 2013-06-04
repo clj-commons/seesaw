@@ -3265,6 +3265,66 @@
         (show! dlg)
         dlg)))
 
+;*******************************************************************************
+; confirm
+(defn- confirm-impl
+  "
+    showConfirmDialog(Component parentComponent,
+                      Object message,
+                      String title,
+                      int optionType,
+                      int messageType,
+                      Icon icon)
+  "
+  [source message {:keys [title option-type type icon]
+                   :or {type :plain option-type :ok-cancel}}]
+  (let [source  (to-widget source)
+        message (if (coll? message) (object-array message) (resource message))
+        result  (JOptionPane/showConfirmDialog ^java.awt.Component source
+                                 message
+                                 (resource title)
+                                 (dialog-option-type-map option-type)
+                                 (input-type-map type)
+                                 (make-icon icon))]
+    (condp = result
+      JOptionPane/NO_OPTION false
+      JOptionPane/CANCEL_OPTION nil
+      true)))
+
+(defn confirm
+  "Show a confirmation dialog:
+
+    (confirm [source] message & options)
+
+  source  - optional parent component
+  message - The message to show the user. May be a string, or list of strings, widgets, etc.
+  options - additional options
+
+  Additional options:
+
+    :title       The dialog title
+    :option-type :yes-no, :yes-no-cancel, or :ok-cancel (default)
+    :type        :warning, :error, :info, :plain, or :question
+    :icon        Icon to display (Icon, URL, etc)
+
+  Returns true if the user has hit Yes or OK, false if they hit No,
+  and nil if they hit Cancel.
+
+  See:
+    http://docs.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showConfirmDialog%28java.awt.Component,%20java.lang.Object,%20java.lang.String,%20int,%20int%29
+  "
+  [& args]
+  (let [n (count args)
+        f (first args)
+        s (second args)]
+    (cond
+      (or (= n 0) (keyword? f))
+        (illegal-argument "confirm requires at least one non-keyword arg")
+      (= n 1)      (confirm-impl nil f {})
+      (= n 2)      (confirm-impl f s {})
+      (keyword? s) (confirm-impl nil f (drop 1 args))
+      :else        (confirm-impl f s (drop 2 args)))))
+
 
 ;*******************************************************************************
 ; Slider
