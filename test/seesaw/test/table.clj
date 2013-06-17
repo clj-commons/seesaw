@@ -133,7 +133,14 @@
           r (insert-at! t 1 ["A"] 3 ["B"])]
       (expect (= t r))
       (expect (= 7 (.getRowCount t)))
-      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t))))))))
+      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t)))))))
+  (it "inserts multiple rows without crashing. Issue #146"
+    (let [t (table-model :columns [:name] :rows [])
+          r (insert-at! t 0 ["A"] 0 ["B"])]
+      (expect (= t r))
+      (expect (= 2 (.getRowCount t)))
+      (expect (= [{:name "A"} {:name "B"}]
+                 (value-at t (range (.getRowCount t))))))))
 
 (describe setRowCount
   (it "can extend the number of rows in the table with nils"
