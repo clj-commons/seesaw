@@ -12,7 +12,8 @@
             :distribution :repo
             :comments "same as Clojure"}
 
-  :warn-on-reflection true
+  :global-vars {*warn-on-reflection* true
+                *assert* false}
 
   ; To run the examples:
   ;
