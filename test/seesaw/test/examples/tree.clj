@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -15,19 +15,19 @@
 
 (def source "http://www.4clojure.com/problems/rss")
 
-; Make a tree model for some XML using same arguments (branch? and childnre) 
+; Make a tree model for some XML using same arguments (branch? and childnre)
 ; as (clojure.core/tree-seq)
 (defn load-model []
-  (simple-tree-model 
-    (complement string?) 
+  (simple-tree-model
+    (complement string?)
     (comp seq :content)
     (clojure.xml/parse source)))
 
 ; A custom renderer so that XML elements are displayed nicely
 (defn render-fn [renderer info]
   (let [v (:value info)]
-    (config! renderer 
-      :text (if (map? v) 
+    (config! renderer
+      :text (if (map? v)
               (format "<%s>" (name (:tag v)))
               v))))
 
@@ -44,14 +44,14 @@
 (defexample []
   (let [f (make-frame)]
     ; Listen for selection changes and show them in the label
-    (listen (select f [:#tree]) 
+    (listen (select f [:#tree])
       :tree-will-expand #(println (str "Tree will expand\n" %))
       :tree-will-collapse #(println (str "Tree will collapse\n" %))
       :tree-expanded #(println (str "Tree expanded\n" %))
       :tree-collapsed #(println (str "Tree collapsed\n" %))
-      :selection 
-        (fn [e] 
-          (config! (select f [:#sel]) 
+      :selection
+        (fn [e]
+          (config! (select f [:#sel])
             :text (str "Selection: " (-> e selection first last)))))
     f))
 

@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -14,10 +14,10 @@
   (:require seesaw.invoke)
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
 
-(defn calculate-pi-for 
+(defn calculate-pi-for
   "Calculate a sliver of pi"
   [start step-size]
-  (reduce 
+  (reduce
     (fn [acc i]
       (+ acc (/ (* 4.0 (- 1 (* (mod i 2) 2))) (+ (* 2 i) 1))))
     0.0
@@ -31,17 +31,17 @@
     (if-let [{:keys [start step-size]} (.poll queue 1 TimeUnit/SECONDS)]
       (swap! result
         (fn [{:keys [value count]} new-value]
-          {:value (+ value new-value) 
+          {:value (+ value new-value)
            :count (inc count)})
         (calculate-pi-for start step-size)))
     (send *agent* agent-calculate))
   state)
 
-(defn agent-start [state] 
-  (send *agent* agent-calculate) 
+(defn agent-start [state]
+  (send *agent* agent-calculate)
   (assoc state :running true))
 
-(defn agent-stop [state] 
+(defn agent-stop [state]
   (assoc state :running false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,7 +52,7 @@
         queue  (LinkedBlockingQueue. (for [i (range steps)] {:start i :step-size step-size}))
         agents (for [i (range num-agents)]
                   (agent {:running false
-                          :queue  queue 
+                          :queue  queue
                           :result result}))]
     { :agents agents
       :queue  queue
@@ -75,7 +75,7 @@
         progress     (config! (select root [:#progress]) :max steps :value 0)
         task         (init-task 4 step-size steps)]
     (add-watch (:result task) (gensym)
-      (seesaw.invoke/signaller [k r o {:keys [value count]}] 
+      (seesaw.invoke/signaller [k r o {:keys [value count]}]
           (config! progress :value count)
           (text! result-label (format "\u03C0 = %.20f" value))))
     (reset! current-task (start-task task))))
@@ -116,7 +116,7 @@
     :vgap 5
     :hgap 5 }
 
-  [:JToolBar] { 
+  [:JToolBar] {
     :border     5
     :floatable? false
     :opaque?    false }
@@ -125,14 +125,14 @@
 
   [:#step-size] { :text 10000 }
 
-  [:JButton] { 
+  [:JButton] {
     :foreground "#0022DD"
     :background "#ffefd5" }
 
   [:#go]     { :text "Go!" }
   [:#cancel] { :text "Cancel" }
 
-  [:#progress] { 
+  [:#progress] {
     :border 10 }
 
   [:#result] {
@@ -158,8 +158,8 @@
   root)
 
 (defexample []
-  (-> (make-frame) 
-    (apply-stylesheet stylesheet) 
+  (-> (make-frame)
+    (apply-stylesheet stylesheet)
     (apply-behaviors behaviors)))
 
 ;(run :dispose)

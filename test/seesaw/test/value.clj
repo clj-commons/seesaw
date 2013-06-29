@@ -134,4 +134,3 @@
     (= "" (-> (text "foo") (value!* nil) text)))
   (it "sets the text of a label"
     (= "bar" (-> (label) (value!* "bar") text))))
-

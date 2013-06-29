@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -14,11 +14,11 @@
             seesaw.scroll))
 
 (defn top [target]
-  (action :name "(scroll! v :to :top)" 
+  (action :name "(scroll! v :to :top)"
           :handler (fn [e] (scroll! target :to :top))))
 
 (defn bottom [target]
-  (action :name "(scroll! v :to :bottom)" 
+  (action :name "(scroll! v :to :bottom)"
           :handler (fn [e] (scroll! target :to :bottom))))
 
 (defn point [target & [x y]]
@@ -30,8 +30,8 @@
                       :handler (fn [e] (scroll! target :to [:rect x y w h]))))
 
 (defn test-panel [target items]
-  (border-panel :center (scrollable target) 
-                :south (grid-panel :columns 2 
+  (border-panel :center (scrollable target)
+                :south (grid-panel :columns 2
                                     :items items)))
 (defn general []
   (let [t (text :multi-line? true :text "Paste a lot of text here so there's scroll bars")]
@@ -55,12 +55,12 @@
         arg1 (text :columns 10)
         go-action  (action :name "Scroll!"
                     :handler (fn [e]
-                               (scroll! target :to [op-name 
+                               (scroll! target :to [op-name
                                                     (Integer/valueOf (text arg0))
                                                     (Integer/valueOf (text arg1))])))
         go-button (button :action go-action)]
-    (listen #{arg0 arg1} :document 
-      (fn [e] 
+    (listen #{arg0 arg1} :document
+      (fn [e]
         (text! go-button (format "(scroll! v :to [%s %s %s])" op-name (text arg0) (text arg1)))))
     (text! [arg0 arg1] "20")
     (horizontal-panel :items [arg0 arg1 go-button])))
@@ -71,26 +71,26 @@
 
 (defn jtable []
   (let [columns (map #(-> ( format "c%09d" %) keyword) (range 26))
-        jtable (table :auto-resize :off 
+        jtable (table :auto-resize :off
                       :model [:columns columns
                               :rows (repeat 500 (into {} (for [c columns] [c 100])))])]
-    (test-panel 
-      jtable 
-      [(top jtable) (bottom jtable) 
+    (test-panel
+      jtable
+      [(top jtable) (bottom jtable)
        (test-op-int jtable :row)
        (test-op-int jtable :column)
        (test-op-int-int jtable :cell)])))
 
 (defn jtext[]
-  (let [t (text :multi-line? true 
+  (let [t (text :multi-line? true
                 :text (apply str (interpose "\n" (range 0 1000))))]
-    (test-panel t [(top t) 
-                   (bottom t) 
-                   (test-op-int t :line) 
+    (test-panel t [(top t)
+                   (bottom t)
+                   (test-op-int t :line)
                    (test-op-int t :position)])))
 
 (defn app-panel []
-  (tabbed-panel 
+  (tabbed-panel
     :tabs [{:title "general" :content (general)}
            {:title "listbox" :content (jlist)}
            {:title "table"   :content (jtable)}

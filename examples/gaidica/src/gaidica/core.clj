@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -25,9 +25,9 @@
 
 (defn get-webcams [city] (storm/webcams @api-key city))
 
-(defn get-rad-sat [city] 
+(defn get-rad-sat [city]
   { :radar     (storm/radar @api-key city)
-    :satellite (storm/satellite @api-key city)}) 
+    :satellite (storm/satellite @api-key city)})
 
 ;; Widget construction stuff -----------------------------------
 ;; No behavior here, just building widgets
@@ -37,17 +37,17 @@
 (def divider-color "#aaaaaa")
 
 (defn make-forecast-entry [f]
-  (mig-panel 
+  (mig-panel
     :constraints ["" "[][grow, fill]" "[top][top]"]
     :border (line-border :bottom 1 :color divider-color)
     :items [
       [(label :icon (:icon_url f))               "span 1 2"]
       [(label :text (:title f) :font title-font) "wrap"]
-      [(text 
-         :opaque? false 
-         :multi-line? true 
-         :wrap-lines? true 
-         :editable? false 
+      [(text
+         :opaque? false
+         :multi-line? true
+         :wrap-lines? true
+         :editable? false
          :text (:fcttext f)
          :font normal-font)                         "wmin 10"]]))
 
@@ -55,23 +55,23 @@
   (map #(vector (make-forecast-entry %) "wrap") forecasts))
 
 (defn make-forecast-panel [forecasts]
-  (mig-panel 
+  (mig-panel
     :id :forecast
-    :constraints ["" "[grow, fill]"] 
+    :constraints ["" "[grow, fill]"]
     :items (make-forecast-entries forecasts)))
 
-(defn make-webcam-table [] 
-  (table 
-    :id :webcam-table 
-    :model 
-      [:columns 
-        [{:key :handle :text "Name" } 
-         :lat :lon 
+(defn make-webcam-table []
+  (table
+    :id :webcam-table
+    :model
+      [:columns
+        [{:key :handle :text "Name" }
+         :lat :lon
          {:key :updated :text "Last Updated"}
          {:key :CURRENTIMAGEURL :text "Image"}]]))
 
 (defn make-webcam-panel []
-  (border-panel 
+  (border-panel
     :id :webcam
     :border 5
     :center (top-bottom-split
@@ -83,9 +83,9 @@
   (border-panel
     :id :radar
     :border 5
-    :center 
-      (scrollable 
-        (grid-panel :columns 2 
+    :center
+      (scrollable
+        (grid-panel :columns 2
           :items [(label :id :radar-image :text "")
                   (label :id :sat-image :text "")
                   (label :id :sat-ir4-image :text "")
@@ -96,7 +96,7 @@
     :hgap   5
     :border [5 (line-border :bottom 1 :color divider-color)]
     :west   (label :text "City:" :font title-font)
-    :center (text 
+    :center (text
               :id   :city
               :class :refresh
               :text "Ann Arbor,MI")))
@@ -108,7 +108,7 @@
            { :title "Radar/Satellite" :content (make-radar-panel) }]))
 
 
-(defn make-frame 
+(defn make-frame
   []
   (frame
     :title "Gaidica"
@@ -129,8 +129,8 @@
 (def panel-behaviors
   [{ :name      "Forecast"
      :data-fn   get-text-forecasts
-     :update-fn (fn [root forecasts] 
-                  (config! (select root [:#forecast]) 
+     :update-fn (fn [root forecasts]
+                  (config! (select root [:#forecast])
                            :items (make-forecast-entries forecasts))) }
 
    { :name      "Webcams"
@@ -139,25 +139,25 @@
                   (let [t (select root [:#webcam-table])]
                     (clear! t)
                     (apply insert-at! t (interleave (iterate identity 0) webcams)))) }
-   
+
    { :name      "Radar/Satellite"
-     :data-fn   get-rad-sat 
+     :data-fn   get-rad-sat
      :update-fn (fn [root {:keys [radar satellite]}]
                   (config! (select root [:#radar-image]) :icon (:image_url radar))
-                  (config! (select root [:#sat-image]) :icon (:image_url satellite)) 
-                  (config! (select root [:#sat-ir4-image]) :icon (:image_url_ir4 satellite)) 
-                  (config! (select root [:#sat-vis-image]) :icon (:image_url_vis satellite))) 
+                  (config! (select root [:#sat-image]) :icon (:image_url satellite))
+                  (config! (select root [:#sat-ir4-image]) :icon (:image_url_ir4 satellite))
+                  (config! (select root [:#sat-vis-image]) :icon (:image_url_vis satellite)))
     }])
 
 (def active-requests (atom #{}))
 
 ; schedule data requests for each panel (:data-fn) and call UI update functions
 ; (:update-fn) with results, in the UI thread!
-(defn refresh-action-handler [e] 
+(defn refresh-action-handler [e]
   (let [root (to-frame e)
         city (text (select root [:#city]))]
     (doseq [{:keys [name data-fn update-fn]} panel-behaviors]
-      (future 
+      (future
         (swap! active-requests conj name)
         (let [data (data-fn city)]
           (swap! active-requests disj name)
@@ -167,7 +167,7 @@
 (def refresh-action
   (action :name "Refresh" :key "menu R" :handler refresh-action-handler))
 
-(defn add-behaviors 
+(defn add-behaviors
   [root]
   ; As active requests change, update the status bar
   (bind/bind
@@ -179,12 +179,12 @@
   ; displayed image
   (bind/bind
     (bind/selection (select root [:#webcam-table]))
-    (bind/transform 
+    (bind/transform
       #(-> (select root [:#webcam-table])
-         (value-at %) 
+         (value-at %)
          :CURRENTIMAGEURL))
     (bind/property (select root [:#webcam-image]) :icon))
-  
+
   ; Use refresh-action as the action for everything marked with class
   ; :refresh.
   (config! (select root [:.refresh]) :action refresh-action)
@@ -198,8 +198,8 @@
     (println "Usage: gaidica <wunderground-api-key>")
     (System/exit 1))
   (reset! api-key (first args))
-  (invoke-later 
-    (-> 
+  (invoke-later
+    (->
       (make-frame)
       add-behaviors
       show!))

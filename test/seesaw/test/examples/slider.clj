@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -13,7 +13,7 @@
         seesaw.test.examples.example))
 
 (defn make-frame []
-  (frame 
+  (frame
     :title "Slider Example"
     :content
       (horizontal-panel :items [
@@ -28,7 +28,7 @@
 
 (defn update-color [root]
   (let [{:keys [red green blue]} (value root)] ; <- Use (value) to get map of values
-    (config! (select root [:#canvas]) 
+    (config! (select root [:#canvas])
              :background (color red green blue))))
 
 (defexample []

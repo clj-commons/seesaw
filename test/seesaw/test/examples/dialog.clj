@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -53,10 +53,10 @@
                     common-opts)) pack! show!))
   (defn open-display-options-remembered-dlg
     []
-    (-> (dialog :id :dlg 
+    (-> (dialog :id :dlg
             ;;:options [ok-act cancel-act]
             :success-fn (fn [p]
-                          (let [knn (selection (select (to-frame p) [:#knn]))] 
+                          (let [knn (selection (select (to-frame p) [:#knn]))]
                             [[(selection (select (to-frame p) [:#mesh-p])) (selection (select (to-frame p) [:#plot-p]))]
                              (selection (select (to-frame p) [:#angle]))
                              (selection (select (to-frame p) [:#mode]))
@@ -79,7 +79,7 @@
                                  ["KNN"]
                                  [(bound-slider "LAST_KNN" 150 :id :knn  :min 0 :max 300
                                           :minor-tick-spacing 10 :major-tick-spacing 100 :paint-labels? true)
-                                  "wrap"] 
+                                  "wrap"]
                                  ["Color"]
                                  [(let [lbl (label :id :colorbtn :text "      " :background (color 255 255 0)
                                          :listen [:mouse-clicked
@@ -96,11 +96,10 @@
 (defexample []
   (frame :title "Custom Dialog Example"
          :resizable? false
-         :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn" 
+         :content (vertical-panel :items [(action :name "Show Dialog with custom :success-fn"
                                                   :handler (fn [e] (alert (str "Result = " (open-display-options-dlg)))))
-                                          (action :name "Show Dialog with custom option buttons" 
+                                          (action :name "Show Dialog with custom option buttons"
                                                   :handler (fn [e] (alert (str "Result = " (open-display-options-custom-dlg)))))
-                                          (action :name "Show Dialog with remembered values" 
+                                          (action :name "Show Dialog with remembered values"
                                                   :handler (fn [e] (alert (str "Result = " (open-display-options-remembered-dlg)))))])))
 ;(run :dispose)
-

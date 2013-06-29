@@ -2,10 +2,10 @@
   (:use seesaw.core
         seesaw.test.examples.example))
 
-;http://www.leepoint.net/notes-java/GUI/layouts/gridbag-example.html 
+;http://www.leepoint.net/notes-java/GUI/layouts/gridbag-example.html
 
 (defexample []
-  (frame :title "Find/Replace" :content 
+  (frame :title "Find/Replace" :content
     (form-panel
       :items [
         [nil :fill :both :insets (java.awt.Insets. 5 5 5 5) :gridx 0 :gridy 0]
@@ -24,9 +24,9 @@
 
         [[5 :by 5] :grid :wrap]
 
-        [(grid-panel :columns 2 
-            :items (map #(checkbox :text %) 
-                      ["Match Case" "Wrap Around" 
+        [(grid-panel :columns 2
+            :items (map #(checkbox :text %)
+                      ["Match Case" "Wrap Around"
                        "Whole Words" "Search Solution"
                        "Regular Expressions" "Search Backwards"
                        "Highlight Results" "Incremental Search"]))
@@ -34,4 +34,3 @@
         )))
 
 ;(run :dispose)
-
