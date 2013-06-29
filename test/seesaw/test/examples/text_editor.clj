@@ -32,7 +32,7 @@
 (defn select-file [type] (choose-file main-panel :type type))
 
 (defn a-new [e]
-  (let [selected (select-file :save)] 
+  (let [selected (select-file :save)]
     (if (.exists @current-file)
       (alert "File already exists.")
       (do (set-current-file selected)

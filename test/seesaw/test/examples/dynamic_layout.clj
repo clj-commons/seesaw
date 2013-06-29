@@ -11,7 +11,7 @@
 ;   get the same space. Otherwise modifying what's shown would trigger
 ;   a recursive layout cascade (probably?)
 ; * A card panel could be used to rather than :visible? to swap between
-;   alternative layouts. 
+;   alternative layouts.
 
 (defn make-dynamic-panel
   [i]
