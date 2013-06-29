@@ -15,3 +15,4 @@ autodoc/**
 /.classpath
 /.project
 /.settings
+.lein-env
