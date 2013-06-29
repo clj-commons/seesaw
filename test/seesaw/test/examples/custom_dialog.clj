@@ -70,4 +70,3 @@
                                      (alert (str "Result = " (open-display-options-dlg)))))))
 
 ;(run :dispose)
-

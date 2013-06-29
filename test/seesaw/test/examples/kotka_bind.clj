@@ -64,4 +64,3 @@
     (frame :title "Example GUI" :on-close :dispose :content panel)))
 
 ;(run :dispose)
-

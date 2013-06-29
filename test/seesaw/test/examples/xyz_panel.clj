@@ -83,4 +83,3 @@
     :size    [600 :by 600]))
 
 ;(run :dispose)
-

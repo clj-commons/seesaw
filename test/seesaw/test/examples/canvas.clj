@@ -96,4 +96,3 @@
                                                    (switch-paint-action "Ovals" paint2)]))))
 
 ;(run :dispose)
-

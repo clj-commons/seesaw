@@ -40,4 +40,3 @@
   (frame :title "MigLayout Example" :resizable? false :content (frame-content)))
 
 ;(run :dispose)
-

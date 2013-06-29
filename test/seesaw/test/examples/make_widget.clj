@@ -48,4 +48,3 @@
     :content (scrollable (vertical-panel :items people))))
 
 ;(run :dispose)
-
