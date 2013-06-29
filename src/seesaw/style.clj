@@ -38,4 +38,3 @@
   (doseq [[sel style] stylesheet]
     (apply config! (select root sel) (reduce concat style)))
   root)
-

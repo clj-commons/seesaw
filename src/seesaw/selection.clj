@@ -157,6 +157,3 @@
       target
       (if (or (nil? values) (:multi? opts)) values [values]) )
     target))
-
-
-

@@ -303,4 +303,3 @@
   "Return number of columns in a table model or JTable."
   [target]
   (.getColumnCount (to-table-model target)))
-

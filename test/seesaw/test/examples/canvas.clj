@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -47,9 +47,9 @@
 (def text-style (style :foreground (color 0 0 0)
                        :font "ARIAL-BOLD-24"))
 
-(def star 
-  (path [] 
-    (move-to 0 20) (line-to 5 5) 
+(def star
+  (path []
+    (move-to 0 20) (line-to 5 5)
     (line-to 20 0) (line-to 5 -5)
     (line-to 0 -20) (line-to -5 -5)
     (line-to -20 0) (line-to -5 5)
@@ -74,16 +74,16 @@
 ; Note that we can use (config!) to set the :paint handler just like
 ; properties on other widgets.
 (defn switch-paint-action [n paint]
-  (action :name n 
+  (action :name n
           :handler #(-> (to-frame %)
                       (select [:#canvas])
                       (config! :paint paint))))
 
 (defexample []
-  (frame 
-    :title "Canvas Example" 
+  (frame
+    :title "Canvas Example"
     :width 500 :height 300
-    :content 
+    :content
     (border-panel :hgap 5 :vgap 5 :border 5
                   ; Create the canvas with initial nil paint function, i.e. just canvas
                   ; will be filled with it's background color and that's it.
@@ -96,4 +96,3 @@
                                                    (switch-paint-action "Ovals" paint2)]))))
 
 ;(run :dispose)
-

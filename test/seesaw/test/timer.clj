@@ -29,4 +29,3 @@
       (expect (= 456 (.getDelay t)))
       (expect (not (.isRunning t)))
       (expect (not (.isRepeats t))))))
-

@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -17,7 +17,7 @@
   "A protocol for configuring and querying properties of an object. Client
   code should use (seesaw.core/config!) and (seesaw.core/config) rather than
   calling protocol methods directly.
-  
+
   See:
     (seesaw.core/config)
     (seesaw.core/config!)
@@ -27,15 +27,15 @@
 
 (defn config
   "Retrieve the value of an option from target. For example:
-  
+
     (config button1 :text)
     => \"I'm a button!\"
-  
-  Target must satisfy the Configurable protocol. In general, it may be a widget, 
-  or convertible to widget with (to-widget). For example, the target can be an event 
+
+  Target must satisfy the Configurable protocol. In general, it may be a widget,
+  or convertible to widget with (to-widget). For example, the target can be an event
   object.
 
-  Returns the option value. 
+  Returns the option value.
   Throws IllegalArgumentException if an unknown option is requested.
 
   See:
@@ -52,9 +52,9 @@
   or:
 
     (config! [button1 button2] :enabled? false :text \"We're disabled\")
- 
-  Targets must satisfy the Configurable protocol. In general, they may be widgets, 
-  or convertible to widgets with (to-widget). For example, the target can be an event 
+
+  Targets must satisfy the Configurable protocol. In general, they may be widgets,
+  or convertible to widgets with (to-widget). For example, the target can be an event
   object.
 
   Returns the input targets.
@@ -67,4 +67,3 @@
   (doseq [target (to-seq targets)]
     (config!* target args))
   targets)
-

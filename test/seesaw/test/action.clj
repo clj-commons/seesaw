@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -26,7 +26,7 @@
       (expect (not (.getValue a Action/SELECTED_KEY)))
       (expect (= "This is a tip" (.getValue a Action/SHORT_DESCRIPTION)))))
   (it "sets the mnemonic of the action given an integer key code"
-    (let [m (.getValue (action :mnemonic 99) Action/MNEMONIC_KEY)] 
+    (let [m (.getValue (action :mnemonic 99) Action/MNEMONIC_KEY)]
       ; For Clojure 1.3, ensure that it's an Integer in there and not a Long
       (expect (instance? java.lang.Integer m))
       (expect (= 99 m))))
@@ -36,7 +36,7 @@
       (expect (instance? java.lang.Integer m))
       (expect (= (int \T) m))))
   (it "sets the mnemonic of the action given a lower-case character"
-    (let [m (.getValue (action :mnemonic \t) Action/MNEMONIC_KEY)] 
+    (let [m (.getValue (action :mnemonic \t) Action/MNEMONIC_KEY)]
       ; For Clojure 1.3, ensure that it's an Integer in there and not a Long
       (expect (instance? java.lang.Integer m))
       (expect (= (int \T) m))))
@@ -82,4 +82,3 @@
     (expect (= (keystroke "ctrl C") (config (action :key ::my-action.key) :key))))
   (it "loads :tip from a resource"
     (expect (= "A tip" (config (action :tip ::my-action.tip) :tip)))))
-

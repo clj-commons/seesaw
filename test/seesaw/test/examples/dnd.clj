@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -21,7 +21,7 @@
     :model ["A String"]
     :drag-enabled? true
     :drop-mode :insert
-    :transfer-handler 
+    :transfer-handler
       [:import [dnd/string-flavor (fn [{:keys [target data]}]
                                     (.. target getModel (addElement data)))]
        :export {
@@ -37,16 +37,16 @@
     :model []
     :drag-enabled? true
     :drop-mode :insert
-    :transfer-handler 
-      (dnd/default-transfer-handler 
+    :transfer-handler
+      (dnd/default-transfer-handler
         :import [dnd/file-list-flavor (fn [{:keys [target data]}]
                                         ; data is always List<java.io.File>
-                                        (doseq [file data] 
+                                        (doseq [file data]
                                           (.. target getModel (addElement file))))]
         :export {
           :actions (constantly :copy)
-          :start   (fn [c] 
-                     (let [file (selection c)] 
+          :start   (fn [c]
+                     (let [file (selection c)]
                        [dnd/file-list-flavor [file]]))
           ; No :finish needed
         })))
@@ -57,23 +57,23 @@
     :model [(java.net.URI. "http://github.com/daveray/seesaw")]
     :drag-enabled? true
     :drop-mode :insert
-    :transfer-handler 
-      (dnd/default-transfer-handler 
+    :transfer-handler
+      (dnd/default-transfer-handler
         :import [dnd/uri-list-flavor (fn [{:keys [target data]}]
                                       ; data is seq of java.net.URI
-                                      (doseq [url data] 
+                                      (doseq [url data]
                                         (.. target getModel (addElement url))))]
         :export {
           :actions (constantly :copy)
-          :start   (fn [c] 
-                     (let [url (selection c)] 
+          :start   (fn [c]
+                     (let [url (selection c)]
                        [dnd/uri-list-flavor [url] ]))
           ; No :finish needed
         })))
 
 ; A list box that imports and exports images, like with a browser
 (defn image-target []
-  (let [icon-label (label)] 
+  (let [icon-label (label)]
     (left-right-split
       (scrollable
         (listbox
@@ -82,8 +82,8 @@
           :model []
           :drag-enabled? true
           :drop-mode :insert
-          :transfer-handler 
-            (dnd/default-transfer-handler 
+          :transfer-handler
+            (dnd/default-transfer-handler
               :import [dnd/image-flavor (fn [{:keys [target data]}]
                                         (.. target getModel (addElement data)))])))
       (scrollable icon-label)
@@ -94,7 +94,7 @@
     :title "Seesaw Drag-n-Drop Example"
     :content
       (vertical-panel
-        :items [ 
+        :items [
           (border-panel :border "Drag and Drop Text here"   :center (scrollable (string-target)))
           (border-panel :border "Drag and Drop Files here"  :center (scrollable (file-target)))
           (border-panel :border "Drag and Drop URIs here"   :center (scrollable (url-target)))
@@ -102,4 +102,3 @@
           ])))
 
 ;(run :dispose)
-

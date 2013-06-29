@@ -2,23 +2,23 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.util
-  (:require clojure.string 
+  (:require clojure.string
             [j18n.core :as j18n])
   (:import [java.net URL URI MalformedURLException URISyntaxException]))
 
-(defn illegal-argument 
+(defn illegal-argument
   "Throw an illegal argument exception formatted as with (clojure.core/format)"
   [fmt & args]
   (throw (IllegalArgumentException. ^String (apply format fmt args))))
 
-(defn check-args 
+(defn check-args
   [condition message]
   (if-not condition
     (throw (IllegalArgumentException. ^String message))
@@ -34,10 +34,10 @@
   "Spawn of (cond) and (doto). Works like (doto), but each form has a condition
    which controls whether it is executed. Returns x.
 
-  (doto (new java.util.HashMap) 
-    true    (.put \"a\" 1) 
+  (doto (new java.util.HashMap)
+    true    (.put \"a\" 1)
     (< 2 1) (.put \"b\" 2))
-  
+
   Here, only (.put \"a\" 1) is executed.
   "
   [x & forms]
@@ -52,7 +52,7 @@
 
 (defn to-seq [v]
   "Stupid helper to turn possibly single values into seqs"
-  (cond 
+  (cond
     (nil? v) v
     (seq? v)  v
     (coll? v) (seq v)
@@ -63,13 +63,13 @@
   (.. (name k) (toUpperCase) (replace "-" "_")))
 
 (defn constant-map
-  "Given a class and a list of keywordized constant names returns the 
+  "Given a class and a list of keywordized constant names returns the
    values of those fields in a map. The name mapping upper-cases and replaces
    hyphens with underscore, e.g.
- 
+
     :above-baseline --> ABOVE_BASELINE
 
-   Note that the fields must be static and declared *in* the class, not a 
+   Note that the fields must be static and declared *in* the class, not a
    supertype.
   "
   [^Class klass & fields]
@@ -78,13 +78,13 @@
     (reduce
       (fn [m [k v]] (assoc m k v))
       {}
-      (map 
-        #(vector %1 (.. klass 
-                      (getDeclaredField (str (constantize-keyword %1) suffix)) 
+      (map
+        #(vector %1 (.. klass
+                      (getDeclaredField (str (constantize-keyword %1) suffix))
                       (get nil)))
         fields))))
-    
-  
+
+
 (defn camelize
   "Convert input string to camelCase from hyphen-case"
   [s]
@@ -92,7 +92,7 @@
 
 (defn boolean? [b]
   "Return true if b is exactly true or false. Useful for handling optional
-   boolean properties where we want to do nothing if the property isn't 
+   boolean properties where we want to do nothing if the property isn't
    provided."
   (or (true? b) (false? b)))
 
@@ -107,7 +107,7 @@
     (catch ClassCastException e nil)))
 
 (defn ^URL to-url [s]
-  "Try to parse (str s) as a URL. Returns new java.net.URL on success, nil 
+  "Try to parse (str s) as a URL. Returns new java.net.URL on success, nil
   otherwise. This is different from clojure.java.io/as-url in that it doesn't
   throw an exception and it uses (str) on the input."
   (if (instance? URL s) s
@@ -141,8 +141,8 @@
                   (java.awt.Insets. top left (or bottom top) (or right left)))
     :else (illegal-argument "Don't know how to create insets from %s" v)))
 
-(defprotocol Children 
-  "A protocol for retrieving the children of a widget as a seq. 
+(defprotocol Children
+  "A protocol for retrieving the children of a widget as a seq.
   This takes care of idiosyncracies of frame vs. menus, etc."
 
   (children [c] "Returns a seq of the children of the given widget"))
@@ -158,12 +158,12 @@
 (defn collect
   "Given a root widget or frame, returns a depth-fist seq of all the widgets
   in the hierarchy. For example to disable everything:
-  
+
     (config (collect (.getContentPane my-frame)) :enabled? false)
   "
   [root]
-  (tree-seq 
-    (constantly true) 
+  (tree-seq
+    (constantly true)
     children
     root))
 
@@ -180,21 +180,20 @@
 
 (defn ^Integer to-mnemonic-keycode
   "Convert a character to integer to a mnemonic keycode. In the case of char
-  input, generates the correct keycode even if it's lower case. Input argument 
+  input, generates the correct keycode even if it's lower case. Input argument
   can be:
 
   * i18n resource keyword - only first char is used
   * string - only first char is used
   * char   - lower or upper case
   * int    - key event code
-  
+
   See:
     java.awt.event.KeyEvent for list of keycodes
     http://download.oracle.com/javase/6/docs/api/java/awt/event/KeyEvent.html"
   [v]
-  (cond 
+  (cond
     (resource-key? v) (to-mnemonic-keycode (resource v))
     (string? v)       (to-mnemonic-keycode (.charAt ^String v 0))
     (char? v)         (int (Character/toUpperCase ^Character v))
     :else             (int v)))
-

@@ -12,16 +12,15 @@
 ; properties in the normal way.
 (defn render-fn [renderer info]
   (let [v (:value info)]
-    (apply config! renderer 
-      (if (even? v) 
+    (apply config! renderer
+      (if (even? v)
         [:text (str v " is even") :font even-font :foreground "#000033"]
         [:text (str v " is odd")  :font odd-font  :foreground "#aaaaee"]))))
 
 (defexample []
   (frame :title   "Cell Renderer Example"
-         :content (scrollable 
-                    (listbox :model    (range 5 25) 
-                             :renderer render-fn)))) 
+         :content (scrollable
+                    (listbox :model    (range 5 25)
+                             :renderer render-fn))))
 
 ;(run :dispose)
-

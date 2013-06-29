@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -17,8 +17,8 @@
 (defn make-table []
   (table :id :table
     :model [
-      :columns [ { :key :name :text "Name" } 
-                 { :key :town :text "Town" } 
+      :columns [ { :key :name :text "Name" }
+                 { :key :town :text "Town" }
                  { :key :interest :text "Interest" }]
       :rows [{ :name "Kupzog" :town "Cologne" :interest "programming" :id 1234}
              { :name "Hansson" :town "Ystadt" :interest "Hunting" :id 2234}
@@ -38,14 +38,13 @@
   (let [f (show! (make-frame))
         t (select f [:#table])]
     ; Listen for selection changes and show them in the label
-    (listen t :selection 
-      (fn [e] 
-        (config! (select f [:#sel]) 
-          :text (str "Selection: " 
+    (listen t :selection
+      (fn [e]
+        (config! (select f [:#sel])
+          :text (str "Selection: "
                      ; (selection t) returns the selected row index
                      ; (value-at t row) returns the record at row
                      (value-at t (selection t))))))
     f))
 
 ;(run :dispose)
-

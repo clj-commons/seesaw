@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -19,13 +19,13 @@
   "Returns a seq of strings naming the font families on the system. These
   are the names that are valid in :name option (seesaw.font/font) as well
   as in font descriptor strings like \"Arial-BOLD-20\"
-  
+
   See:
     (seesaw.core/font)
   "
   ([] (font-families nil))
   ([locale]
-    (-> (GraphicsEnvironment/getLocalGraphicsEnvironment) 
+    (-> (GraphicsEnvironment/getLocalGraphicsEnvironment)
       (.getAvailableFontFamilyNames locale)
       seq)))
 
@@ -47,7 +47,7 @@
 
   Options are:
 
-    :name   The name of the font. Besides string values, also possible are 
+    :name   The name of the font. Besides string values, also possible are
             any of :monospaced, :serif, :sans-serif. See (seesaw.font/font-families)
             to get a system-specific list of all valid values.
     :style  The style. One of :bold, :plain, :italic, or a set of those values
@@ -107,5 +107,4 @@
     (nil? f) nil
     (instance? Font f) f
     (map? f) (apply font (flatten (seq f)))
-    true (font f))) 
-    
+    true (font f)))

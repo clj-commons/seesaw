@@ -28,7 +28,7 @@
       ; manually.
       :drag (fn [e _]
               (let [p (.getPoint e)]
-                (move! e :by [(- (.x p) (.x start-point)) 
+                (move! e :by [(- (.x p) (.x start-point))
                               (- (.y p) (.y start-point))])))))
   w)
 
@@ -83,4 +83,3 @@
     :size    [600 :by 600]))
 
 ;(run :dispose)
-

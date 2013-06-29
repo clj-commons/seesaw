@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -19,7 +19,7 @@
 (defn- log-window-proxy [state]
   (proxy [javax.swing.JTextArea clojure.lang.IDeref] []
     ; Implement IDeref
-    (deref [] state) 
+    (deref [] state)
 
     ; this is how you disable auto-scrolling :(
     (scrollRectToVisible [rect]
@@ -30,18 +30,18 @@
   (log   [this message] "Log a message to the given log-window")
   (clear [this] "Clear the contents of the log-window"))
 
-(defn logf 
+(defn logf
   "Log a formatted message to the given log-window."
   [this fmt & args]
   (log this (apply format fmt args)))
 
 (defn log-window
   "An auto-scrolling log window.
-  
-  The returned widget implements the LogWindow protocol with 
-  which you can clear it, or append messages. It is thread-safe, 
-  i.e. messages logged from multiple threads won't be interleaved. 
-  
+
+  The returned widget implements the LogWindow protocol with
+  which you can clear it, or append messages. It is thread-safe,
+  i.e. messages logged from multiple threads won't be interleaved.
+
   It must be wrapped in (seesaw.core/scrollable) for scrolling.
 
   Includes a context menu with options for clearing the window
@@ -62,12 +62,12 @@
   "
   [& opts]
   (let [state {:buffer (StringBuffer.) ; Buffer text from other threads here
-               :limit  (atom nil) 
+               :limit  (atom nil)
                :auto-scroll? (atom true)
                 ; Efficiently tell the ui thread to grab the buffer
                 ; contents and move it to the text area.
                :signal (signaller [this]
-                         (let [{:keys [buffer limit]} @this] 
+                         (let [{:keys [buffer limit]} @this]
                            (locking buffer
                              (.append this (str buffer))
                              (.setLength buffer 0))
@@ -77,11 +77,11 @@
                                (if (> length limit)
                                  (.remove doc 0 (- length limit))))))) }
 
-        this (log-window-proxy state) 
+        this (log-window-proxy state)
 
         scroll-item (checkbox-menu-item :resource ::scroll
                                         :selected? true)
-        
+
         clear-action (action :resource ::clear
                              :handler (fn [_] (clear this)))]
 
@@ -97,7 +97,7 @@
 
     ; Apply default options and whatever options are provided.
     (apply-options
-      this 
+      this
       (concat
         [:editable? false
          :font      :monospaced
@@ -111,11 +111,11 @@
     (let [{:keys [buffer signal]} @this]
       (.append buffer message)
       (signal this)))
-  (clear [this] 
+  (clear [this]
     (invoke-soon (text! this "")))
 
-  WidgetOptionProvider 
-  (get-widget-option-map* [this] 
+  WidgetOptionProvider
+  (get-widget-option-map* [this]
     [text-area-options
      (option-map
        (default-option :limit
@@ -126,4 +126,3 @@
          (fn [this v] (reset! (:auto-scroll? @this) v))
          (fn [this]   @(:auto-scroll? @this))))])
   (get-layout-option-map* [this] nil))
-

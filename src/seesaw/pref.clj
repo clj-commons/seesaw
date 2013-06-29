@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -10,7 +10,7 @@
 
 (ns seesaw.pref)
 
-(defn ^java.util.prefs.Preferences 
+(defn ^java.util.prefs.Preferences
   preferences-node*
   "Return the java.util.prefs.Preferences/userRoot for the specified
 namespace."
@@ -44,7 +44,7 @@ namespace."
       (reset! v)
       (add-watch (keyword (gensym "pref-atom-watcher"))
                  (fn [k r o n]
-                   (when (not= o n) 
+                   (when (not= o n)
                      (.put node key (serialize-value n))))))))
 
 (defmacro bind-preference-to-atom
@@ -67,4 +67,3 @@ namespace."
   ([key initial-value]
      `(let [atom# (atom ~initial-value)]
         (bind-preference-to-atom ~key atom#))))
-

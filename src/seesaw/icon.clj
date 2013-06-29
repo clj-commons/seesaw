@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -18,9 +18,9 @@
 ;*******************************************************************************
 ; Icons
 
-(defn ^javax.swing.Icon icon 
+(defn ^javax.swing.Icon icon
   "Loads an icon. The parameter p can be any of the following:
-  
+
     nil              - returns nil
     javax.swing.Icon - returns the icon
     java.awt.Image   - returns an ImageIcon around the image
@@ -35,7 +35,7 @@
   "
   [p]
   (cond
-    (nil? p) nil 
+    (nil? p) nil
     (instance? javax.swing.Icon p) p
     (instance? java.awt.Image p)   (ImageIcon. ^java.awt.Image p)
     (instance? java.net.URL p)     (ImageIcon. ^java.net.URL p)
@@ -44,6 +44,5 @@
     :else
       (if-let [url (jio/resource (str p))]
         (icon url)
-        (if-let [url (to-url p)] 
+        (if-let [url (to-url p)]
           (ImageIcon. url)))))
-

@@ -372,4 +372,3 @@
       (remove-fn)
       (.setText b "BYE")
       (expect (nil? @called)))))
-

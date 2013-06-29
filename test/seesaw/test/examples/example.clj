@@ -1,21 +1,21 @@
 (ns seesaw.test.examples.example
   (:use [seesaw.core :only [config! pack! show! invoke-now]]))
 
-(defmacro defexample 
-  "Does the boilerplate for an example. 
+(defmacro defexample
+  "Does the boilerplate for an example.
 
   arg-vec is a binding vector of arguments for the example, usually command-line
   args. body is code which must return an instance of javax.swing.JFrame. If the
   frame's size has not been set at all, pack! is called. Then show! is called.
-  
+
   Defines two functions:
-  
+
     run   : takes an on-close keyword and trailing args and runs
             the example.
     -main : calls (run :exit & args). i.e. runs the example and exits when
             closed
- 
-  See the plethora of examples in this directory for usage examples. 
+
+  See the plethora of examples in this directory for usage examples.
   "
   [arg-vec & body]
   `(do

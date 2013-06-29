@@ -46,4 +46,3 @@
     (apply-options t (dissoc opts :start? :initial-value))
     (when start? (.start t))
     t))
-

@@ -15,7 +15,7 @@
 
 (def states ["CA", "GA", "WA"])
 
-(def defaults 
+(def defaults
   { :first-name "Laura"
     :last-name "Palmer"
     :street "123 Main St."
@@ -25,14 +25,14 @@
 
 ; A helper to create an instance of the form, annotate it for Seesaw and do
 ; some other initialization.
-(defn my-form 
+(defn my-form
   []
   (let [form (identify (window_builder.MyForm.))]
     ; initialize the state combobox
     (config! (select form [:#state]) :model states)
     form))
 
-; Now we just create the panel, initialize it to the defaults above with 
+; Now we just create the panel, initialize it to the defaults above with
 ; seesaw.core/value! and show it in a dialog. Note how, besides setting the
 ; names of the widgets, the code in MyForm.java is strictly for layout. All
 ; behavior, etc is done in Clojure.
@@ -43,4 +43,3 @@
       (if (= :success result)
         (println "User entered: " (value form))
         (println "User canceled")))))
-

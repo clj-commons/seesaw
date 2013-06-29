@@ -20,7 +20,7 @@
          :width  400
          :height 400
          ;:undecorated? true
-         :content (vertical-panel 
+         :content (vertical-panel
                     :items ["A demo of (seesaw.core/toggle-full-screen!)."
                             (button :id :toggle :text "Toggle full screen")
                             (button :id :close :text "Close")])))
@@ -36,4 +36,3 @@
     show!))
 
 ;(run :dispose)
-

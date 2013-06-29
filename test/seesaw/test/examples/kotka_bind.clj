@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -42,26 +42,25 @@
     ; Wire up the done button
     (listen done :action-performed dispose!)
     ; Toggle buttons on done
-    (bind/bind 
-      done? 
+    (bind/bind
+      done?
       (bind/some identity) ; (when done?)
       (bind/notify-later)  ; cross to swing thread
       (bind/tee
         (bind/property done :enabled?)
-        (bind/bind 
-          (bind/transform not) 
+        (bind/bind
+          (bind/transform not)
           (bind/property cancel :enabled?))))
     ; Wire up cancel button.
-    (listen cancel :action-performed 
-      (fn [_] 
+    (listen cancel :action-performed
+      (fn [_]
         (reset! canceled? true)))
     ; Wire up progress bar.
-    (bind/bind 
-      progress 
-      (bind/notify-later) 
+    (bind/bind
+      progress
+      (bind/notify-later)
       pbar)
     (-> #(processing items done? canceled? progress) Thread. .start)
     (frame :title "Example GUI" :on-close :dispose :content panel)))
 
 ;(run :dispose)
-

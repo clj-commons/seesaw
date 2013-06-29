@@ -18,7 +18,7 @@ set cmd="%java%" %JAVA_OPTS% -classpath "%leinCP%" lazytest.watch src test
 
 echo %cmd%
 %cmd%
-endlocal 
+endlocal
 rem pause only when errors?
 rem if errorlevel 1 pause
 rem or always pause

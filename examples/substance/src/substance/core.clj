@@ -46,7 +46,7 @@ skin in one of the following ways:
     do this *after* (seesaw.core/native!) since that sets the L&F.
 
 See http://insubstantial.github.com/insubstantial/substance/docs/getting-started.html
-for more info. There you'll also find much more info about the 
+for more info. There you'll also find much more info about the
 skins along with much less crappy looking demos.")
 
 (defn -main [& args]

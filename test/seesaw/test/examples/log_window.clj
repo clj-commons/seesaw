@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -27,16 +27,16 @@
     :content (border-panel
                :center (scrollable (log-window :id :log-window
                                                :limit nil))
-               :south (horizontal-panel 
+               :south (horizontal-panel
                         :items [(button :id :start :text "Start Spammer")
                                 (button :id :stop :text "Stop")
                                 (checkbox :id :limit? :text "Limit to")
-                                (spinner :id :limit 
+                                (spinner :id :limit
                                          :model (spinner-model 500 :from 1 :to nil :by 1))
                                 "chars"]))))
 
 (defn spammer [lw prefix go]
-  (loop [i 0] 
+  (loop [i 0]
     (log lw (str prefix " - " i " asdf asdf asdf asdf asdf asdf\n"))
     (Thread/sleep 100)
     (if @go
@@ -47,14 +47,14 @@
         go (atom false)]
     (listen
       limit?
-      :selection (fn [_] (config! log-window :limit (if (value limit?) 
+      :selection (fn [_] (config! log-window :limit (if (value limit?)
                                               (value limit)))))
     (listen
       stop
       :action (fn [_] (reset! go false)))
-    (listen 
-      start 
-      :action (fn [_] 
+    (listen
+      start
+      :action (fn [_]
                 (reset! go true)
                 (future (spammer log-window (System/currentTimeMillis) go)))))
   f)

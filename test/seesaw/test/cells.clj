@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -19,7 +19,7 @@
   (it "proxies a DefaultListCellRenderer which dispatches to a function"
     (let [expected-font (font :name "ARIAL-BOLD-18")
           jlist (javax.swing.JList.)
-          render-fn (fn [renderer info] 
+          render-fn (fn [renderer info]
                       (config! renderer :foreground java.awt.Color/YELLOW
                                        :text "hi"
                                        :icon nil
@@ -35,7 +35,7 @@
   (it "proxies a DefaultTreeCellRenderer which dispatches to a function"
     (let [expected-font (font :name "ARIAL-BOLD-18")
           jtree (javax.swing.JTree.)
-          render-fn (fn [renderer info] 
+          render-fn (fn [renderer info]
                       (config! renderer :foreground java.awt.Color/YELLOW
                                        :text "hi"
                                        :icon nil
@@ -58,5 +58,3 @@
     (instance? javax.swing.ListCellRenderer (to-cell-renderer (javax.swing.JList.) (fn [r i]))))
   (it "creates a list cell renderer for a JComboBox"
     (instance? javax.swing.ListCellRenderer (to-cell-renderer (javax.swing.JComboBox.) (fn [r i])))))
-
-

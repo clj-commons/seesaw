@@ -174,13 +174,13 @@
 (defn validate-import-pairs [import-pairs]
   ;; ensure useful error message for missing :on-drop handler
   ;; otherwise user will see null pointer exception later
-  (when-let [error-import-pairs (seq (filter 
-                                       (fn [[flavor handler]] 
-                                         (when (and (map? handler) 
+  (when-let [error-import-pairs (seq (filter
+                                       (fn [[flavor handler]]
+                                         (when (and (map? handler)
                                                     (not (:on-drop handler)))
-                                           [flavor handler])) 
+                                           [flavor handler]))
                                        import-pairs))]
-    (throw (ex-info 
+    (throw (ex-info
              "no :on-drop key found in handler-map. :import with handler-map must have (:on-drop handler) => (fn [data] ...)"
              {:error-import-pairs error-import-pairs}))))
 
@@ -188,7 +188,7 @@
   (validate-import-pairs import-pairs)
   (map (fn [[flavor handler]]
          (let [handler (if (map? handler) handler {:on-drop handler})]
-           [flavor handler])) 
+           [flavor handler]))
        import-pairs))
 
 (defn default-transfer-handler
@@ -202,16 +202,16 @@
   Data Import
 
     The :import option specifies a vector of flavor/handler pairs. A handler is
-    either 
+    either
 
-      a function: (fn [data] ...process drop...)  
+      a function: (fn [data] ...process drop...)
       or a map  : {:on-drop   (fn [data] ...process drop...)
                    :can-drop? (fn [data] ...check drop is allowed...)}
 
-    if a map is provided :on-drop is mandatory, :can-drop? is optional, 
+    if a map is provided :on-drop is mandatory, :can-drop? is optional,
     defaulting to (constantly true)
 
-    When a drop/paste occurs, the handler for the first matching flavor is 
+    When a drop/paste occurs, the handler for the first matching flavor is
     called with a map with the following keys:
 
       :target        The widget that's the target of the drop
@@ -299,7 +299,7 @@
 
       (canImport [^TransferHandler$TransferSupport support]
         (boolean
-          (some 
+          (some
             (fn [flavor]
               (when (.isDataFlavorSupported support flavor)
                 (let [[flavorful handler] (get-import-handler support import-pairs)]
@@ -315,9 +315,9 @@
             (let [[flavorful handler] (get-import-handler support import-pairs)
                   data                (get-import-data support flavorful)
                   drop?               (.isDrop support)
-                  on-drop (:on-drop handler) 
+                  on-drop (:on-drop handler)
                   ]
-              (boolean 
+              (boolean
                 (on-drop {:data          data
                           :drop?         drop?
                           :drop-location (if drop? (unpack-drop-location (.getDropLocation support)))
@@ -365,4 +365,3 @@
     (getSourceActions [^javax.swing.JComponent c] TransferHandler/NONE)
 
     (exportDone [^javax.swing.JComponent c ^Transferable data action])))
-

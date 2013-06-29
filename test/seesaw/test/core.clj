@@ -1645,4 +1645,3 @@
       (expect (visible? b))
       (show-card! p "third")
       (expect (visible? c)))))
-

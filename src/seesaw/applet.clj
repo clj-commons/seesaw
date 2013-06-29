@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -19,7 +19,7 @@
   "Define an applet. This macro does all the gen-class business and takes maps
   applet lifetime methods to callback functions automatically. Supports the
   following options:
-  
+
     :name    The name of the generated class. Defaults to the current namespace.
 
     :init    Function called when the applet is first loaded. Takes a single
@@ -34,7 +34,7 @@
     :content Function called after :init which should return the content of
              the applet, for example some kind of panel. It's added to the center
              of a border pane so it will be resized with the applet.
- 
+
   Note that the namespace containing a call to (defapplet) must be compiled. In
   Leiningen, this is easiest to do by adding an :aot option to project.clj:
 
@@ -51,9 +51,9 @@
 
   Then refer to it from your webpage like this:
 
-    <applet archive=\"name-of-project-X.X.X-standalone.jar\" 
-            code=\"namespace/with/defapplet.class\" 
-            width=\"200\" 
+    <applet archive=\"name-of-project-X.X.X-standalone.jar\"
+            code=\"namespace/with/defapplet.class\"
+            width=\"200\"
             height=\"200\">
 
   Examples:
@@ -66,8 +66,8 @@
     http://download.oracle.com/javase/tutorial/deployment/applet/index.html
   "
   [& {:keys [name init start stop content]
-      :or {init    '(fn [applet]) 
-           start   '(fn [applet]) 
+      :or {init    '(fn [applet])
+           start   '(fn [applet])
            stop    '(fn [applet])
            content '(fn [applet] (seesaw.core/label "A Seesaw Applet"))}}]
   (let [applet (gensym "applet")]
@@ -78,7 +78,7 @@
         :prefix "-seesaw-applet-")
 
       (defn ~'-seesaw-applet-init [#^javax.swing.JApplet ~applet]
-        (seesaw.core/invoke-later 
+        (seesaw.core/invoke-later
           (do
             (~init ~applet)
             (doto ~applet
@@ -87,10 +87,9 @@
               (.. getContentPane revalidate repaint)))))
 
       (defn ~'-seesaw-applet-start [#^JApplet ~applet]
-        (seesaw.core/invoke-later 
+        (seesaw.core/invoke-later
           (~start ~applet)))
 
       (defn ~'-seesaw-applet-stop [#^JApplet ~applet]
-        (seesaw.core/invoke-later 
+        (seesaw.core/invoke-later
           (~stop ~applet))))))
-
