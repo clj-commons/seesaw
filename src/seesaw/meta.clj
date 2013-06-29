@@ -36,5 +36,3 @@
   javax.swing.Action
     (put-meta! [this key value] (doto this (.putValue (str key) value)))
     (get-meta  [this key] (.getValue this (str key))))
-
-

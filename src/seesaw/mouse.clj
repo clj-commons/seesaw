@@ -61,4 +61,3 @@
   Returns :left, :center, :right, or nil."
   [^java.awt.event.MouseEvent e]
   (mouse-button-table (.getButton e)))
-

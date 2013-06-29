@@ -1,0 +1,2 @@
+[10845:0629/185658:ERROR:zygote_host_impl_linux.cc(146)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
+[10845:0629/185658:INFO:gpu_info_collector_linux.cc(78)] NVCtrl extension does not exist.

@@ -77,4 +77,3 @@
             (.setLocation last-point (.getPoint e))))
       :mouse-released
         finish)))
-

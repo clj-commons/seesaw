@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -13,10 +13,10 @@
   (:require [seesaw.table :as table]))
 
 (defn drop-handler [t support]
-  (let [flavors (.getDataFlavors support)] 
+  (let [flavors (.getDataFlavors support)]
     (table/clear! t)
-    (apply table/insert-at! t 
-          (mapcat 
+    (apply table/insert-at! t
+          (mapcat
             (fn [f i] [0 (assoc (bean f) :N (format "%04d" i))])
             flavors
             (iterate inc 0)))))
@@ -29,7 +29,7 @@
                               :primaryType
                               :subType
                               :humanPresentableName]])
-            (.setAutoCreateRowSorter true))] 
+            (.setAutoCreateRowSorter true))]
     (frame
       :title "Seesaw Drag-n-Drop Explorer"
       :size [640 :by 480]
@@ -49,4 +49,3 @@
       show!)))
 
 ;(-main)
-
