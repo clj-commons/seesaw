@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -19,14 +19,14 @@
 
 (describe invoke-soon
   (it "should execute code and return the result immediately if executed on the swing thread"
-    (= {:foo :hi :edt? true} 
-       (invoke-now 
+    (= {:foo :hi :edt? true}
+       (invoke-now
         (invoke-soon {:foo :hi :edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))))
 
   (it "should send code to the swing thread for later execution and return nil immediately
       if not called on the swing thread"
-    (let [p (promise)] 
-      (expect (nil? (invoke-soon 
+    (let [p (promise)]
+      (expect (nil? (invoke-soon
         (deliver p {:edt? (javax.swing.SwingUtilities/isEventDispatchThread)}))))
       (expect (= {:edt? true} @p)))))
 
@@ -40,4 +40,3 @@
       ; Use invoke-now so we know the deref is executed *after* the functions
       ; are processed.
       (expect (= 1 (invoke-now @call-count))))))
-

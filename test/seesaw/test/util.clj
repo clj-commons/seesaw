@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -24,14 +24,14 @@
   (it "returns true if the condition is true"
     (check-args true "yes!"))
   (it "returns throws IllegalArgumentException if condition is false"
-    (try 
+    (try
       (do (check-args false "no!") false)
       (catch IllegalArgumentException e true))))
 
 (describe cond-doto
   (it "only executes forms with true conditions"
-    (= "firstsecondfifth" (str (cond-doto (StringBuilder.) 
-         true (.append "first") 
+    (= "firstsecondfifth" (str (cond-doto (StringBuilder.)
+         true (.append "first")
          (> 2 1) (.append "second")
          (< 2 1) (.append "third")
          false (.append "fourth")
@@ -133,4 +133,3 @@
     (resource-key? ::hello))
   (it "returns false for non-resource keywords"
     (not (resource-key? :hello))))
-

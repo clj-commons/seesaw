@@ -187,7 +187,7 @@
   (testing "when given a JTabbedPane"
     (it "selects a tab by title when given a string"
       (let [tp (sc/tabbed-panel :tabs [{:title "A" :content "A"}
-                                       {:title "B" :content "B"}])] 
+                                       {:title "B" :content "B"}])]
         (expect (= 0 (.getSelectedIndex tp)))
         (selection! tp "B")
         (expect (= 1 (.getSelectedIndex tp)))))
@@ -226,5 +226,4 @@
       (let [jtable (javax.swing.JTable. 10 2)]
         (expect (= jtable (selection! jtable {:multi? true } [0 2 4 6 8 9])))
         (expect (= [0 2 4 6 8 9] (selection jtable {:multi? true})))
-        (expect (= 0 (selection jtable)))))))
-
+        (expect (= 0 (selection jtable))))))

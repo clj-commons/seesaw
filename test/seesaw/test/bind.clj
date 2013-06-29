@@ -33,7 +33,7 @@
       (cb)
       (reset! a 6)
       (expect (= [6 5 5] [@a @b @c]))))
-  
+
   (it "can chain bindables, including composites, together"
     (let [a (atom 1)
           b (atom nil)]
@@ -105,7 +105,7 @@
         (bind v (.getModel sl))
         (reset! v 20)
         (expect (= (.getValue sl) 20)))))
- 
+
   (testing "given a toggle button (or any button/menu)"
     (it "should sync the selection state of the button"
       (let [v (atom nil)
@@ -213,7 +213,7 @@
       (reset! b 6)
       (expect (= [5 6] @end)))))
 
-(describe filter 
+(describe filter
   (it "doesn't pass along value when predicate returns falsey"
     (let [start (atom :foo)
           end   (atom :bar)]
@@ -255,7 +255,7 @@
       (reset! input :b)
       (expect (= :b (ssc/selection lb))))))
 
-(describe value 
+(describe value
   (it "maps its input to the value of a widget"
     (let [input (atom nil)
           lb (ssc/listbox :id :lb :model [:a :b :c])
@@ -281,8 +281,8 @@
     (let [start (atom nil)
           target (atom [])
           end (atom nil)]
-      (bind start 
-            (b-swap! target conj) 
+      (bind start
+            (b-swap! target conj)
             end)
       (reset! start 1)
       (reset! start 2)
@@ -294,7 +294,7 @@
   (it "acts like send passing the old value, new value, and additional args to a function"
     (let [start  (atom nil)
           target (agent [])]
-      (bind start 
+      (bind start
             (b-send target conj) )
       (reset! start 1)
       (reset! start 2)
@@ -306,7 +306,7 @@
   (it "acts like sendoff passing the old value, new value, and additional args to a function"
     (let [start  (atom nil)
           target (agent [])]
-      (bind start 
+      (bind start
             (b-send-off target conj) )
       (reset! start 1)
       (reset! start 2)
@@ -372,7 +372,7 @@
         (unsubscribe)
         (await (send target (fn [_] "b")))
         (expect (= 1 @calls)))))
-  
+
   (testing "on a javax.swing.text.Document"
     (it "should return a function that unsubscribes"
       (let [calls (atom 0)
@@ -394,7 +394,7 @@
         (unsub)
         (.setValue target 2)
         (expect (= 1 @calls)))))
-  
+
   (testing "on a funnel"
     (it "should return a function that unsubscribes"
       (let [calls  (atom 0)
@@ -407,7 +407,7 @@
         (reset! a "hi")
         (expect (= 1 @calls))
         )))
-  
+
   (testing "on a widget property"
     (it "should return a function that unsubscribes"
       (let [calls  (atom 0)
@@ -451,5 +451,4 @@
         (unsub)
         (notify target "bye")
         (expect (= 1 @calls))
-        ))))
-
+        )))

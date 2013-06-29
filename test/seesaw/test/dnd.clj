@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -27,8 +27,8 @@
 
 (describe uri-list-flavor
   (it "implements to-remote to convert list of URIs to uri-list"
-    (= "http://google.com\r\nhttp://github.com" 
-       (to-remote uri-list-flavor 
+    (= "http://google.com\r\nhttp://github.com"
+       (to-remote uri-list-flavor
                   [(java.net.URI. "http://google.com")
                    (java.net.URI. "http://github.com")])))
   (it "implements to-local to convert uri-list to list of URIs"
@@ -42,13 +42,13 @@
             t (default-transferable [string-flavor o])]
         (expect (identical? o (.getTransferData t (to-raw-flavor string-flavor))))))
     (it "can hold arbitrary objects or functions"
-      (let [t (default-transferable [string-flavor "hi" 
+      (let [t (default-transferable [string-flavor "hi"
                                      (local-object-flavor Integer) (fn [] 99)])]
         (expect (= "hi" (.getTransferData t (to-raw-flavor string-flavor))))
         (expect (= 99 (.getTransferData t (to-raw-flavor (local-object-flavor Integer)))))))
     (it "throws UnsupportedFlavorException correctly"
       (let [t (default-transferable [string-flavor "hi"])]
-        (try (.getTransferData t (to-raw-flavor file-list-flavor)) false 
+        (try (.getTransferData t (to-raw-flavor file-list-flavor)) false
              (catch UnsupportedFlavorException e true))))
     (it "implements (getTransferDataFlavors)"
       (let [t (default-transferable [(local-object-flavor []) []])
@@ -63,11 +63,11 @@
   (javax.swing.TransferHandler$TransferSupport. (javax.swing.JLabel.) t))
 
 (describe default-transfer-handler
-  (testing "(default-transfer-handler)" 
+  (testing "(default-transfer-handler)"
      (it "creates a transfer handler"
          (instance? javax.swing.TransferHandler (default-transfer-handler)))
      (it "throws an ex-info if there is a handler-map without an on-drop key"
-         (try 
+         (try
            (default-transfer-handler :import [string-flavor {}]) false
            (catch clojure.lang.ExceptionInfo e true))))
 
@@ -79,24 +79,24 @@
       (let [th (default-transfer-handler :import [string-flavor (fn [info])])]
         (expect (.canImport th (fake-transfer-support (StringSelection. "hi"))))
         (expect (not (.canImport th (fake-transfer-support (default-transferable [])))))))
-    
+
     (let [transfer-handler (default-transfer-handler
                              :import [string-flavor {:on-drop   (fn [info])
-                                                     :can-drop? (fn [info] 
+                                                     :can-drop? (fn [info]
                                                                   (= info "should match"))}])]
       (testing ":can-drop?"
                (it "returns false if the import handler is a map and :can-drop? returns false"
-                   (not (.canImport transfer-handler  
+                   (not (.canImport transfer-handler
                           (fake-transfer-support (StringSelection. "should not match")))))
-               
+
                (it "returns true if the import handler is a map and :can-drop? returns true"
-                   (.canImport transfer-handler  
+                   (.canImport transfer-handler
                      (fake-transfer-support (StringSelection. "should match"))))
-               
+
                (let [transfer-handler (default-transfer-handler
                                         :import [string-flavor {:on-drop (fn [info])}])]
                  (it "returns true if the import handler is a map and :can-drop? is not given"
-                     (.canImport transfer-handler  
+                     (.canImport transfer-handler
                        (fake-transfer-support (StringSelection. "should match"))))))))
 
   (testing "(importData)"
@@ -159,5 +159,3 @@
             th (default-transfer-handler :export { :finish (fn [v] (reset! called v) true) })]
         (.exportDone th source tr TransferHandler/MOVE)
         (expect (= {:source source :data tr :action :move} @called))))))
-
-

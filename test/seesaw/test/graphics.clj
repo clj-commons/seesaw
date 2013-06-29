@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -165,8 +165,8 @@
 ; make a stub shape to grab args...
 (defrecord TestShape [received-args]
   Draw
-  (draw* 
-    [shape g2d style] 
+  (draw*
+    [shape g2d style]
     ; Note that "this" is used instead of shape. Otherwise, on failure, lazytest
     ; tries to print a cyclical structure when there's a failure.
     (swap! received-args conj [g2d "this" style])))
@@ -187,7 +187,7 @@
           final-args @args]
       (expect (= "graphics" result))
       (expect (= [["graphics" "this" "style"]["graphics" "this" "style2"]] final-args)))))
-  
+
 (describe style
   (it "creates a new style object"
     (let [strk (stroke :width 5)
@@ -224,8 +224,8 @@
       (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
                  (.getCycleMethod g)))))
   (it "creates a linear gradient"
-    (let [g (linear-gradient 
-              :start [1 2] 
+    (let [g (linear-gradient
+              :start [1 2]
               :end [3.5 4.6]
               :fractions [0.0 0.8 1.0]
               :colors [:black :blue java.awt.Color/ORANGE]
@@ -256,8 +256,8 @@
       (expect (= java.awt.MultipleGradientPaint$CycleMethod/NO_CYCLE
                  (.getCycleMethod g)))))
   (it "creates a radial gradient"
-    (let [g (radial-gradient 
-              :center [1 2] 
+    (let [g (radial-gradient
+              :center [1 2]
               :focus [3.5 4.6]
               :fractions [0.0 0.8 1.0]
               :colors [:black :blue java.awt.Color/ORANGE]
@@ -272,4 +272,3 @@
                  (vec (.getColors g))))
       (expect (= java.awt.MultipleGradientPaint$CycleMethod/REFLECT
                  (.getCycleMethod g))))))
-

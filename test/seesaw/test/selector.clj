@@ -90,4 +90,3 @@
     (let [a (core/label) b (core/text) c (core/label)
           p (core/flow-panel :items [a b c])]
       (expect (= [p a b c] (select p [:*]))))))
-

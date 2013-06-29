@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -14,7 +14,7 @@
         [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
-(describe log-window 
+(describe log-window
   (it "creates a JTextArea"
     (instance? javax.swing.JTextArea (log-window)))
   (it "has :limit option"
@@ -23,4 +23,3 @@
     (not (config (log-window :auto-scroll? false) :auto-scroll?)))
   (it "satisfies LogWindow protocol"
     (satisfies? LogWindow (log-window))))
-

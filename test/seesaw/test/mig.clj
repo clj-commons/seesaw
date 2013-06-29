@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -23,8 +23,8 @@
       (expect (= "[fill]" (.getColumnConstraints l)))
       (expect (= "[nogrid]" (.getRowConstraints l)))))
   (it "should support the usual default options"
-    (mig-panel :id :mig 
-               :class :classy 
+    (mig-panel :id :mig
+               :class :classy
                :opaque? false
                :listen [:mouse-clicked (fn [_])]
                :foreground :red
@@ -45,4 +45,3 @@
         (expect (= p result))
         (expect (= [l0 l3 l2] (vec (.getComponents p))))
         (expect (= "wrap" (-> p .getLayout (.getComponentConstraints l3))))))))
-

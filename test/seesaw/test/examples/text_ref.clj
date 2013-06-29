@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -22,15 +22,15 @@
     ; Set up our binding chain
     (bind/bind input                         ; Take changes to input
           (bind/transform #(.toUpperCase %)) ; Pass through upper case transform
-          value                         ; Put the value in the atom 
+          value                         ; Put the value in the atom
           output)                       ; Show the final value in the output text doc
     (text! input "Initial Value")
-    (frame 
-      :content 
-        (vertical-panel 
+    (frame
+      :content
+        (vertical-panel
           :border 5
-          :items ["Enter text here:" 
-                  input 
+          :items ["Enter text here:"
+                  input
                   :separator
                   "Changed atom is reflected here:"
                   output
@@ -39,4 +39,3 @@
                           :handler (fn [e] (println "Current atom value is: " @value)))]))))
 
 ;(run :dispose)
-
