@@ -12,9 +12,11 @@
   (:use [seesaw.util :only [illegal-argument]]))
 
 (defn- normalize-column [c]
-  (cond
-    (map? c) c
-    :else {:key c :text (name c)}))
+  (conj {:text  (get c :text ((fnil name c) (:key c)))
+         :class (get c :class Object)}
+        (if (map? c)
+          (select-keys c [:key :text :class])
+          {:key c})))
 
 (defn- unpack-row-map [col-key-map row]
   (let [a (object-array (inc (count col-key-map)))]
@@ -38,7 +40,7 @@
     (vec (concat head tail))))
 
 (defn- ^javax.swing.table.DefaultTableModel proxy-table-model
-  [column-names column-key-map]
+  [column-names column-key-map column-classes]
   (let [full-values (atom [])]
     (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
       (isCellEditable [row col] false)
@@ -76,7 +78,10 @@
         (if (= -1 col)
           (swap! full-values assoc row value)
           (let [^javax.swing.table.DefaultTableModel this this]
-            (proxy-super setValueAt value row col)))))))
+            (proxy-super setValueAt value row col))))
+      (getColumnClass [^Integer c]
+        (proxy-super getColumnClass c)
+        (nth column-classes c)))))
 
 (defn- get-full-value [^javax.swing.table.TableModel model row]
   (try
@@ -99,11 +104,13 @@
 (defn table-model
   "Creates a TableModel from column and row data. Takes two options:
 
-    :columns - a list of keys, or maps. If a key, then (name key) is used
-               as the column name. If a map, it must be in the form
-               {:key key :text text} where text is used as the column name
-               and key is use to index the row data.
-               The order establishes the order of the columns in the table.
+    :columns - a list of keys, or maps. If a key, then (name key) is used as the 
+               column name. If a map, it can be in the form 
+               {:key key :text text :class class} where key is use to index the 
+               row data, text (optional) is used as the column name, and 
+               class (optional) specifies the object class of the column data
+               returned by getColumnClass. The order establishes the order of the
+               columns in the table.
 
     :rows - a sequence of maps or vectors, possibly mixed. If a map, must contain
             row data indexed by keys in :columns. Any additional keys will
@@ -113,7 +120,7 @@
   Example:
 
     (table-model :columns [:name
-                           {:key :age :text \"Age\"}]
+                           {:key :age :text \"Age\" :class java.lang.Integer}]
                  :rows [ [\"Jim\" 65]
                          {:age 75 :name \"Doris\"}])
 
@@ -127,8 +134,9 @@
   [& {:keys [columns rows] :as opts}]
   (let [norm-cols   (map normalize-column columns)
         col-names   (map :text norm-cols)
+        col-classes (map :class norm-cols)
         col-key-map (reduce (fn [m [k v]] (assoc m k v)) {} (map-indexed #(vector (:key %2) %1) norm-cols))
-        model (proxy-table-model col-names col-key-map)]
+        model (proxy-table-model col-names col-key-map col-classes)]
     (doseq [row rows]
       (.addRow model ^objects (unpack-row col-key-map row)))
     model))
