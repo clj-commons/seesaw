@@ -38,7 +38,7 @@
     (vec (concat head tail))))
 
 (defn- ^javax.swing.table.DefaultTableModel proxy-table-model
-  [column-names column-key-map]
+  [column-names column-key-map column-classes]
   (let [full-values (atom [])]
     (proxy [javax.swing.table.DefaultTableModel] [(object-array column-names) 0]
       (isCellEditable [row col] false)
@@ -76,7 +76,11 @@
         (if (= -1 col)
           (swap! full-values assoc row value)
           (let [^javax.swing.table.DefaultTableModel this this]
-            (proxy-super setValueAt value row col)))))))
+            (proxy-super setValueAt value row col))))
+      (getColumnClass [col] 
+        (if-let [cls (column-classes col)]
+          cls 
+          (proxy-super getColumnClass col))))))
 
 (defn- get-full-value [^javax.swing.table.TableModel model row]
   (try
@@ -113,7 +117,7 @@
   Example:
 
     (table-model :columns [:name
-                           {:key :age :text \"Age\"}]
+                           {:key :age :text \"Age\" :class Integer}]
                  :rows [ [\"Jim\" 65]
                          {:age 75 :name \"Doris\"}])
 
@@ -128,7 +132,8 @@
   (let [norm-cols   (map normalize-column columns)
         col-names   (map :text norm-cols)
         col-key-map (reduce (fn [m [k v]] (assoc m k v)) {} (map-indexed #(vector (:key %2) %1) norm-cols))
-        model (proxy-table-model col-names col-key-map)]
+        col-classes (vec (map :class norm-cols))
+        model (proxy-table-model col-names col-key-map col-classes)]
     (doseq [row rows]
       (.addRow model ^objects (unpack-row col-key-map row)))
     model))
