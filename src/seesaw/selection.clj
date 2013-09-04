@@ -112,7 +112,7 @@
         (if (neg? i)
           nil
           [{:content (.getComponentAt this i)
-           :title   (.getTitleAt this i)
+           :title    (or (.getTabComponentAt this i) (.getTitleAt this i))
            :index i}])))
     (set-selection [this [v]]
       (cond
