@@ -23,8 +23,9 @@
       (expect (= "key2" (.getColumnName t 1)))))
 
   (it "should create columns from a list of maps and keys"
-    (let [t (table-model :columns [{:key :key1 :text "KEY1"} :key2])]
+    (let [t (table-model :columns [{:key :key1 :text "KEY1" :class java.lang.Integer} :key2])]
       (expect (= "KEY1" (.getColumnName t 0)))
+      (expect (= java.lang.Integer (.getColumnClass t 0)))
       (expect (= "key2" (.getColumnName t 1)))))
 
   (it "should create rows from a list of maps"
