@@ -2625,7 +2625,7 @@
     (bean-option :minimum-size  java.awt.Window to-dimension nil
                  dimension-examples)
 
-    (bean-option :size java.awt.Window to-dimension
+    (bean-option :size java.awt.Window to-dimension nil 
                  dimension-examples)
 
     (bean-option :visible? java.awt.Window boolean)
