@@ -17,23 +17,14 @@
             [seesaw.widget-options :as widget-options]
             clojure.reflect
             clojure.string)
-  (:import [org.fife.ui.rsyntaxtextarea SyntaxConstants]))
+  (:import [org.fife.ui.rsyntaxtextarea AbstractTokenMakerFactory]))
 
-(defn- normalize-style-name [s]
-  (-> (name s)
-    (clojure.string/replace "_" "-")
-    (clojure.string/lower-case)
-    (.substring (count "SYNTAX_STYLE_"))
-    keyword))
-
+;;; Go through the available syntax highlighting modes,
+;;; e.g. "text/clojure" and then for backwards compatibility map them to
+;;; keywords without the text/ namespace, e.g. :clojure
 (def ^{:private true} syntax-table
-  (->> (clojure.reflect/reflect SyntaxConstants)
-    :members
-    (map :name)
-    ; there's gotta be a better way
-    (map (fn [n]
-           [(normalize-style-name n) (eval `(. SyntaxConstants ~n))]))
-    (into {})))
+  (let [keys (.keySet (AbstractTokenMakerFactory/getDefaultInstance))]
+    (into {} (map (juxt (comp keyword name keyword) identity) keys))))
 
 (def text-area-options
   (merge
