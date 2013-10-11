@@ -335,6 +335,7 @@
   (verify-config (tree :drag-enabled? true) :drag-enabled? true)
   (verify-config (listbox :drag-enabled? true) :drag-enabled? true)
   (verify-config (table :drag-enabled? true) :drag-enabled? true)
+  (verify-config (table :model [:columns [:a :b :c] :rows [[1 2 3]]] :column-widths [20 30 40]) :column-widths [20 30 40])
 
   (verify-config (text :drop-mode :insert) :drop-mode :insert)
   (verify-config (tree :drop-mode :on-or-insert) :drop-mode :on-or-insert)
@@ -563,6 +564,8 @@
           r (text! d "BYE!")]
       (expect (= d r))
       (expect (= "BYE!" (text d)))))
+  (it "With nil input it should set the text of a text widget to \"\""
+    (= "" (text (text! (text "HI") nil))))
   (it "should set the text of a single text widget argument"
     (= "BYE" (text (text! (text "HI") "BYE"))))
   (it "should set the text of a single button argument"
@@ -1620,7 +1623,17 @@
       (expect (instance? java.awt.CardLayout (.getLayout p)))
       (expect (= 4 (.. p getLayout getHgap)))
       (expect (= 3 (.. p getLayout getVgap)))
-      (expect (= 2 (count (.getComponents p)))))))
+      (expect (= 2 (count (.getComponents p))))))
+  (it "supports adding cards with add!"
+    (let [p (card-panel)
+          a (text "A")
+          b (text "B")]
+      (add! p [a :a])
+      (expect (= a (first (.getComponents p))))
+      (add! p [b "b"])
+      (expect (= b (second (.getComponents p))))
+      (show-card! p "b")
+      (expect (visible? b)))))
 
 (describe show-card!
   (it "sets the visible card in a card panel"

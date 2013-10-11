@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -22,8 +22,8 @@
   (let [group (button-group)
         info-label (label :text "Info goes here" :border 10)
         panel (border-panel
-                :north 
-                  (horizontal-panel 
+                :north
+                  (horizontal-panel
                     ; Put radio buttons in the group with the :group option
                     ; Alternatively, the buttons could be created first and
                     ; then passed to the :buttons option of (button-group)
@@ -36,11 +36,11 @@
     ; new buttons.
     (listen group :action
       (fn [e]
-        (text! info-label 
+        (text! info-label
           ; Which button was selected can be retrieved either through
           ; the event object in the usual way, or by asking for the
           ; buton group's selection.
-          (str 
+          (str
             "<html>"
             "(text (to-widget e)): " (text (to-widget e)) "<br>"
             "<br>"

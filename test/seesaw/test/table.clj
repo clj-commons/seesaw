@@ -23,8 +23,9 @@
       (expect (= "key2" (.getColumnName t 1)))))
 
   (it "should create columns from a list of maps and keys"
-    (let [t (table-model :columns [{:key :key1 :text "KEY1"} :key2])]
+    (let [t (table-model :columns [{:key :key1 :text "KEY1" :class java.lang.Integer} :key2])]
       (expect (= "KEY1" (.getColumnName t 0)))
+      (expect (= java.lang.Integer (.getColumnClass t 0)))
       (expect (= "key2" (.getColumnName t 1)))))
 
   (it "should create rows from a list of maps"
@@ -133,7 +134,14 @@
           r (insert-at! t 1 ["A"] 3 ["B"])]
       (expect (= t r))
       (expect (= 7 (.getRowCount t)))
-      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t))))))))
+      (expect (= [{:a 0} {:a "A"} {:a 1} {:a 2} {:a "B"} {:a 3} {:a 4}] (value-at t (range (.getRowCount t)))))))
+  (it "inserts multiple rows without crashing. Issue #146"
+    (let [t (table-model :columns [:name] :rows [])
+          r (insert-at! t 0 ["A"] 0 ["B"])]
+      (expect (= t r))
+      (expect (= 2 (.getRowCount t)))
+      (expect (= [{:name "A"} {:name "B"}]
+                 (value-at t (range (.getRowCount t))))))))
 
 (describe setRowCount
   (it "can extend the number of rows in the table with nils"
