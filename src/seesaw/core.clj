@@ -952,7 +952,7 @@
   Examples:
 
     ; Create a panel with a label positions at (10, 10) with width 200 and height 40.
-    (xyz-panel :items [(label :text \"The Black Lodge\" :bounds [10 10 200 40]))
+    (xyz-panel :items [(label :text \"The Black Lodge\" :bounds [10 10 200 40])])
 
     ; Move a widget up 50 pixels and right 25 pixels
     (move! my-label :by [25 -50])
