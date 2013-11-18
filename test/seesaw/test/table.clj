@@ -85,6 +85,10 @@
     (let [t (table-model :columns [{:key :a :text "a"} {:key :b :text "b"}]
                         :rows [[:a "bee" :b "cee"] [:a "tree" :b "four"]])]
       (expect (nil? (value-at t 9)))))
+  (it "returns nil for a nil rows parameter"
+    (let [t (table-model :columns [{:key :a :text "a"} {:key :b :text "b"}]
+                        :rows [[:a "bee" :b "cee"] [:a "tree" :b "four"]])]
+      (expect (nil? (value-at t nil)))))
   (it "survives an out-of-bounds value-at call"
     (let [t (table-model :columns [{:key :a :text "a"} {:key :b :text "b"}]
                         :rows [{:a "bee" :b "cee"} {:a "tree" :b "four"}])]
