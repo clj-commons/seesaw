@@ -84,6 +84,8 @@
 
 (extend-protocol Selection
   javax.swing.JList
+    ; TODO #165 getSelectedValues() is deprecated in JDK 7 in favor of getSelectedValuesList()
+    ; replace if people ever stop using JDK 6.
     (get-selection [target]      (seq (.getSelectedValues target)))
     (set-selection [target args] (jlist-set-selection target args)))
 
