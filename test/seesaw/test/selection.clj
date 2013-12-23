@@ -107,8 +107,8 @@
     (it "returns a seq of selected model row indices when selection is non-empty"
       (let [jtable (javax.swing.JTable. 5 3)]
         (.setRowSelectionInterval jtable 1 3)
-        (= [1 2 3] (selection jtable {:multi? true}))
-        (= 1 (selection jtable))))))
+        (expect (= [1 2 3] (selection jtable {:multi? true})))
+        (expect (= 1 (selection jtable)))))))
 
 
 (describe selection!
