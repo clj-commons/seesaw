@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -14,18 +14,18 @@
   (:use [seesaw.util :only [constant-map illegal-argument]])
   (:import [java.awt Cursor Toolkit]))
 
-(def ^{:private true} built-in-cursor-map 
-  (constant-map Cursor {:suffix "_CURSOR"} 
+(def ^{:private true} built-in-cursor-map
+  (constant-map Cursor {:suffix "_CURSOR"}
     :crosshair :custom :default :hand :move :text :wait
     :e-resize :n-resize :ne-resize :nw-resize :s-resize :se-resize :sw-resize :w-resize))
 
 (defn- custom-cursor
   [^java.awt.Image image & [point]]
   (let [[x y] point]
-    (.. (Toolkit/getDefaultToolkit) (createCustomCursor image 
-                                                        (java.awt.Point. (or x 0) (or y 0)) 
+    (.. (Toolkit/getDefaultToolkit) (createCustomCursor image
+                                                        (java.awt.Point. (or x 0) (or y 0))
                                                         (str (gensym "seesaw-cursor"))))))
-(defn cursor 
+(defn cursor
   "Create a built-in or custom cursor. Take one of two forms:
 
     (cursor :name-of-built-in-cursor)
@@ -33,7 +33,7 @@
   Creates a built-in cursor of the given type. Valid types are:
 
     :crosshair :custom :default :hand :move :text :wait
-    :e-resize :n-resize :ne-resize :nw-resize 
+    :e-resize :n-resize :ne-resize :nw-resize
     :s-resize :se-resize :sw-resize :w-resize
 
   To create custom cursor:
@@ -54,7 +54,7 @@
 
   Notes:
     This function is used implicitly by the :cursor option on most widget
-    constructor functions. So 
+    constructor functions. So
 
         (label :cursor (cursor :hand))
 
@@ -69,10 +69,10 @@
 
   See:
 
-    http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html 
+    http://download.oracle.com/javase/6/docs/api/java/awt/Cursor.html
     http://download.oracle.com/javase/6/docs/api/java/awt/Toolkit.html#createCustomCursor%28java.awt.Image,%20java.awt.Point,%20java.lang.String%29
   "
-  ^Cursor
+  ^java.awt.Cursor
   [type & args]
   (cond
     ; TODO protocol if this gets any more nasty
