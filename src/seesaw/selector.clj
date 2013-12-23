@@ -275,7 +275,7 @@
     [accepts (when (seq chains) (comp next-states ps))]))
 
 (defn cacheable [selector] (vary-meta selector assoc ::cacheable true))
-(defn cacheable? [selector] false (-> selector meta ::cacheable))
+(defn cacheable? [selector] (-> selector meta ::cacheable))
 
 (defn- automaton* [selector]
   (make-state (-> selector (selector-chains 0) set)))
