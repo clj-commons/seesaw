@@ -26,8 +26,9 @@
   (add!* [layout target widget constraint])
   (get-constraint* [layout container widget]))
 
-(defn handle-structure-change [^javax.swing.JComponent container]
+(defn handle-structure-change
   "Helper. Revalidate and repaint a container after structure change"
+  [^javax.swing.JComponent container]
   (doto container
     .revalidate
     .repaint))
@@ -277,7 +278,7 @@
       (add-widget target widget (border-layout-dirs constraint)))
     (get-constraint* [layout container widget]
       (.getConstraints layout widget))
-  
+
   java.awt.CardLayout
     (add!* [layout target widget constraint]
       (add-widget target widget (name constraint)))

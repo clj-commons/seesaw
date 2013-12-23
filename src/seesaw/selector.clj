@@ -43,8 +43,9 @@
     ; TODO should we enforce unique ids?
     (id-of!* w id)))
 
-(defn class-of [w]
+(defn class-of
   "Retrieve the classes of a widget as a set of strings"
+  [w]
   (class-of* w))
 
 (defn class-of!

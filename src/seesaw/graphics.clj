@@ -306,7 +306,7 @@
                          (when (seq dashes) (float-array dashes))
                          dash-phase))
 
-(defn to-stroke [v]
+(defn to-stroke
   "Convert v to a stroke. As follows depending on v:
 
     nil - returns nil
@@ -314,6 +314,7 @@
 
    Throws IllegalArgumentException if it can't figure out what to do.
    "
+  [v]
   (cond
     (nil? v)    nil
     (number? v) (stroke :width v)
