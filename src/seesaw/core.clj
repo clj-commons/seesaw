@@ -3155,7 +3155,6 @@
 })
 
 (def ^:private dialog-defaults {
-  :parent         nil
   :content        "Please set the :content option."
   :option-type    :default
   :type           :plain
