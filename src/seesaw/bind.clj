@@ -148,6 +148,15 @@
         (fn [] (remove-watch this key))))
     (notify [this v] (throw (IllegalStateException. "Can't notify an agent!")))
 
+  clojure.lang.Ref
+  (subscribe [this handler]
+    (let [key (keyword (gensym "bindable-ref-watcher"))]
+      (add-watch this key
+                 (fn bindable-ref-watcher
+                   [k r o n] (when-not (= o n) (handler n))))
+      (fn [] (remove-watch this key))))
+  (notify [this v] (dosync (ref-set this v)))
+
   javax.swing.text.Document
     (subscribe [this handler]
       (ssc/listen this :document

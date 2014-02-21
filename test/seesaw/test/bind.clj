@@ -172,7 +172,24 @@
                     true)
                   ; Unfortunately, in Clojure 1.2, IllegalStateException gets wrapped by reset!
                   (catch RuntimeException e
-                    (= IllegalStateException (class (.getCause e))))))))))
+                    (= IllegalStateException (class (.getCause e)))))))))
+
+  (testing "given a Ref"
+    (it "should pass along changes to the ref's value"
+      (let [start (ref nil)
+            end   (atom nil)]
+        (bind start end)
+        (dosync
+         (alter start (constantly "foo")))
+        (expect (= "foo" @start))
+        (expect (= "foo" @end))))
+    (it "should pass update the ref's value when the source changes"
+      (let [start (atom nil)
+            end   (ref nil)]
+        (bind start end)
+        (reset! start "foo")
+        (expect (= "foo" @start))
+        (expect (= "foo" @end)))))        )
 
 (describe b-do*
   (it "executes a function with a single argument and ends a chain"
