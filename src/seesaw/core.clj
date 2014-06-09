@@ -216,8 +216,8 @@
   A macro that returns a proxied instance of the given class. This is
   used by Seesaw to construct widgets that can be fiddled with later,
   e.g. installing a paint handler, etc."
-  ([factory-class]
-    `(proxy [~factory-class seesaw.selector.Tag] []
+  ([factory-class & opts]
+    `(proxy [~factory-class seesaw.selector.Tag] [~@opts]
        (tag_name [] (.getSimpleName ~factory-class)))))
 
 
@@ -813,7 +813,7 @@
 (def ^{:private true} boolean-examples 'boolean)
 (def ^{:private true} dimension-examples [[640 :by 480] 'java.awt.Dimension])
 
-(def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
+(def base-resource-options [:text :foreground :background :font :icon :tip])
 
 (def default-options
   (option-map
