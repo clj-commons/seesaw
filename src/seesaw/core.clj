@@ -2506,7 +2506,7 @@
 
 (defn- paint-component-impl [^javax.swing.JComponent this ^java.awt.Graphics2D g]
   (let [{:keys [before after super? anti-alias?] :or {super? true anti-alias? true}} (get-meta this paint-property)]
-    (when anti-alias? (seesaw.graphics/anti-alias g)
+    (when anti-alias? (seesaw.graphics/anti-alias g))
     (when before (seesaw.graphics/push g (before this g)))
     ; TODO reflection here can't be eliminated thanks for proxy limitations
     ; with protected methods
