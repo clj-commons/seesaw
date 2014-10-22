@@ -1906,7 +1906,10 @@
   [v & {:keys [from to by]}]
   (cond
     ; TODO Reflection here. Don't know how to get rid of it.
-    (number? v) (javax.swing.SpinnerNumberModel. v from to (or by 1))
+    (number? v) 
+    (let [step (or by 1)] 
+      (javax.swing.SpinnerNumberModel. ^Number v ^Comparable from ^Comparable to 
+                                       ^Number step))
     (instance? java.util.Date v)
       (javax.swing.SpinnerDateModel. ^java.util.Date v
                                      from to
