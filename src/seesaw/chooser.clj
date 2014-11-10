@@ -152,8 +152,8 @@
     ; ask & return single file
     (choose-file)
 
-    ; ask & return including a filter for image files and an "all files" filter
-    ; appearing at the beginning
+    ; ask & return including a filter for image files and an \"all files\"
+    ; filter appearing at the beginning
     (choose-file :all-files? false
                  :filters [(file-filter \"All files\" (constantly true))
                            [\"Images\" [\"png\" \"jpeg\"]]
