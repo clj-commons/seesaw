@@ -118,14 +118,25 @@
     :selection-mode The file selection mode: :files-only, :dirs-only and :files-and-dirs.
                     Defaults to :files-only
     :filters A seq of either:
-               
-               A seq that contains a filter name and a seq of
-               extensions as strings for that filter.
-               
-               A seq that contains a filter name and a function 
-               to be used as accept function. (see file-filter)
 
-               A FileFilter. (see file-filter)
+               a seq that contains a filter name and a seq of
+               extensions as strings for that filter;
+
+               a seq that contains a filter name and a function
+               to be used as accept function (see file-filter);
+
+               a FileFilter (see file-filter).
+
+             The filters appear in the dialog's filter selection in the same
+             order as in the seq.
+    :all-files? If true, a filter matching all file extensions and files
+                without an extension will appear in the filter selection
+                of the dialog additionally to the filters specified
+                through :filters. The filter usually appears last in the
+                selection. If this is not desired set this option to
+                false and include an equivalent filter manually at the
+                desired position as shown in the examples below. Defaults
+                to true.
 
     :remember-directory? Flag specifying whether to remember the directory for future
                          file-input invocations in case of successful exit. Default: true.
@@ -141,10 +152,12 @@
     ; ask & return single file
     (choose-file)
 
-    ; ask & return including a filter for image files
-    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]
-                           [\"Folders\" #(.isDirectory %)]
-                           (file-filter \"All files\" (constantly true))]])
+    ; ask & return including a filter for image files and an "all files" filter
+    ; appearing at the beginning
+    (choose-file :all-files? false
+                 :filters [(file-filter \"All files\" (constantly true))
+                           [\"Images\" [\"png\" \"jpeg\"]]
+                           [\"Folders\" #(.isDirectory %)]])
 
     ; ask & return absolute file path as string
     (choose-file :success-fn (fn [fc file] (.getAbsolutePath file)))
@@ -162,16 +175,29 @@
                         cancel-fn (fn [fc])}
                    :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        ^JFileChooser chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn :cancel-fn))
-        multi?  (.isMultiSelectionEnabled chooser)
-        result  (show-file-chooser chooser parent type)]
-    (cond 
-      (= result JFileChooser/APPROVE_OPTION)
-        (do
-          (when remember-directory?
-            (remember-chooser-dir chooser))
-          (success-fn chooser (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser))))
-      :else (cancel-fn chooser))))
+        ^JFileChooser chooser (configure-file-chooser
+                                (JFileChooser.)
+                                (dissoc
+                                  opts
+                                  :type
+                                  :remember-directory?
+                                  :success-fn
+                                  :cancel-fn))]
+    (when-let [[filter _] (seq (.getChoosableFileFilters chooser))]
+      (.setFileFilter chooser filter))
+    (let [result (show-file-chooser chooser parent type)
+          multi? (.isMultiSelectionEnabled chooser)]
+      (cond
+        (= result JFileChooser/APPROVE_OPTION)
+          (do
+            (when remember-directory?
+              (remember-chooser-dir chooser))
+            (success-fn
+              chooser
+              (if multi?
+                (.getSelectedFiles chooser)
+                (.getSelectedFile chooser))))
+        :else (cancel-fn chooser)))))
 
 (defn choose-color
   "Choose a color with a color chooser dialog. The optional first argument is the
