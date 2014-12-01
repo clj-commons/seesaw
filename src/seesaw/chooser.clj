@@ -72,11 +72,15 @@
     (default-option :dir
       (fn [^JFileChooser chooser dir] 
         (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
-                                          (java.io.File. (str dir))))))
+                                          (java.io.File. (str dir))))))    
     (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
     (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
     (default-option :filters set-file-filters)
-    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)))
+    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)
+    (default-option :suggest-name
+      (fn [^JFileChooser chooser suggest-name]
+        (.setSelectedFile chooser (java.io.File. (str suggest-name)))))))
+    
 
 (option-provider JFileChooser file-chooser-options)
 
@@ -118,14 +122,25 @@
     :selection-mode The file selection mode: :files-only, :dirs-only and :files-and-dirs.
                     Defaults to :files-only
     :filters A seq of either:
-               
-               A seq that contains a filter name and a seq of
-               extensions as strings for that filter.
-               
-               A seq that contains a filter name and a function 
-               to be used as accept function. (see file-filter)
 
-               A FileFilter. (see file-filter)
+               a seq that contains a filter name and a seq of
+               extensions as strings for that filter;
+
+               a seq that contains a filter name and a function
+               to be used as accept function (see file-filter);
+
+               a FileFilter (see file-filter).
+
+             The filters appear in the dialog's filter selection in the same
+             order as in the seq.
+    :all-files? If true, a filter matching all file extensions and files
+                without an extension will appear in the filter selection
+                of the dialog additionally to the filters specified
+                through :filters. The filter usually appears last in the
+                selection. If this is not desired set this option to
+                false and include an equivalent filter manually at the
+                desired position as shown in the examples below. Defaults
+                to true.
 
     :remember-directory? Flag specifying whether to remember the directory for future
                          file-input invocations in case of successful exit. Default: true.
@@ -136,15 +151,19 @@
     :cancel-fn   Function which will be called with the JFileChooser on user abort of the dialog.
                  Its result will be returned. Default: returns nil.
 
+    :suggest-name The default name of file.
+
   Examples:
 
     ; ask & return single file
     (choose-file)
 
-    ; ask & return including a filter for image files
-    (choose-file :filters [[\"Images\" [\"png\" \"jpeg\"]
-                           [\"Folders\" #(.isDirectory %)]
-                           (file-filter \"All files\" (constantly true))]])
+    ; ask & return including a filter for image files and an \"all files\"
+    ; filter appearing at the beginning
+    (choose-file :all-files? false
+                 :filters [(file-filter \"All files\" (constantly true))
+                           [\"Images\" [\"png\" \"jpeg\"]]
+                           [\"Folders\" #(.isDirectory %)]])
 
     ; ask & return absolute file path as string
     (choose-file :success-fn (fn [fc file] (.getAbsolutePath file)))
@@ -155,23 +174,37 @@
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
-  (let [[parent & {:keys [type remember-directory? success-fn cancel-fn]
-                   :or {type :open
+  (let [[parent & {:keys [type remember-directory? success-fn cancel-fn suggest-name]
+                   :or {type :open                        
                         remember-directory? true
                         success-fn (fn [fc files] files)
-                        cancel-fn (fn [fc])}
+                        cancel-fn (fn [fc])
+                        suggest-name ""}
                    :as opts}] (if (keyword? (first args)) (cons nil args) args)
         parent  (if (keyword? parent) nil parent)
-        ^JFileChooser chooser (configure-file-chooser (JFileChooser.) (dissoc opts :type :remember-directory? :success-fn :cancel-fn))
-        multi?  (.isMultiSelectionEnabled chooser)
-        result  (show-file-chooser chooser parent type)]
-    (cond 
-      (= result JFileChooser/APPROVE_OPTION)
-        (do
-          (when remember-directory?
-            (remember-chooser-dir chooser))
-          (success-fn chooser (if multi? (.getSelectedFiles chooser) (.getSelectedFile chooser))))
-      :else (cancel-fn chooser))))
+        ^JFileChooser chooser (configure-file-chooser
+                                (JFileChooser.)
+                                (dissoc
+                                  opts
+                                  :type
+                                  :remember-directory?
+                                  :success-fn
+                                  :cancel-fn))]
+    (when-let [[filter _] (seq (.getChoosableFileFilters chooser))]
+      (.setFileFilter chooser filter))
+    (let [result (show-file-chooser chooser parent type)
+          multi? (.isMultiSelectionEnabled chooser)]
+      (cond
+        (= result JFileChooser/APPROVE_OPTION)
+          (do
+            (when remember-directory?
+              (remember-chooser-dir chooser))
+            (success-fn
+              chooser
+              (if multi?
+                (.getSelectedFiles chooser)
+                (.getSelectedFile chooser))))
+        :else (cancel-fn chooser)))))
 
 (defn choose-color
   "Choose a color with a color chooser dialog. The optional first argument is the
