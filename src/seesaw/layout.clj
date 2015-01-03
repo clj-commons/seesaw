@@ -28,7 +28,7 @@
 
 (defn handle-structure-change
   "Helper. Revalidate and repaint a container after structure change"
-  [^javax.swing.JComponent container]
+  [^java.awt.Component container]
   (doto container
     .revalidate
     .repaint))
