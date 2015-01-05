@@ -29,9 +29,9 @@
                is only used if :top, :bottom, etc are omitted. Defaults to 1.
   
     :top       Thickness of the top border in pixels. Defaults to 0.
-    :left      Thickness of the left border in pixels. Defaluts to 0.
-    :bottom    Thickness of the bottom border in pixels. Defaluts to 0.
-    :right     Thickness of the right border in pixels. Defaluts to 0.
+    :left      Thickness of the left border in pixels. Defaults to 0.
+    :bottom    Thickness of the bottom border in pixels. Defaults to 0.
+    :right     Thickness of the right border in pixels. Defaults to 0.
 
   Examples:
 
@@ -54,9 +54,9 @@
     :thickness The thickness of the border in pixels. This property is only used
                if :top, :bottom, etc are omitted. Defaults to 1.
     :top       Thickness of the top border in pixels. Defaults to 0.
-    :left      Thickness of the left border in pixels. Defaluts to 0.
-    :bottom    Thickness of the bottom border in pixels. Defaluts to 0.
-    :right     Thickness of the right border in pixels. Defaluts to 0.
+    :left      Thickness of the left border in pixels. Defaults to 0.
+    :bottom    Thickness of the bottom border in pixels. Defaults to 0.
+    :right     Thickness of the right border in pixels. Defaults to 0.
  
   Examples: 
     

@@ -43,8 +43,9 @@
     ; TODO should we enforce unique ids?
     (id-of!* w id)))
 
-(defn class-of [w]
+(defn class-of
   "Retrieve the classes of a widget as a set of strings"
+  [w]
   (class-of* w))
 
 (defn class-of!
@@ -275,7 +276,7 @@
     [accepts (when (seq chains) (comp next-states ps))]))
 
 (defn cacheable [selector] (vary-meta selector assoc ::cacheable true))
-(defn cacheable? [selector] false (-> selector meta ::cacheable))
+(defn cacheable? [selector] (-> selector meta ::cacheable))
 
 (defn- automaton* [selector]
   (make-state (-> selector (selector-chains 0) set)))

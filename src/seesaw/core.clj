@@ -216,8 +216,8 @@
   A macro that returns a proxied instance of the given class. This is
   used by Seesaw to construct widgets that can be fiddled with later,
   e.g. installing a paint handler, etc."
-  ([factory-class]
-    `(proxy [~factory-class seesaw.selector.Tag] []
+  ([factory-class & opts]
+    `(proxy [~factory-class seesaw.selector.Tag] [~@opts]
        (tag_name [] (.getSimpleName ~factory-class)))))
 
 
@@ -813,7 +813,7 @@
 (def ^{:private true} boolean-examples 'boolean)
 (def ^{:private true} dimension-examples [[640 :by 480] 'java.awt.Dimension])
 
-(def ^{:private true} base-resource-options [:text :foreground :background :font :icon :tip])
+(def base-resource-options [:text :foreground :background :font :icon :tip])
 
 (def default-options
   (option-map
@@ -952,7 +952,7 @@
   Examples:
 
     ; Create a panel with a label positions at (10, 10) with width 200 and height 40.
-    (xyz-panel :items [(label :text \"The Black Lodge\" :bounds [10 10 200 40]))
+    (xyz-panel :items [(label :text \"The Black Lodge\" :bounds [10 10 200 40])])
 
     ; Move a widget up 50 pixels and right 25 pixels
     (move! my-label :by [25 -50])
@@ -3035,25 +3035,7 @@
 
 ;*******************************************************************************
 ; Alert
-(defn alert
-  "Show a simple message alert dialog. Take an optional parent component, source,
-  used for dialog placement, and a message which is passed through (resource).
-
-  Examples:
-
-    (alert \"Hello!\")
-    (alert e \"Hello!\")
-
-  See:
-    http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object%29
-  "
-  ([source message]
-    (JOptionPane/showMessageDialog (to-widget source) (resource message)))
-  ([message] (alert nil message)))
-
-;*******************************************************************************
-; Input
-(def ^{:private true} input-type-map {
+(def ^{:private true} message-type-map {
   :error    JOptionPane/ERROR_MESSAGE
   :info     JOptionPane/INFORMATION_MESSAGE
   :warning  JOptionPane/WARNING_MESSAGE
@@ -3061,6 +3043,60 @@
   :plain    JOptionPane/PLAIN_MESSAGE
 })
 
+(defn- alert-impl
+  "
+    showMessageDialog(Component parentComponent,
+                      Object message,
+                      String title,
+                      int messageType,
+                      Icon icon)
+  "
+  [source message {:keys [title type icon] :or {type :plain}}]
+  (let [source (to-widget source)
+        message (if (coll? message) (object-array message) (resource message))]
+    (JOptionPane/showMessageDialog ^java.awt.Component source
+                     message
+                     (resource title)
+                     (message-type-map type)
+                     (make-icon icon))))
+
+(defn alert
+  "Show a simple message alert dialog:
+
+    (alert [source] message & options)
+
+  source  - optional parent component
+  message - The message to show the user. May be a string, or list of strings, widgets, etc.
+  options - additional options
+
+  Additional options:
+
+    :title The dialog title
+    :type :warning, :error, :info, :plain, or :question
+    :icon Icon to display (Icon, URL, etc)
+
+  Examples:
+
+    (alert \"Hello!\")
+    (alert e \"Hello!\")
+
+  See:
+    http://download.oracle.com/javase/6/docs/api/javax/swing/JOptionPane.html#showMessageDialog%28java.awt.Component,%20java.lang.Object,%20java.lang.String,%20int%29
+  "
+  [& args]
+  (let [n (count args)
+        f (first args)
+        s (second args)]
+    (cond
+      (or (= n 0) (keyword? f))
+        (illegal-argument "alert requires at least one non-keyword arg")
+      (= n 1) (alert-impl nil f {})
+      (= n 2) (alert-impl f s {})
+      (keyword? s) (alert-impl nil f (drop 1 args))
+      :else (alert-impl f s (drop 2 args)))))
+
+;*******************************************************************************
+; Input
 (defrecord InputChoice [value to-string]
   Object
   (toString [this] (to-string value)))
@@ -3083,7 +3119,7 @@
         result  (JOptionPane/showInputDialog ^java.awt.Component source
                                  message
                                  (resource title)
-                                 (input-type-map type)
+                                 (message-type-map type)
                                  (make-icon icon)
                                  choices value)]
     (if (and result choices)
@@ -3155,7 +3191,6 @@
 })
 
 (def ^:private dialog-defaults {
-  :parent         nil
   :content        "Please set the :content option."
   :option-type    :default
   :type           :plain
@@ -3239,7 +3274,7 @@
                 options default-option success-fn cancel-fn no-fn]} (merge dialog-defaults opts)
         pane (JOptionPane.
               content
-              (input-type-map type)
+              (message-type-map type)
               (dialog-option-type-map option-type)
               nil                       ;icon
               (when options
@@ -3284,7 +3319,7 @@
                                  message
                                  (resource title)
                                  (dialog-option-type-map option-type)
-                                 (input-type-map type)
+                                 (message-type-map type)
                                  (make-icon icon))]
     (condp = result
       JOptionPane/NO_OPTION false

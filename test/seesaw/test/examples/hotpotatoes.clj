@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -13,16 +13,16 @@
         seesaw.test.examples.example)
   (:require [clojure.java.io :only reader]))
 
-; A simple HTTP request app. Enter a URL and click "Go". It does the request in 
+; A simple HTTP request app. Enter a URL and click "Go". It does the request in
 ; the background and displays the response.
 
 (defn do-request [url-str f]
-  (future 
+  (future
     (let [result (if-let [url (to-url url-str)]
                   (slurp url)
-                  ("Invalid URL"))]
+                  "Invalid URL")]
       (invoke-later (f result)))))
-      
+
 (defexample []
   (let [exit-action (action :handler dispose! :name "Exit")
         url-text    (text "http://google.com")
@@ -31,29 +31,29 @@
         result-handler (fn [s]
                          (text! result-text s)
                          (text! status "Ready"))
-        go-handler (fn [e] 
+        go-handler (fn [e]
                      (text! status "Busy")
-                     (do-request 
+                     (do-request
                        (text url-text)
                        result-handler))]
-    (frame 
+    (frame
       :id :frame
       :title "Hot Potatoes!"
       :menubar (menubar :items [(menu :text "File" :items [exit-action])])
       :width 500 :height 600
-      :content 
+      :content
         (border-panel
           :border 5
           :north (toolbar :items [exit-action])
-          :center 
+          :center
             (border-panel
-              :north 
-                (horizontal-panel 
+              :north
+                (horizontal-panel
                   :border [5 "Configure Request"]
-                  :items ["URL" url-text 
+                  :items ["URL" url-text
                           (action :handler go-handler :name "Go")])
               :center
-                (horizontal-panel 
+                (horizontal-panel
                   :border [5 "Request Result"]
                   :items [(scrollable result-text)]))
           :south status))))

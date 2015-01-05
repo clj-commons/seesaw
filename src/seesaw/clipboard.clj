@@ -37,9 +37,9 @@
    (let [cb (system)]
      (cond
        (string? transferable)
-         (contents! (dnd/default-transferable [dnd/string-flavor transferable]))
+         (contents! (dnd/default-transferable [dnd/string-flavor transferable]) owner)
      :else
-       (.setContents (system) ^java.awt.datatransfer.Tranferable transferable owner))
+       (.setContents (system) ^java.awt.datatransfer.Transferable transferable owner))
      cb)))
 
 (comment

@@ -197,6 +197,7 @@
   (let [target      (to-table-model target)
         col-key-map (get-column-key-map target)]
     (cond
+      (nil? rows)     nil
       (integer? rows) (single-value-at target col-key-map rows)
       :else           (map #(single-value-at target col-key-map %) rows))))
 

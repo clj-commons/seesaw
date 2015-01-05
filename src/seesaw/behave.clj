@@ -61,7 +61,7 @@
   "
   [w & opts]
   (let [{:keys [start drag finish]
-         :or   { start (fn [e]) drag (fn [e]) finish (fn [e]) }} opts
+         :or   { start (fn [e]) drag (fn [e [x y]]) finish (fn [e]) }} opts
         last-point (java.awt.Point.)]
     (listen w
       :mouse-pressed

@@ -13,6 +13,10 @@
   (:use [lazytest.describe :only (describe it testing)]
         [lazytest.expect :only (expect)]))
 
+(describe handle-structure-change
+  (it "should successfully handle all kinds of components"
+    (handle-structure-change (proxy [java.awt.Component] []))))
+
 (describe realize-grid-bag-constraints
   (it "should return a vector of widget/constraint pairs"
     (let [[[w0 c0] [w1 c1] & more] (realize-grid-bag-constraints [[:first :weightx 99 :weighty 555 :gridx :relative] [:second :weightx 100 :anchor :baseline]])]
