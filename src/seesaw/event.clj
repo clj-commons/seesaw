@@ -506,7 +506,7 @@
   (check-args (even? (count more))
               "List of event name/handler pairs must have even length")
   (let [all-targets (get-sub-targets (to-seq targets))
-        remove-fns  (apply multi-target-listen-impl all-targets more)]
+        remove-fns  (doall (apply multi-target-listen-impl all-targets more))]
     (apply juxt remove-fns)))
 
 (defn listen-to-property
