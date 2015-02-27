@@ -1288,7 +1288,7 @@
     ; an alert when clicked.
     (button :text \"Next\"
             :mnemonic \\N
-            :listen [:action #(alert \"NEXT!\")])
+            :listen [:action #(alert % \"NEXT!\")])
 
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JButton.html
@@ -2625,7 +2625,7 @@
     (bean-option :minimum-size  java.awt.Window to-dimension nil
                  dimension-examples)
 
-    (bean-option :size java.awt.Window to-dimension nil 
+    (bean-option :size java.awt.Window to-dimension nil
                  dimension-examples)
 
     (bean-option :visible? java.awt.Window boolean)
