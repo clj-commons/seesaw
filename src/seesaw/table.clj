@@ -229,8 +229,9 @@
           ^objects row-values  (unpack-row col-key-map value)]
       (doseq [i (range 0 (.getColumnCount target))]
         ; TODO this precludes setting a cell to nil. Do we care?
-        (when-let [v (aget row-values i)]
-          (.setValueAt target (aget row-values i) row i)))
+        (let [v (aget row-values i)]
+          (when-not (nil? v)
+            (.setValueAt target (aget row-values i) row i))))
       ; merge with current full-map value so that extra fields aren't lost.
       (.setValueAt target
                    (merge (.getValueAt target row -1)
