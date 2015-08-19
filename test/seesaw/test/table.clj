@@ -123,7 +123,14 @@
           r (update-at! t 1 ["A1" "B1"] 0 {:a "A0" :b "B0"})]
       (expect (= t r))
       (expect (= {:a "A0" :b "B0"} (value-at t 0)))
-      (expect (= {:a "A1" :b "B1"} (value-at t 1))))))
+      (expect (= {:a "A1" :b "B1"} (value-at t 1)))))
+  (it "supports `false` boolean values"
+    (let [t (table-model :columns [{:class java.lang.Boolean :key :a}]
+                         :rows [[false] [true]])
+          r (update-at! t 0 [true] 1 [false])]
+      (expect (= t r))
+      (expect (= {:a true} (value-at t 0)))
+      (expect (= {:a false} (value-at t 1))))))
 
 (describe insert-at!
   (it "inserts a row with the same format as :rows option of (table-model)"
