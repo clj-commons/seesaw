@@ -1833,6 +1833,8 @@
     (option-map
       action-option
       (bean-option :editable? javax.swing.JComboBox boolean)
+      (bean-option :selected-item javax.swing.JComboBox)
+      (bean-option :selected-index javax.swing.JComboBox)
       (around-option model-option to-combobox-model identity "See (seesaw.core/combobox)")
       (default-option :renderer
                       #(.setRenderer ^javax.swing.JComboBox %1 (seesaw.cells/to-cell-renderer %1 %2))
@@ -3809,4 +3811,3 @@
   "
   [target v]
   (seesaw.value/value!* (or (to-widget target) target) v))
-
