@@ -22,6 +22,7 @@
    'button-group
    'canvas
    'cell-renderers
+   'chooser
    'clock
    'custom-border
    'custom-dialog

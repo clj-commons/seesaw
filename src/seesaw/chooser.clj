@@ -2,7 +2,7 @@
 
 ;   The use and distribution terms for this software are covered by the
 ;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this 
+;   which can be found in the file epl-v10.html at the root of this
 ;   distribution.
 ;   By using this software in any fashion, you are agreeing to be bound by
 ;   the terms of this license.
@@ -12,7 +12,7 @@
       :author "Dave Ray"}
   seesaw.chooser
   (:use [seesaw.color :only [to-color]]
-        [seesaw.options :only [default-option bean-option apply-options 
+        [seesaw.options :only [default-option bean-option apply-options
                                option-map option-provider]]
         [seesaw.util :only [illegal-argument]])
   (:import (javax.swing.filechooser FileFilter FileNameExtensionFilter)
@@ -20,9 +20,9 @@
 
 (defn file-filter
   "Create a FileFilter.
-  
+
   Arguments:
-  
+
     description - description of this filter, will show up in the
                   filter-selection box when opening a file choosing dialog.
 
@@ -55,7 +55,7 @@
   (doseq [f filters]
     (.addChoosableFileFilter chooser
       (cond
-        (instance? FileFilter f) 
+        (instance? FileFilter f)
           f
 
         (and (sequential? f) (sequential? (second f)))
@@ -67,16 +67,20 @@
         :else
           (illegal-argument "not a valid filter: %s" f)))))
 
-(def ^{:private true} file-chooser-options 
+(def ^{:private true} file-chooser-options
   (option-map
     (default-option :dir
-      (fn [^JFileChooser chooser dir] 
-        (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir 
+      (fn [^JFileChooser chooser dir]
+        (.setCurrentDirectory chooser (if (instance? java.io.File dir) dir
                                           (java.io.File. (str dir))))))
     (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
     (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
     (default-option :filters set-file-filters)
-    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)))
+    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)
+    (default-option :selected-file
+      (fn [^JFileChooser chooser selected-file]
+        (.setSelectedFile chooser (if (instance? java.io.File selected-file) selected-file
+                                      (java.io.File. (str selected-file))))))))
 
 (option-provider JFileChooser file-chooser-options)
 
@@ -84,14 +88,14 @@
 
 (defn- show-file-chooser [^JFileChooser chooser parent type]
   (case type
-    :open (.showOpenDialog chooser parent) 
+    :open (.showOpenDialog chooser parent)
     :save (.showSaveDialog chooser parent)
           (.showDialog chooser parent (str type))))
 
 (defn- configure-file-chooser [^JFileChooser chooser opts]
   (apply-options chooser opts)
-  (when (and @last-dir (not (:dir opts)))
-    (.setCurrentDirectory chooser @last-dir))
+  (when (and @last-dir (not (or (:dir opts) (:selected-file opts)))
+    (.setCurrentDirectory chooser @last-dir)))
   chooser)
 
 (defn- remember-chooser-dir [^JFileChooser chooser]
@@ -147,6 +151,8 @@
     :cancel-fn   Function which will be called with the JFileChooser on user abort of the dialog.
                  Its result will be returned. Default: returns nil.
 
+    :selected-file The default name of file or java.io.File
+
   Examples:
 
     ; ask & return single file
@@ -164,11 +170,11 @@
 
   Returns result of SUCCESS-FN (default: either java.io.File or seq of java.io.File iff multi? set to true)
   in case of the user selecting a file, or result of CANCEL-FN otherwise.
-  
+
   See http://download.oracle.com/javase/6/docs/api/javax/swing/JFileChooser.html
   "
   [& args]
-  (let [[parent & {:keys [type remember-directory? success-fn cancel-fn]
+  (let [[parent & {:keys [type remember-directory? success-fn cancel-fn selected-file]
                    :or {type :open
                         remember-directory? true
                         success-fn (fn [fc files] files)
@@ -201,14 +207,14 @@
 
 (defn choose-color
   "Choose a color with a color chooser dialog. The optional first argument is the
-  parent component for the dialog. The rest of the args is a list of key/value 
+  parent component for the dialog. The rest of the args is a list of key/value
   pairs:
-  
+
           :color The initial selected color (see seesaw.color/to-color)
           :title The dialog's title
-  
+
   Returns the selected color or nil if canceled.
-  
+
   See:
     http://download.oracle.com/javase/6/docs/api/javax/swing/JColorChooser.html
   "
