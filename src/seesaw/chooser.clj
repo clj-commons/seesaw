@@ -65,7 +65,11 @@
           (apply file-filter f)
 
         :else
-          (illegal-argument "not a valid filter: %s" f)))))
+        (illegal-argument "not a valid filter: %s" f)))))
+
+(defn- set-suggested-name [^JFileChooser chooser suggested-name]
+  (.setSelectedFile chooser (if (instance? java.io.File suggested-name)
+                              suggested-name (java.io.File. suggested-name))))
 
 (def ^{:private true} file-chooser-options 
   (option-map
@@ -76,7 +80,8 @@
     (bean-option [:multi? :multi-selection-enabled] JFileChooser boolean)
     (bean-option [:selection-mode :file-selection-mode] JFileChooser file-selection-modes)
     (default-option :filters set-file-filters)
-    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)))
+    (bean-option [:all-files? :accept-all-file-filter-used] JFileChooser boolean)
+    (default-option :suggested-name set-suggested-name)))
 
 (option-provider JFileChooser file-chooser-options)
 
