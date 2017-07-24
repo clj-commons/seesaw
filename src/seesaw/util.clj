@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns seesaw.util
+  (:refer-clojure :exclude [boolean?])
   (:require clojure.string
             [j18n.core :as j18n])
   (:import [java.net URL URI MalformedURLException URISyntaxException]))
