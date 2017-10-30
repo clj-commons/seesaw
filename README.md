@@ -2,15 +2,15 @@
 
 _Note that current development is on the *develop* branch, not master_
 
-There's now a [Google Group] (https://groups.google.com/group/seesaw-clj) for discussion and questions.
+There's now a [Google Group](https://groups.google.com/group/seesaw-clj) for discussion and questions.
 
-[Here's a brief tutorial] (https://gist.github.com/1441520) that covers some Seesaw basics. It assumes no knowledge of Swing or Java.
+[Here's a brief tutorial](https://gist.github.com/1441520) that covers some Seesaw basics. It assumes no knowledge of Swing or Java.
 
-[Here's the slides] (http://darevay.com/talks/clojurewest2012/) from a Clojure/West 2012 talk on the Seesaw. Best viewed in Chrome or Safari.
+[Here's the slides](http://darevay.com/talks/clojurewest2012/) from a Clojure/West 2012 talk on the Seesaw. Best viewed in Chrome or Safari.
 
 # Seesaw: Clojure + UI
 
-_*See [the Seesaw Wiki] (https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs] (http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
+_*See [the Seesaw Wiki](https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs](http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
 
 Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it.
 
