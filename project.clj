@@ -1,4 +1,4 @@
-(defproject seesaw "1.4.5"
+(defproject seesaw "1.5.1-SNAPSHOT"
   :description "A Swing wrapper/DSL for Clojure. You want seesaw.core, FYI. See http://seesaw-clj.org for more info."
 
   :url "http://seesaw-clj.org"
@@ -28,7 +28,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.5.6"]]
   :profiles { :dev {:dependencies [[com.stuartsierra/lazytest "1.1.2"]
                                   [lein-autodoc "0.9.0"]]}}
-  :repositories [["stuartsierra-releases" "http://stuartsierra.com/maven2"]]
+  :repositories [["stuartsierra-releases" "https://stuartsierra.com/maven2"]]
   :autodoc {
     :name "Seesaw",
     :page-title "Seesaw API Documentation"
