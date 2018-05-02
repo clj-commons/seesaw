@@ -187,7 +187,7 @@
     ; Print values of selected rows
     (listen t :selection
       (fn [e]
-        (println (value-at t (selection {:multi? true} t)))))
+        (println (value-at t (selection t {:multi? true})))))
   See:
     (seesaw.core/table)
     (seesaw.table/table-model)
