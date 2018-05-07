@@ -1494,39 +1494,102 @@
           :underline  (.addAttribute style StyleConstants/Underline (boolean v))
           (illegal-argument "Option %s is not supported in :styles" k))))))
 
+(defn- add-paragraph-styles
+	[^JTextPane text-pane paragraph-styles]
+
+	(let [conversion-table {:bidi-level              [StyleConstants/BidiLevel identity]
+							:font-family             [StyleConstants/FontFamily identity]
+							:family                  [StyleConstants/Family identity]
+							:font-size               [StyleConstants/FontSize int]
+							:size                    [StyleConstants/Size identity]
+							:bold                    [StyleConstants/Bold boolean]
+							:italic                  [StyleConstants/Italic boolean]
+							:underline               [StyleConstants/Underline boolean]
+							:strike-through          [StyleConstants/StrikeThrough boolean]
+							:superscript             [StyleConstants/Superscript boolean]
+							:subscript               [StyleConstants/Subscript boolean]
+							:foreground              [StyleConstants/Foreground identity]
+							:background              [StyleConstants/Background identity]
+							:component-attribute     [StyleConstants/ComponentAttribute identity]
+							:icon-attribute          [StyleConstants/IconAttribute identity]
+							:composed-text-attribute [StyleConstants/ComposedTextAttribute identity]
+							:first-line-indent       [StyleConstants/FirstLineIndent float]
+							:left-indent             [StyleConstants/LeftIndent float]
+							:right-indent            [StyleConstants/RightIndent float]
+							:line-spacing            [StyleConstants/LineSpacing float]
+							:space-above             [StyleConstants/SpaceAbove float]
+							:space-below             [StyleConstants/SpaceBelow float]
+							:alignment               [StyleConstants/Alignment identity]
+							:tab-set                 [StyleConstants/TabSet identity]
+							:orientation             [StyleConstants/Orientation identity]}]
+		(doseq [[style-name & options] paragraph-styles]
+			(let [style (-> text-pane
+							(.addStyle (name style-name) nil))]
+				(doseq [[k v] (partition 2 options)]
+					(let [[style-obj type-fn] (k conversion-table)]
+						(.addAttribute style style-obj (type-fn v))))))))
+
 (def styled-text-options
   (merge
     text-options
     (option-map
       (default-option :wrap-lines? #(put-meta! %1 :wrap-lines? (boolean %2))
                      #(get-meta %1 :wrap-lines?))
-      (default-option :styles add-styles))))
+      (default-option :styles add-styles)
+	  (default-option :paragraph-styles add-paragraph-styles))))
 
 (widget-option-provider javax.swing.JTextPane styled-text-options)
 
 (defn styled-text
   "Create a text pane.
   Supports the following options:
-
-    :text         text content.
-    :wrap-lines?  If true wraps lines.
-                  This only works if the styled text is wrapped
-                  in (seesaw.core/scrollable). Doing so will cause
-                  a grey area to appear to the right of the text.
-                  This can be avoided by calling
-                    (.setBackground (.getViewport s) java.awt.Color/white)
-                  on the scrollable s.
-    :styles       Define styles, should be a list of vectors of form:
-                  [identifier & options]
-                  Where identifier is a string or keyword
-                  Options supported:
-                    :font        A font family name as keyword or string.
-                    :size        An integer.
-                    :color       See (seesaw.color/to-color)
-                    :background  See (seesaw.color/to-color)
-                    :bold        bold if true.
-                    :italic      italic if true.
-                    :underline   underline if true.
+  :text              text content.
+  :wrap-lines?       If true wraps lines.
+                     This only works if the styled text is wrapped
+                     in (seesaw.core/scrollable). Doing so will cause
+                     a grey area to appear to the right of the text.
+                     This can be avoided by calling
+                         (.setBackground (.getViewport s) java.awt.Color/white)
+                     on the scrollable s.
+  :styles       Define styles, should be a list of vectors of form:
+                     [identifier & options]
+                     Where identifier is a string or keyword
+                     Options supported:
+                       :font        A font family name as keyword or string.
+                       :size        An integer.
+                       :color       See (seesaw.color/to-color)
+                       :background  See (seesaw.color/to-color)
+                       :bold        bold if true.
+                       :italic      italic if true.
+                       :underline   underline if true.
+  :paragraph-styles  Define paragraph styles, should be a list of vectors of form
+                     [identifier & options]
+                     Supported options are:
+                       :bidi-level
+                       :font-family
+                       :family
+                       :font-size
+                       :size
+                       :bold
+                       :italic
+                       :underline
+                       :strike-through
+                       :superscript
+                       :subscript
+                       :foreground
+                       :background
+                       :component-attribute
+                       :icon-attribute
+                       :composed-text-attribute
+                       :first-line-indent
+                       :left-indent
+                       :right-indent
+                       :line-spacing
+                       :space-above
+                       :space-below
+                       :alignment
+                       :tab-set
+                       :orientation
 
   See:
     (seesaw.core/style-text!)
@@ -1548,11 +1611,22 @@
     (seesaw.core/text)
     http://download.oracle.com/javase/tutorial/uiswing/components/editorpane.html
   "
-  [^JTextPane target id ^Integer start ^Integer length]
+  [^JTextPane target id ^Integer start ^Integer length & [replace]]
   (check-args (instance? JTextPane target) "style-text! only applied to styled-text widgets")
-  (.setCharacterAttributes (.getStyledDocument target)
-                            start length (.getStyle target (name id)) true)
+	(let [replace (if (some? replace) replace true)]
+		(.setCharacterAttributes (.getStyledDocument target)
+							  start length (.getStyle target (name id)) replace))
   target)
+
+(defn style-paragraph!
+	"Style a paragraph in a JTextPane
+	id identifies a style that has been added to the text pane."
+	[^JTextPane target id ^Integer start & [replace]]
+	(check-args (instance? JTextPane target) "style-para! only applied to styled-text widgets")
+	(let [replace (if (some? replace) replace true)]
+		(.setParagraphAttributes
+			(.getStyledDocument target) start 1 (.getStyle target (name id)) replace))
+	target)
 
 ;*******************************************************************************
 ; JPasswordField
