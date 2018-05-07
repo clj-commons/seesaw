@@ -1613,7 +1613,7 @@
   "
   [^JTextPane target id ^Integer start ^Integer length & [replace]]
   (check-args (instance? JTextPane target) "style-text! only applied to styled-text widgets")
-	(let [replace (if (some? replace) replace true)]
+	(let [replace (if (not (nil? replace)) replace true)]
 		(.setCharacterAttributes (.getStyledDocument target)
 							  start length (.getStyle target (name id)) replace))
   target)
@@ -1623,7 +1623,7 @@
 	id identifies a style that has been added to the text pane."
 	[^JTextPane target id ^Integer start & [replace]]
 	(check-args (instance? JTextPane target) "style-para! only applied to styled-text widgets")
-	(let [replace (if (some? replace) replace true)]
+	(let [replace (if (not (nil? replace)) replace true)]
 		(.setParagraphAttributes
 			(.getStyledDocument target) start 1 (.getStyle target (name id)) replace))
 	target)
