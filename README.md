@@ -33,7 +33,7 @@ _There are numerous Seesaw examples in [test/seesaw/test/examples](https://githu
 
 ## TL;DR
 
-Here's how you use Seesaw with [Leiningen] (https://github.com/technomancy/leiningen)
+Here's how you use Seesaw with [Leiningen](https://github.com/technomancy/leiningen)
 
 Install `lein` as described and then:
 
