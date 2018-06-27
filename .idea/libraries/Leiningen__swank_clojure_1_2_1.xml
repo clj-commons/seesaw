@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: swank-clojure:1.2.1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/swank-clojure/swank-clojure/1.2.1/swank-clojure-1.2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

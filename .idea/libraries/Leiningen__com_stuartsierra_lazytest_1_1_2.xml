@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: com.stuartsierra/lazytest:1.1.2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/stuartsierra/lazytest/1.1.2/lazytest-1.1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

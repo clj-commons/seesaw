@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: com.fifesoft/rsyntaxtextarea:2.5.6">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/fifesoft/rsyntaxtextarea/2.5.6/rsyntaxtextarea-2.5.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
