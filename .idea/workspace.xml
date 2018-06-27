@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6303308c-2ea4-4500-9e3d-1795997f28fd" name="Default" comment="added dynamic renderer with satom">
+      <change afterPath="$PROJECT_DIR$/.idea/ClojureProjectResolveSettings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__cider_cider_nrepl_0_16_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__clojure_complete_0_2_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__com_fifesoft_rsyntaxtextarea_2_5_6.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__com_jgoodies_forms_1_2_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__com_miglayout_miglayout_3_7_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__com_stuartsierra_lazytest_1_1_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__j18n_1_0_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__lein_autodoc_0_9_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_clojure_clojure_1_8_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_clojure_clojure_contrib_1_2_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_clojure_tools_nrepl_0_2_12.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_action_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_autocomplete_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_common_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_core_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_painters_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_swinglabs_swingx_swingx_plaf_1_6_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__org_tcrawley_dynapath_1_0_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Leiningen__swank_clojure_1_2_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.nrepl-port" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/seesaw.iml" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="seesaw" />
+  </component>
+  <component name="FileColors">
+    <fileColor scope="Non-Project Files (Material Default)" color="2E3C43" />
+    <fileColor scope="Non-Project Files (Material Darker)" color="323232" />
+    <fileColor scope="Non-Project Files (Material Lighter)" color="eae8e8" />
+    <fileColor scope="Non-Project Files (Material Palenight)" color="2f2e43" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="c_3_widgets.clj" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/seesaw/wiki/c_3_widgets.clj">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="447">
+              <caret line="65" column="45" lean-forward="true" selection-start-line="65" selection-start-column="45" selection-end-line="65" selection-end-column="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="options.clj" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/seesaw/options.clj">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="609">
+              <caret line="182" column="65" selection-start-line="182" selection-start-column="65" selection-end-line="182" selection-end-column="65" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="core.clj" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/core.clj">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="406">
+              <caret line="2050" lean-forward="true" selection-start-line="2050" selection-end-line="2050" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Atom.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/Atom.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="96">
+              <caret line="16" column="35" selection-start-line="16" selection-start-column="35" selection-end-line="16" selection-end-column="35" />
+              <folding>
+                <element signature="e#865#866#0" expanded="true" />
+                <element signature="e#888#889#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IRef.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IRef.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="160">
+              <caret line="20" column="21" lean-forward="true" selection-start-line="20" selection-start-column="21" selection-end-line="20" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="core.clj" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/core.clj">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="416">
+              <caret line="2067" column="19" lean-forward="true" selection-start-line="2067" selection-start-column="19" selection-end-line="2067" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LockingTransaction.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/LockingTransaction.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="649">
+              <caret line="341" column="27" selection-start-line="341" selection-start-column="27" selection-end-line="341" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ARef.java" pinned="false" current-in-tab="false">
+        <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/ARef.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="784">
+              <caret line="67" column="21" selection-start-line="67" selection-start-column="14" selection-end-line="67" selection-end-column="21" />
+              <folding>
+                <element signature="e#1133#1134#0" expanded="true" />
+                <element signature="e#1162#1163#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Clojure Namespace" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>p</find>
+      <find>require</find>
+      <find>ppr</find>
+      <find>ppron</find>
+      <find>pprin</find>
+      <find>pprint</find>
+      <find>:size</find>
+      <find>:content</find>
+      <find>:aliceblue</find>
+      <find>[640 :by 480]</find>
+      <find>OptionProvider</find>
+      <find>option-provider</find>
+      <find>option-provider J</find>
+      <find>jframe</find>
+      <find>defn agent</find>
+      <find>ertus</find>
+      <find>validator</find>
+      <find>hashse</find>
+      <find>hashs</find>
+      <find>Option.</find>
+      <find>atom</find>
+      <find>dlg-result</find>
+      <find>options</find>
+      <find>defn atom</find>
+      <find>burada</find>
+      <find>ops:</find>
+      <find>watches</find>
+      <find>remove-wat</find>
+      <find>SAtom</find>
+      <find>get-k</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>sw/text</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="UPDATE_TYPE" value="REBASE" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GradleLocalSettings">
+    <option name="modificationStamps">
+      <map>
+        <entry key="$USER_HOME$/Downloads/java-rest-api-task" value="1467902234000" />
+        <entry key="$USER_HOME$/Downloads/test" value="10108558390000" />
+        <entry key="$PROJECT_DIR$/../JavaHamcrest" value="1443113502000" />
+        <entry key="$PROJECT_DIR$/../appium-test-setup-basic" value="2954777084000" />
+      </map>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/seesaw/util.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/selector.clj" />
+        <option value="$PROJECT_DIR$/examples/applet/src/applet/core.clj" />
+        <option value="$PROJECT_DIR$/examples/gaidica/src/gaidica/core.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/c_1_home_pae.clj" />
+        <option value="$PROJECT_DIR$/jvm/seesaw/ExceptionHandler.java" />
+        <option value="$PROJECT_DIR$/src/seesaw/dev.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/util.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/c_2_frames.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/widgets/log_window.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/dnd_explorer.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/c_1_home_page.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/c_4_containers.clj" />
+        <option value="$PROJECT_DIR$/project.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/event.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/core.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/options.clj" />
+        <option value="$PROJECT_DIR$/src/seesaw/wiki/c_3_widgets.clj" />
+      </list>
+    </option>
+  </component>
+  <component name="MavenProjectNavigator">
+    <treeState>
+      <expand />
+      <select />
+    </treeState>
+  </component>
+  <component name="MavenRunner">
+    <option name="jreName" value="1.7" />
+  </component>
+  <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="x" value="-227" />
+    <option name="y" value="-1080" />
+    <option name="width" value="1920" />
+    <option name="height" value="1080" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="substance" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="substance" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="substance" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="substance" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="jvm" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="jvm" type="462c0819:PsiDirectoryNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="seesaw" type="462c0819:PsiDirectoryNode" />
+              <item name="wiki" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Leiningen: org.clojure/clojure:1.8.0" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Leiningen: org.clojure/clojure:1.8.0" type="70bed36:NamedLibraryElementNode" />
+              <item name="clojure-1.8.0.jar" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Leiningen: org.clojure/clojure:1.8.0" type="70bed36:NamedLibraryElementNode" />
+              <item name="clojure-1.8.0.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="clojure" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="seesaw" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Leiningen: org.clojure/clojure:1.8.0" type="70bed36:NamedLibraryElementNode" />
+              <item name="clojure-1.8.0.jar" type="462c0819:PsiDirectoryNode" />
+              <item name="clojure" type="462c0819:PsiDirectoryNode" />
+              <item name="lang" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+      <pane id="AndroidView" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="cursive.last.file.extension./Users/ertugrulcetin/IdeaProjects/seesaw/src" value="clj" />
+    <property name="project.structure.last.edited" value="Problems" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Java" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/seesaw/wiki" />
+    </key>
+  </component>
+  <component name="ReplState" timestamp="1530117379609">{:repl-history {:ide [], :local [{:command &quot;(com.sun.javafx.application.PlatformImpl/runLater (fn [_]\n                                                    (javafx.stage.Stage.)))&quot;, :offset 49, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.scene.control.ListCell\&quot; false (clojure.lang.RT/baseLoader))] (.importClass *ns* cls))&quot;, :offset 21, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage.\&quot; false (clojure.lang.RT/baseLoader))] (.importClass *ns* cls))&quot;, :offset 45, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))] (.importClass *ns* cls))&quot;, :offset 44, :ns &quot;user&quot;} {:command &quot;cls&quot;, :offset 3, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))]\n  (.importClass *ns* cls)\n  cls)&quot;, :offset 114, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))]\n  (.importClass *ns* cls)\n  (.newInstance cls))&quot;, :offset 128, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))]\n  (.importClass *ns* cls)\n  (.newInstance (.importClass *ns* cls)))&quot;, :offset 148, :ns &quot;user&quot;} {:command &quot;(let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))]\n  (.importClass *ns* cls))&quot;, :offset 108, :ns &quot;user&quot;} {:command &quot;(type (let [cls (Class/forName \&quot;javafx.stage.Stage\&quot; false (clojure.lang.RT/baseLoader))]\n        (.importClass *ns* cls)))&quot;, :offset 121, :ns &quot;user&quot;} {:command &quot;(run-later\n  (javafx.stage.Stage.)\n  )&quot;, :offset 38, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(com.sun.javafx.application.PlatformImpl/startup (fn [_] (javafx.stage.Stage .)))&quot;, :offset 81, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (javafx.stage.Stage))&quot;, :offset 34, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(javax.swing.JButton.)&quot;, :offset 22, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (println \&quot;As\&quot;))&quot;, :offset 28, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (javafx.stage.Stage.))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(javafx.stage.Stage.)&quot;, :offset 21, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (javafx.stage.Stage.)\n   )&quot;, :offset 39, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (eval \&quot;(javafx.stage.Stage.)\&quot;)\n   )&quot;, :offset 48, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (sw/construct javafx.stage.Stage)\n   )&quot;, :offset 51, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (let [c (sw/construct javafx.stage.Stage)]\n    (type c)\n    ))&quot;, :offset 75, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (let [c (sw/construct javafx.stage.Stage)]\n    (println (type c))\n    ))&quot;, :offset 85, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (let [c (sw/construct javafx.stage.Stage)]\n    (println (.newInstance javafx.stage.Stage))\n    ))&quot;, :offset 110, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(extend-listener-protocol AddChangeListener add-change-listener addChangeListener\n  javax.swing.BoundedRangeModel\n  javax.swing.JProgressBar\n  javax.swing.JSlider\n  javax.swing.JTabbedPane\n  javax.swing.JViewport\n  javax.swing.AbstractButton\n  javax.swing.SingleSelectionModel\n  javax.swing.SpinnerModel\n  javax.swing.JSpinner\n  javax.swing.ButtonModel)&quot;, :offset 353, :ns &quot;seesaw.event&quot;} {:command &quot;event-groups-by-listener-class&quot;, :offset 30, :ns &quot;seesaw.event&quot;} {:command &quot;(defn camelize\n  \&quot;Convert input string to camelCase from hyphen-case\&quot;\n  [s]\n  (clojure.string/replace s #\&quot;-(.)\&quot; #(.toUpperCase ^String (%1 1))))\n(-&gt; :drag-mouse-moved name camelize symbol)&quot;, :offset 144, :ns &quot;user&quot;} {:command &quot;(ns ^{:doc \&quot;Functions for handling events. Do not use these functions directly.\n            Use (seesaw.core/listen) instead.\&quot;\n      :author \&quot;Dave Ray\&quot;}\n  seesaw.event\n  (:use [seesaw.meta :only [put-meta! get-meta]]\n        [seesaw.util :only [camelize illegal-argument to-seq check-args]])\n  (:import [javax.swing.event ChangeListener\n            CaretListener DocumentListener\n            ListSelectionListener\n            TreeSelectionListener TreeExpansionListener TreeWillExpandListener TreeModelListener\n            HyperlinkListener]\n           [javax.swing.text Document]\n           [java.awt.event WindowListener FocusListener ActionListener ItemListener\n                          MouseListener MouseMotionListener MouseWheelListener\n                          KeyListener ComponentListener]\n           [java.beans PropertyChangeListener]))&quot;, :offset 849, :ns &quot;user&quot;} {:command &quot;(defmacro ^{:private true } extend-listener-protocol [proto proto-method java-method &amp; classes]\n  `(extend-protocol ~proto\n     ~@(mapcat (fn [c] `(~c (~proto-method [this# v#] (. this# ~java-method v#)))) classes)))&quot;, :offset 216, :ns &quot;seesaw.event&quot;} {:command &quot;(defprotocol ^{:private true} AddChangeListener\n  (add-change-listener [this l]))&quot;, :offset 81, :ns &quot;seesaw.event&quot;} {:command &quot;(defprotocol ^{:private true} AddActionListener\n  (add-action-listener [this v]))&quot;, :offset 81, :ns &quot;seesaw.event&quot;} {:command &quot;(defprotocol ^{:private true} AddListSelectionListener\n  (add-list-selection-listener [this v]))&quot;, :offset 96, :ns &quot;seesaw.event&quot;} {:command &quot;(macroexpand-1 '(extend-listener-protocol AddChangeListener add-change-listener addChangeListener\n                                         javax.swing.BoundedRangeModel\n                                         javax.swing.JProgressBar\n                                         javax.swing.JSlider\n                                         javax.swing.JTabbedPane\n                                         javax.swing.JViewport\n                                         javax.swing.AbstractButton\n                                         javax.swing.SingleSelectionModel\n                                         javax.swing.SpinnerModel\n                                         javax.swing.JSpinner\n                                         javax.swing.ButtonModel))&quot;, :offset 760, :ns &quot;seesaw.event&quot;} {:command &quot;(extend-listener-protocol AddChangeListener add-change-listener addChangeListener\n                                         javax.swing.BoundedRangeModel\n                                         javax.swing.JProgressBar\n                                         javax.swing.JSlider\n                                         javax.swing.JTabbedPane\n                                         javax.swing.JViewport\n                                         javax.swing.AbstractButton\n                                         javax.swing.SingleSelectionModel\n                                         javax.swing.SpinnerModel\n                                         javax.swing.JSpinner\n                                         javax.swing.ButtonModel)&quot;, :offset 743, :ns &quot;seesaw.event&quot;} {:command &quot;(extend-listener-protocol AddListSelectionListener add-list-selection-listener addListSelectionListener\n  javax.swing.JList\n  javax.swing.ListSelectionModel)&quot;, :offset 157, :ns &quot;seesaw.event&quot;} {:command &quot;(extend-protocol AddListSelectionListener\n  javax.swing.JTable\n    (add-list-selection-listener [this l]\n      (add-list-selection-listener (.getSelectionModel this) l)))&quot;, :offset 170, :ns &quot;seesaw.event&quot;} {:command &quot;(def ^{:private true} event-groups {\n\n  :component {\n    :name    :component\n    :class   ComponentListener\n    :events  #{:component-hidden\n               :component-moved\n               :component-resized\n               :component-shown}\n    :install #(.addComponentListener ^java.awt.Component %1 ^ComponentListener %2)\n  }\n\n  :property-change {\n    :name    :property-change\n    :class   PropertyChangeListener\n    :events  #{:property-change}\n    :install #(.addPropertyChangeListener ^java.awt.Component %1 ^PropertyChangeListener %2)\n  }\n  :key {\n    :name    :key\n    :class   KeyListener\n    :events  #{:key-pressed :key-released :key-typed}\n    :install #(.addKeyListener ^java.awt.Component %1 ^KeyListener %2)\n  }\n  :window {\n    :name    :window\n    :class   WindowListener\n    :events  #{:window-activated :window-deactivated\n              :window-closed :window-closing :window-opened\n              :window-deiconified :window-iconified}\n    :install  #(.addWindowListener ^java.awt.Window %1 ^WindowListener %2)\n  }\n  :focus {\n    :name    :focus\n    :class   FocusListener\n    :events  #{:focus-gained :focus-lost}\n    :install #(.addFocusListener ^java.awt.Component %1 ^FocusListener %2)\n  }\n  :document {\n    :name    :document\n    :class   DocumentListener\n    :events  #{:changed-update :insert-update :remove-update}\n    :install (fn [target listener]\n               (.addDocumentListener\n                 (if (instance? Document target)\n                    ^Document target\n                    (.getDocument ^javax.swing.text.JTextComponent target))\n                 ^DocumentListener listener))\n  }\n  :caret {\n    :name    :caret\n    :class   CaretListener\n    :events  #{:caret-update}\n    :install #(.addCaretListener ^javax.swing.text.JTextComponent %1 ^CaretListener %2)\n  }\n  :action {\n    :name    :action\n    :class   ActionListener\n    :events  #{:action-performed}\n    :install add-action-listener\n  }\n  :change {\n    :name    :change\n    :class   ChangeListener\n    :events  #{:state-changed}\n    :install add-change-listener\n  }\n  :item {\n    :name    :item\n    :class   ItemListener\n    :events  #{:item-state-changed}\n    :install #(.addItemListener ^java.awt.ItemSelectable %1 ^ItemListener %2)\n  }\n  :mouse {\n    :name    :mouse\n    :class   MouseListener\n    :events  #{:mouse-clicked :mouse-entered :mouse-exited :mouse-pressed :mouse-released}\n    :install #(.addMouseListener ^java.awt.Component %1 ^MouseListener %2)\n  }\n  :mouse-motion {\n    :name    :mouse-motion\n    :class   MouseMotionListener\n    :events  #{:mouse-moved :mouse-dragged}\n    :install #(.addMouseMotionListener ^java.awt.Component %1 ^MouseMotionListener %2)\n  }\n  :mouse-wheel {\n    :name    :mouse-wheel\n    :class   MouseWheelListener\n    :events  #{:mouse-wheel-moved}\n    :install #(.addMouseWheelListener ^java.awt.Component %1 ^MouseWheelListener %2)\n  }\n  :list-selection {\n    :name    :list-selection\n    :class   ListSelectionListener\n    :events  #{:value-changed}\n    :named-events #{:list-selection} ; Suppress reversed map entry\n    :install add-list-selection-listener\n  }\n  :tree-selection {\n    :name    :tree-selection\n    :class   TreeSelectionListener\n    :events  #{:value-changed}\n    :named-events #{:tree-selection} ; Suppress reversed map entry\n    :install #(.addTreeSelectionListener ^javax.swing.JTree %1 ^TreeSelectionListener %2)\n  }\n  :tree-expansion {\n    :name    :tree-expansion\n    :class   TreeExpansionListener\n    :events  #{:tree-expanded :tree-collapsed}\n    :install #(.addTreeExpansionListener ^javax.swing.JTree %1 ^TreeExpansionListener %2)\n  }\n  ; Since one of the methods matches the listener name, we give the overall\n  ; a slightly different name to distinguish registering for *all* events\n  ; versus just one.\n  :tree-will-expand* {\n    :name    :tree-will-expand*\n    :class   TreeWillExpandListener\n    :events  #{:tree-will-expand :tree-will-collapse}\n    :install #(.addTreeWillExpandListener ^javax.swing.JTree %1 ^TreeWillExpandListener %2)\n  }\n  :tree-model {\n    :name    :tree-model\n    :class   TreeModelListener\n    :events  #{:tree-nodes-changed :tree-nodes-inserted :tree-nodes-removed :tree-structure-changed}\n    :install #(.addTreeModelListener ^javax.swing.tree.TreeModel %1 ^TreeModelListener %2)\n  }\n\n  :drag-source {\n    :name         :drag-source\n    :class        java.awt.dnd.DragSourceListener\n    :events       #{:drag-drop-end :drag-enter :drag-exit :drag-over :drop-action-changed}\n    ; Names are mostly the same as DragTarget events, so prefix with ds-\n    ; See event-method-table below too!\n    :named-events #{:ds-drag-drop-end :ds-drag-enter :ds-drag-exit :ds-drag-over :ds-drop-action-changed}\n    :install      #(.addDragSourceListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceListener %2)\n  }\n\n  :drag-source-motion {\n    :name    :drag-source-motion\n    :class   java.awt.dnd.DragSourceMotionListener\n    :events  #{:drag-mouse-moved}\n    :install #(.addDragSourceMotionListener ^java.awt.dnd.DragSource %1 ^java.awt.dnd.DragSourceMotionListener %2)\n  }\n\n  :drop-target {\n    :name         :drop-target\n    :class        java.awt.dnd.DropTargetListener\n    :events       #{:drag-enter :drag-exit :drag-over :drop :drop-action-changed}\n    ; Names are mostly the same as DragSource events, so prefix with dt-\n    ; See event-method-table below too!\n    :named-events #{:dt-drag-enter :dt-drag-exit :dt-drag-over :dt-drop :dt-drop-action-changed}\n    :install      #(.addDropTargetListener ^java.awt.dnd.DropTarget %1 ^java.awt.dnd.DropTargetListener %2)\n  }\n\n  :hyperlink {\n    :name    :hyperlink\n    :class   HyperlinkListener\n    :events  #{:hyperlink-update}\n    :install #(.addHyperlinkListener ^javax.swing.JEditorPane %1\n                                     ^HyperlinkListener %2)\n  }\n})&quot;, :offset 5808, :ns &quot;seesaw.event&quot;} {:command &quot;(def ^{:private true} event-groups-by-listener-class\n  (into {}\n        (for [{:keys [class] :as group} (vals event-groups)]\n          [class group])))&quot;, :offset 151, :ns &quot;seesaw.event&quot;} {:command &quot;(defn- get-listener-class [^java.lang.reflect.Method m]\n  (let [[arg] (.getParameterTypes m)]\n    (if (and arg (.startsWith (.getName m) \&quot;add\&quot;))\n      arg)))&quot;, :offset 157, :ns &quot;seesaw.event&quot;} {:command &quot;(defn events-for\n  \&quot;Returns a sequence of event info maps for the given object which can\n  be either a widget instance or class.\n\n  Used by (seesaw.dev/show-events).\n\n  See:\n    (seesaw.dev/show-events)\n  \&quot;\n  [v]\n  (let [base (-&gt;&gt; (.getMethods (if (class? v) ^java.lang.Class v (class v)))\n               (map get-listener-class)\n               (filter identity)\n               (map event-groups-by-listener-class)\n               (filter identity)\n               (map #(dissoc % :install)))\n        selection (selection-group-for v)]\n    (if selection\n      (cons selection base)\n      base)))&quot;, :offset 593, :ns &quot;seesaw.event&quot;} {:command &quot;(seesaw.core/label)&quot;, :offset 19, :ns &quot;seesaw.event&quot;} {:command &quot;(require 'seesaw.core)&quot;, :offset 22, :ns &quot;seesaw.event&quot;} {:command &quot;(class \&quot;as\&quot;)&quot;, :offset 12, :ns &quot;seesaw.event&quot;} {:command &quot;(defn events-for\n  \&quot;Returns a sequence of event info maps for the given object which can\n  be either a widget instance or class.\n\n  Used by (seesaw.dev/show-events).\n\n  See:\n    (seesaw.dev/show-events)\n  \&quot;\n  [v]\n  (let [base (-&gt;&gt; (.getMethods (if (class? v) ^java.lang.Class v (class v)))\n               (map #(do\n                       (println (get-listener-class %))\n                       (get-listener-class %)))\n               (filter identity)\n               (map event-groups-by-listener-class)\n               (filter identity)\n               (map #(dissoc % :install)))\n        selection (selection-group-for v)]\n    (if selection\n      (cons selection base)\n      base)))&quot;, :offset 682, :ns &quot;seesaw.event&quot;} {:command &quot;(.getMethods (class \&quot;As\&quot;))&quot;, :offset 26, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class \&quot;As\&quot;))]\n  (println m)\n  )&quot;, :offset 55, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class \&quot;As\&quot;))]\n  (println (get-listener-class m))\n  )&quot;, :offset 76, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class (seesaw.core/label)))]\n  (println (get-listener-class m)))&quot;, :offset 88, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class (seesaw.core/label)))]\n  (when-let [l (get-listener-class m)]\n    (println l)))&quot;, :offset 109, :ns &quot;seesaw.event&quot;} {:command &quot;(filter identity [nil nil 1 2 nil])&quot;, :offset 35, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class (seesaw.core/label)))]\n  (when-let [l (get-listener-class m)]\n    (println (map event-groups-by-listener-class l))))&quot;, :offset 146, :ns &quot;seesaw.event&quot;} {:command &quot;(-&gt;&gt; (.getMethods (class (seesaw.core/label)))\n     (map get-listener-class)\n     (filter identity)\n     (map event-groups-by-listener-class)\n     ;(filter identity)\n     ;(map #(dissoc % :install))\n     )&quot;, :offset 205, :ns &quot;seesaw.event&quot;} {:command &quot;(clojure.pprint/pprint event-groups-by-listener-class)&quot;, :offset 54, :ns &quot;seesaw.event&quot;} {:command &quot;(count (.getMethods (class (seesaw.core/label))))&quot;, :offset 49, :ns &quot;seesaw.event&quot;} {:command &quot;(-&gt;&gt; (.getMethods (class (seesaw.core/label)))\n     (map get-listener-class)\n     (filter identity)\n     ;(map event-groups-by-listener-class)\n     ;(filter identity)\n     ;(map #(dissoc % :install))\n     )&quot;, :offset 206, :ns &quot;seesaw.event&quot;} {:command &quot;(-&gt;&gt; (.getMethods (class (seesaw.core/label)))\n     (map get-listener-class)\n     (filter identity)\n     (map event-groups-by-listener-class)\n     (filter identity)\n     ;(map #(dissoc % :install))\n     )&quot;, :offset 204, :ns &quot;seesaw.event&quot;} {:command &quot;(-&gt;&gt; (.getMethods (class (seesaw.core/label)))\n     (map get-listener-class)\n     (filter identity)\n     (map event-groups-by-listener-class)\n     (filter identity)\n     (map #(dissoc % :install))\n     )&quot;, :offset 203, :ns &quot;seesaw.event&quot;} {:command &quot;(defn events-for\n  \&quot;Returns a sequence of event info maps for the given object which can\n  be either a widget instance or class.\n\n  Used by (seesaw.dev/show-events).\n\n  See:\n    (seesaw.dev/show-events)\n  \&quot;\n  [v]\n  (let [base      (-&gt;&gt; (.getMethods (if (class? v) ^java.lang.Class v (class v)))\n                       (map get-listener-class)\n                       (filter identity)\n                       (map event-groups-by-listener-class)\n                       (filter identity)\n                       (map #(dissoc % :install)))\n        selection (selection-group-for v)]\n    (if selection\n      (cons selection base)\n      base)))&quot;, :offset 638, :ns &quot;seesaw.event&quot;} {:command &quot;(events-for (seesaw.core/label))&quot;, :offset 32, :ns &quot;seesaw.event&quot;} {:command &quot;(util/show-events (saw/button))&quot;, :offset 31, :ns &quot;seesaw.wiki.c-1-home-page&quot;} {:command &quot;(util/show-events (saw/label))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-1-home-page&quot;} {:command &quot;(apply + [1 2])&quot;, :offset 13, :ns &quot;user&quot;} {:command &quot;(apply + [1 2] [3])&quot;, :offset 17, :ns &quot;user&quot;} {:command &quot;apply&quot;, :offset 5} {:command &quot;(apply + [1 2] 3)&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(apply + [1 2] [2])&quot;, :offset 17, :ns &quot;user&quot;} {:command &quot;(apply + [1 2] [[2]])&quot;, :offset 18, :ns &quot;user&quot;} {:command &quot;(apply + [1 2] [])&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(defn- get-listener-class-2 [^java.lang.reflect.Method m]\n  (let [[arg] (.getParameterTypes m)]\n    (if (and arg (.startsWith (.getName m) \&quot;setOn\&quot;))\n      arg)))&quot;, :offset 161, :ns &quot;seesaw.event&quot;} {:command &quot;(defn- get-listener-class-2 [^java.lang.reflect.Method m]\n  (let [[arg] (.getParameterTypes m)]\n    (if (and arg (.startsWith (.getName m) \&quot;setOn\&quot;))\n      (.getName m))))&quot;, :offset 170, :ns &quot;seesaw.event&quot;} {:command &quot;(-&gt;&gt; (.getMethods javafx.scene.Node)\n     (map get-listener-class-2)\n     (filter identity)\n     ;(map event-groups-by-listener-class)\n     ;(filter identity)\n     ;(map #(dissoc % :install))\n     )&quot;, :offset 198, :ns &quot;seesaw.event&quot;} {:command &quot;(apply + [1 2] )&quot;, :offset 15, :ns &quot;user&quot;} {:command &quot;(count(-&gt;&gt; (.getMethods javafx.scene.Node)\n      (map get-listener-class-2)\n      (filter identity)\n      ;(map event-groups-by-listener-class)\n      ;(filter identity)\n      ;(map #(dissoc % :install))\n      ))&quot;, :offset 211, :ns &quot;seesaw.event&quot;} {:command &quot;^java.awt.Component&quot;, :offset 19, :ns &quot;user&quot;} {:command &quot;(merge {:a 1} {:b 2})&quot;, :offset 19, :ns &quot;user&quot;} {:command &quot;(merge {:a {:b 3\n            :c 3}} {:b 2})&quot;, :offset 43, :ns &quot;user&quot;} {:command &quot;(merge {:a {:b 3\n            :c 3}} {:a {:b 2}})&quot;, :offset 45, :ns &quot;user&quot;} {:command &quot;(doseq [m (.getMethods (class (seesaw.core/label)))]\n  (when-let [l (.getParameterTypes m)]\n    (println l)))&quot;, :offset 109, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods (class (seesaw.core/label)))]\n  (when-let [l (.getParameterTypes m)]\n    (println (aget l 0))))&quot;, :offset 118, :ns &quot;seesaw.event&quot;} {:command &quot;(doseq [m (.getMethods javafx.scene.control.ButtonBase)]\n  (when-let [l (.getParameterTypes m)]\n    (println (aget l 0))))&quot;, :offset 122, :ns &quot;seesaw.event&quot;} {:command &quot;(.getMethods javafx.scene.control.ButtonBase)&quot;, :offset 45, :ns &quot;seesaw.event&quot;} {:command &quot;(.getDeclaredMethods javafx.scene.control.ButtonBase)&quot;, :offset 53, :ns &quot;seesaw.event&quot;} {:command &quot;(class javafx.scene.control.ButtonBase)&quot;, :offset 39, :ns &quot;seesaw.event&quot;} {:command &quot;(Class/forName \&quot;javafx.scene.control.ButtonBase\&quot;)&quot;, :offset 49, :ns &quot;seesaw.event&quot;} {:command &quot;(run-later\n  (doseq [m (.getDeclaredMethods (Class/forName \&quot;javafx.scene.control.ButtonBase\&quot;))]\n    (when-let [l (.getParameterTypes m)]\n      (println (aget l 0)))))&quot;, :offset 166, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(.getMethods (Class/forName \&quot;javafx.scene.control.ButtonBase\&quot;))&quot;, :offset 63, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (doseq [m (.getMethods (Class/forName \&quot;javafx.scene.control.ButtonBase\&quot;))]\n    (when-let [l (.getParameterTypes m)]\n      (println (aget l 0)))))&quot;, :offset 158, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (.getMethods (Class/forName \&quot;javafx.scene.control.ButtonBase\&quot;)))&quot;, :offset 77, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  (.getMethods javafx.scene.control.ButtonBase))&quot;, :offset 59, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(Class/forName \&quot;javafx.scene.control.Button\&quot;)&quot;, :offset 45, :ns &quot;seesaw.event&quot;} {:command &quot;(.getDeclaredMethods javafx.scene.control.Button)&quot;, :offset 49, :ns &quot;seesaw.event&quot;} {:command &quot;(.getMethods javafx.scene.control.Button)&quot;, :offset 41, :ns &quot;seesaw.event&quot;} {:command &quot;(run-later\n  (.getMethods javafx.scene.control.Button))&quot;, :offset 55, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(run-later\n  javafx.scene.control.Button)&quot;, :offset 41, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(.getMethods javafx.scene.layout VBox)&quot;, :offset 38, :ns &quot;seesaw.event&quot;} {:command &quot;(.getMethods javafx.scene.layout.VBox)&quot;, :offset 38, :ns &quot;seesaw.event&quot;} {:command &quot;(ns seesaw.wiki.c-4-containers\n  (:require [seesaw.core :as sw :refer :all]\n            [seesaw.mig :as mig]\n            [seesaw.bind :as b]\n            [seesaw.wiki.util :as util])\n  (:import (javafx.application Platform)\n           (java.lang.reflect Constructor Parameter)))&quot;, :offset 277, :ns &quot;user&quot;} {:command &quot;(ns sadas)&quot;, :offset 10, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(defmacro run-later [&amp; body]\n  `(-run-later\n     (fn []\n       (try ~@body\n            (catch Throwable ex#\n              (println ex#))))))&quot;, :offset 140, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(in-ns 'user)&quot;, :offset 13, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(javafx.embed.swing.JFXPanel.)&quot;, :offset 30, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(Platform/setImplicitExit false)&quot;, :offset 32, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;(defn -run-later [^java.lang.Runnable fn]\n  (if (Platform/isFxApplicationThread)\n    (do\n      (println  \&quot;aaa\&quot;)\n      (fn))\n    (Platform/runLater fn)))&quot;, :offset 152, :ns &quot;seesaw.wiki.c-4-containers&quot;} {:command &quot;\n\n(javafx.embed.swing.JFXPanel.)\n(javafx.application.Platform/setImplicitExit false)\n\n(defn -run-later [^java.lang.Runnable fn]\n  (if (Platform/isFxApplicationThread)\n    (do\n      (println  \&quot;aaa\&quot;)\n      (fn))\n    (Platform/runLater fn)))\n\n(defmacro run-later [&amp; body]\n  `(-run-later\n     (fn []\n       (try ~@body\n            (catch Throwable ex#\n              (println ex#))))))&quot;, :offset 380, :ns &quot;user&quot;} {:command &quot;javafx.application.Platform&quot;, :offset 27, :ns &quot;user&quot;} {:command &quot;(javafx.application.Platform/setImplicitExit false)\n&quot;, :offset 52, :ns &quot;user&quot;} {:command &quot;\n(defn -run-later [^java.lang.Runnable fn]\n  (if (Platform/isFxApplicationThread)\n    (do\n      (println  \&quot;aaa\&quot;)\n      (fn))\n    (Platform/runLater fn)))\n\n(defmacro run-later [&amp; body]\n  `(-run-later\n     (fn []\n       (try ~@body\n            (catch Throwable ex#\n              (println ex#))))))\n&quot;, :offset 296, :ns &quot;user&quot;} {:command &quot;(run-later\n  (type javafx.scene.control.Button))&quot;, :offset 48, :ns &quot;user&quot;} {:command &quot;(run-later\n  (println (type javafx.scene.control.Button)))&quot;, :offset 56, :ns &quot;user&quot;} {:command &quot;(run-later\n  (println (.getMethods javafx.scene.control.Button)))&quot;, :offset 34, :ns &quot;user&quot;} {:command &quot;(seesaw.core/user-data)&quot;, :offset 23, :ns &quot;seesaw.core&quot;} {:command &quot;(def m {:a \&quot;Example doc string\&quot;})&quot;, :offset 30, :ns &quot;user&quot;} {:command &quot;(defn a\n  (:a m)\n  [x y]\n  (+ x y))&quot;, :offset 33, :ns &quot;user&quot;} {:command &quot;(defmacro my-defn \n [] \n )&quot;, :offset 17} {:command &quot;(let [doc (:a m)] \n  (defn a\n    doc\n   [x y]\n   (+ x y)))&quot;, :offset 36, :ns &quot;user&quot;} {:command &quot;(let [doc (:a m)] \n  (defn a\n    ~doc\n   [x y]\n   (+ x y)))&quot;, :offset 34, :ns &quot;user&quot;} {:command &quot;(let [doc (:a m)] \n  (defn a\n    \&quot;ok\&quot;\n   [x y]\n   (+ x y)))&quot;, :offset 36, :ns &quot;user&quot;} {:command &quot;(defmacro my-defn \n [doc] \n `(defn my-fn ~doc []))&quot;, :offset 47, :ns &quot;user&quot;} {:command &quot;(my-defn \&quot;ses\&quot;)&quot;, :offset 13, :ns &quot;user&quot;} {:command &quot;(meta (var my-fn))&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(ns ^{:doc\n\&quot;Core functions and macros for Seesaw. Although there are many more\n  Seesaw namespaces, usually what you want is in here. Most functions\n  in other namespaces have a core wrapper which adds additional\n  capability or makes them easier to use.\&quot;\n      :author \&quot;Dave Ray\&quot;}\n  seesaw.core\n  (:use [seesaw.util :only [illegal-argument to-seq check-args\n                            constant-map resource resource-key?\n                            to-dimension to-insets to-url try-cast\n                            cond-doto to-mnemonic-keycode]]\n        [seesaw.config :only [Configurable config* config!*]]\n        [seesaw.options :only [ignore-option default-option bean-option\n                               resource-option around-option\n                               apply-options\n                               option-map option-provider\n                               get-option-value]]\n        [seesaw.widget-options :only [widget-option-provider]]\n        [seesaw.meta :only [get-meta put-meta!]]\n        [seesaw.to-widget :only [ToWidget to-widget*]]\n        [seesaw.make-widget :only [make-widget*]])\n  (:require clojure.java.io\n            clojure.set\n            [seesaw color font border invoke timer selection value\n             event selector icon action cells table graphics cursor scroll dnd]\n            [seesaw.layout :as layout])\n  (:import [javax.swing\n             SwingConstants UIManager ScrollPaneConstants DropMode\n             BoxLayout\n             JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane\n             JLabel JTextField JTextArea JTextPane\n             AbstractButton JButton ButtonGroup\n             JOptionPane]\n           [javax.swing.text JTextComponent StyleConstants]\n           [java.awt Component FlowLayout BorderLayout GridLayout\n              GridBagLayout GridBagConstraints\n              Dimension]))&quot;, :offset 1887, :ns &quot;user&quot;} {:command &quot;(ns seesaw.wiki.c-1-home-page\n  (:require [seesaw.core :as saw]\n            [seesaw.event :as ev]\n            [seesaw.options :as opt]\n            [seesaw.wiki.util :as util]\n            [clojure.string :as string]))&quot;, :offset 216, :ns &quot;user&quot;} {:command &quot;(def p (sw/vertical-panel :items [\&quot;This\&quot; \&quot;is\&quot; \&quot;a\&quot; \&quot;vertical\&quot; \&quot;stack of\&quot; \&quot;JLabels\&quot;]))&quot;, :offset 84, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;:as&quot;, :offset 3, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(ns seesaw.wiki.c-3-widgets\n  (:require [seesaw.core]))&quot;, :offset 55, :ns &quot;user&quot;} {:command &quot;(ns seesaw.wiki.c-3-widgets\n  (:require [seesaw.core :as sw]))&quot;, :offset 62, :ns &quot;user&quot;} {:command &quot;(ns seesaw.widgets.log-window\n  (:use [seesaw.core]\n        [seesaw.bind :only [bind]]\n        [seesaw.keymap :only [map-key]]\n        [seesaw.invoke :only [signaller]]\n        [seesaw.options :only [apply-options option-map default-option]]\n        [seesaw.widget-options :only [WidgetOptionProvider]]))&quot;, :offset 304, :ns &quot;user&quot;} {:command &quot;(def fl (let [choose (fn [e] (sw/alert \&quot;I should open a file chooser\&quot;))]\n          (sw/flow-panel\n            :items [\&quot;File\&quot; [:fill-h 5]\n                    (sw/text (System/getProperty \&quot;user.dir\&quot;)) [:fill-h 5]\n                    (sw/action :handler choose :name \&quot;...\&quot;)])))&quot;, :offset 274, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content (java.net.URL. \&quot;https://github.com/daveray/seesaw/wiki/Widgets\&quot;)\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 195, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(util/show-options (sw/label))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/button :id :the-button :text \&quot;Push me\&quot;)&quot;, :offset 43, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def fl (let [choose (fn [e] (sw/alert \&quot;I should open a file chooser\&quot;))]pr\n          (sw/flow-panel\n            :items [\&quot;File\&quot; [:fill-h 5]\n                    (sw/text (System/getProperty \&quot;user.dir\&quot;)) [:fill-h 5]\n                    (sw/action :handler choose :name \&quot;...\&quot;)])))&quot;, :offset 276, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content fl\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 133, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content \&quot;Saas\&quot;\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 137, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def a (atom 1))&quot;, :offset 14, :ns &quot;user&quot;} {:command &quot;(type @a)&quot;, :offset 8, :ns &quot;user&quot;} {:command &quot;(.hashCode a)&quot;, :offset 12, :ns &quot;user&quot;} {:command &quot;(.hashCode @a)&quot;, :offset 13, :ns &quot;user&quot;} {:command &quot;(def b (atom 1))&quot;, :offset 6, :ns &quot;user&quot;} {:command &quot;(.hashCode @b)&quot;, :offset 13, :ns &quot;user&quot;} {:command &quot;(def o (Option. :deneme (fn [] ) (fn [] ) nil))&quot;, :offset 47, :ns &quot;seesaw.options&quot;} {:command &quot;(def o2 (Option. :deneme (fn [] ) (fn [] ) nil))&quot;, :offset 48, :ns &quot;seesaw.options&quot;} {:command &quot;(== o o2)&quot;, :offset 9, :ns &quot;seesaw.options&quot;} {:command &quot;(= o o2)&quot;, :offset 8, :ns &quot;seesaw.options&quot;} {:command &quot;(= o o)&quot;, :offset 7, :ns &quot;seesaw.options&quot;} {:command &quot;(def m {o \&quot;deneme\&quot;})&quot;, :offset 20, :ns &quot;seesaw.options&quot;} {:command &quot;(get m o)&quot;, :offset 9, :ns &quot;seesaw.options&quot;} {:command &quot;( + 1 1)&quot;, :offset 7, :ns &quot;user&quot;} {:command &quot;(def k (atom \&quot;As\&quot;))&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(def mm {k \&quot;den\&quot;})&quot;, :offset 15, :ns &quot;user&quot;} {:command &quot;(get mm k)&quot;, :offset 9, :ns &quot;user&quot;} {:command &quot;(ns ^{:doc\n              \&quot;Core functions and macros for Seesaw. Although there are many more\n                Seesaw namespaces, usually what you want is in here. Most functions\n                in other namespaces have a core wrapper which adds additional\n                capability or makes them easier to use.\&quot;\n      :author \&quot;Dave Ray\&quot;}\nseesaw.core\n  (:use [seesaw.util :only [illegal-argument to-seq check-args\n                            constant-map resource resource-key?\n                            to-dimension to-insets to-url try-cast\n                            cond-doto to-mnemonic-keycode]]\n        [seesaw.config :only [Configurable config* config!*]]\n        [seesaw.options :only [ignore-option default-option bean-option\n                               resource-option around-option\n                               apply-options\n                               option-map option-provider\n                               get-option-value]]\n        [seesaw.widget-options :only [widget-option-provider]]\n        [seesaw.meta :only [get-meta put-meta!]]\n        [seesaw.to-widget :only [ToWidget to-widget*]]\n        [seesaw.make-widget :only [make-widget*]])\n  (:require clojure.java.io\n            clojure.set\n            [seesaw color font border invoke timer selection value\n             event selector icon action cells table graphics cursor scroll dnd]\n            [seesaw.layout :as layout])\n  (:import [javax.swing\n            SwingConstants UIManager ScrollPaneConstants DropMode\n            BoxLayout\n            JDialog JFrame JComponent Box JPanel JScrollPane JSplitPane JToolBar JTabbedPane\n            JLabel JTextField JTextArea JTextPane\n            AbstractButton JButton ButtonGroup\n            JOptionPane]\n           [javax.swing.text JTextComponent StyleConstants]\n           [java.awt Component FlowLayout BorderLayout GridLayout\n                     GridBagLayout GridBagConstraints\n                     Dimension]\n           (clojure.lang IAtom IDeref IMeta)))&quot;, :offset 1994, :ns &quot;user&quot;} {:command &quot;(deftype SAtom [^:mutable state meta validator ^:mutable watches]\n  IAtom\n\n\n  IDeref\n  (deref [this]\n    (println \&quot;Derefeedd!!!\&quot;)\n    state)\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 168, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (new SAtom x))\n  ([x &amp; options] (setup-reference (stom x) options)))&quot;, :offset 86, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (new SAtom))\n  ([x &amp; options] (setup-reference (stom x) options)))&quot;, :offset 84, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (SAtom.))\n  ([x &amp; options] (setup-reference (stom x) options)))&quot;, :offset 81, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (SAtom. x nil nil nil))\n  ([x &amp; options] (setup-reference (stom x) options)))&quot;, :offset 95, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (SAtom. x nil nil nil))\n  ([x &amp; options] (#'setup-reference (stom x) options)))&quot;, :offset 97, :ns &quot;seesaw.core&quot;} {:command &quot;(defn s-reference \n  [^clojure.lang.ARef r options]\n  (let [opts (apply hash-map options)]\n    (when (:meta opts)\n      (.resetMeta r (:meta opts)))\n    (when (:validator opts)\n      (.setValidator r (:validator opts)))\n    r))&quot;, :offset 227, :ns &quot;seesaw.core&quot;} {:command &quot;(defn stom\n  ([x] (SAtom. x nil nil nil))\n  ([x &amp; options] (s-reference (stom x) options)))&quot;, :offset 91, :ns &quot;seesaw.core&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content \&quot;Ertus\&quot;\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 138, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(deftype SAtom [^:mutable state meta validator ^:mutable watches]\n  IAtom\n\n\n  IDeref\n  (deref [this]\n    (println (type this))\n    (println state)\n    state)\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 185, :ns &quot;seesaw.core&quot;} {:command &quot;(defn satom\n  ([x] (SAtom. x nil nil nil))\n  ([x &amp; options] (s-reference (satom x) options)))&quot;, :offset 93, :ns &quot;seesaw.core&quot;} {:command &quot;@ak&quot;, :offset 3, :ns &quot;seesaw.core&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n  IAtom\n  (swap [this f]\n    (swap! state f))\n  (swap [this f x]\n    (swap! state f x))\n  (swap [this f x y]\n    (swap! state f x y))\n  (swap [this f x y args]\n    (swap! state f x y args))\n  (compareAndSet [this old new]\n    (compare-and-set! state old new))\n  (reset [this new]\n    (reset! state new))\n\n  IDeref\n  (deref [this]\n    (println (type this))\n    @state)\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 441, :ns &quot;seesaw.core&quot;} {:command &quot;(def ak (satom 1))&quot;, :offset 18, :ns &quot;seesaw.core&quot;} {:command &quot;(swap! ak inc)&quot;, :offset 14, :ns &quot;seesaw.core&quot;} {:command &quot;(def kol (atom 5))&quot;, :offset 18, :ns &quot;seesaw.core&quot;} {:command &quot;(swap! kol inc)&quot;, :offset 15, :ns &quot;seesaw.core&quot;} {:command &quot;(type ak)&quot;, :offset 9, :ns &quot;seesaw.core&quot;} {:command &quot;(val {:a 1})&quot;, :offset 10, :ns &quot;user&quot;} {:command &quot;(vals {:a 1})&quot;, :offset 5, :ns &quot;user&quot;} {:command &quot;(vals {:a {:b 1}})&quot;, :offset 15, :ns &quot;user&quot;} {:command &quot;(first (vals {:a {:b 1}}))&quot;, :offset 25, :ns &quot;user&quot;} {:command &quot;(ns ^{:doc    \&quot;Functions for dealing with options.\&quot;\n      :author \&quot;Dave Ray\&quot;}\nseesaw.options\n  (:use [seesaw.util :only [camelize illegal-argument check-args\n                            resource resource-key?]])\n  (:import (clojure.lang IAtom IDeref IMeta)))&quot;, :offset 258, :ns &quot;user&quot;} {:command &quot;(def s (atom {}))&quot;, :offset 17, :ns &quot;seesaw.options&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n  IAtom\n  (swap [this f]\n    (let [v          (swap! state f)\n          target-ins (get s state)\n          options    (vals (first (vals target-ins)))]\n      (doseq [opt options]\n        (if-let [setter (:setter opt)]\n          (setter target-ins v)\n          (illegal-argument \&quot;No setter found for option %s\&quot; (:name opt))))))\n  (swap [this f x]\n    (swap! state f x))\n  (swap [this f x y]\n    (swap! state f x y))\n  (swap [this f x y args]\n    (swap! state f x y args))\n  (compareAndSet [this old new]\n    (compare-and-set! state old new))\n  (reset [this new]\n    (reset! state new))\n\n  IDeref\n  (deref [this]\n    (println (type this))\n    @state)\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 722, :ns &quot;seesaw.options&quot;} {:command &quot;(defn s-reference\n  [^clojure.lang.ARef r options]\n  (let [opts (apply hash-map options)]\n    (when (:meta opts)\n      (.resetMeta r (:meta opts)))\n    (when (:validator opts)\n      (.setValidator r (:validator opts)))\n    r))&quot;, :offset 226, :ns &quot;seesaw.options&quot;} {:command &quot;(defn satom\n  ([x] (SAtom. (atom x) nil nil nil))\n  ([x &amp; options] (s-reference (satom x) options)))&quot;, :offset 100, :ns &quot;seesaw.options&quot;} {:command &quot;(def k (satom 1))&quot;, :offset 17, :ns &quot;seesaw.options&quot;} {:command &quot;(type k)&quot;, :offset 8, :ns &quot;seesaw.options&quot;} {:command &quot;(= seesaw.options.SAtom (type k))&quot;, :offset 33, :ns &quot;seesaw.options&quot;} {:command &quot;(= seesaw.options.SAtom (class k))&quot;, :offset 34, :ns &quot;seesaw.options&quot;} {:command &quot;(= SAtom (class k))&quot;, :offset 19, :ns &quot;seesaw.options&quot;} {:command &quot;(ns seesaw.wiki.c-3-widgets\n  (:require [seesaw.core :as sw]\n            [seesaw.wiki.util :as util]))&quot;, :offset 102, :ns &quot;user&quot;} {:command &quot;@title&quot;, :offset 6, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(ns seesaw.wiki.c-3-widgets\n  (:require [seesaw.core :as sw]\n            [seesaw.options :as op]\n            [seesaw.wiki.util :as util]))&quot;, :offset 138, :ns &quot;user&quot;} {:command &quot;(def title (op/satom 1))&quot;, :offset 24, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content 12\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 133, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] \&quot;DEneme\&quot;))&quot;, :offset 31, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;op/s&quot;, :offset 4, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(vals (first (vals (get @op/s title))))&quot;, :offset 39, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(first (vals (get @op/s title)))&quot;, :offset 32, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content title\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 136, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] \&quot;sesver\&quot;))&quot;, :offset 31, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] \&quot;Deneme\&quot;))&quot;, :offset 31, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] [1200 :by 800]))&quot;, :offset 37, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] \&quot;G]zel\&quot;))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [1200 :by 800]))&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [200 :by 800]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 800]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [600 :by 800]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [600 :by 10]))&quot;, :offset 34, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [600 :by 1000]))&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [600 :by 200]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(doseq [a {:a 1 :b 2}]\n  a)&quot;, :offset 26, :ns &quot;user&quot;} {:command &quot;(doseq [a {:a 1 :b 2}]\n  (println a))&quot;, :offset 35, :ns &quot;user&quot;} {:command &quot;(doseq [[a b] {:a 1 :b 2}]\n  (println a b))&quot;, :offset 41, :ns &quot;user&quot;} {:command &quot;(doseq [[x y] {:a {:b 2 :c 3}}]\n  (println x y))&quot;, :offset 46, :ns &quot;user&quot;} {:command &quot;(swap! title (fn [a] \&quot;aaaa\&quot;))&quot;, :offset 29, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] \&quot;bbb\&quot;))&quot;, :offset 28, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [1600 :by 200]))&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 100]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 200]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 400]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def chp (atom 1))&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(compare-and-set! chp 2)&quot;, :offset 23, :ns &quot;user&quot;} {:command &quot;(compare-and-set! chp 1 2)&quot;, :offset 24, :ns &quot;user&quot;} {:command &quot;(compare-and-set! chp 2 2)&quot;, :offset 23, :ns &quot;user&quot;} {:command &quot;(compare-and-set! chp 3 2)&quot;, :offset 23, :ns &quot;user&quot;} {:command &quot;(reset! chp 8)&quot;, :offset 13, :ns &quot;user&quot;} {:command &quot;(swap! title (fn [a] \&quot;bbb22\&quot;))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a ] a) \&quot;ses\&quot;)&quot;, :offset 31, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] a) \&quot;ses\&quot; \&quot;aa\&quot;)&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] a) )&quot;, :offset 25, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title (fn [a] a) \&quot;aa\&quot;)&quot;, :offset 29, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title str/capitalize)&quot;, :offset 28, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title str/upper-case)&quot;, :offset 28, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! title str/lower-case)&quot;, :offset 28, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;deneme\&quot;)&quot;, :offset 23, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def kkk (satom 1))&quot;, :offset 19, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(defn- apply-setter\n  [this val]\n  (doseq [[ins m] (get @s this)]\n    (doseq [opt (vals m)]\n      (if-let [setter (:setter opt)]\n        (do\n          (setter ins val)\n          val)\n        (illegal-argument \&quot;No setter found for option %s\&quot; (:name opt))))))&quot;, :offset 257, :ns &quot;seesaw.options&quot;} {:command &quot;(defn- apply-setter\n  [this val]\n  (doseq [[ins m] (get @s this)]\n    (doseq [opt (vals m)]\n      (if-let [setter (:setter opt)]\n        (setter ins val)\n        (illegal-argument \&quot;No setter found for option %s\&quot; (:name opt)))))\n  val)&quot;, :offset 234, :ns &quot;seesaw.options&quot;} {:command &quot;(def kkk (op/satom 1))&quot;, :offset 22, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! kkk inc)&quot;, :offset 15, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def title (op/satom \&quot;Ertus\&quot;))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def size (op/satom [650 :by 450]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;An example\&quot;\n          :on-close :hide\n          :content title\n          :size size\n          :visible? true)&quot;, :offset 127, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 500]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [300 :by 300]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Ses ver\&quot;)&quot;, :offset 24, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Ses ver Türkiye!!!\&quot;)&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Aga selam\&quot;)&quot;, :offset 26, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Ataturk\&quot;)&quot;, :offset 24, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Deneme\&quot;)&quot;, :offset 23, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def kkk (op/satom {}))&quot;, :offset 23, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! kkk assoc-in [:a :b :c] 1)&quot;, :offset 33, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;@op/s&quot;, :offset 5, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(vals (get @op/s title))&quot;, :offset 24, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(get @op/s title)&quot;, :offset 17, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Denemesa\&quot;)&quot;, :offset 25, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! title \&quot;Hey\&quot;)&quot;, :offset 20, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [15000 :by 300]))&quot;, :offset 37, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [1500 :by 300]))&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! size (fn [a] [150 :by 300]))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;MENUS!\&quot;\n       :menubar\n       (sw/menubar :items\n                [(sw/menu :text \&quot;File\&quot; :items [])\n                 (sw/menu :text \&quot;Edit\&quot; :items [])]))&quot;, :offset 170, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;MENUS!\&quot;\n          :visible? true\n          :menubar\n          (sw/menubar :items\n                      [(sw/menu :text \&quot;File\&quot; :items [])\n                       (sw/menu :text \&quot;Edit\&quot; :items [])]))&quot;, :offset 213, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def file (op/satom \&quot;File\&quot;))&quot;, :offset 28, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;MENUS!\&quot;\n          :visible? true\n          :menubar\n          (sw/menubar :items\n                      [(sw/menu :text file :items [])\n                       (sw/menu :text \&quot;Edit\&quot; :items [])]))&quot;, :offset 211, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! file \&quot;Aga\&quot;)&quot;, :offset 19, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! file \&quot;File\&quot;)&quot;, :offset 20, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def items (op/satom [(sw/menu :text \&quot;File\&quot; :items [])\n                      (sw/menu :text \&quot;Edit\&quot; :items [])\n                      (sw/menu :text \&quot;Exit\&quot; :items [])]))&quot;, :offset 167, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title \&quot;MENUS!\&quot;\n          :visible? true\n          :menubar\n          (sw/menubar :items\n                      items))&quot;, :offset 128, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! items [(sw/menu :text \&quot;File\&quot; :items [])\n               (sw/menu :text \&quot;Edit\&quot; :items [])\n               (sw/menu :text \&quot;Exit 2\&quot; :items [])])&quot;, :offset 147, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! items [(sw/menu :text \&quot;File\&quot; :items [])\n               (sw/menu :text \&quot;Edit\&quot; :items [])])&quot;, :offset 97, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! items [(sw/menu :text \&quot;File\&quot; :items [])])&quot;, :offset 49, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/menubar :items\n            [(sw/menu :text \&quot;File\&quot; :items [])\n             (sw/menu :text \&quot;Edit\&quot; :items [])\n             (sw/menu :text \&quot;Exit\&quot; :items [])])&quot;, :offset 158, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(defn setup-reference*\n  [^clojure.lang.ARef r options]\n  (let [opts (apply hash-map options)]\n    (when (:meta opts)\n      (.resetMeta r (:meta opts)))\n    (when (:validator opts)\n      (.setValidator r (:validator opts)))\n    r))&quot;, :offset 231, :ns &quot;seesaw.options&quot;} {:command &quot;(defn satom\n  ([x] (SAtom. (atom x) nil nil nil))\n  ([x &amp; options] (setup-reference* (satom x) options)))&quot;, :offset 105, :ns &quot;seesaw.options&quot;} {:command &quot;(def a (satom {}))&quot;, :offset 18, :ns &quot;seesaw.options&quot;} {:command &quot;(ns ^{:doc    \&quot;Functions for dealing with options.\&quot;\n      :author \&quot;Dave Ray\&quot;}\nseesaw.options\n  (:use [seesaw.util :only [camelize illegal-argument check-args\n                            resource resource-key?]])\n  (:import (clojure.lang IAtom IDeref IMeta IRef)))&quot;, :offset 263, :ns &quot;user&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n\n  IAtom\n  (swap [this f]\n    (apply-setter this (swap! state f)))\n  (swap [this f x]\n    (apply-setter this (swap! state f x)))\n  (swap [this f x y]\n    (apply-setter this (swap! state f x y)))\n  (swap [this f x y args]\n    (apply-setter this (swap! state f x y args)))\n  (compareAndSet [this old new]\n    (when (compare-and-set! state old new)\n      (apply-setter this new)))\n  (reset [this new]\n    (apply-setter this (reset! state new)))\n\n  IDeref\n  (deref [this]\n    @state)\n\n  IRef\n  (addWatch [this k call]\n    (.addWatch state k call))\n  (removeWatch [this k]\n    (.removeWatch state k))\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 669, :ns &quot;seesaw.options&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n\n  IAtom\n  (swap [this f]\n    (apply-setter this (swap! state f)))\n  (swap [this f x]\n    (apply-setter this (swap! state f x)))\n  (swap [this f x y]\n    (apply-setter this (swap! state f x y)))\n  (swap [this f x y args]\n    (apply-setter this (swap! state f x y args)))\n  (compareAndSet [this old new]\n    (when (compare-and-set! state old new)\n      (apply-setter this new)))\n  (reset [this new]\n    (apply-setter this (reset! state new)))\n\n  IDeref\n  (deref [this]\n    @state)\n\n  IRef\n  (addWatch [this k call]\n    (.addWatch this k call))\n  (removeWatch [this k]\n    (.removeWatch this k))\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 667, :ns &quot;seesaw.options&quot;} {:command &quot;(add-watch a :watcher\n           (fn [key atom old-state new-state]\n             (prn \&quot;-- Atom Changed --\&quot;)\n             (prn \&quot;key\&quot; key)\n             (prn \&quot;atom\&quot; atom)\n             (prn \&quot;old-state\&quot; old-state)\n             (prn \&quot;new-state\&quot; new-state)))&quot;, :offset 251, :ns &quot;seesaw.options&quot;} {:command &quot;(.getWatches)&quot;, :offset 13, :ns &quot;seesaw.options&quot;} {:command &quot;(.getWatches a)&quot;, :offset 15, :ns &quot;seesaw.options&quot;} {:command &quot;(remove-watch a :watcher)&quot;, :offset 25, :ns &quot;seesaw.options&quot;} {:command &quot;(reset! a {:foo \&quot;bar\&quot;})&quot;, :offset 23, :ns &quot;seesaw.options&quot;} {:command &quot;(defprotocol IGetK\n  (get-k [this &amp; k] \&quot;Gets the satom's key\&quot;)\n  (get-k-in [this ks] \&quot;Gets the satom's neste key\&quot;))&quot;, :offset 36, :ns &quot;user&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n\n  IAtom\n  (swap [this f]\n    (apply-setter this state (swap! state f)))\n  (swap [this f x]\n    (apply-setter this state (swap! state f x)))\n  (swap [this f x y]\n    (apply-setter this state (swap! state f x y)))\n  (swap [this f x y args]\n    (apply-setter this state (swap! state f x y args)))\n  (compareAndSet [this old new]\n    (when (compare-and-set! state old new)\n      (apply-setter this state new)))\n  (reset [this new]\n    (apply-setter this state (reset! state new)))\n\n  IDeref\n  (deref [_]\n    @state)\n\n  IRef\n  (addWatch [_ k call]\n    (.addWatch state k call))\n  (removeWatch [_ k]\n    (.removeWatch state k))\n\n  IGetK\n  (get-k [this &amp; ks]\n    {:satom this :key ks})\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 753, :ns &quot;seesaw.options&quot;} {:command &quot;(defprotocol IGetK\n  (get-k [this k &amp; ks]))&quot;, :offset 43, :ns &quot;seesaw.options&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n\n  IAtom\n  (swap [this f]\n    (apply-setter this state (swap! state f)))\n  (swap [this f x]\n    (apply-setter this state (swap! state f x)))\n  (swap [this f x y]\n    (apply-setter this state (swap! state f x y)))\n  (swap [this f x y args]\n    (apply-setter this state (swap! state f x y args)))\n  (compareAndSet [this old new]\n    (when (compare-and-set! state old new)\n      (apply-setter this state new)))\n  (reset [this new]\n    (apply-setter this state (reset! state new)))\n\n  IDeref\n  (deref [_]\n    @state)\n\n  IRef\n  (addWatch [_ k call]\n    (.addWatch state k call))\n  (removeWatch [_ k]\n    (.removeWatch state k))\n\n  IGetK\n  (get-k [this k &amp; ks]\n    {:satom this :key (cons k ks)})\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 764, :ns &quot;seesaw.options&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n\n  IAtom\n  (swap [this f]\n    (apply-setter this state (swap! state f)))\n  (swap [this f x]\n    (apply-setter this state (swap! state f x)))\n  (swap [this f x y]\n    (apply-setter this state (swap! state f x y)))\n  (swap [this f x y args]\n    (apply-setter this state (swap! state f x y args)))\n  (compareAndSet [this old new]\n    (when (compare-and-set! state old new)\n      (apply-setter this state new)))\n  (reset [this new]\n    (apply-setter this state (reset! state new)))\n\n  IDeref\n  (deref [_]\n    @state)\n\n  IRef\n  (addWatch [_ k call]\n    (.addWatch state k call))\n  (removeWatch [_ k]\n    (.removeWatch state k))\n\n  IGetK\n  (get-k [this k &amp; ks]\n    {:satom this :keys (cons k ks)})\n\n  IMeta\n  (meta [_] meta))&quot;, :offset 765, :ns &quot;seesaw.options&quot;} {:command &quot;(map? {:A 1})&quot;, :offset 11, :ns &quot;user&quot;} {:command &quot;(map? [:a 1])&quot;, :offset 11, :ns &quot;user&quot;} {:command &quot;(def oo (op/satoms {:title \&quot;&lt;Menu&gt;\&quot;}))&quot;, :offset 38, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def size (op/satom {:as 12}))&quot;, :offset 30, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo :title :a)\n          :visible? true)&quot;, :offset 66, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;@oo&quot;, :offset 3, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def ooo (Option. :a nil nil nil))&quot;, :offset 34, :ns &quot;seesaw.options&quot;} {:command &quot;ooo&quot;, :offset 3, :ns &quot;seesaw.options&quot;} {:command &quot;(assoc ooo :ass \&quot;sie\&quot;)&quot;, :offset 22, :ns &quot;seesaw.options&quot;} {:command &quot;(sw/frame :title oo\n          :visible? true)&quot;, :offset 45, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo \&quot;asd\&quot;)&quot;, :offset 17, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(swap! oo (fn [a] \&quot;Ertu\&quot;))&quot;, :offset 26, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo \&quot;asdadadada\&quot;)&quot;, :offset 24, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(defn- apply-setter\n  [this old-val new-val]\n  (when-not (= old-val new-val)\n    (println \&quot;come\&quot;)\n    (println this)\n    (doseq [[ins m] (get @satoms this)]\n      (println \&quot;yy\&quot;)\n      (doseq [opt (vals m)]\n        (println \&quot;aaa\&quot;)\n        (if-let [setter (:setter opt)]\n          (setter ins new-val)\n          (illegal-argument \&quot;No setter found for option %s\&quot; (:name opt))))))\n  new-val)&quot;, :offset 387, :ns &quot;seesaw.options&quot;} {:command &quot;(reset! oo \&quot;asdadadada22\&quot;)&quot;, :offset 26, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;oo&quot;, :offset 2, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def oo (op/satom {:title \&quot;&lt;Menu&gt;\&quot;}))&quot;, :offset 37, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo :title)\n          :visible? true)&quot;, :offset 63, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title \&quot;Deneme\&quot;})&quot;, :offset 29, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title \&quot;Deneme 22\&quot;})&quot;, :offset 32, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def m {:a {:b {:c 3}}})&quot;, :offset 20, :ns &quot;user&quot;} {:command &quot;(apply get-in m :a :b :c)&quot;, :offset 24, :ns &quot;user&quot;} {:command &quot;(apply get-in [m :a :b :c])&quot;, :offset 25, :ns &quot;user&quot;} {:command &quot;(apply get-in [m [:a :b :c]])&quot;, :offset 26, :ns &quot;user&quot;} {:command &quot;(merge [m '(1 2 3)])&quot;, :offset 17, :ns &quot;user&quot;} {:command &quot;(merge [[:a] '(1 2 3)])&quot;, :offset 11, :ns &quot;user&quot;} {:command &quot;(merge '[l] [[:a :b]])&quot;, :offset 19, :ns &quot;user&quot;} {:command &quot;(cons {:a 1} [:a :b :c])&quot;, :offset 22, :ns &quot;user&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Menu 22 23\&quot;}})&quot;, :offset 41, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Menu 22 \&quot;}})&quot;, :offset 39, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Menu 22\&quot;}})&quot;, :offset 38, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Menu\&quot;}})&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo [:title :name])\n          :visible? true)&quot;, :offset 71, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Can Selam\&quot;}})&quot;, :offset 40, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Can s\&quot;}})&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Can2\&quot;}})&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Can23\&quot;}})&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Can\&quot;}})&quot;, :offset 34, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Kerem\&quot;}})&quot;, :offset 36, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo [:title ])\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 96, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo :title)\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 93, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo )\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 87, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(defprotocol IGetK\n  (get-k [this &amp; ks]))&quot;, :offset 41, :ns &quot;user&quot;} {:command &quot;(deftype SAtom [state meta validator watches]\n  IGetK\n  (get-k [this &amp; ks]\n    {:satom this :keys (vec ks)}))&quot;, :offset 108, :ns &quot;user&quot;} {:command &quot;(SAtom. nil nil nil nil)&quot;, :offset 23, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil))&quot;, :offset 31, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil) :a :b)&quot;, :offset 37, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil) :a :b :c :D\n       )&quot;, :offset 51, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil) :a :b :c)&quot;, :offset 40, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil) :a :b )&quot;, :offset 38, :ns &quot;user&quot;} {:command &quot;(defn as\n  [&amp; k]\n  (vec k))&quot;, :offset 25, :ns &quot;user&quot;} {:command &quot;(as 1 2 3)&quot;, :offset 9, :ns &quot;user&quot;} {:command &quot;(deftype SAtom []\n  IGetK\n  (get-k [this &amp; ks]\n    {:satom this :keys (vec ks)}))&quot;, :offset 16, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. ) :a :b )&quot;, :offset 15, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom.) :a :b )&quot;, :offset 14, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom.) :a)&quot;, :offset 18, :ns &quot;user&quot;} {:command &quot;(sw/frame :title (op/get-k oo [:title :name])\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 101, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Keremcik\&quot;}})&quot;, :offset 39, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(reset! oo {:title {:name \&quot;Keremcik a\&quot;}})&quot;, :offset 41, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(cons :a nil)&quot;, :offset 12, :ns &quot;user&quot;} {:command &quot;(defn get-k\n  [^SAtom a k &amp; ks]\n  {:satom a :keys (cons k ks)})&quot;, :offset 63, :ns &quot;user&quot;} {:command &quot;(get-k (SAtom. nil nil nil nil) :title)&quot;, :offset 38, :ns &quot;user&quot;} {:command &quot;(ns seesaw.wiki.c-3-widgets\n  (:require [seesaw.core :as sw]\n            [seesaw.options :as op]\n            [seesaw.wiki.util :as util]\n            [clojure.string :as str]))&quot;, :offset 175, :ns &quot;user&quot;} {:command &quot;(def oo (op/satom {:title {:name \&quot;Menu\&quot;}}))&quot;, :offset 43, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(sw/frame :title (op/get-k oo :title :name)\n          :size [640 :by 400]\n          :visible? true)&quot;, :offset 99, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def a (op/get-k oo :title :name))&quot;, :offset 34, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;(def aa (op/get-k oo :title :name))&quot;, :offset 35, :ns &quot;seesaw.wiki.c-3-widgets&quot;} {:command &quot;aa&quot;, :offset 2, :ns &quot;seesaw.wiki.c-3-widgets&quot;}], :remote []}}</component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Clojure REPL.REPL">
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    </configuration>
+    <configuration name="REPL" type="ClojureREPL" factoryName="Local" singleton="true">
+      <module name="seesaw" />
+      <setting name="replType" value="0" />
+      <setting name="jvmArgs" value="" />
+      <setting name="parameters" value="" />
+      <setting name="workingDir" value="$PROJECT_DIR$" />
+      <setting name="profiles" value="" />
+    </configuration>
+    <configuration name="c_3_widgets" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
+      <module name="seesaw" />
+      <setting name="path" value="$PROJECT_DIR$/src/seesaw/wiki/c_3_widgets.clj" />
+      <setting name="namespace" value="" />
+      <setting name="useLein" value="false" />
+      <setting name="profiles" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workDir" value="$PROJECT_DIR$/src/seesaw/wiki" />
+    </configuration>
+    <configuration name="event" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
+      <module name="seesaw" />
+      <setting name="path" value="$PROJECT_DIR$/test/seesaw/test/event.clj" />
+      <setting name="namespace" value="" />
+      <setting name="useLein" value="false" />
+      <setting name="profiles" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workDir" value="$PROJECT_DIR$/test/seesaw/test" />
+    </configuration>
+    <list>
+      <item itemvalue="Clojure REPL.REPL" />
+      <item itemvalue="Clojure Application.event" />
+      <item itemvalue="Clojure Application.c_3_widgets" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Clojure Application.event" />
+        <item itemvalue="Clojure Application.c_3_widgets" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6303308c-2ea4-4500-9e3d-1795997f28fd" name="Default" comment="" />
+      <created>1510870004380</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1510870004380</updated>
+    </task>
+    <task id="LOCAL-00001" summary="added dynamic renderer with satom">
+      <created>1530117175994</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1530117175994</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-227" y="-1080" width="1920" height="1080" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="right" id="Maven Projects" order="6" sideWeight="0.49576783" weight="0.3297568" />
+      <window_info anchor="right" x="0" y="23" width="1440" height="873" id="REPL" order="9" sideWeight="0.50423217" side_tool="true" visible="true" weight="0.37859425" />
+      <window_info anchor="right" id="Leiningen" order="7" weight="0.3297568" />
+      <window_info id="Capture Tool" order="2" />
+      <window_info id="Designer" order="2" />
+      <window_info anchor="bottom" id="Docker" order="10" show_stripe_button="false" />
+      <window_info anchor="right" id="LuaJ" order="10" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info id="UI Designer" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="11" />
+      <window_info anchor="right" id="Palette&#9;" order="4" />
+      <window_info id="Image Layers" order="2" />
+      <window_info anchor="right" id="Capture Analysis" order="5" />
+      <window_info anchor="bottom" auto_hide="true" id="Run" order="2" weight="0.3283582" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.32969698" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.3283582" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.3088392" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32969698" />
+      <window_info anchor="right" id="Theme Preview" order="8" />
+      <window_info id="Favorites" order="2" side_tool="true" weight="0.32904148" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="added dynamic renderer with satom" />
+    <option name="LAST_COMMIT_MESSAGE" value="added dynamic renderer with satom" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/seesaw/meta.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="20" column="1" selection-start-line="20" selection-start-column="1" selection-end-line="20" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/widget_options.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/bind.clj">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/clipboard.clj">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/tree.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="880">
+          <caret line="55" column="54" selection-start-line="55" selection-start-column="54" selection-end-line="55" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/config.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="25" column="6" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/substance/src/substance/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="370">
+          <caret line="54" column="12" lean-forward="true" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/lang/Atom.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="9" column="19" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/window-builder/project.clj">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/action.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="377">
+          <caret line="31" column="33" lean-forward="true" selection-start-line="31" selection-start-column="33" selection-end-line="31" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jvm/seesaw/ExceptionHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="36" column="11" lean-forward="true" selection-start-line="36" selection-start-column="11" selection-end-line="36" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/widgets/log_window.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/wiki/util.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="2" column="21" selection-start-line="2" selection-start-column="21" selection-end-line="2" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/wiki/c_2_frames.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="26" selection-start-column="26" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/dev.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="12" column="12" selection-start-line="12" selection-start-column="12" selection-end-line="12" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/wiki/c_1_home_page.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="11" column="31" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/project.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="22" column="42" selection-start-line="22" selection-start-column="42" selection-end-line="22" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/layout.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="182" column="16" selection-start-line="182" selection-start-column="1" selection-end-line="182" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/selector.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="40" column="23" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/seesaw/test/examples/example.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="10" selection-start-line="3" selection-start-column="10" selection-end-line="3" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/seesaw/test/examples/behave.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="317">
+          <caret line="26" column="35" lean-forward="true" selection-start-line="26" selection-start-column="35" selection-end-line="26" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/applet/src/applet/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="12" column="2" selection-start-line="12" selection-start-column="2" selection-end-line="12" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/window-builder/src/window_builder/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="41" column="29" selection-start-line="41" selection-start-column="29" selection-end-line="41" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/gaidica/src/gaidica/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1372">
+          <caret line="106" column="31" selection-start-line="106" selection-start-column="31" selection-end-line="106" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/forms.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1824">
+          <caret line="114" column="12" selection-start-line="114" selection-start-column="12" selection-end-line="114" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/event.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8176">
+          <caret line="511" lean-forward="true" selection-start-line="511" selection-end-line="511" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/seesaw/test/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="175">
+          <caret line="1286" column="33" selection-start-line="1286" selection-start-column="33" selection-end-line="1286" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/dnd_explorer.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="32" column="7" selection-start-line="32" selection-start-column="7" selection-end-line="32" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/mouse.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-323" />
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/lang/Agent.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/Agent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="47" selection-start-line="47" selection-end-line="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/util.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IHashEq.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="80">
+          <caret line="15" column="4" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/src.zip!/java/lang/Object.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="61" column="7" lean-forward="true" selection-start-line="61" selection-start-column="7" selection-end-line="61" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/swingx.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="795">
+          <caret line="558" column="52" lean-forward="true" selection-start-line="558" selection-start-column="52" selection-end-line="558" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IDeref.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="14" column="17" selection-start-line="14" selection-start-column="17" selection-end-line="14" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IMeta.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="14" column="17" selection-start-line="14" selection-start-column="17" selection-end-line="14" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IReference.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="14" column="17" selection-start-line="14" selection-start-column="17" selection-end-line="14" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/AReference.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="14" column="40" selection-start-line="14" selection-start-column="40" selection-end-line="14" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/src.zip!/java/util/concurrent/atomic/AtomicReference.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="114" column="25" selection-start-line="114" selection-start-column="25" selection-end-line="114" selection-end-column="25" />
+          <folding>
+            <element signature="e#2538#2539#0" expanded="true" />
+            <element signature="e#2623#2624#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IAtom.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="21" column="7" selection-start-line="21" selection-start-column="7" selection-end-line="21" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/pprint/pprint_base.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="240" column="6" selection-start-line="240" selection-start-column="6" selection-end-line="240" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="2380" column="6" selection-start-line="2380" selection-start-column="6" selection-end-line="2380" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="416">
+          <caret line="2067" column="19" lean-forward="true" selection-start-line="2067" selection-start-column="19" selection-end-line="2067" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/LockingTransaction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="649">
+          <caret line="341" column="27" selection-start-line="341" selection-start-column="27" selection-end-line="341" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/IRef.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="20" column="21" lean-forward="true" selection-start-line="20" selection-start-column="21" selection-end-line="20" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/Atom.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="16" column="35" selection-start-line="16" selection-start-column="35" selection-end-line="16" selection-end-column="35" />
+          <folding>
+            <element signature="e#865#866#0" expanded="true" />
+            <element signature="e#888#889#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0-sources.jar!/clojure/lang/ARef.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="784">
+          <caret line="67" column="21" selection-start-line="67" selection-start-column="14" selection-end-line="67" selection-end-column="21" />
+          <folding>
+            <element signature="e#1133#1134#0" expanded="true" />
+            <element signature="e#1162#1163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="2050" lean-forward="true" selection-start-line="2050" selection-end-line="2050" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/options.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="609">
+          <caret line="182" column="65" selection-start-line="182" selection-start-column="65" selection-end-line="182" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/seesaw/wiki/c_3_widgets.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="447">
+          <caret line="65" column="45" lean-forward="true" selection-start-line="65" selection-start-column="45" selection-end-line="65" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>scala-sdk-2.11.7</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.8 (1)</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>seesaw</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <last-edited>Leiningen: clojure-complete:0.2.4</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
