@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Leiningen: lein-autodoc:0.9.0">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/lein-autodoc/lein-autodoc/0.9.0/lein-autodoc-0.9.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
