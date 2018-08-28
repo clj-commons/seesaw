@@ -109,6 +109,7 @@ seesaw.options
     [(str "A i18n prefix for a resource with keys")
      (pr-str keys)]))
 
+;;TODO there is a small memory leak, find out how to fix it!
 (def satoms (atom {}))
 
 (defn- apply-setter

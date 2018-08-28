@@ -2,37 +2,22 @@
   (:require [seesaw.core :as sw]
             [seesaw.options :as op]
             [seesaw.wiki.util :as util]
+            [seesaw.rsyntax :as rs]
             [clojure.string :as str]))
 
-(comment
-  (seesaw.core/make-widget))
+(def size (op/satom [150 :by 300]))
+(def title (op/satom "Title"))
 
-(def p (sw/vertical-panel :items ["This" "is" "a" "vertical" "stack of" "JLabels"]))
+(swap! size (fn [a] [600 :by 600]))
+(swap! title (fn [_] "asdbsahd"))
 
-(def fl (let [choose (fn [e] (sw/alert "I should open a file chooser"))]
-          (sw/flow-panel
-            :items ["File" [:fill-h 5]
-                    (sw/text (System/getProperty "user.dir")) [:fill-h 5]
-                    (sw/action :handler choose :name "...")])))
-
-(def title (op/satom "Ertus"))
-
-(vals (get @op/satoms title))
-
-(swap! title str/lower-case)
-
-(reset! title "Hey")
-
-
-(def size (op/satom {:as 12}))
-
-(swap! size (fn [a] [150 :by 300]))
-
-(sw/frame :title "An example"
-          :on-close :hide
-          :content title
-          :size size
-          :visible? true)
+(def ff (sw/frame :title title
+                  :on-close :hide
+                  :content (sw/scrollable (rs/text-area :syntax :clojure
+                                                        :background "#F5EEDF"
+                                                        :selection-color :aliceblue))
+                  :size size
+                  :visible? true))
 
 (sw/frame :title "An example"
           :on-close :hide
@@ -40,13 +25,12 @@
           :size [640 :by 400]
           :visible? true)
 
-(util/show-options (sw/label))
+(util/show-options (rs/text-area :syntax :clojure))
 
 
 (sw/button :id :the-button :text "Push me")
 
 (sw/select root [:#the-button])
-
 
 
 (def kkk (op/satom {}))
@@ -66,10 +50,22 @@
              (sw/menu :text "Edit" :items [])
              (sw/menu :text "Exit" :items [])])
 
-(def oo (op/satom {:title {:name "Menu"}}))
+(def oo (op/satom {:title {:name "Menu" :age "12"}}))
 
-(reset! oo {:title {:name "Keremcik aa"}})
+(reset! oo {:title {:name "aaa22as34" :age "15"}})
 
-(sw/frame :title (op/get-k oo :title )
+(sw/frame :title (op/get-k oo :title :age)
           :size [640 :by 400]
           :visible? true)
+
+
+({:a 1} :a)
+[1 2 3]
+#{1 2 3}
+'(1 2 3 4)
+
+(defn my-add
+  [x y]
+  (+ x y))
+
+(my-add 1 1)
