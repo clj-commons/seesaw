@@ -17,4 +17,3 @@ autodoc/**
 /.settings
 .idea/
 *.iml
-src/seesaw/wiki
