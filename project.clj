@@ -20,7 +20,7 @@
   ;
   :aliases { "examples" ["run" "-m" "seesaw.test.examples.launcher"] }
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.miglayout/miglayout "3.7.4"]
                  [com.jgoodies/forms "1.2.1"]
                  [org.swinglabs.swingx/swingx-core "1.6.3"]
