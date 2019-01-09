@@ -141,7 +141,7 @@
   'line-to '.lineTo
   'move-to '.moveTo
   'curve-to '.curveTo
-  'quad-to 'quad-to
+  'quad-to '.quadTo
 })
 
 (defmacro path [opts & forms]
