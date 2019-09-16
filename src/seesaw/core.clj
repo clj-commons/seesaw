@@ -14,7 +14,7 @@
                 in other namespaces have a core wrapper which adds additional
                 capability or makes them easier to use."
       :author "Dave Ray"}
-seesaw.core
+  seesaw.core
   (:use [seesaw.util :only [illegal-argument to-seq check-args
                             constant-map resource resource-key?
                             to-dimension to-insets to-url try-cast
@@ -648,7 +648,7 @@ seesaw.core
   (set-action* [this v] (.setAction this v)))
 
 (def ^{:doc "Default handler for the :action option. Internal use."}
-action-option (default-option :action set-action* get-action* "See (seesaw.core/action)"))
+  action-option (default-option :action set-action* get-action* "See (seesaw.core/action)"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set/getModel is a common method on many types, but not in any common interface :(
@@ -683,7 +683,7 @@ action-option (default-option :action set-action* get-action* "See (seesaw.core/
   javax.swing.JSpinner)
 
 (def ^{:doc "Default handler for the :model option. Delegates to the ConfigModel protocol"}
-model-option (default-option :model set-model* get-model*))
+  model-option (default-option :model set-model* get-model*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; dragEnabled is a common method on many types, but not in any common interface :(
