@@ -1,6 +1,24 @@
-[![Build Status](https://secure.travis-ci.org/daveray/seesaw.png?branch=master)](http://travis-ci.org/daveray/seesaw)
+## Seesaw with virtual dom
+It's a fork of [seesaw](https://github.com/daveray/seesaw). This fork has virtual dom feature like **React.js**.
 
-There's now a [Google Group](https://groups.google.com/group/seesaw-clj) for discussion and questions.
+```clojure
+(ns seesaw.ex
+  (:require [seesaw.core :as s]
+            [seesaw.options :refer [satom]]))
+
+(def app-state (satom {:title "my-title"
+                       :size [200 :by 325]}))
+
+(def ff (s/frame :title (seesaw.options/get-k app-state :title)
+                 :size (seesaw.options/get-k app-state :size)
+                 :visible? true))
+
+(swap! app-state update :title (constantly "helloo"))
+;=>> re-renders the UI
+
+(swap! app-state update :size (constantly [500 :by 300]))
+;=>> re-renders the UI
+```
 
 [Here's a brief tutorial](https://gist.github.com/1441520) that covers some Seesaw basics. It assumes no knowledge of Swing or Java.
 
