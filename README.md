@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/daveray/seesaw.png?branch=master)](http://travis-ci.org/daveray/seesaw)
+[![Build Status](https://secure.travis-ci.org/clj-commons/seesaw.png?branch=master)](http://travis-ci.org/clj-commons/seesaw)
 
 There's now a [Google Group](https://groups.google.com/group/seesaw-clj) for discussion and questions.
 
@@ -8,7 +8,7 @@ There's now a [Google Group](https://groups.google.com/group/seesaw-clj) for dis
 
 # Seesaw: Clojure + UI
 
-_*See [the Seesaw Wiki](https://github.com/daveray/seesaw/wiki) and [the Seesaw API Docs](http://daveray.github.com/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
+_*See [the Seesaw Wiki](https://github.com/clj-commons/seesaw/wiki) and [the Seesaw API Docs](https://clj-commons.org/seesaw/) for more detailed docs. Note that the docs in the code (use the `doc` function!) are always the most up-to-date and trustworthy.*_
 
 Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens to be built on Swing, but please don't hold that against it.
 
@@ -17,19 +17,19 @@ Seesaw is a library/DSL for constructing user interfaces in Clojure. It happens 
 Seesaw is compatible with Clojure 1.4, but will probably work fine with 1.3 and 1.5. Maybe even 1.2.
 
 * Swing knowledge is *not required* for many apps!
-* [Construct widgets](https://github.com/daveray/seesaw/wiki/Widgets) with simple functions, e.g. `(listbox :model (range 100))`
+* [Construct widgets](https://github.com/clj-commons/seesaw/wiki/Widgets) with simple functions, e.g. `(listbox :model (range 100))`
 * Support for all of Swing's built-in widgets as well as SwingX.
 * Support for all of Swing's layout managers as well as MigLayout, and JGoodies Forms
 * Convenient shortcuts for most properties. For example, `:background :blue` or `:background "#00f"`, or `:size [640 :by 480]`.
-* [CSS-style selectors](https://github.com/daveray/seesaw/wiki/Selectors) with same syntax as [Enlive](https://github.com/cgrand/enlive).
-* Unified, extensible [event API](https://github.com/daveray/seesaw/wiki/Handling-events)
-* Unified, extensible [selection API](https://github.com/daveray/seesaw/wiki/Handling-selection)
+* [CSS-style selectors](https://github.com/clj-commons/seesaw/wiki/Selectors) with same syntax as [Enlive](https://github.com/cgrand/enlive).
+* Unified, extensible [event API](https://github.com/clj-commons/seesaw/wiki/Handling-events)
+* Unified, extensible [selection API](https://github.com/clj-commons/seesaw/wiki/Handling-selection)
 * [Widget binding](http://blog.darevay.com/2011/07/seesaw-widget-binding/), i.e. map changes from one widget into one or more others in a more functional style. Also integrates with Clojure's reference types.
-* [Graphics](https://github.com/daveray/seesaw/wiki/Graphics)
-* [i18n](https://github.com/daveray/seesaw/wiki/Resource-bundles-and-i18n)
-* An extensive [test suite](https://github.com/daveray/seesaw/tree/master/test/seesaw/test)
+* [Graphics](https://github.com/clj-commons/seesaw/wiki/Graphics)
+* [i18n](https://github.com/clj-commons/seesaw/wiki/Resource-bundles-and-i18n)
+* An extensive [test suite](https://github.com/clj-commons/seesaw/tree/master/test/seesaw/test)
 
-_There are numerous Seesaw examples in [test/seesaw/test/examples](https://github.com/daveray/seesaw/tree/master/test/seesaw/test/examples)._
+_There are numerous Seesaw examples in [test/seesaw/test/examples](https://github.com/clj-commons/seesaw/tree/master/test/seesaw/test/examples)._
 
 ## TL;DR
 
