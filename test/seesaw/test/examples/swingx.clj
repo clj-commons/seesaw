@@ -41,7 +41,7 @@
 
    :hyperlink (demo "(seesaw.swingx/hyperlink)" "A button that looks like a hyperlink. If given the :uri option, opens in browser. Can have an :icon if you like."
                     (vertical-panel :items [
-                      (hyperlink :uri "http://github.com/daveray/seesaw" :text "This link opens Seesaw's github page in a browser")
+                      (hyperlink :uri "http://github.com/clj-commons/seesaw" :text "This link opens Seesaw's github page in a browser")
                       :separator
                       (hyperlink :action (action :name "This link acts like a button"
                                                  :handler (fn [e] (alert "You clicked the link"))
