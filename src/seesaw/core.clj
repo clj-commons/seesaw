@@ -3329,6 +3329,7 @@
     (condp = result
       JOptionPane/NO_OPTION false
       JOptionPane/CANCEL_OPTION nil
+      JOptionPane/CLOSED_OPTION nil
       true)))
 
 (defn confirm
