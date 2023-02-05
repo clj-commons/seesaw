@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/daveray/seesaw.png?branch=master)](http://travis-ci.org/daveray/seesaw)
+[![Build Status](https://secure.travis-ci.org/clj-commons/seesaw.png?branch=master)](http://travis-ci.org/clj-commons/seesaw)
 
 There's now a [Google Group](https://groups.google.com/group/seesaw-clj) for discussion and questions.
 
