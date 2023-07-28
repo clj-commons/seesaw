@@ -15,3 +15,6 @@ autodoc/**
 /.classpath
 /.project
 /.settings
+.clj-kondo/.cache
+.lsp/.cache
+.portal/vs-code.edn
