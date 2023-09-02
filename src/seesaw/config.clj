@@ -47,7 +47,7 @@
 (defn config!
   "Applies options in the argument list to one or more targets. For example:
 
-    (config! button1 :enabled? false :text \"I' disabled\")
+    (config! button1 :enabled? false :text \"I'm disabled\")
 
   or:
 
