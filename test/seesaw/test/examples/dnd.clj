@@ -54,7 +54,7 @@
 ; A list box that imports and exports URIs, like with a browser
 (defn url-target []
   (listbox
-    :model [(java.net.URI. "http://github.com/daveray/seesaw")]
+    :model [(java.net.URI. "http://github.com/clj-commons/seesaw")]
     :drag-enabled? true
     :drop-mode :insert
     :transfer-handler 
